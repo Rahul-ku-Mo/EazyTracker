@@ -19,7 +19,7 @@ import { BoardContextMenu } from "./BoardContextMenu";
 import { useState } from "react";
 import DeleteDialog from "../Dialog/DeleteDialog";
 import { useBoardMutation } from "./_mutations/useBoardMutation";
-
+import InviteBoardDialog from "./InviteBoardDialog";
 interface Board {
   id: string;
   title: string;
@@ -32,6 +32,16 @@ const BoardCard = ({ board }: { board: Board }) => {
   const navigate = useNavigate();
 
   const [isOpenDeleteBoardDialog, setIsOpenDeleteBoardDialog] = useState(false);
+
+  const [isOpenInviteBoardDialog, setIsOpenInviteBoardDialog] = useState(false);
+
+  const openInviteBoardDialog = () => {
+    setIsOpenInviteBoardDialog(true);
+  };
+
+  const closeInviteBoardDialog = () => {
+    setIsOpenInviteBoardDialog(false);
+  };
 
   const { deleteBoardMutation } = useBoardMutation();
 
@@ -57,6 +67,7 @@ const BoardCard = ({ board }: { board: Board }) => {
         onOpen={handleOpenBoard}
         onDelete={handleDeleteBoard}
         onSettings={handleOpenBoardSettings}
+        onInvite={openInviteBoardDialog}
       >
         <div className="block" onClick={handleOpenBoard}>
           <Card className="relative overflow-hidden border-0 rounded-md group w-52 h-36">
@@ -84,6 +95,12 @@ const BoardCard = ({ board }: { board: Board }) => {
           </Card>
         </div>
       </BoardContextMenu>
+
+      <InviteBoardDialog
+        isOpen={isOpenInviteBoardDialog}
+        onClose={closeInviteBoardDialog}
+        id={board.id}
+      />
 
       <DeleteDialog
         closeModal={closeDeleteBoardDialog}

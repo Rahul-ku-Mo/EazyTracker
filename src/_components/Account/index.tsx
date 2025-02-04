@@ -1,22 +1,15 @@
-import Container from "../../layouts/Container";
+import MainLayout from "../../layouts/Container";
 import { Link, useLocation } from "react-router-dom";
 import clsx from "clsx";
 
-const Account = ({ children }) => {
+const Account = ({ children }: { children: React.ReactNode }) => {
   const pathname = useLocation().pathname;
 
   return (
-    <Container fwdClassName="dark:bg-zinc-800 bg-white pl-2 pb-2 pr-2 flex flex-col">
-      <div className="my-2.5">
-        <h1 className="text-2xl font-bold text-black dark:text-white capitalize tracking-tight  inline-flex items-center dark:border-white border-zinc-800 ">
-          Settings
-        </h1>
-        <p className=" dark:text-zinc-200 text-white text-base">
-          Manage your profile, account settings and set e-mail preferences.
-        </p>
-      </div>
-      <div className="flex gap-2 h-full text-sm">
-        <ul className="space-y-2 flex flex-col bg-white dark:bg-zinc-900 dark:text-white text-black rounded-md p-2 w-52 h-full sticky top-0">
+    <MainLayout title="Settings" fwdClassName="flex flex-col">
+     
+      <div className="flex h-full gap-2 text-sm">
+        <aside className="sticky top-0 flex flex-col p-2 space-y-2 text-black bg-white rounded-md h-fit dark:bg-zinc-950 dark:text-white w-52">
           <Link
             to="/setting/account"
             className={clsx(
@@ -64,12 +57,12 @@ const Account = ({ children }) => {
           >
             Integrations
           </Link>
-        </ul>
-        <div className="dark:bg-zinc-900 dark:text-white bg-white/90 rounded-md text-black px-8 py-4 flex flex-col gap-4  w-full h-full">
+        </aside>
+        <div className="flex flex-col w-full h-full gap-4 px-8 py-4 text-black rounded-md dark:bg-zinc-900 dark:text-white bg-white/90">
           {children}
         </div>
       </div>
-    </Container>
+    </MainLayout>
   );
 };
 

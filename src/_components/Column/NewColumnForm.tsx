@@ -40,7 +40,7 @@ const NewColumnForm = ({
           duration: 0.2,
           ease: "easeInOut",
         }}
-        className="min-w-[272px]"
+        className="w-[300px]"
       >
         <motion.form
           initial={{ y: -20 }}

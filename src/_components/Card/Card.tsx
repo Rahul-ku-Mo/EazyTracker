@@ -9,6 +9,7 @@ import {
   Paperclip,
   MessageSquare,
   Clock,
+  UserCircle2Icon,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Badge } from "../../components/ui/badge";
@@ -18,9 +19,17 @@ import { useCardMutation } from "./_mutations/useCardMutations";
 import { ColumnContext } from "../../Context/ColumnProvider";
 import { CardContext } from "../../Context/CardProvider";
 import { TCardContext } from "../../types/cardTypes";
+import { DueDateDialog } from "./_dialog/DueDateDialog";
+import { Avatar, AvatarImage, AvatarFallback } from "../../components/ui/avatar";
 
+type TUser = {
+  username: string;
+  imageUrl?: string;
+}
 interface CardProps {
   columnName: string;
+  index: number;
+  totalCards: number;
 }
 
 const CardTitle = ({ title }: { title: string }) => (
@@ -36,8 +45,8 @@ const CardDescription = ({ description }: { description: string }) => {
     <div
       dangerouslySetInnerHTML={{ __html: description }}
       className={cn(
-        "text-sm tracking-wide text-muted-foreground",
-        "break-words overflow-y-auto",
+        "text-xs text-muted-foreground/80 w-full",
+        "break-all overflow-y-auto",
         "prose prose-sm dark:prose-invert",
         "grow basis-full"
       )}
@@ -49,27 +58,27 @@ const getPriorityStyles = (priority?: string) => {
   switch (priority?.toLowerCase()) {
     case "urgent":
       return {
-        text: "text-red-500 dark:text-red-400",
-        border: "border-red-500/30 dark:border-red-400/30",
-        bg: "bg-red-500/[0.05] dark:bg-red-400/[0.05]",
+        text: "text-red-500 dark:text-red-100",
+        border: "border-red-500/30 dark:border-red-800",
+        bg: "bg-red-500/[0.05] dark:bg-red-800",
       };
     case "high":
       return {
-        text: "text-amber-500 dark:text-amber-400",
-        border: "border-amber-500/30 dark:border-amber-400/30",
-        bg: "bg-amber-500/[0.05] dark:bg-amber-400/[0.05]",
+        text: "text-amber-500 dark:text-amber-100",
+        border: "border-amber-500/30 dark:border-amber-800",
+        bg: "bg-amber-500/[0.05] dark:bg-amber-800",
       };
     case "medium":
       return {
-        text: "text-blue-500 dark:text-blue-400",
-        border: "border-blue-500/30 dark:border-blue-400/30",
-        bg: "bg-blue-500/[0.05] dark:bg-blue-400/[0.05]",
+        text: "text-blue-500 dark:text-blue-100",
+        border: "border-blue-500/30 dark:border-blue-800",
+        bg: "bg-blue-500/[0.05] dark:bg-blue-800",
       };
     case "low":
       return {
-        text: "text-green-500 dark:text-green-400",
-        border: "border-green-500/30 dark:border-green-400/30",
-        bg: "bg-green-500/[0.05] dark:bg-green-400/[0.05]",
+        text: "text-green-500 dark:text-green-100",
+        border: "border-green-500/30 dark:border-green-800",
+        bg: "bg-green-500/[0.05] dark:bg-green-800",
       };
   }
 };
@@ -78,22 +87,24 @@ const CardFooter = ({
   dueDate,
   attachmentsCount = 0,
   commentsCount = 0,
+  assignee,
 }: {
   dueDate?: Date;
   attachmentsCount?: number;
   commentsCount?: number;
+  assignee?: TUser;
 }) => {
   return (
     <div className="flex items-center justify-between gap-3 mt-1 text-muted-foreground">
       <div className="flex items-center gap-1 text-xs">
         <Clock className="w-3 h-3" />
-        <span>
+        <span className="font-thin text-zinc-200/80">
           {dueDate
             ? new Date(dueDate).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
               })
-            : "No due date"}
+            : "--"}
         </span>
       </div>
 
@@ -109,11 +120,23 @@ const CardFooter = ({
           <span>{commentsCount}</span>
         </div>
       )}
+      {assignee && (
+        <Avatar className="h-4 w-4">
+          <AvatarImage src={assignee?.imageUrl} />
+          <AvatarFallback className="text-[8px]">
+            {assignee.username.slice(0,2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+      )}
+
+      
     </div>
   );
 };
-const Card = ({ columnName }: CardProps) => {
+const Card = ({ columnName, index, totalCards }: CardProps) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const [isDueDateOpen, setIsDueDateOpen] = useState(false);
 
   const cardDetails = useContext(CardContext);
 
@@ -129,11 +152,26 @@ const Card = ({ columnName }: CardProps) => {
   const closeModal = () => setIsOpen(false);
   const openModal = () => setIsOpen(true);
 
+  const openDueDateDialog = () => setIsDueDateOpen(true);
+  const closeDueDateDialog = () => setIsDueDateOpen(false);
+
   const items = [
+    {
+      icon: <ExternalLink className="w-3 h-3 mr-2" />,
+      label: "Open card",
+      onClick: openModal,
+      shortcut: "⌘O",
+    },
+    {
+      icon: <UserCircle2Icon className="w-3 h-3 mr-2" />,
+      label: "Assignee",
+      onClick: () => {},
+      shortcut: "⌘A",
+    },
     {
       icon: <Calendar className="w-3 h-3 mr-2" />,
       label: "Set due date",
-      onClick: () => {},
+      onClick: openDueDateDialog,
       shortcut: "⌘D",
     },
     {
@@ -160,12 +198,6 @@ const Card = ({ columnName }: CardProps) => {
       shortcut: "⌘C",
     },
     {
-      icon: <ExternalLink className="w-3 h-3 mr-2" />,
-      label: "Open card",
-      onClick: openModal,
-      shortcut: "⌘O",
-    },
-    {
       icon: <Trash2 className="w-3 h-3 mr-2 text-destructive" />,
       label: "Delete card",
       onClick: () => {
@@ -184,24 +216,21 @@ const Card = ({ columnName }: CardProps) => {
           className={cn(
             "bg-white dark:bg-zinc-800",
             "text-foreground",
-            "rounded-md p-2 m-1",
-            "border border-border dark:border-zinc-700",
-            "shadow-sm dark:shadow-zinc-900/20",
-            "hover:shadow-md dark:hover:shadow-zinc-900/40",
+            "rounded-md p-2 mt-2",
             "transition-all duration-200",
             "flex flex-col justify-between",
             "text-xs ",
-            "h-[100px]"
+            "min-h-[100px] max-h-[200px]",
+            index === totalCards - 1 && "mb-10"
           )}
         >
-          <div className="flex items-center justify-between gap-4">
-            <CardTitle title={title} />
+          <div className="flex flex-col gap-2">
             {priority && (
               <div className="flex items-center gap-1 text-[10px]">
                 <Badge
                   variant="outline"
                   className={cn(
-                    "text-[10px] px-2 py-0 font-semibold border-2 rounded-sm ",
+                    "text-[10px] px-2 py-0 font-semibold border-2 rounded-sm capitalize",
                     priorityStyles?.text,
                     priorityStyles?.border,
                     priorityStyles?.bg
@@ -211,10 +240,11 @@ const Card = ({ columnName }: CardProps) => {
                 </Badge>
               </div>
             )}
+            <CardTitle title={title} />
           </div>
           {description && <CardDescription description={description} />}
 
-          <CardFooter dueDate={dueDate}  />
+          <CardFooter dueDate={dueDate} />
         </div>
       </CardContextMenu>
 
@@ -224,6 +254,12 @@ const Card = ({ columnName }: CardProps) => {
         title={title}
         cardId={id}
         columnName={columnName}
+      />
+
+      <DueDateDialog
+        cardId={id}
+        isOpen={isDueDateOpen}
+        closeDialog={closeDueDateDialog}
       />
     </>
   );

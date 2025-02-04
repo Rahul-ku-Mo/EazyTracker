@@ -35,9 +35,9 @@ export function NavUser({
   user,
 }: {
   user: {
-    name: string;
+    username: string;
     email: string;
-    avatar: string;
+    imageUrl: string | null;
   };
 }) {
   const { isMobile } = useSidebar();
@@ -63,12 +63,14 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="w-8 h-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarImage src={user.imageUrl || ""} alt={user.username} />
+                <AvatarFallback className="rounded-lg">
+                  {user?.username.charAt(0)}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-sm leading-tight text-left">
-                <span className="font-semibold truncate">{user.name}</span>
-                <span className="text-xs truncate">{user.email}</span>
+                <span className="font-semibold truncate">{user?.username}</span>
+                <span className="text-xs truncate">{user?.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -82,11 +84,13 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="w-8 h-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarImage src={user.imageUrl || ""} alt={user.username} />
+                  <AvatarFallback className="rounded-lg">
+                    {user?.username.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-sm leading-tight text-left">
-                  <span className="font-semibold truncate">{user.name}</span>
+                  <span className="font-semibold truncate">{user.username}</span>
                   <span className="text-xs truncate">{user.email}</span>
                 </div>
               </div>
@@ -100,7 +104,7 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/setting/account")}>
                 <BadgeCheck />
                 Account
               </DropdownMenuItem>

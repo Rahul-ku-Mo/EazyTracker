@@ -1,5 +1,4 @@
-import { cn } from "../../lib/utils";
-import { ScrollArea } from "../../components/ui/scroll-area";
+
 import Card from "./Card";
 import { CardProvider } from "../../Context/CardProvider";
 import { TCardContext } from "../../types/cardTypes";
@@ -17,18 +16,17 @@ const CardsInColumn = ({ columnName, cards = [] }: CardColumnsProps) => {
   }
 
   return (
-    <div className="flex flex-col h-full w-[272px] ">
-      <ScrollArea className={cn("flex-1", "rounded-md", "p-1")}>
-        <ol className="space-y-2">
-          {sortedCards.map((card) => (
+    <div className="flex flex-col rounded-md h-full overflow-y-auto">
+       <ol className="space-y-2">
+          {sortedCards.map((card, index) => (
             <li key={card.id}>
               <CardProvider cardDetails={card}>
-                <Card columnName={columnName} />
+                <Card columnName={columnName} index={index} totalCards={sortedCards.length} />
               </CardProvider>
             </li>
           ))}
         </ol>
-      </ScrollArea>
+      
     </div>
   );
 };

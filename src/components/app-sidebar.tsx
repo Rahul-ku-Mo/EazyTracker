@@ -23,6 +23,8 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "./ui/sidebar";
+import { useUser } from "../hooks/useQueries";
+import Cookies from "js-cookie";
 
 // This is sample data.
 const data = {
@@ -105,6 +107,11 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const accessToken = Cookies.get("accessToken") || "";
+  const { data : userData } = useUser(accessToken);
+
+
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -115,7 +122,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={userData} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

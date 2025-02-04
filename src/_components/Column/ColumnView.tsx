@@ -72,48 +72,35 @@ const ColumnView = ({ title, cards }: ColumnViewProps) => {
 
   return (
     <>
-      <li className="self-start block h-full list-none shrink-0 whitespace-nowrap">
-        <div
-          className={cn(
-            "relative flex flex-col justify-between w-64 max-h-full",
-            "whitespace-normal rounded-md bg-card",
-            "border shadow-sm",
-            "min-w-[272px]",
-            "border border-zinc-200 dark:border-zinc-700",
-            "bg-white/50 dark:bg-zinc-800/50",
-            "backdrop-blur-sm"
-          )}
-        >
-          <div className="relative flex items-center justify-between h-10 p-2 border-b">
-            <span className="text-sm font-semibold truncate">{title}</span>
-            <div className="inline-flex items-center gap-2">
-              <ColumnActionTooltipWrapper
-                actionName="Add Card"
-                handleClick={() => setIsNewCardOpen(true)}
-              >
-                <Plus
-                  className={cn(
-                    "p-0.5 h-5 w-5",
-                    "bg-zinc-400 dark:bg-zinc-700",
-                    "transition-all duration-200",
-                  
-                  )}
-                />
-              </ColumnActionTooltipWrapper>
-              <ColumnActionTooltipWrapper actionName="Sort Column">
-                <ArrowUpDown className="w-5 h-5" />
-              </ColumnActionTooltipWrapper>
-              <ColumnActionTooltipWrapper
-                actionName="Delete Column"
-                handleClick={openDeleteModal}
-              >
-                <Trash className="w-5 h-5" />
-              </ColumnActionTooltipWrapper>
-            </div>
+      <li className="self-start block h-full list-none shrink-0 whitespace-nowrap rounded-md p-1  w-[300px] overflow-hidden">
+        <div className=" flex items-center justify-between h-10 p-2 border rounded-md bg-zinc-900">
+          <span className="text-sm font-semibold truncate">{title}</span>
+          <div className="inline-flex items-center gap-2">
+            <ColumnActionTooltipWrapper
+              actionName="Add Card"
+              handleClick={() => setIsNewCardOpen(true)}
+            >
+              <Plus
+                className={cn(
+                  "p-0.5 h-5 w-5",
+                  "bg-zinc-400 dark:bg-zinc-700",
+                  "transition-all duration-200"
+                )}
+              />
+            </ColumnActionTooltipWrapper>
+            <ColumnActionTooltipWrapper actionName="Sort Column">
+              <ArrowUpDown className="w-5 h-5" />
+            </ColumnActionTooltipWrapper>
+            <ColumnActionTooltipWrapper
+              actionName="Delete Column"
+              handleClick={openDeleteModal}
+            >
+              <Trash className="w-5 h-5" />
+            </ColumnActionTooltipWrapper>
           </div>
-
-          <CardsInColumn columnName={title} cards={cards} />
         </div>
+
+        <CardsInColumn columnName={title} cards={cards} />
       </li>
       <NewCardForm
         columnName={title}

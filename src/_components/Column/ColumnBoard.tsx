@@ -35,7 +35,7 @@ const ExpandAddColumnButton = ({ onClick }: ExpandAddColumnButtonProps) => {
       onClick={onClick}
       variant="ghost"
       className={cn(
-        "min-w-[272px] h-10 group inline-flex justify-start pl-2",
+        "w-[300px] h-10 group inline-flex justify-start pl-2",
         "border border-zinc-200 dark:border-zinc-700",
         "bg-white/50 dark:bg-zinc-800/50",
         "backdrop-blur-sm",
@@ -118,7 +118,7 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
     <>
       <Container fwdClassName="bg-transparent" title={title}>
         <div className="relative w-full h-full">
-          <ol className="flex items-start gap-3 overflow-x-auto pb-2.5 pt-2 absolute inset-0">
+          <ol className="absolute inset-0 flex items-start h-full gap-3 ">
             {sortedColumns?.map((column: Column) => (
               <ColumnProvider columnId={column.id} key={column.id}>
                 <ColumnView

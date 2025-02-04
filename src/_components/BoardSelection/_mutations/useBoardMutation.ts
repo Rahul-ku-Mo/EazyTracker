@@ -39,7 +39,7 @@ export const useBoardMutation = () => {
       updatedBoardData,
     }: {
       boardId: string;
-      updatedBoardData: TBoard;
+      updatedBoardData: unknown;
     }) => {
       await updateBoard(accessToken, boardId, updatedBoardData);
     },

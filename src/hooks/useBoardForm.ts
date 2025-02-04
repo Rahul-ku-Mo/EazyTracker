@@ -1,52 +1,72 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { DEFAULT_IMAGES } from "../constant";
 import { unsplash } from "../services/unsplashService";
-
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+
 import Cookies from "js-cookie";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createBoard } from "../apis/BoardApis";
+import { useToast } from "../hooks/use-toast";
 
-const useBoardForm = (count) => {
+interface IBoardForm {
+  boardTitle: string;
+  selectedImageTitle: any;
+}
+
+const useBoardForm = (count: number) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const accessToken = Cookies.get("accessToken");
+  const { toast } = useToast();
 
   const [currentBoardInput, setCurrentBoardInput] = useState("");
   const [selectedImageId, setSelectedImageId] = useState(null);
-  const [selectedOrganizationId, setSelectedOrganizationId] = useState("");
 
   const createBoardMutation = useMutation({
-    mutationFn: async ({ boardTitle, selectedImageTitle, organizationId }) => {
+    mutationFn: async (data : IBoardForm) => {
+      if (!accessToken) {
+        throw new Error("No access token found");
+      }
+
       const [
         imageId,
         imageThumbUrl,
         imageFullUrl,
         imageLinkHTML,
         imageUserName,
-      ] = selectedImageTitle.split("|");
+      ] = data.selectedImageTitle.split("|");
 
       const kanbanBoardData = {
-        title: boardTitle,
+        title: data.boardTitle,
         imageId: imageId,
         imageThumbUrl: imageThumbUrl,
         imageFullUrl: imageFullUrl,
         imageLinkHTML: imageLinkHTML,
         imageUserName: imageUserName,
-        organizationId: organizationId,
       };
 
-      return await createBoard(accessToken, kanbanBoardData);
+      const response = await createBoard(accessToken, kanbanBoardData);
+
+      return response;
     },
-    onSuccess: () => {
-      toast.success("Board created successfully");
-
-      navigate(`/kanban/${kanbanBoardId}`);
-
-      setCurrentBoardInput("");
-      setSelectedImageId(null);
-      setSelectedOrganizationId("");
+    onSuccess: (data) => {
+      if (data && data.id) {
+        toast({
+          title: "Board created successfully",
+          variant: "default",
+        });
+        navigate(`/kanban/${data.id}`);
+        setCurrentBoardInput("");
+        setSelectedImageId(null);
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to create board",
+        description: error.message,
+        variant: "destructive",
+      });
     },
     onSettled: () => {
       return queryClient.invalidateQueries({
@@ -55,37 +75,51 @@ const useBoardForm = (count) => {
     },
   });
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: any) => {
     event.preventDefault();
 
     const boardTitle = event.target.elements.title.value;
     const selectedImageTitle = event.target.elements.image.value;
-    const organizationId = selectedOrganizationId;
 
     if (boardTitle === "") {
-      toast.error("Board title shouldn't be empty!");
+      toast({
+        title: "Board title shouldn't be empty!",
+        description: "Please enter a board title",
+        variant: "destructive",
+      });
       return;
     }
 
     if (selectedImageTitle === "") {
-      toast.error("Board background shouldn't be empty!");
+      toast({
+        title: "Board background shouldn't be empty!",
+        description: "Please select a board background",
+        variant: "destructive",
+      });
       return;
     }
 
     if (boardTitle.length < 6) {
-      toast.error("Board title must be at least 6 characters long");
+      toast({
+        title: "Board title must be at least 6 characters long",
+        description: "Please enter a longer title",
+        variant: "destructive",
+      });
       return;
     }
 
     if (count === 0) {
-      toast.warning("You have reached the maximum number of boards");
+      toast({
+        title: "Maximum boards reached",
+        description: "Please delete some boards or upgrade your plan",
+        variant: "destructive",
+      });
       return;
     }
 
     createBoardMutation.mutate({
       boardTitle,
       selectedImageTitle,
-      organizationId,
     });
   };
 
@@ -103,7 +137,7 @@ const useBoardForm = (count) => {
 
       throw new Error("Failed to fetch images");
     },
-    retry: false, // Don't retry on failure
+    retry: false,
     initialData: DEFAULT_IMAGES,
   });
 
@@ -115,8 +149,6 @@ const useBoardForm = (count) => {
     currentBoardInput,
     setSelectedImageId,
     handleSubmit,
-    selectedOrganizationId,
-    setSelectedOrganizationId,
   };
 };
 

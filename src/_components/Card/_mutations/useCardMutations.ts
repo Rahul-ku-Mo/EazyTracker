@@ -11,13 +11,16 @@ type TIssueCardData = {
   title?: string;
   cardDescription?: string;
   attachments?: string[];
-  dueDate?: string;
+  dueDate?: Date;
   comments?: string[];
   cardId: string;
   columnId: string;
   priority?: string;
   createdAt?: Date;
+  assigneeId?: string;
   updatedAt?: Date;
+  labels?: string[];
+  order?: number;
 };
 
 export const useCardMutation = () => {
@@ -47,15 +50,29 @@ export const useCardMutation = () => {
 
   const updateCardMutation = useMutation({
     mutationFn: async (data: TIssueCardData) => {
-      const { title, cardDescription, attachments, dueDate, comments, cardId, priority } =
-        data;
+      const {
+        title,
+        cardDescription,
+        attachments,
+        dueDate,
+        cardId,
+        columnId,
+        priority,
+        assigneeId,
+        labels,
+        order,
+      } = data;
+
       const updatedData = {
         ...(title !== undefined && { title }),
         ...(cardDescription !== undefined && { description: cardDescription }),
         ...(attachments !== undefined && { attachments }),
         ...(dueDate !== undefined && { dueDate }),
-        ...(comments !== undefined && { comments }),
+        ...(columnId !== undefined && { columnId }),
         ...(priority !== undefined && { priority }),
+        ...(assigneeId !== undefined && { assigneeId: assigneeId }),
+        ...(labels !== undefined && { labels }),
+        ...(order !== undefined && { order }),
       };
 
       return await updateCard(accessToken, updatedData as TCardData, cardId);
@@ -63,7 +80,9 @@ export const useCardMutation = () => {
     onSuccess: () =>
       toast({
         title: "Update",
-        description: `Card Status updated at ${new Date().toLocaleString()} by ${Cookies.get("username") || "Unknown user"}`,
+        description: `Card Status updated at ${new Date().toLocaleString()} by ${
+          Cookies.get("username") || "Unknown user"
+        }`,
         variant: "default",
       }),
     onError: () =>

@@ -1,11 +1,8 @@
-import {  useContext } from "react";
-import { UserContext } from "../../Context/UserContext";
-import { Check, Loader2, Ban } from "lucide-react";
+
+import { Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import clsx from "clsx";
 import useBoardForm from "../../hooks/useBoardForm";
-import { useOrganizationLead } from "../../hooks/useQueries";
-import Cookies from "js-cookie";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { Label } from "../../components/ui/label";
@@ -30,7 +27,6 @@ interface BoardFormProps {
 
 const BoardForm = ({ count }: BoardFormProps) => {
   const {
-    isLoading,
     isPending,
     images,
     selectedImageId,
@@ -38,23 +34,7 @@ const BoardForm = ({ count }: BoardFormProps) => {
     currentBoardInput,
     setSelectedImageId,
     handleSubmit,
-    selectedOrganizationId,
-    setSelectedOrganizationId,
   } = useBoardForm(count);
-
-  const accessToken = Cookies.get("accessToken");
-  const { user } = useContext(UserContext);
-
-  const { data: organizations, isPending: isOrganizationsPending } =
-    useOrganizationLead(accessToken, user?.id);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-6">
-        <Loader2 className="w-6 h-6 text-emerald-700 animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <form className="flex flex-col space-y-4" onSubmit={handleSubmit}>
@@ -114,40 +94,13 @@ const BoardForm = ({ count }: BoardFormProps) => {
           onChange={(e) => setCurrentBoardInput(e.target.value)}
           className="border text-zinc-200 bg-zinc-700 border-zinc-600 focus-visible:ring-0"
         />
-        
-        <Label className="mt-2">
-          Organization{" "}
-          <span className="text-red-400">
-            (if no organization, leave empty)
-          </span>
-        </Label>
-        <ul className="flex flex-wrap gap-2 p-1 text-xs h-14">
-          <li
-            onClick={() => setSelectedOrganizationId("")}
-            className="inline-flex items-center justify-center w-12 h-12 text-lg font-bold tracking-tight uppercase transition-all duration-300 ease-in-out bg-gray-700 rounded-md cursor-pointer opacity-40 hover:bg-gray-600 hover:text-white"
-          >
-            <Ban className="w-5 h-5" />
-          </li>
-          {organizations?.map((org) => (
-            <li
-              key={org.id}
-              onClick={() => setSelectedOrganizationId(org.id)}
-              className="relative inline-flex items-center justify-center w-12 h-12 text-lg font-bold tracking-tight uppercase transition-all duration-300 ease-in-out bg-gray-700 rounded-md cursor-pointer hover:bg-gray-600 hover:text-white"
-            >
-              {org.name
-                .split(" ")
-                .map((word) => word[0])
-                .join("")}
-              {selectedOrganizationId === org.id && (
-                <div className="absolute inset-0 flex items-end justify-start border-2 border-gray-500 rounded-md opacity-70 bg-black/50" />
-              )}
-            </li>
-          ))}
-        </ul>
+
         <Button
           type="submit"
-          disabled={isPending || (!selectedImageId && !currentBoardInput.trim())}
-          className="w-full"
+          disabled={
+            isPending || (!selectedImageId && !currentBoardInput.trim())
+          }
+          className="w-full mt-2"
           variant="secondary"
         >
           Create
