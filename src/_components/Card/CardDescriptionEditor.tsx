@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect } from "react";
 import { EditorState } from "lexical";
 
@@ -10,6 +11,9 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 import { useLexicalIsTextContentEmpty } from "@lexical/react/useLexicalIsTextContentEmpty";
 import { $generateHtmlFromNodes } from "@lexical/html";
 import { cn } from "../../lib/utils";
+import { ListItemNode, ListNode } from "@lexical/list";
+import { ListPlugin } from "@lexical/react/LexicalListPlugin";
+import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
 
 interface EditorTheme {
   root: string;
@@ -21,8 +25,19 @@ interface EditorTheme {
     strikethrough: string;
     underlineStrikethrough: string;
   };
+  list: {
+    ul: string;
+    ol: string;
+    checklist: string;
+    listitem: string;
+    listitemChecked: string;
+    listitemUnchecked: string;
+    nested: {
+      list: string;
+      listitem: string;
+    };
+  };
 }
-
 const theme: EditorTheme = {
   root: cn(
     "bg-background text-foreground relative outline-none p-0",
@@ -35,6 +50,18 @@ const theme: EditorTheme = {
     underline: "underline",
     strikethrough: "line-through",
     underlineStrikethrough: "underline line-through",
+  },
+  list: {
+    ul: "list-disc list-inside",
+    ol: "list-decimal list-inside",
+    checklist: "card-list-description__checklist",
+    listitem: "my-1",
+    listitemChecked: "card-list-description__checked",
+    listitemUnchecked: "card-list-description__unchecked",
+    nested: {
+      list: "ml-4",
+      listitem: "my-1",
+    },
   },
 };
 
@@ -104,6 +131,7 @@ export const CardDescriptionEditor = ({
     namespace: "CardDescriptionEditor",
     theme,
     onError,
+    nodes: [ListNode, ListItemNode] as any,
   };
 
   return (
@@ -140,6 +168,8 @@ export const CardDescriptionEditor = ({
             />
             <PlaceholderPlugin placeholder="Add a description..." />
             <HistoryPlugin />
+            <ListPlugin />
+            <CheckListPlugin />
             <CustomTransformLexicalToHTML setEditorState={setDescription} />
           </div>
         </div>

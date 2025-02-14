@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BookOpen,
   Bot,
@@ -8,18 +9,21 @@ import {
   Share2,
   Copy,
   Eye,
+  Lock,
+  Unlock,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Button } from "../../components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
+
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "../../components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "../../components/ui/sheet";
 import { ScrollArea } from "../../components/ui/scroll-area";
 import { CardDetails } from "./_tabComponents/CardDetails";
+import { useState } from "react";
 
 interface CardViewProps {
   cardId: string;
@@ -43,32 +47,45 @@ const CardView = ({
   isOpen,
   closeModal,
 }: CardViewProps) => {
-  return (
-    <Dialog open={isOpen} onOpenChange={closeModal}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader className="flex-row items-start justify-between space-y-0">
-          <div>
-            <DialogTitle className="flex items-center gap-2 text-lg">
-              <BookOpen className="w-5 h-5" />
-              <span className="truncate">{title}</span>
-            </DialogTitle>
-            <p className="mt-1 text-sm text-muted-foreground">
-              in list <span className="underline">{columnName}</span>
-            </p>
-          </div>
-        </DialogHeader>
+  const [isLocked, setIsLocked] = useState(false);
 
-        <ScrollArea className="h-[60vh] pr-4">
-          <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="activity">Activity</TabsTrigger>
-              <TabsTrigger value="ai">AI Summary</TabsTrigger>
-            </TabsList>
-            <TabsContent value="details">
-              <CardDetails cardId={cardId} />
-            </TabsContent>
-            <TabsContent value="activity">
+  return (
+    <Sheet open={isOpen} onOpenChange={() => !isLocked && closeModal()}>
+      <SheetContent side="right" className="sm:max-w-3xl p-0">
+        <SheetHeader className="p-6 border-b">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <SheetTitle className="flex items-center gap-2 text-lg">
+                <BookOpen className="w-5 h-5" />
+                <span className="truncate">{title}</span>
+              </SheetTitle>
+              <p className="mt-1 text-sm text-muted-foreground">
+                in list <span className="underline">{columnName}</span>
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsLocked(!isLocked)}
+              className="shrink-0"
+            >
+              {isLocked ? (
+                <Lock className="w-4 h-4" />
+              ) : (
+                <Unlock className="w-4 h-4" />
+              )}
+            </Button>
+          </div>
+        </SheetHeader>
+
+        <ScrollArea className="h-[calc(100vh-80px)] px-6 py-6 ">
+          <div className=" space-y-6">
+            {/* Details Section */}
+            <CardDetails cardId={cardId} />
+
+            {/* Activity Section */}
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">Activity</h2>
               <div className="space-y-4">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <div key={i} className="flex items-start space-x-4">
@@ -93,12 +110,15 @@ const CardView = ({
                   </div>
                 ))}
               </div>
-            </TabsContent>
-            <TabsContent value="ai">
+            </div>
+
+            {/* AI Summary Section */}
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">AI Summary</h2>
               <div className="p-4 border rounded-lg">
                 <div className="flex items-center gap-2 mb-4">
                   <Bot className="w-5 h-5 text-primary" />
-                  <h3 className="text-sm font-semibold">AI Summary</h3>
+                  <h3 className="text-sm font-semibold">AI Analysis</h3>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   This task involves implementing a new feature for the user
@@ -108,40 +128,41 @@ const CardView = ({
                   request
                 </p>
               </div>
-            </TabsContent>
-          </Tabs>
-
-          <div className="mt-6 space-y-4">
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold">Add to card</h3>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { icon: User, label: "Members" },
-                  { icon: Tag, label: "Labels" },
-                  { icon: CheckSquare, label: "Checklist" },
-                  { icon: Clock, label: "Dates" },
-                ].map((action) => (
-                  <ActionButton key={action.label} {...action} />
-                ))}
-              </div>
             </div>
 
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold">Actions</h3>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { icon: Share2, label: "Share" },
-                  { icon: Copy, label: "Copy" },
-                  { icon: Eye, label: "Watch" },
-                ].map((action) => (
-                  <ActionButton key={action.label} {...action} />
-                ))}
+            {/* Actions Section */}
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold">Add to card</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { icon: User, label: "Members" },
+                    { icon: Tag, label: "Labels" },
+                    { icon: CheckSquare, label: "Checklist" },
+                    { icon: Clock, label: "Dates" },
+                  ].map((action) => (
+                    <ActionButton key={action.label} {...action} />
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold">Actions</h3>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { icon: Share2, label: "Share" },
+                    { icon: Copy, label: "Copy" },
+                    { icon: Eye, label: "Watch" },
+                  ].map((action) => (
+                    <ActionButton key={action.label} {...action} />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </ScrollArea>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 };
 

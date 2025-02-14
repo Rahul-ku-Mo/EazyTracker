@@ -20,12 +20,16 @@ import { ColumnContext } from "../../Context/ColumnProvider";
 import { CardContext } from "../../Context/CardProvider";
 import { TCardContext } from "../../types/cardTypes";
 import { DueDateDialog } from "./_dialog/DueDateDialog";
-import { Avatar, AvatarImage, AvatarFallback } from "../../components/ui/avatar";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "../../components/ui/avatar";
 
 type TUser = {
   username: string;
   imageUrl?: string;
-}
+};
 interface CardProps {
   columnName: string;
   index: number;
@@ -38,7 +42,7 @@ const CardTitle = ({ title }: { title: string }) => (
 
 const CardDescription = ({ description }: { description: string }) => {
   if (!description) {
-    return <div className="flex-1 h-8" />;
+    return <div className="flex-1 h-8 px-2" />;
   }
 
   return (
@@ -46,9 +50,10 @@ const CardDescription = ({ description }: { description: string }) => {
       dangerouslySetInnerHTML={{ __html: description }}
       className={cn(
         "text-xs text-muted-foreground/80 w-full",
-        "break-all overflow-y-auto",
+        "break-all overflow-y-hidden",
         "prose prose-sm dark:prose-invert",
-        "grow basis-full"
+        "grow basis-full",
+        "px-2"
       )}
     />
   );
@@ -95,7 +100,7 @@ const CardFooter = ({
   assignee?: TUser;
 }) => {
   return (
-    <div className="flex items-center justify-between gap-3 mt-1 text-muted-foreground">
+    <div className=" flex items-center justify-between gap-3 p-2 border-t border-zinc-800 bg-zinc-900/50 text-muted-foreground">
       <div className="flex items-center gap-1 text-xs">
         <Clock className="w-3 h-3" />
         <span className="font-thin text-zinc-200/80">
@@ -124,12 +129,10 @@ const CardFooter = ({
         <Avatar className="h-4 w-4">
           <AvatarImage src={assignee?.imageUrl} />
           <AvatarFallback className="text-[8px]">
-            {assignee.username.slice(0,2).toUpperCase()}
+            {assignee.username.slice(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
       )}
-
-      
     </div>
   );
 };
@@ -163,10 +166,9 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
       shortcut: "⌘O",
     },
     {
-      icon: <UserCircle2Icon className="w-3 h-3 mr-2" />,
-      label: "Assignee",
-      onClick: () => {},
-      shortcut: "⌘A",
+      icon: <Flag className="w-3 h-3 mr-2" />,
+      label: "Set priority",
+      shortcut: "⌘P",
     },
     {
       icon: <Calendar className="w-3 h-3 mr-2" />,
@@ -175,10 +177,12 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
       shortcut: "⌘D",
     },
     {
-      icon: <Flag className="w-3 h-3 mr-2" />,
-      label: "Set priority",
-      shortcut: "⌘P",
+      icon: <UserCircle2Icon className="w-3 h-3 mr-2" />,
+      label: "Assignee",
+      onClick: () => {},
+      shortcut: "⌘A",
     },
+
     {
       icon: <Tag className="w-3 h-3 mr-2" />,
       label: "Add label",
@@ -216,7 +220,7 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
           className={cn(
             "bg-white dark:bg-zinc-800",
             "text-foreground",
-            "rounded-md p-2 mt-2",
+            "rounded-lg pt-2 mt-2 relative",
             "transition-all duration-200",
             "flex flex-col justify-between",
             "text-xs ",
@@ -224,7 +228,7 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
             index === totalCards - 1 && "mb-10"
           )}
         >
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 px-2">
             {priority && (
               <div className="flex items-center gap-1 text-[10px]">
                 <Badge

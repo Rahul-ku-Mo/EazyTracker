@@ -127,7 +127,7 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
                 />
               </ColumnProvider>
             ))}
-            <div className="rounded-md">
+            <div className="rounded-md p-1">
               {showListInput ? (
                 <NewColumnForm
                   columnName={columnName}
