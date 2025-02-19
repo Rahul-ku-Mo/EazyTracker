@@ -31,6 +31,7 @@ import {
   ListOrdered,
   HelpCircle,
   CheckSquare,
+  Loader2,
 } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import {
@@ -69,13 +70,15 @@ const ToolbarButton = ({
   </Button>
 );
 
-export const CardToolbarPlugin = () => {
+export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
   const [editor] = useLexicalComposerContext();
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const [showAIPopover, setShowAIPopover] = useState(false);
   const [showHelpPopover, setShowHelpPopover] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  const [isSaving, setIsSaving] = useState(false);
 
   const [formats, setFormats] = useState({
     bold: false,
@@ -178,46 +181,48 @@ export const CardToolbarPlugin = () => {
     }
   };
 
+  
+
   return (
-    <div className="flex items-center gap-1 p-1 border rounded-md bg-background">
+    <div className="flex items-center gap-1 p-1 mb-2 rounded-md bg-background">
       <ToolbarButton
         onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}
         disabled={!canUndo}
       >
-        <Undo className="h-4 w-4" />
+        <Undo className="w-4 h-4" />
       </ToolbarButton>
 
       <ToolbarButton
         onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)}
         disabled={!canRedo}
       >
-        <Redo className="h-4 w-4" />
+        <Redo className="w-4 h-4" />
       </ToolbarButton>
 
-      <div className="w-px h-6 bg-border mx-1" />
+      <div className="w-px h-6 mx-1 bg-border" />
 
       <ToolbarButton
         onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold")}
         isActive={formats.bold}
       >
-        <Bold className="h-4 w-4" />
+        <Bold className="w-4 h-4" />
       </ToolbarButton>
 
       <ToolbarButton
         onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic")}
         isActive={formats.italic}
       >
-        <Italic className="h-4 w-4" />
+        <Italic className="w-4 h-4" />
       </ToolbarButton>
 
       <ToolbarButton
         onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "underline")}
         isActive={formats.underline}
       >
-        <Underline className="h-4 w-4" />
+        <Underline className="w-4 h-4" />
       </ToolbarButton>
 
-      <div className="w-px h-6 bg-border mx-1" />
+      <div className="w-px h-6 mx-1 bg-border" />
 
       <ToolbarButton
         onClick={() => {
@@ -231,7 +236,7 @@ export const CardToolbarPlugin = () => {
         }}
         isActive={lists.bulletList}
       >
-        <List className="h-4 w-4" />
+        <List className="w-4 h-4" />
       </ToolbarButton>
 
       <ToolbarButton
@@ -249,7 +254,7 @@ export const CardToolbarPlugin = () => {
         }}
         isActive={lists.orderedList}
       >
-        <ListOrdered className="h-4 w-4" />
+        <ListOrdered className="w-4 h-4" />
       </ToolbarButton>
 
       <ToolbarButton
@@ -264,34 +269,34 @@ export const CardToolbarPlugin = () => {
         }}
         isActive={lists.checkList}
       >
-        <CheckSquare className="h-4 w-4" />
+        <CheckSquare className="w-4 h-4" />
       </ToolbarButton>
 
-      <div className="w-px h-6 bg-border mx-1" />
+      <div className="w-px h-6 mx-1 bg-border" />
 
       <Popover open={showAIPopover} onOpenChange={setShowAIPopover}>
         <PopoverTrigger asChild>
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0"
+            className="w-8 h-8 p-0"
             disabled={isGenerating}
           >
-            <Stars className="h-4 w-4" />
+            <Stars className="w-4 h-4" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-64">
           <div className="space-y-2">
-            <h4 className="font-medium text-sm">AI Assistance</h4>
+            <h4 className="text-sm font-medium">AI Assistance</h4>
             <div className="space-y-1">
               <Button
                 variant="secondary"
                 size="sm"
-                className="w-full justify-start"
+                className="justify-start w-full"
                 onClick={generateAIContent}
                 disabled={isGenerating}
               >
-                <Sparkles className="h-4 w-4 mr-2" />
+                <Sparkles className="w-4 h-4 mr-2" />
                 {isGenerating ? "Generating..." : "Improve writing"}
               </Button>
             </div>
@@ -301,14 +306,14 @@ export const CardToolbarPlugin = () => {
 
       <Popover open={showHelpPopover} onOpenChange={setShowHelpPopover}>
         <PopoverTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-            <HelpCircle className="h-4 w-4" />
+          <Button variant="ghost" size="sm" className="w-8 h-8 p-0">
+            <HelpCircle className="w-4 h-4" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-80">
           <div className="space-y-2">
-            <h4 className="font-medium text-sm">Keyboard Shortcuts</h4>
-            <div className="text-sm space-y-1">
+            <h4 className="text-sm font-medium">Keyboard Shortcuts</h4>
+            <div className="space-y-1 text-sm">
               <p>Bold: Ctrl/⌘ + B</p>
               <p>Italic: Ctrl/⌘ + I</p>
               <p>Underline: Ctrl/⌘ + U</p>
@@ -321,6 +326,25 @@ export const CardToolbarPlugin = () => {
           </div>
         </PopoverContent>
       </Popover>
+
+      <Button
+        variant="default"
+        size="sm"
+        className={cn(
+          "ml-auto mr-0.5 h-7 flex gap-0.5",
+          !isSaving && "bg-green-500 hover:bg-green-600"
+        )}
+        onClick={() => { 
+          setIsSaving(true);
+          save();
+          setTimeout(() => {
+            setIsSaving(false);
+          }, 1000);
+        }}
+      >
+        {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+        {isSaving ? "Saving..." : "Save"}
+      </Button>
     </div>
   );
 };

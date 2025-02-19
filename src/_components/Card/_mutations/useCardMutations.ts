@@ -7,19 +7,19 @@ import { useToast } from "../../../hooks/use-toast";
 import { useContext } from "react";
 import { ColumnContext } from "../../../Context/ColumnProvider";
 
-type TIssueCardData = {
+type TIssueUpdateCard = {
   title?: string;
   cardDescription?: string;
   attachments?: string[];
   dueDate?: Date;
   comments?: string[];
   cardId: string;
-  columnId: string;
+  columnId?: string;
   priority?: string;
   createdAt?: Date;
   assigneeId?: string;
   updatedAt?: Date;
-  labels?: string[];
+  label?: string;
   order?: number;
 };
 
@@ -49,19 +49,20 @@ export const useCardMutation = () => {
   });
 
   const updateCardMutation = useMutation({
-    mutationFn: async (data: TIssueCardData) => {
+    mutationFn: async (data: TIssueUpdateCard) => {
       const {
         title,
         cardDescription,
         attachments,
         dueDate,
         cardId,
-        columnId,
         priority,
         assigneeId,
-        labels,
+        label,
         order,
       } = data;
+
+      data.columnId = columnId;
 
       const updatedData = {
         ...(title !== undefined && { title }),
@@ -71,7 +72,7 @@ export const useCardMutation = () => {
         ...(columnId !== undefined && { columnId }),
         ...(priority !== undefined && { priority }),
         ...(assigneeId !== undefined && { assigneeId: assigneeId }),
-        ...(labels !== undefined && { labels }),
+        ...(label !== undefined && { label }),
         ...(order !== undefined && { order }),
       };
 
@@ -91,7 +92,7 @@ export const useCardMutation = () => {
         description: "Please try again later",
         variant: "destructive",
       }),
-    onSettled: async (_, error, variables: TIssueCardData) => {
+    onSettled: async (_, error, variables: TIssueUpdateCard) => {
       await queryClient.invalidateQueries({
         queryKey: ["cards", "columns", variables.columnId],
       });

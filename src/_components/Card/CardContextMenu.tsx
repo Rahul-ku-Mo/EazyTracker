@@ -1,4 +1,3 @@
-import { useContext } from "react";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -12,7 +11,6 @@ import {
 } from "../../components/ui/context-menu";
 import { cn } from "../../lib/utils";
 import { Flag, Tag, CheckSquare, Plus, User } from "lucide-react";
-import { ColumnContext } from "../../Context/ColumnProvider";
 import { useCardMutation } from "./_mutations/useCardMutations";
 import { useMembers } from "../../hooks/useMembers";
 import { useParams } from "react-router-dom";
@@ -33,8 +31,7 @@ interface CardContextMenuProps {
 }
 
 const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
-  const columnId = useContext(ColumnContext);
-
+ 
   const { id } = useParams();
 
   // TODO: get members from the database who are in the same board
@@ -44,7 +41,6 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
 
   const updatePriorityForATicket = (priority: string) => {
     updateCardMutation.mutate({
-      columnId,
       priority,
       cardId,
     });
@@ -52,11 +48,18 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
 
   const updateAssigneeForATicket = (userId: string) => {
     updateCardMutation.mutate({
-      columnId,
       cardId,
       assigneeId: userId,
     });
   };
+
+  const updateLabelForATicket = (label: string) => {
+    updateCardMutation.mutate({
+      cardId,
+      label,
+    });
+  };
+
 
   return (
     <ContextMenu>
@@ -154,20 +157,20 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
               </ContextMenuSub>
             ) : item.label === "Add label" ? (
               <ContextMenuSub>
-                <ContextMenuSubTrigger className="gap-2 text-xs">
+                <ContextMenuSubTrigger className="gap-2 text-xs" >
                   <Tag className="w-3 h-3 mr-2" />
                   Add label
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-48">
-                  <ContextMenuItem className="gap-2 text-xs">
+                  <ContextMenuItem className="gap-2 text-xs" onClick={() => updateLabelForATicket("Feature")}>
                     <Tag className="w-3 h-3 text-emerald-500" />
                     Feature
                   </ContextMenuItem>
-                  <ContextMenuItem className="gap-2 text-xs">
+                  <ContextMenuItem className="gap-2 text-xs" onClick={() => updateLabelForATicket("Bug")}>
                     <Tag className="w-3 h-3 text-blue-500" />
                     Bug
                   </ContextMenuItem>
-                  <ContextMenuItem className="gap-2 text-xs">
+                  <ContextMenuItem className="gap-2 text-xs" onClick={() => updateLabelForATicket("Enhancement")}>
                     <Tag className="w-3 h-3 text-purple-500" />
                     Enhancement
                   </ContextMenuItem>

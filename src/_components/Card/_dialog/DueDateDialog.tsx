@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { addDays } from "date-fns";
 
 import { Button } from "../../../components/ui/button";
@@ -17,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../components/ui/select";
-import { ColumnContext } from "../../../Context/ColumnProvider";
 import { useCardMutation } from "../_mutations/useCardMutations";
 
 export const DueDateDialog = ({
@@ -31,22 +30,20 @@ export const DueDateDialog = ({
 }) => {
   const [tempDate, setTempDate] = useState<Date | undefined>();
 
-  const columnId = useContext(ColumnContext);
-
   const handleDateSelect = (selectedDate: Date | undefined) => {
     setTempDate(selectedDate);
   };
 
-  const {updateCardMutation} = useCardMutation();
-
+  const { updateCardMutation } = useCardMutation();
 
   const handleSave = () => {
     if (tempDate) {
       setTempDate(tempDate);
 
       updateCardMutation.mutate({
-        columnId, dueDate: tempDate, cardId
-      })
+        dueDate: tempDate,
+        cardId,
+      });
     }
     closeDialog();
   };

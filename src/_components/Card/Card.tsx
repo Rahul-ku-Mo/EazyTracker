@@ -8,12 +8,12 @@ import {
   ExternalLink,
   Paperclip,
   MessageSquare,
-  Clock,
+  CalendarClockIcon,
   UserCircle2Icon,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Badge } from "../../components/ui/badge";
-import CardView from "./CardView";
+import CardView from "./_cardViewerPanel/CardView";
 import CardContextMenu from "./CardContextMenu";
 import { useCardMutation } from "./_mutations/useCardMutations";
 import { ColumnContext } from "../../Context/ColumnProvider";
@@ -37,10 +37,12 @@ interface CardProps {
 }
 
 const CardTitle = ({ title }: { title: string }) => (
-  <h3 className="text-sm font-medium line-clamp-1 text-foreground">{title}</h3>
+  <h3 className="pb-2 text-base font-bold truncate line-clamp-1 text-foreground ">
+    {title}
+  </h3>
 );
 
-const CardDescription = ({ description }: { description: string }) => {
+const CardDescription = ({ description }: { description?: string }) => {
   if (!description) {
     return <div className="flex-1 h-8 px-2" />;
   }
@@ -49,11 +51,13 @@ const CardDescription = ({ description }: { description: string }) => {
     <div
       dangerouslySetInnerHTML={{ __html: description }}
       className={cn(
-        "text-xs text-muted-foreground/80 w-full",
-        "break-all overflow-y-hidden",
-        "prose prose-sm dark:prose-invert",
+        "dark:text-muted-foreground w-full h-[112px]",
+        "break-all ",
+        "truncate",
         "grow basis-full",
-        "px-2"
+        "px-2 pb-2",
+        "card-editor-view",
+        "editor-readable-font"
       )}
     />
   );
@@ -63,28 +67,30 @@ const getPriorityStyles = (priority?: string) => {
   switch (priority?.toLowerCase()) {
     case "urgent":
       return {
-        text: "text-red-500 dark:text-red-100",
-        border: "border-red-500/30 dark:border-red-800",
-        bg: "bg-red-500/[0.05] dark:bg-red-800",
+        text: "text-red-500 dark:text-red-500",
+        border: "border-red-500 dark:border-red-500", 
+        bg: "bg-red-500 dark:bg-red-500"
       };
     case "high":
       return {
-        text: "text-amber-500 dark:text-amber-100",
-        border: "border-amber-500/30 dark:border-amber-800",
-        bg: "bg-amber-500/[0.05] dark:bg-amber-800",
+        text: "text-amber-500 dark:text-amber-500",
+        border: "border-amber-500 dark:border-amber-500",
+        bg: "bg-amber-500 dark:bg-amber-500"
       };
     case "medium":
       return {
-        text: "text-blue-500 dark:text-blue-100",
-        border: "border-blue-500/30 dark:border-blue-800",
-        bg: "bg-blue-500/[0.05] dark:bg-blue-800",
+        text: "text-blue-500 dark:text-blue-500",
+        border: "border-blue-500 dark:border-blue-500",
+        bg: "bg-blue-500 dark:bg-blue-500"
       };
     case "low":
       return {
-        text: "text-green-500 dark:text-green-100",
-        border: "border-green-500/30 dark:border-green-800",
-        bg: "bg-green-500/[0.05] dark:bg-green-800",
+        text: "text-green-500 dark:text-green-500",
+        border: "border-green-500 dark:border-green-500",
+        bg: "bg-green-500 dark:bg-green-500"
       };
+    default:
+      return undefined;
   }
 };
 
@@ -93,49 +99,84 @@ const CardFooter = ({
   attachmentsCount = 0,
   commentsCount = 0,
   assignee,
+  priority,
+  labels,
 }: {
   dueDate?: Date;
   attachmentsCount?: number;
   commentsCount?: number;
   assignee?: TUser;
+  priority?: string;
+  labels?: string[];
 }) => {
+  const priorityStyles = getPriorityStyles(priority);
+
   return (
-    <div className=" flex items-center justify-between gap-3 p-2 border-t border-zinc-800 bg-zinc-900/50 text-muted-foreground">
-      <div className="flex items-center gap-1 text-xs">
-        <Clock className="w-3 h-3" />
-        <span className="font-thin text-zinc-200/80">
+    <div className="flex items-center justify-between h-10 gap-3 p-2 border-t rounded-b-lg border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
+      <div className="flex items-center gap-0.5 text-[10px]">
+        <CalendarClockIcon
+          className="w-3 h-3 text-zinc-700 dark:text-zinc-300 "
+          strokeWidth={3}
+        />
+        <div className="font-bold relative top-0.5 text-zinc-700 dark:text-zinc-300">
           {dueDate
             ? new Date(dueDate).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
+                year: "numeric",
               })
             : "--"}
-        </span>
+        </div>
       </div>
+      <div className="flex items-center gap-2">
+        {priority && (
+          <Badge
+            variant="outline"
+            className={cn(
+              "text-[10px] px-1.5 py-0  flex items-center gap-1 font-semibold border rounded-full capitalize",
+              priorityStyles?.text,
 
-      {attachmentsCount > 0 && (
-        <div className="flex items-center gap-1 text-[10px]">
-          <Paperclip className="w-3 h-3" />
-          <span>{attachmentsCount}</span>
-        </div>
-      )}
-      {commentsCount > 0 && (
-        <div className="flex items-center gap-1 text-[10px]">
-          <MessageSquare className="w-3 h-3" />
-          <span>{commentsCount}</span>
-        </div>
-      )}
-      {assignee && (
-        <Avatar className="h-4 w-4">
-          <AvatarImage src={assignee?.imageUrl} />
-          <AvatarFallback className="text-[8px]">
-            {assignee.username.slice(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-      )}
+              "border-zinc-200",
+              priorityStyles?.border
+            )}
+          >
+            <div
+              className={cn("w-2 h-2 rounded-full ", priorityStyles?.bg)}
+            ></div>
+            {priority}
+          </Badge>
+        )}
+        {attachmentsCount > 0 && (
+          <div className="flex items-center gap-1 text-[10px] text-zinc-700 dark:text-zinc-300">
+            <Paperclip className="w-3 h-3" />
+            <span>{attachmentsCount}</span>
+          </div>
+        )}
+        {labels && labels.length > 0 && (
+          <div className="flex items-center gap-1 text-[10px] text-zinc-700 dark:text-zinc-300">
+            <Tag className="w-3 h-3" />
+            <span>{labels.length}</span>
+          </div>
+        )}
+        {commentsCount > 0 && (
+          <div className="flex items-center gap-1 text-[10px] text-zinc-700 dark:text-zinc-300">
+            <MessageSquare className="w-3 h-3" />
+            <span>{commentsCount}</span>
+          </div>
+        )}
+        {assignee && (
+          <Avatar className="w-4 h-4">
+            <AvatarImage src={assignee?.imageUrl} />
+            <AvatarFallback className="text-[8px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+              {assignee.username.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        )}
+      </div>
     </div>
   );
 };
+
 const Card = ({ columnName, index, totalCards }: CardProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -143,10 +184,8 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
 
   const cardDetails = useContext(CardContext);
 
-  const { title, description, dueDate, priority, id } =
+  const { title, description, dueDate, priority, id, labels } =
     cardDetails as TCardContext;
-
-  const priorityStyles = getPriorityStyles(priority);
 
   const columnId = useContext(ColumnContext);
 
@@ -219,44 +258,30 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
           onDoubleClick={openModal}
           className={cn(
             "bg-white dark:bg-zinc-800",
-            "text-foreground",
+            "text-zinc-900 dark:text-zinc-100",
+            "border border-zinc-200 dark:border-zinc-700",
             "rounded-lg pt-2 mt-2 relative",
             "transition-all duration-200",
             "flex flex-col justify-between",
-            "text-xs ",
+            "text-xs",
             "min-h-[100px] max-h-[200px]",
+            "shadow-md dark:shadow-zinc-900/50",
             index === totalCards - 1 && "mb-10"
           )}
         >
-          <div className="flex flex-col gap-2 px-2">
-            {priority && (
-              <div className="flex items-center gap-1 text-[10px]">
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "text-[10px] px-2 py-0 font-semibold border-2 rounded-sm capitalize",
-                    priorityStyles?.text,
-                    priorityStyles?.border,
-                    priorityStyles?.bg
-                  )}
-                >
-                  {priority}
-                </Badge>
-              </div>
-            )}
+          <div className="px-2">
             <CardTitle title={title} />
           </div>
-          {description && <CardDescription description={description} />}
 
-          <CardFooter dueDate={dueDate} />
+          <CardDescription description={description} />
+
+          <CardFooter dueDate={dueDate} priority={priority} labels={labels} />
         </div>
       </CardContextMenu>
 
       <CardView
-        closeModal={closeModal}
         isOpen={isOpen}
-        title={title}
-        cardId={id}
+        closeModal={closeModal}
         columnName={columnName}
       />
 

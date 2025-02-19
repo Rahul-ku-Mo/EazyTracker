@@ -18,6 +18,8 @@ import { CardToolbarPlugin } from "./CardToolbarPlugin";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
 import { ListNode, ListItemNode } from "@lexical/list";
+import "../../../styles/editor.styles.css";
+import { cn } from "../../../lib/utils";
 interface EditorTheme {
   root: string;
   paragraph: string;
@@ -44,31 +46,28 @@ interface EditorTheme {
 }
 
 const theme: EditorTheme = {
-  root: "bg-background text-foreground p-2 relative text-zinc-200 tracking-wide outline-none",
-  paragraph: "leading-normal",
+  root: "editor-root",
+  paragraph: "editor-paragraph",
   text: {
-    bold: "font-bold",
-    italic: "italic ",
-    underline: "underline",
-    strikethrough: "line-through",
-    underlineStrikethrough: "underline line-through",
+    bold: "editor-text-bold",
+    italic: "editor-text-italic",
+    underline: "editor-text-underline",
+    strikethrough: "editor-text-strikethrough",
+    underlineStrikethrough: "editor-text-underline-strikethrough",
   },
   list: {
-    ul: "list-disc list-inside",
-    ol: "list-decimal list-inside",
-    checklist: "list-none relative",
-    listitem: "my-1",
-    listitemChecked:
-      "line-through text-muted-foreground relative px-6 mx-2 list-none outline-none before:content-[''] before:w-4 before:h-4 before:left-0 before:cursor-pointer before:block before:bg-cover before:absolute before:border-2 before:border-[#3d87f5] before:shadow-sm before:bg-[#3d87f5] after:content-[''] after:cursor-pointer after:border-color-[#fff] after:border-solid after:absolute after:block after:top-[6px] after:w-[3px] after:left-[7px] after:right-[7px] after:h-[6px] after:rotate-45 after:border-r-2 after:border-b-2 flex items-center",
-    listitemUnchecked:
-      "text-foreground relative px-6 mx-2 list-none outline-none before:content-[''] before:w-4 before:h-4 before:left-0 before:cursor-pointer before:block before:bg-cover before:absolute before:border-2 before:border-zinc-200 before:shadow-sm flex items-center",
+    ul: "editor-list-ul",
+    ol: "editor-list-ol",
+    checklist: "editor-list-checklist",
+    listitem: "editor-list-item",
+    listitemChecked: "editor-list-item-checked",
+    listitemUnchecked: "editor-list-item-unchecked",
     nested: {
-      list: "ml-4",
-      listitem: "my-1",
+      list: "editor-nested-list",
+      listitem: "editor-nested-list-item",
     },
   },
-  placeholder:
-    "text-muted-foreground absolute top-[12px] left-[12px] pointer-events-none",
+  placeholder: "editor-placeholder",
 };
 
 function onError(error: Error): void {
@@ -153,14 +152,19 @@ export const CardDetailsEditor = ({
   };
 
   return (
-    <div className="relative rounded-md">
+    <div className="relative h-full">
       <LexicalComposer initialConfig={initialConfig}>
         <div className="editor-container">
-          <CardToolbarPlugin />
-          <div className="editor-inner">
+          <CardToolbarPlugin  save={handleSave}/>
+          <div className="h-full editor-inner">
             <RichTextPlugin
               contentEditable={
-                <ContentEditable className="min-h-[150px] w-full rounded-md px-3 py-2 text-xs text-white focus:outline-none border border-zinc-800 shadow-sm" />
+                <ContentEditable className={cn(
+                  "w-full px-3 py-2 overflow-y-auto text-base",
+                  "dark:text-zinc-100 focus:outline-none",
+                  "min-h-[300px]",
+                  "max-h-[calc(100vh-300px)]"
+                )} />
               }
               ErrorBoundary={LexicalErrorBoundary}
             />
@@ -170,12 +174,7 @@ export const CardDetailsEditor = ({
             <CustomTransformLexicalToHTML setEditorState={setEditorState} />
           </div>
         </div>
-        <button
-          onClick={handleSave}
-          className="px-2 py-1 mt-2 text-xs text-white transition-all rounded-md bg-emerald-500 hover:bg-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:ring-offset-1"
-        >
-          Save
-        </button>
+        
         <ListPlugin />
         <CheckListPlugin />
       </LexicalComposer>

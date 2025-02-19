@@ -3,7 +3,7 @@ type TCardData = {
   title: string;
   description?: string;
   columnId?: string;
-  labels?: TLabel[];
+  labels?: string[];
   attachments?: string[];
   dueDate?: Date;
   order?: number;
@@ -18,11 +18,6 @@ type TCreateCardProps = {
 };  
 
 
-type TLabel = {
-  id: string;
-  name: string;
-  color: string;
-};
 
 type TCardContext = {
   id: string;
@@ -31,7 +26,7 @@ type TCardContext = {
   dueDate?: Date;
   priority?: string;
   order?: number;
-  labels?: TLabel[];
+  labels?: string[];
 };
 
 export type { TCardData, TCreateCardProps, TCardContext, TLabel };

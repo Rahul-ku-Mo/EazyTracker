@@ -12,7 +12,7 @@ import { Input } from "../../components/ui/input";
 import NewCardActions from "./_formComponents/NewCardActions";
 import { useCardMutation } from "./_mutations/useCardMutations";
 
-import { CardDescriptionEditor } from "./CardDescriptionEditor";
+import { NewCardDescriptionEditor } from "./NewCardDescriptionEditor";
 
 interface NewCardFormProps {
   columnName: string;
@@ -67,9 +67,9 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
             ref={titleRef}
             name="title"
             placeholder="Issue title"
-            className="px-0 text-base border-0 placeholder:text-muted-foreground/60 md:text-base focus-visible:ring-0"
+            className="px-0 text-base border-0 shadow-none placeholder:text-muted-foreground/60 md:text-base focus-visible:ring-0"
           />
-          <CardDescriptionEditor
+          <NewCardDescriptionEditor
             description={description}
             setDescription={setDescription}
           />

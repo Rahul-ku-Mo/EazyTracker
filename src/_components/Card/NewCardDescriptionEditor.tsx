@@ -41,7 +41,6 @@ interface EditorTheme {
 const theme: EditorTheme = {
   root: cn(
     "bg-background text-foreground relative outline-none p-0",
-    "editor-root"
   ),
   paragraph: "leading-normal",
   text: {
@@ -124,7 +123,7 @@ interface CardDescriptionEditorProps {
   setDescription: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export const CardDescriptionEditor = ({
+export const NewCardDescriptionEditor = ({
   setDescription,
 }: CardDescriptionEditorProps): JSX.Element => {
   const initialConfig = {
