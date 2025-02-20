@@ -1,4 +1,3 @@
-
 type TCardData = {
   title: string;
   description?: string;
@@ -15,9 +14,7 @@ type TCreateCardProps = {
   accessToken: string;
   cardData: TCardData;
   columnId: string;
-};  
-
-
+};
 
 type TCardContext = {
   id: string;
@@ -28,5 +25,4 @@ type TCardContext = {
   order?: number;
   labels?: string[];
 };
-
-export type { TCardData, TCreateCardProps, TCardContext, TLabel };
+export type { TCardData, TCreateCardProps, TCardContext };

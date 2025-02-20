@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
-import { Plus, X } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
@@ -11,8 +11,8 @@ import { Button } from "../../components/ui/button";
 
 import ColumnView from "./ColumnView";
 import { createColumn } from "../../apis/ColumnApis";
-import { KanbanContext } from "../../Context/KanbanProvider";
-import { ColumnProvider } from "../../Context/ColumnProvider";
+import { KanbanContext } from "../../context/KanbanProvider";
+import { ColumnProvider } from "../../context/ColumnProvider";
 
 interface Column {
   id: string;
@@ -118,16 +118,13 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
     <>
       <Container fwdClassName="bg-transparent" title={title}>
         <div className="relative w-full h-full">
-          <ol className="absolute inset-0 flex items-start h-full gap-3 ">
+          <ol className="absolute inset-0 flex items-start h-full gap-2 ">
             {sortedColumns?.map((column: Column) => (
               <ColumnProvider columnId={column.id} key={column.id}>
-                <ColumnView
-                  title={column.title}
-                  cards={column.cards}
-                />
+                <ColumnView title={column.title} cards={column.cards} />
               </ColumnProvider>
             ))}
-            <div className="rounded-md p-1">
+            <div className="p-1 rounded-md">
               {showListInput ? (
                 <NewColumnForm
                   columnName={columnName}

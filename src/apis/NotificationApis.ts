@@ -1,9 +1,9 @@
 import axios from "axios";
 
 export const createInviteNotification = async (
-  accessToken,
-  message,
-  receiverId
+  accessToken: string,
+  message: string,
+  receiverId: string
 ) => {
   try {
     const response = await axios.post(
@@ -24,7 +24,7 @@ export const createInviteNotification = async (
   }
 };
 
-export const fetchNotifications = async (accessToken) => {
+export const fetchNotifications = async (accessToken: string) => {
   try {
     const response = await axios.get(
       `${import.meta.env.VITE_API_URL}/notifications`,

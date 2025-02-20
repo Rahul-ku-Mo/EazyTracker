@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { AuthContext } from "../Context/AuthContext";
+import { AuthContext } from "../context/AuthContext";
 import Cookies from "js-cookie";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -66,7 +66,7 @@ const useAuthProvider = () => {
         queryClient.setQueryData(["user"], response.data.data);
         navigate("/boards");
       }
-    } catch (err ) {
+    } catch (err) {
       toast.error(
         err.response?.data?.message || "An error occurred during login"
       );

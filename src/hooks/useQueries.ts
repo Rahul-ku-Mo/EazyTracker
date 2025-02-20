@@ -4,11 +4,7 @@ import { fetchColumn, fetchColumns } from "../apis/ColumnApis";
 import { fetchBoards, fetchBoard } from "../apis/BoardApis";
 import { fetchUserProfile, fetchUsers } from "../apis/userApis";
 import { fetchLabels } from "../apis/LabelApis";
-import {
-  fetchOrganization,
-  fetchOrganizationsAsLead,
-  fetchOrganizationsAsMember,
-} from "../apis/OrganizationApis";
+
 import { fetchNotifications } from "../apis/NotificationApis";
 
 const useCard = (accessToken: string, cardId: string) => {
@@ -73,26 +69,7 @@ const useLabels = (accessToken: string, cardId: string) => {
   });
 };
 
-const useOrganization = (accessToken: string, organizationId: string) => {
-  return useQuery({
-    queryKey: ["organizations", organizationId],
-    queryFn: async () => await fetchOrganization(accessToken, organizationId),
-  });
-};
 
-const useOrganizationLead = (accessToken: string, userId: string) => {
-  return useQuery({
-    queryKey: ["organizations", "leads", userId],
-    queryFn: async () => await fetchOrganizationsAsLead(accessToken),
-  });
-};
-
-const useOrganizationMember = (accessToken: string, userId: string) => {
-  return useQuery({
-    queryKey: ["organizations", "members", userId],
-    queryFn: async () => await fetchOrganizationsAsMember(accessToken),
-  });
-};
 
 const useNotifications = (accessToken: string) => {
   return useQuery({
@@ -111,8 +88,5 @@ export {
   useUser,
   useUsers,
   useLabels,
-  useOrganization,
-  useOrganizationLead,
-  useOrganizationMember,
   useNotifications,
 };

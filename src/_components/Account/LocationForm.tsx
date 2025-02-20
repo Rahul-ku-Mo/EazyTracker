@@ -1,11 +1,11 @@
 import isEqual from "lodash.isequal";
 import { useEffect, useState, useContext } from "react";
 import { toast } from "sonner";
-import { AuthContext } from "../../Context/AuthContext";
+import { AuthContext } from "../../context/AuthContext";
 import { useMutation } from "@tanstack/react-query";
 import { updateUserProfile } from "../../apis/userApis";
 import FormInput from "../shared/Input/FormInput";
-import { UserContext } from "../../Context/UserContext";
+import { UserContext } from "../../context/UserContext";
 
 const LocationForm = () => {
   const { accessToken } = useContext(AuthContext);

@@ -36,13 +36,6 @@ export const NotFoundPage = Loadable(
   lazy(() => import("../pages/NotFoundPage"))
 );
 
-export const OrganizationPage = Loadable(
-  lazy(() => import("../pages/OrganizationPage"))
-);
-
-export const OrganizationManagementPage = Loadable(
-  lazy(() => import("../pages/Organization[orgId]"))
-);
 
 export const ConversationPage = Loadable(
   lazy(() => import("../pages/ConversationPage"))

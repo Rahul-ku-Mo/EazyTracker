@@ -1,10 +1,10 @@
 import isEqual from "lodash.isequal";
 import { useEffect, useState, useContext } from "react";
 import { toast } from "sonner";
-import { AuthContext } from "../../Context/AuthContext";
+import { AuthContext } from "../../context/AuthContext";
 import { useMutation } from "@tanstack/react-query";
 import { updateUserProfile } from "../../apis/userApis";
-import { UserContext } from "../../Context/UserContext";
+import { UserContext } from "../../context/UserContext";
 import FormInput from "../shared/Input/FormInput";
 
 const RoleForm = () => {
@@ -49,9 +49,7 @@ const RoleForm = () => {
   return (
     <>
       <div>
-        <h1 className="text-2xl font-bold text-white ">
-          Professional Details
-        </h1>
+        <h1 className="text-2xl font-bold text-white ">Professional Details</h1>
         <p className="text-zinc-400 text-sm ">
           Update your professional information to help us tailor your
           experience.

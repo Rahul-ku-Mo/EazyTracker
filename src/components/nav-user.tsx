@@ -29,7 +29,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { useContext } from "react";
-import { AuthContext } from "../Context/AuthContext";
+import { AuthContext } from "../context/AuthContext";
 
 export function NavUser({
   user,
@@ -90,7 +90,9 @@ export function NavUser({
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-sm leading-tight text-left">
-                  <span className="font-semibold truncate">{user.username}</span>
+                  <span className="font-semibold truncate">
+                    {user.username}
+                  </span>
                   <span className="text-xs truncate">{user.email}</span>
                 </div>
               </div>

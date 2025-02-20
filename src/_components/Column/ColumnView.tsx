@@ -12,7 +12,7 @@ import NewCardForm from "../../_components/Card/NewCardForm";
 
 import ColumnActionTooltipWrapper from "./ColumnActionTooltipWrapper";
 import CardsInColumn from "../Card/CardsInColumn";
-import { ColumnContext } from "../../Context/ColumnProvider";
+import { ColumnContext } from "../../context/ColumnProvider";
 
 interface ColumnViewProps {
   title: string;
@@ -74,7 +74,9 @@ const ColumnView = ({ title, cards }: ColumnViewProps) => {
     <>
       <li className="self-start block h-full list-none shrink-0 whitespace-nowrap rounded-md p-1  w-[300px] overflow-hidden">
         <div className="flex items-center justify-between h-10 p-2 bg-white border rounded-md dark:bg-zinc-900">
-          <span className="text-sm font-semibold truncate text-zinc-900 dark:text-white">{title}</span>
+          <span className="text-sm font-semibold truncate text-zinc-900 dark:text-white">
+            {title}
+          </span>
           <div className="inline-flex items-center gap-2">
             <ColumnActionTooltipWrapper
               actionName="Add Card"

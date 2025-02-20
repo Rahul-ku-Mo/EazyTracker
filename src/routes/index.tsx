@@ -7,8 +7,6 @@ import {
   AccountPage,
   BoardPage,
   NotFoundPage,
-  OrganizationPage,
-  OrganizationManagementPage,
   ConversationPage,
   AccountForm,
   ProfileForm,
@@ -18,10 +16,10 @@ import {
   BoardSettingsPage,
 } from "./element";
 
-import { KanbanProvider } from "../Context/KanbanProvider";
-import { UserContextProvider } from "../Context/UserContext";
-import { NotificationContextProvider } from "../Context/NotificationContext";
-import { AuthContext, AuthContextProvider } from "../Context/AuthContext";
+import { KanbanProvider } from "../context/KanbanProvider";
+import { UserContextProvider } from "../context/UserContext";
+import { NotificationContextProvider } from "../context/NotificationContext";
+import { AuthContext, AuthContextProvider } from "../context/AuthContext";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -99,14 +97,6 @@ const authenticatedRoutes = [
     path: "/setting",
     element: <WithContexts Component={AccountPage} />,
     children: settingRoutes,
-  },
-  {
-    path: "/organization",
-    element: <WithContexts Component={OrganizationPage} />,
-  },
-  {
-    path: "/organization/:organizationId",
-    element: <WithContexts Component={OrganizationManagementPage} />,
   },
   {
     path: "/conversation/inbox",

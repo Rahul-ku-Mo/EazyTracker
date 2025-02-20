@@ -10,7 +10,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import useAuthProvider from "../hooks/useAuthProvider";
-import { AuthContext } from "../Context/AuthContext";
+import { AuthContext } from "../context/AuthContext";
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -84,7 +84,9 @@ const AuthPage = () => {
                       className={cn(errors.username && "border-destructive")}
                     />
                     {errors.username && (
-                      <p className="text-xs text-destructive">{errors.username}</p>
+                      <p className="text-xs text-destructive">
+                        {errors.username}
+                      </p>
                     )}
                   </div>
                 )}
@@ -138,7 +140,9 @@ const AuthPage = () => {
                     </Button>
                   </div>
                   {errors.password && (
-                    <p className="text-xs text-destructive">{errors.password}</p>
+                    <p className="text-xs text-destructive">
+                      {errors.password}
+                    </p>
                   )}
                 </div>
 
@@ -197,11 +201,17 @@ const AuthPage = () => {
 
           <div className="text-xs text-center text-balance text-muted-foreground">
             By continuing, you agree to our{" "}
-            <Link to="/terms" className="underline underline-offset-4 hover:text-primary">
+            <Link
+              to="/terms"
+              className="underline underline-offset-4 hover:text-primary"
+            >
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link to="/privacy" className="underline underline-offset-4 hover:text-primary">
+            <Link
+              to="/privacy"
+              className="underline underline-offset-4 hover:text-primary"
+            >
               Privacy Policy
             </Link>
             .

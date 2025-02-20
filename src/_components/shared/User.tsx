@@ -1,6 +1,6 @@
 import { useContext } from "react";
-import { AuthContext } from "../../Context/AuthContext";
-import { UserContext } from "../../Context/UserContext";
+import { AuthContext } from "../../context/AuthContext";
+import { UserContext } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import Cookies from "js-cookie";

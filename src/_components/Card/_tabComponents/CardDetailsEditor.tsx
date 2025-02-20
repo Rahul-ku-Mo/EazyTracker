@@ -13,7 +13,7 @@ import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
 import { useCardMutation } from "../_mutations/useCardMutations";
-import { ColumnContext } from "../../../Context/ColumnProvider";
+import { ColumnContext } from "../../../context/ColumnProvider";
 import { CardToolbarPlugin } from "./CardToolbarPlugin";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
@@ -155,16 +155,18 @@ export const CardDetailsEditor = ({
     <div className="relative h-full">
       <LexicalComposer initialConfig={initialConfig}>
         <div className="editor-container">
-          <CardToolbarPlugin  save={handleSave}/>
+          <CardToolbarPlugin save={handleSave} />
           <div className="h-full editor-inner">
             <RichTextPlugin
               contentEditable={
-                <ContentEditable className={cn(
-                  "w-full px-3 py-2 overflow-y-auto text-base",
-                  "dark:text-zinc-100 focus:outline-none",
-                  "min-h-[300px]",
-                  "max-h-[calc(100vh-300px)]"
-                )} />
+                <ContentEditable
+                  className={cn(
+                    "w-full px-3 py-2 overflow-y-auto text-base",
+                    "dark:text-zinc-100 focus:outline-none",
+                    "min-h-[300px]",
+                    "max-h-[calc(100vh-300px)]"
+                  )}
+                />
               }
               ErrorBoundary={LexicalErrorBoundary}
             />
@@ -174,7 +176,7 @@ export const CardDetailsEditor = ({
             <CustomTransformLexicalToHTML setEditorState={setEditorState} />
           </div>
         </div>
-        
+
         <ListPlugin />
         <CheckListPlugin />
       </LexicalComposer>

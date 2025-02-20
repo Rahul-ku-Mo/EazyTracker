@@ -5,7 +5,7 @@ import Cookies from "js-cookie";
 import { useParams } from "react-router-dom";
 import { useToast } from "../../../hooks/use-toast";
 import { useContext } from "react";
-import { ColumnContext } from "../../../Context/ColumnProvider";
+import { ColumnContext } from "../../../context/ColumnProvider";
 
 type TIssueUpdateCard = {
   title?: string;

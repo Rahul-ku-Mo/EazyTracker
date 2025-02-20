@@ -16,8 +16,8 @@ import { Badge } from "../../components/ui/badge";
 import CardView from "./_cardViewerPanel/CardView";
 import CardContextMenu from "./CardContextMenu";
 import { useCardMutation } from "./_mutations/useCardMutations";
-import { ColumnContext } from "../../Context/ColumnProvider";
-import { CardContext } from "../../Context/CardProvider";
+import { ColumnContext } from "../../context/ColumnProvider";
+import { CardContext } from "../../context/CardProvider";
 import { TCardContext } from "../../types/cardTypes";
 import { DueDateDialog } from "./_dialog/DueDateDialog";
 import {
@@ -68,26 +68,26 @@ const getPriorityStyles = (priority?: string) => {
     case "urgent":
       return {
         text: "text-red-500 dark:text-red-500",
-        border: "border-red-500 dark:border-red-500", 
-        bg: "bg-red-500 dark:bg-red-500"
+        border: "border-red-500 dark:border-red-500",
+        bg: "bg-red-500 dark:bg-red-500",
       };
     case "high":
       return {
         text: "text-amber-500 dark:text-amber-500",
         border: "border-amber-500 dark:border-amber-500",
-        bg: "bg-amber-500 dark:bg-amber-500"
+        bg: "bg-amber-500 dark:bg-amber-500",
       };
     case "medium":
       return {
         text: "text-blue-500 dark:text-blue-500",
         border: "border-blue-500 dark:border-blue-500",
-        bg: "bg-blue-500 dark:bg-blue-500"
+        bg: "bg-blue-500 dark:bg-blue-500",
       };
     case "low":
       return {
         text: "text-green-500 dark:text-green-500",
         border: "border-green-500 dark:border-green-500",
-        bg: "bg-green-500 dark:bg-green-500"
+        bg: "bg-green-500 dark:bg-green-500",
       };
     default:
       return undefined;
@@ -112,7 +112,7 @@ const CardFooter = ({
   const priorityStyles = getPriorityStyles(priority);
 
   return (
-    <div className="flex items-center justify-between h-10 gap-3 p-2 border-t rounded-b-lg border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
+    <div className="flex items-center justify-between h-10 gap-3 p-2 border-t rounded-b-lg border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900">
       <div className="flex items-center gap-0.5 text-[10px]">
         <CalendarClockIcon
           className="w-3 h-3 text-zinc-700 dark:text-zinc-300 "
@@ -255,17 +255,18 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
     <>
       <CardContextMenu items={items} cardId={id}>
         <div
-          onDoubleClick={openModal}
+          onClick={openModal}
           className={cn(
-            "bg-white dark:bg-zinc-800",
+            "bg-white dark:bg-zinc-800 hover:dark:bg-zinc-700/70",
             "text-zinc-900 dark:text-zinc-100",
-            "border border-zinc-200 dark:border-zinc-700",
-            "rounded-lg pt-2 mt-2 relative",
-            "transition-all duration-200",
+            "border border-zinc-200 dark:border-none",
+            "rounded-lg pt-2 mt-4 relative",
+            "transition-all ease-linear",
             "flex flex-col justify-between",
             "text-xs",
             "min-h-[100px] max-h-[200px]",
-            "shadow-md dark:shadow-zinc-900/50",
+            "shadow-md dark:shadow-none",
+            "cursor-pointer",
             index === totalCards - 1 && "mb-10"
           )}
         >
