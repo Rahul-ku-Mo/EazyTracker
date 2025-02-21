@@ -29,7 +29,7 @@ const MainLayout = ({
             className={cn(
               background,
               fwdClassName,
-              "flex flex-col flex-1 gap-4 px-4 py-2 pt-0","overflow-hidden"
+              "flex flex-col flex-1 gap-4 px-4 py-2 pt-0","overflow-y-hidden"
             )}
           >
             {children}
