@@ -25,9 +25,44 @@ import { PLAYGROUND_TRANSFORMERS } from "../../../_tabComponents/MARKDOWN_TRANSF
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { Copy, CopyCheck } from "lucide-react";
 
+import "../../../../../styles/editor.styles.css";
+
 const theme = {
   root: "ai-editor-root ",
   paragraph: "editor-paragraph text-sm",
+  code: "editor-Theme__code",
+  codeHighlight: {
+    atrule: "editor-Theme__tokenAttr",
+    attr: "editor-Theme__tokenAttr",
+    boolean: "editor-Theme__tokenProperty",
+    builtin: "editor-Theme__tokenSelector",
+    cdata: "editor-Theme__tokenComment",
+    char: "editor-Theme__tokenSelector",
+    class: "editor-Theme__tokenFunction",
+    "class-name": "editor-Theme__tokenFunction",
+    comment: "editor-Theme__tokenComment",
+    constant: "editor-Theme__tokenProperty",
+    deleted: "editor-Theme__tokenProperty",
+    doctype: "editor-Theme__tokenComment",
+    entity: "editor-Theme__tokenOperator",
+    function: "editor-Theme__tokenFunction",
+    important: "editor-Theme__tokenVariable",
+    inserted: "editor-Theme__tokenSelector",
+    keyword: "editor-Theme__tokenAttr",
+    namespace: "editor-Theme__tokenVariable",
+    number: "editor-Theme__tokenProperty",
+    operator: "editor-Theme__tokenOperator",
+    prolog: "editor-Theme__tokenComment",
+    property: "editor-Theme__tokenProperty",
+    punctuation: "editor-Theme__tokenPunctuation",
+    regex: "editor-Theme__tokenVariable",
+    selector: "editor-Theme__tokenSelector",
+    string: "editor-Theme__tokenSelector",
+    symbol: "editor-Theme__tokenProperty",
+    tag: "editor-Theme__tokenProperty",
+    url: "editor-Theme__tokenOperator",
+    variable: "editor-Theme__tokenVariable",
+  },
   text: {
     bold: "editor-text-bold",
     italic: "editor-text-italic",

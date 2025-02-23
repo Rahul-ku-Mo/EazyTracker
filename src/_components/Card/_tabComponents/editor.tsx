@@ -21,11 +21,12 @@ import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPl
 import { $convertFromMarkdownString } from "@lexical/markdown";
 import { PLAYGROUND_TRANSFORMERS as TRANSFORMERS } from "./MARKDOWN_TRANSFORMERS";
 /**Lexical Nodes */
-import { CodeNode } from "@lexical/code";
+import { CodeNode, CodeHighlightNode } from "@lexical/code";
 import { LinkNode } from "@lexical/link";
 import { ListNode, ListItemNode } from "@lexical/list";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
+import {registerCodeHighlighting} from '@lexical/code';
 
 import { useCardMutation } from "../_mutations/useCardMutations";
 import { ColumnContext } from "../../../context/ColumnProvider";
@@ -36,6 +37,8 @@ import { cn } from "../../../lib/utils";
 interface EditorTheme {
   root: string;
   paragraph: string;
+  code?: string;
+  codeHighlight?: Record<string, string>;
   text: {
     bold: string;
     italic: string;
@@ -75,6 +78,39 @@ const theme: EditorTheme = {
     underline: "editor-text-underline",
     strikethrough: "editor-text-strikethrough",
     underlineStrikethrough: "editor-text-underline-strikethrough",
+  },
+  code: "editor-Theme__code dark:bg-zinc-900/80 bg-zinc-200",
+  codeHighlight: {
+    atrule: 'editor-Theme__tokenAttr',
+    attr: 'editor-Theme__tokenAttr',
+    boolean: 'editor-Theme__tokenProperty',
+    builtin: 'editor-Theme__tokenSelector',
+    cdata: 'editor-Theme__tokenComment',
+    char: 'editor-Theme__tokenSelector',
+    class: 'editor-Theme__tokenFunction',
+    'class-name': 'editor-Theme__tokenFunction',
+    comment: 'editor-Theme__tokenComment',
+    constant: 'editor-Theme__tokenProperty',
+    deleted: 'editor-Theme__tokenProperty',
+    doctype: 'editor-Theme__tokenComment',
+    entity: 'editor-Theme__tokenOperator',
+    function: 'editor-Theme__tokenFunction',
+    important: 'editor-Theme__tokenVariable',
+    inserted: 'editor-Theme__tokenSelector',
+    keyword: 'editor-Theme__tokenAttr',
+    namespace: 'editor-Theme__tokenVariable',
+    number: 'editor-Theme__tokenProperty',
+    operator: 'editor-Theme__tokenOperator',
+    prolog: 'editor-Theme__tokenComment',
+    property: 'editor-Theme__tokenProperty',
+    punctuation: 'editor-Theme__tokenPunctuation',
+    regex: 'editor-Theme__tokenVariable',
+    selector: 'editor-Theme__tokenSelector',
+    string: 'editor-Theme__tokenSelector',
+    symbol: 'editor-Theme__tokenProperty',
+    tag: 'editor-Theme__tokenProperty',
+    url: 'editor-Theme__tokenOperator',
+    variable: 'editor-Theme__tokenVariable',
   },
   heading: {
     h1: "editor-heading-h1 editor-heading-font",
@@ -150,6 +186,17 @@ function CustomTransformLexicalToHTML({
   return null;
 }
 
+
+export const CodeHighlightPlugin = () => {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    return registerCodeHighlighting(editor);
+  }, [editor]);
+
+  return null;
+}
+
 interface CardDetailsEditorProps {
   cardId: string;
   description: string;
@@ -174,6 +221,7 @@ export const CardDetailsEditor = ({
       ParagraphNode,
       HorizontalRuleNode,
       CodeNode,
+      CodeHighlightNode,
       LinkNode,
       HeadingNode,
       QuoteNode,
@@ -211,6 +259,7 @@ export const CardDetailsEditor = ({
             />
             <HistoryPlugin />
             <AutoFocusPlugin />
+            <CodeHighlightPlugin />
             <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
             <CustomTransformHTMLToLexical description={description} />
             <CustomTransformLexicalToHTML setEditorState={setEditorState} />
