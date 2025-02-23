@@ -16,9 +16,15 @@ import {
   UNDO_COMMAND,
 } from "lexical";
 import { ListNode, $isListNode } from "@lexical/list";
-
+import { $isHeadingNode } from "@lexical/rich-text";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "../../../components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../../../components/ui/dropdown-menu";
 import {
   Bold,
   Italic,
@@ -40,7 +46,28 @@ import {
   PopoverTrigger,
 } from "../../../components/ui/popover";
 
-import { formatBulletList, formatCheckList, formatNumberedList } from "./utils";
+import {
+  formatBulletList,
+  formatCheckList,
+  formatNumberedList,
+  formatHeading,
+  convertToMarkdown,
+} from "./utils";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipProvider,
+  TooltipContent,
+} from "../../../components/ui/tooltip";
+
+const blockTypeToBlockName = {
+  h1: "Heading 1",
+  h2: "Heading 2",
+  h3: "Heading 3",
+  h4: "Heading 4",
+  h5: "Heading 5",
+  h6: "Heading 6",
+};
 
 const LowPriority = 1;
 
@@ -86,6 +113,15 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
     underline: false,
   });
 
+  const [headings, setHeadings] = useState({
+    h1: false,
+    h2: false,
+    h3: false,
+    h4: false,
+    h5: false,
+    h6: false,
+  });
+
   const [lists, setLists] = useState({
     bulletList: false,
     orderedList: false,
@@ -125,14 +161,31 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
             ? parentList.getListType()
             : (element as any).getListType();
 
-          console.log(type);
-
           setLists({
             bulletList: type === "bullet",
             orderedList: type === "number",
             checkList: type === "check",
           });
+
+          setHeadings({
+            h1: false,
+            h2: false,
+            h3: false,
+            h4: false,
+            h5: false,
+            h6: false,
+          });
         } else {
+          const type = $isHeadingNode(element)
+            ? element.getTag()
+            : element.getType();
+          if (type in blockTypeToBlockName) {
+            setHeadings((prev) => ({
+              ...prev,
+              [type]: true,
+            }));
+          }
+
           setLists({
             bulletList: false,
             orderedList: false,
@@ -172,7 +225,7 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
   const generateAIContent = async () => {
     setIsGenerating(true);
     try {
-      // Implement your AI generation logic here
+      //Implement your AI generation logic here
       await new Promise((resolve) => setTimeout(resolve, 1500));
       console.log("AI content generation");
     } finally {
@@ -180,8 +233,6 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
       setShowAIPopover(false);
     }
   };
-
-  
 
   return (
     <div className="flex items-center gap-1 p-1 mb-2 rounded-md bg-background">
@@ -221,6 +272,52 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
       >
         <Underline className="w-4 h-4" />
       </ToolbarButton>
+
+      <div className="w-px h-6 mx-1 bg-border" />
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <span className="text-sm font-bold cursor-pointer ">Heading</span>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem
+            onClick={() => formatHeading(editor, "h1")}
+            className={cn("font-bold text-xl", headings.h1 && "bg-accent")}
+          >
+            Heading 1
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => formatHeading(editor, "h2")}
+            className={cn("font-bold text-lg", headings.h2 && "bg-accent")}
+          >
+            Heading 2
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => formatHeading(editor, "h3")}
+            className={cn("font-bold text-base", headings.h3 && "bg-accent")}
+          >
+            Heading 3
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => formatHeading(editor, "h4")}
+            className={cn("font-bold text-sm", headings.h4 && "bg-accent")}
+          >
+            Heading 4
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => formatHeading(editor, "h5")}
+            className={cn("font-bold text-xs", headings.h5 && "bg-accent")}
+          >
+            Heading 5
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => formatHeading(editor, "h6")}
+            className={cn("font-bold text-xs", headings.h6 && "bg-accent")}
+          >
+            Heading 6
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <div className="w-px h-6 mx-1 bg-border" />
 
@@ -327,6 +424,16 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
         </PopoverContent>
       </Popover>
 
+      <ToolbarButton onClick={() => convertToMarkdown(editor)}>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>M</TooltipTrigger>
+            <TooltipContent>
+              <p>Toggle Markdown View</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </ToolbarButton>
       <Button
         variant="default"
         size="sm"
@@ -334,7 +441,7 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
           "ml-auto mr-0.5 h-7 flex gap-0.5",
           !isSaving && "bg-green-500 hover:bg-green-600"
         )}
-        onClick={() => { 
+        onClick={() => {
           setIsSaving(true);
           save();
           setTimeout(() => {

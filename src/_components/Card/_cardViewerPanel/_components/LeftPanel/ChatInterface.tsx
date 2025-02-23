@@ -4,6 +4,7 @@ import { Button } from "../../../../../components/ui/button";
 import axios from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Cookies from "js-cookie";
+import AIReplyEditorView from "./AIReplyEditorView";
 
 interface Message {
   role: "user" | "model";
@@ -25,6 +26,7 @@ const ChatInterface = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const accessToken = Cookies.get("accessToken");
+  const [isStreaming, setIsStreaming] = useState<boolean>(false);
   
   // Query for fetching messages
   const { data: messages = [], isPending } = useQuery({
@@ -68,7 +70,12 @@ const ChatInterface = ({
           },
           onDownloadProgress: (progressEvent) => {
             const chunk = progressEvent.event.target.response;
-            if (!chunk) return;
+            setIsStreaming(true);
+            
+            if (!chunk) {
+              setIsStreaming(false);
+              return;
+            }
 
             const lines = chunk.split("\n");
 
@@ -78,11 +85,13 @@ const ChatInterface = ({
                   const data = JSON.parse(line.slice(6));
 
                   if (data.error) {
+                    setIsStreaming(false);
                     console.error("SSE Error:", data.error);
                     return;
                   }
 
                   if (data.done) {
+                    setIsStreaming(false);
                     queryClient.invalidateQueries({
                       queryKey: ["ai-chat-messages", conversationId],
                     });
@@ -200,7 +209,11 @@ const ChatInterface = ({
                     : "bg-muted dark:bg-zinc-900"
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                {message.role === "model" ? (
+                  <AIReplyEditorView content={message.content} isStreaming={isStreaming} />
+                ) : (
+                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                )}
               </div>
             </div>
           ))}

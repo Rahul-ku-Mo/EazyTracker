@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useContext, useEffect, useState } from "react";
+
 import { $getRoot, $insertNodes, EditorState, ParagraphNode } from "lexical";
+/**Plugins Lexical */
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import {
   LexicalComposer,
@@ -12,12 +14,23 @@ import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
+
+import { ListPlugin } from "@lexical/react/LexicalListPlugin";
+import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
+import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
+import { $convertFromMarkdownString } from "@lexical/markdown";
+import { PLAYGROUND_TRANSFORMERS as TRANSFORMERS } from "./MARKDOWN_TRANSFORMERS";
+/**Lexical Nodes */
+import { CodeNode } from "@lexical/code";
+import { LinkNode } from "@lexical/link";
+import { ListNode, ListItemNode } from "@lexical/list";
+import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
+
 import { useCardMutation } from "../_mutations/useCardMutations";
 import { ColumnContext } from "../../../context/ColumnProvider";
 import { CardToolbarPlugin } from "./CardToolbarPlugin";
-import { ListPlugin } from "@lexical/react/LexicalListPlugin";
-import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
-import { ListNode, ListItemNode } from "@lexical/list";
+
 import "../../../styles/editor.styles.css";
 import { cn } from "../../../lib/utils";
 interface EditorTheme {
@@ -29,6 +42,14 @@ interface EditorTheme {
     underline: string;
     strikethrough: string;
     underlineStrikethrough: string;
+  };
+  heading: {
+    h1: string;
+    h2: string;
+    h3: string;
+    h4: string;
+    h5: string;
+    h6: string;
   };
   list: {
     ul: string;
@@ -47,7 +68,7 @@ interface EditorTheme {
 
 const theme: EditorTheme = {
   root: "editor-root",
-  paragraph: "editor-paragraph",
+  paragraph: "editor-paragraph text-sm",
   text: {
     bold: "editor-text-bold",
     italic: "editor-text-italic",
@@ -55,13 +76,21 @@ const theme: EditorTheme = {
     strikethrough: "editor-text-strikethrough",
     underlineStrikethrough: "editor-text-underline-strikethrough",
   },
+  heading: {
+    h1: "editor-heading-h1 editor-heading-font",
+    h2: "editor-heading-h2 editor-heading-font",
+    h3: "editor-heading-h3 editor-heading-font",
+    h4: "editor-heading-h4 editor-heading-font",
+    h5: "editor-heading-h5 editor-heading-font",
+    h6: "editor-heading-h6 editor-heading-font",
+  },
   list: {
-    ul: "editor-list-ul",
-    ol: "editor-list-ol",
-    checklist: "editor-list-checklist",
-    listitem: "editor-list-item",
-    listitemChecked: "editor-list-item-checked",
-    listitemUnchecked: "editor-list-item-unchecked",
+    ul: "editor-list-ul text-sm",
+    ol: "editor-list-ol text-sm",
+    checklist: "editor-list-checklist text-sm",
+    listitem: "editor-list-item text-sm",
+    listitemChecked: "editor-list-item-checked text-sm",
+    listitemUnchecked: "editor-list-item-unchecked text-sm",
     nested: {
       list: "editor-nested-list",
       listitem: "editor-nested-list-item",
@@ -136,9 +165,19 @@ export const CardDetailsEditor = ({
 
   const initialConfig: InitialConfigType = {
     namespace: "CardDetailsEditor",
+    editorState: () => $convertFromMarkdownString(description, TRANSFORMERS),
     theme,
     onError,
-    nodes: [ListNode, ListItemNode, ParagraphNode] as any,
+    nodes: [
+      ListNode,
+      ListItemNode,
+      ParagraphNode,
+      HorizontalRuleNode,
+      CodeNode,
+      LinkNode,
+      HeadingNode,
+      QuoteNode,
+    ] as any,
   };
 
   const handleSave = (): void => {
@@ -161,7 +200,7 @@ export const CardDetailsEditor = ({
               contentEditable={
                 <ContentEditable
                   className={cn(
-                    "w-full px-3 py-2 overflow-y-auto text-base",
+                    "w-full px-3 py-2 overflow-y-auto",
                     "dark:text-zinc-100 focus:outline-none",
                     "min-h-[300px]",
                     "max-h-[calc(100vh-300px)]"
@@ -172,6 +211,7 @@ export const CardDetailsEditor = ({
             />
             <HistoryPlugin />
             <AutoFocusPlugin />
+            <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
             <CustomTransformHTMLToLexical description={description} />
             <CustomTransformLexicalToHTML setEditorState={setEditorState} />
           </div>

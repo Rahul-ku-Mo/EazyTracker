@@ -57,7 +57,7 @@ const CardDescription = ({ description }: { description?: string }) => {
         "grow basis-full",
         "px-2 pb-2",
         "card-editor-view",
-        "editor-readable-font"
+        "editor-readable-font text-xs"
       )}
     />
   );

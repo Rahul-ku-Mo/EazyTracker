@@ -1,5 +1,7 @@
 import {
   $createParagraphNode,
+  $createTextNode,
+  $getRoot,
   $getSelection,
   $isRangeSelection,
   LexicalEditor,
@@ -12,6 +14,10 @@ import {
   REMOVE_LIST_COMMAND,
 } from "@lexical/list";
 
+import { $createHeadingNode, HeadingTagType } from "@lexical/rich-text";
+import { $convertFromMarkdownString, $convertToMarkdownString } from "@lexical/markdown";
+import { PLAYGROUND_TRANSFORMERS as TRANSFORMERS } from "./MARKDOWN_TRANSFORMERS";
+import { $isCodeNode, $createCodeNode } from "@lexical/code";
 export const formatParagraph = (editor: LexicalEditor) => {
   editor.update(() => {
     const selection = $getSelection();
@@ -46,4 +52,35 @@ export const formatNumberedList = (
   } else {
     editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
   }
+};
+
+export const formatHeading = (
+  editor: LexicalEditor,
+  headingSize: HeadingTagType,
+) => {
+  editor.update(() => {
+    const selection = $getSelection();
+    $setBlocksType(selection, () => $createHeadingNode(headingSize));
+  });
+};
+
+export const convertToMarkdown = (editor: LexicalEditor) => {
+  editor.update(() => {
+    const root = $getRoot();
+    const firstChild = root.getFirstChild();
+    if ($isCodeNode(firstChild) && firstChild.getLanguage() === 'markdown') {
+      $convertFromMarkdownString(
+        firstChild.getTextContent(),
+        TRANSFORMERS
+      );
+    } else {
+      const markdown = $convertToMarkdownString(TRANSFORMERS);
+      const codeNode = $createCodeNode('markdown');
+      codeNode.append($createTextNode(markdown));
+      root.clear().append(codeNode);
+      if (markdown.length === 0) {
+        codeNode.select();
+      }
+    }
+  });
 };

@@ -1,5 +1,5 @@
 import { Button } from "../../../../../components/ui/button";
-import { CardDetailsEditor } from "../../../_tabComponents/CardDetailsEditor";
+import { CardDetailsEditor } from "../../../_tabComponents/editor";
 import { Lock, Unlock } from "lucide-react";
 import { useContext } from "react";
 import { CardContext } from "../../../../../context/CardProvider";

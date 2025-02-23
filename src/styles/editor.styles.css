@@ -1,8 +1,51 @@
+@font-face {
+  font-family: "Helvetica Neue";
+  src: url("/fonts/HelveticaNeueLight.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Helvetica Neue";
+  src: url("/fonts/HelveticaNeueMedium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Helvetica Neue";
+  src: url("/fonts/HelveticaNeueBold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Helvetica Neue";
+  src: url("/fonts/HelveticaNeueLightItalic.otf") format("opentype");
+  font-weight: 300;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Helvetica Neue";
+  src: url("/fonts/HelveticaNeueMediumItalic.otf")
+    format("opentype");
+  font-weight: 500;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Helvetica Neue";
+  src: url("/fonts/HelveticaNeueBoldItalic.otf") format("opentype");
+  font-weight: 700;
+  font-style: italic;
+}
+
 .editor-root {
   padding: 0.5rem;
   position: relative;
   outline: none;
-  font-family: "Source Serif Pro", serif;
+  font-family: "Source Serif 4", serif;
 }
 
 .editor-paragraph {
@@ -121,4 +164,32 @@
   top: 12px;
   left: 12px;
   pointer-events: none;
+}
+
+.editor-heading-font {
+  font-family: "Helvetica Neue", sans-serif;
+}
+
+.editor-heading-h1 {
+  @apply text-2xl font-bold;
+}
+
+.editor-heading-h2 {
+  @apply text-xl font-bold;
+}
+
+.editor-heading-h3 {
+  @apply text-lg font-bold;
+}
+
+.editor-heading-h4 {
+  @apply text-base font-bold ;
+}
+
+.editor-heading-h5 {
+  @apply text-sm font-bold;
+}
+
+.editor-heading-h6 {
+  @apply text-xs font-bold;
 }

@@ -1,0 +1,172 @@
+import {
+  LexicalComposer,
+  InitialConfigType,
+} from "@lexical/react/LexicalComposer";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
+import { ListPlugin } from "@lexical/react/LexicalListPlugin";
+import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
+import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
+import { useEffect, useState } from "react";
+import {
+  $convertFromMarkdownString,
+  $convertToMarkdownString,
+} from "@lexical/markdown";
+import { $getRoot } from "lexical";
+import { CodeNode } from "@lexical/code";
+import { LinkNode } from "@lexical/link";
+import { ListNode, ListItemNode } from "@lexical/list";
+import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
+
+import { PLAYGROUND_TRANSFORMERS } from "../../../_tabComponents/MARKDOWN_TRANSFORMERS";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { Copy, CopyCheck } from "lucide-react";
+
+const theme = {
+  root: "ai-editor-root ",
+  paragraph: "editor-paragraph text-sm",
+  text: {
+    bold: "editor-text-bold",
+    italic: "editor-text-italic",
+    underline: "editor-text-underline",
+    strikethrough: "editor-text-strikethrough",
+    underlineStrikethrough: "editor-text-underline-strikethrough",
+  },
+  heading: {
+    h1: "editor-heading-h1 editor-heading-font",
+    h2: "editor-heading-h2 editor-heading-font",
+    h3: "editor-heading-h3 editor-heading-font",
+    h4: "editor-heading-h4 editor-heading-font",
+    h5: "editor-heading-h5 editor-heading-font",
+    h6: "editor-heading-h6 editor-heading-font",
+  },
+  list: {
+    ul: "editor-list-ul text-sm",
+    ol: "editor-list-ol text-sm",
+    checklist: "editor-list-checklist text-sm",
+    listitem: "editor-list-item text-sm",
+    listitemChecked: "editor-list-item-checked text-sm",
+    listitemUnchecked: "editor-list-item-unchecked text-sm",
+    nested: {
+      list: "editor-nested-list",
+      listitem: "editor-nested-list-item",
+    },
+  },
+  placeholder: "editor-placeholder",
+};
+
+function onError(error: Error): void {
+  console.error(error);
+}
+
+interface AIReplyEditorViewProps {
+  content: string;
+  isStreaming: boolean;
+}
+
+const StreamingIncomingMessageContentPlugin = ({
+  content,
+  setMarkdown,
+}: {
+  content: string;
+  setMarkdown: any;
+}) => {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    editor.update(() => {
+      const root = $getRoot();
+      root.clear();
+      $convertFromMarkdownString(
+        content,
+        PLAYGROUND_TRANSFORMERS,
+        undefined,
+        true,
+        true
+      );
+      setMarkdown($convertToMarkdownString(PLAYGROUND_TRANSFORMERS));
+    });
+  }, [editor, content, setMarkdown]);
+
+  return null;
+};
+
+export default function AIReplyEditorView({
+  content,
+  isStreaming,
+}: AIReplyEditorViewProps) {
+  const [isCopied, setIsCopied] = useState<boolean>(false);
+
+  const [markdown, setMarkdown] = useState<string>("");
+
+  const initialConfig: InitialConfigType = {
+    namespace: "AIReplyEditor",
+    theme,
+    onError,
+    nodes: [
+      HeadingNode,
+      ListNode,
+      ListItemNode,
+      QuoteNode,
+      CodeNode,
+      LinkNode,
+      HorizontalRuleNode,
+    ],
+    editable: isStreaming ? true : false,
+  };
+
+  return (
+    <LexicalComposer initialConfig={initialConfig}>
+      <div className="editor-container">
+        <div className="flex justify-end float-right p-1 transition-colors rounded-md cursor-pointer dark:bg-black hover:bg-zinc-100 dark:hover:bg-zinc-800">
+          {isCopied ? (
+            <div
+              className="flex items-center gap-1 text-xs"
+              onClick={() => {
+                setIsCopied(false);
+                setMarkdown("");
+              }}
+            >
+              <CopyCheck className="size-4" />
+              Copied
+            </div>
+          ) : (
+            <div
+              className="flex items-center gap-1 text-xs"
+              onClick={() => {
+                if (markdown) {
+                  navigator.clipboard.writeText(markdown);
+                  setIsCopied(true);
+                }
+              }}
+            >
+              <Copy className=" size-4" />
+              Copy
+            </div>
+          )}
+        </div>
+        <RichTextPlugin
+          contentEditable={
+            <ContentEditable
+              className="editor-input"
+              readOnly={isStreaming ? true : false}
+            />
+          }
+          placeholder={null}
+          ErrorBoundary={LexicalErrorBoundary}
+        />
+        <HistoryPlugin />
+        <ListPlugin />
+        <CheckListPlugin />
+        <MarkdownShortcutPlugin transformers={PLAYGROUND_TRANSFORMERS} />
+        <StreamingIncomingMessageContentPlugin
+          content={content}
+          setMarkdown={setMarkdown}
+        />
+      </div>
+    </LexicalComposer>
+  );
+}
