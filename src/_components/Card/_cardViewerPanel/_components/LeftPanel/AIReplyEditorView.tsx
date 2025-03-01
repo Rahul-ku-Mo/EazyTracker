@@ -21,7 +21,7 @@ import { ListNode, ListItemNode } from "@lexical/list";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
 
-import { PLAYGROUND_TRANSFORMERS } from "../../../_tabComponents/MARKDOWN_TRANSFORMERS";
+import { PLAYGROUND_TRANSFORMERS } from "../../../_editor/MARKDOWN_TRANSFORMERS.ts";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { Copy, CopyCheck } from "lucide-react";
 

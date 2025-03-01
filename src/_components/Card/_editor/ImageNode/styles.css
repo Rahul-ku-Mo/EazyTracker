@@ -1,0 +1,143 @@
+/* styles.css - Enhanced styling for the ImageNode component */
+
+.editor-image {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 16px 0;
+  width: 100%;
+  min-height: 0px;
+  max-height: fit-content; /* Default max height */
+  user-select: none;
+  overflow: hidden;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+
+.editor-image img {
+  width: 100%;
+  height: fit-content;
+  cursor: pointer; /* Make cursor a pointer on hover */
+  object-fit: contain; /* Default to cover for all images */
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+
+
+/* When image is selected/focused */
+.editor-image img.focused {
+  outline: 2px solid #0096fd;
+  box-shadow: 0 0 0 4px rgba(0, 150, 253, 0.2);
+}
+
+/* Resize handles for the image container */
+.editor-image-resizer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 20px;
+  height: 20px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='15 3 21 3 21 9'%3E%3C/polyline%3E%3Cpolyline points='9 21 3 21 3 15'%3E%3C/polyline%3E%3Cline x1='21' y1='3' x2='14' y2='10'%3E%3C/line%3E%3Cline x1='3' y1='21' x2='10' y2='14'%3E%3C/line%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  background-color: rgba(228, 228, 228, 0.5);
+  cursor: nwse-resize;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.editor-image:hover .editor-image-resizer {
+  opacity: 0.8;
+}
+
+/* Lightbox view indicator */
+.editor-image::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3'%3E%3C/path%3E%3C/svg%3E");
+  background-color: rgba(0, 0, 0, 0.5);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 14px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.editor-image:hover::after {
+  opacity: 0.8;
+}
+
+/* Image size variants */
+.editor-image.small {
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.editor-image.medium {
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.editor-image.large {
+  max-width: 100%;
+}
+
+/* Caption container styles */
+.image-caption-container {
+  display: block;
+  position: relative;
+  margin: 8px auto 0;
+  width: 100%;
+  text-align: center;
+  font-style: italic;
+}
+
+.image-caption-container .ImageNode__contentEditable {
+  min-height: 20px;
+  border: 0;
+  resize: none;
+  cursor: text;
+  display: block;
+  position: relative;
+  tab-size: 1;
+  outline: 0;
+  padding: 8px;
+  user-select: text;
+  font-size: 12px;
+  width: 100%;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #555;
+  transition: background-color 0.2s;
+}
+
+.image-caption-container .ImageNode__contentEditable:focus {
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
+}
+
+.image-caption-container .ImageNode__placeholder {
+  color: #999;
+  overflow: hidden;
+  position: absolute;
+  text-overflow: ellipsis;
+  top: 8px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  user-select: none;
+  white-space: nowrap;
+  display: inline-block;
+  pointer-events: none;
+}

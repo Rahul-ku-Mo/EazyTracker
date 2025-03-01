@@ -16,7 +16,7 @@ import {
 
 import { $createHeadingNode, HeadingTagType } from "@lexical/rich-text";
 import { $convertFromMarkdownString, $convertToMarkdownString } from "@lexical/markdown";
-import { PLAYGROUND_TRANSFORMERS as TRANSFORMERS } from "./MARKDOWN_TRANSFORMERS";
+import { PLAYGROUND_TRANSFORMERS as TRANSFORMERS } from "./MARKDOWN_TRANSFORMERS.ts";
 import { $isCodeNode, $createCodeNode } from "@lexical/code";
 export const formatParagraph = (editor: LexicalEditor) => {
   editor.update(() => {

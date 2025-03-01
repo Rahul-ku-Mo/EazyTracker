@@ -18,13 +18,13 @@ import {
 import { ListNode, $isListNode } from "@lexical/list";
 import { $isHeadingNode } from "@lexical/rich-text";
 import { useCallback, useEffect, useState } from "react";
-import { Button } from "../../../components/ui/button";
+import { Button } from "../../../../components/ui/button.tsx";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../../../components/ui/dropdown-menu";
+} from "../../../../components/ui/dropdown-menu.tsx";
 import {
   Bold,
   Italic,
@@ -38,13 +38,14 @@ import {
   HelpCircle,
   CheckSquare,
   Loader2,
+  Image,
 } from "lucide-react";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../../lib/utils.ts";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "../../../components/ui/popover";
+} from "../../../../components/ui/popover.tsx";
 
 import {
   formatBulletList,
@@ -52,13 +53,14 @@ import {
   formatNumberedList,
   formatHeading,
   convertToMarkdown,
-} from "./utils";
+} from "../utils.ts";
 import {
   Tooltip,
   TooltipTrigger,
   TooltipProvider,
   TooltipContent,
-} from "../../../components/ui/tooltip";
+} from "../../../../components/ui/tooltip.tsx";
+import { INSERT_IMAGE_COMMAND } from "../ImageNode";
 
 const blockTypeToBlockName = {
   h1: "Heading 1",
@@ -234,6 +236,14 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
     }
   };
 
+  const insertImage = () => {
+    editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
+      src: "https://picsum.photos/300/200",
+      altText: "A random image",
+      showCaption: true,
+    });
+  };
+
   return (
     <div className="flex items-center gap-1 p-1 mb-2 rounded-md bg-background">
       <ToolbarButton
@@ -367,6 +377,10 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
         isActive={lists.checkList}
       >
         <CheckSquare className="w-4 h-4" />
+      </ToolbarButton>
+
+      <ToolbarButton onClick={insertImage}>
+        <Image className="w-4 h-4" />
       </ToolbarButton>
 
       <div className="w-px h-6 mx-1 bg-border" />

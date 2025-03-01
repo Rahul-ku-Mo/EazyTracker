@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 
-import { $getRoot, $insertNodes, EditorState, ParagraphNode } from "lexical";
+import { ParagraphNode } from "lexical";
 /**Plugins Lexical */
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import {
@@ -13,27 +13,36 @@ import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
-
+import {
+  CustomTransformHTMLToLexical,
+  CustomTransformLexicalToHTML,
+} from "./Plugins/CustomTransformations";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
 import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
 import { $convertFromMarkdownString } from "@lexical/markdown";
-import { PLAYGROUND_TRANSFORMERS as TRANSFORMERS } from "./MARKDOWN_TRANSFORMERS";
+import { PLAYGROUND_TRANSFORMERS as TRANSFORMERS } from "./MARKDOWN_TRANSFORMERS.ts";
+import { EditorRefPlugin } from "@lexical/react/LexicalEditorRefPlugin";
+import { CopyImagePlugin } from "./Plugins/CopyImagePlugin";
 /**Lexical Nodes */
 import { CodeNode, CodeHighlightNode } from "@lexical/code";
 import { LinkNode } from "@lexical/link";
 import { ListNode, ListItemNode } from "@lexical/list";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
-import {registerCodeHighlighting} from '@lexical/code';
+import { registerCodeHighlighting } from "@lexical/code";
 
-import { useCardMutation } from "../_mutations/useCardMutations";
-import { ColumnContext } from "../../../context/ColumnProvider";
-import { CardToolbarPlugin } from "./CardToolbarPlugin";
+import { useCardMutation } from "../_mutations/useCardMutations.ts";
+import { ColumnContext } from "../../../context/ColumnProvider.tsx";
+import { CardToolbarPlugin } from "./Plugins/CardToolbarPlugin.tsx";
 
+import { ImageNode } from "./ImageNode";
+import { ImagesPlugin } from "./Plugins/ImagePlugin.tsx";
+
+import "./ImageNode/styles.css";
 import "../../../styles/editor.styles.css";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../lib/utils.ts";
+
 interface EditorTheme {
   root: string;
   paragraph: string;
@@ -81,36 +90,36 @@ const theme: EditorTheme = {
   },
   code: "editor-Theme__code dark:bg-zinc-900/80 bg-zinc-200",
   codeHighlight: {
-    atrule: 'editor-Theme__tokenAttr',
-    attr: 'editor-Theme__tokenAttr',
-    boolean: 'editor-Theme__tokenProperty',
-    builtin: 'editor-Theme__tokenSelector',
-    cdata: 'editor-Theme__tokenComment',
-    char: 'editor-Theme__tokenSelector',
-    class: 'editor-Theme__tokenFunction',
-    'class-name': 'editor-Theme__tokenFunction',
-    comment: 'editor-Theme__tokenComment',
-    constant: 'editor-Theme__tokenProperty',
-    deleted: 'editor-Theme__tokenProperty',
-    doctype: 'editor-Theme__tokenComment',
-    entity: 'editor-Theme__tokenOperator',
-    function: 'editor-Theme__tokenFunction',
-    important: 'editor-Theme__tokenVariable',
-    inserted: 'editor-Theme__tokenSelector',
-    keyword: 'editor-Theme__tokenAttr',
-    namespace: 'editor-Theme__tokenVariable',
-    number: 'editor-Theme__tokenProperty',
-    operator: 'editor-Theme__tokenOperator',
-    prolog: 'editor-Theme__tokenComment',
-    property: 'editor-Theme__tokenProperty',
-    punctuation: 'editor-Theme__tokenPunctuation',
-    regex: 'editor-Theme__tokenVariable',
-    selector: 'editor-Theme__tokenSelector',
-    string: 'editor-Theme__tokenSelector',
-    symbol: 'editor-Theme__tokenProperty',
-    tag: 'editor-Theme__tokenProperty',
-    url: 'editor-Theme__tokenOperator',
-    variable: 'editor-Theme__tokenVariable',
+    atrule: "editor-Theme__tokenAttr",
+    attr: "editor-Theme__tokenAttr",
+    boolean: "editor-Theme__tokenProperty",
+    builtin: "editor-Theme__tokenSelector",
+    cdata: "editor-Theme__tokenComment",
+    char: "editor-Theme__tokenSelector",
+    class: "editor-Theme__tokenFunction",
+    "class-name": "editor-Theme__tokenFunction",
+    comment: "editor-Theme__tokenComment",
+    constant: "editor-Theme__tokenProperty",
+    deleted: "editor-Theme__tokenProperty",
+    doctype: "editor-Theme__tokenComment",
+    entity: "editor-Theme__tokenOperator",
+    function: "editor-Theme__tokenFunction",
+    important: "editor-Theme__tokenVariable",
+    inserted: "editor-Theme__tokenSelector",
+    keyword: "editor-Theme__tokenAttr",
+    namespace: "editor-Theme__tokenVariable",
+    number: "editor-Theme__tokenProperty",
+    operator: "editor-Theme__tokenOperator",
+    prolog: "editor-Theme__tokenComment",
+    property: "editor-Theme__tokenProperty",
+    punctuation: "editor-Theme__tokenPunctuation",
+    regex: "editor-Theme__tokenVariable",
+    selector: "editor-Theme__tokenSelector",
+    string: "editor-Theme__tokenSelector",
+    symbol: "editor-Theme__tokenProperty",
+    tag: "editor-Theme__tokenProperty",
+    url: "editor-Theme__tokenOperator",
+    variable: "editor-Theme__tokenVariable",
   },
   heading: {
     h1: "editor-heading-h1 editor-heading-font",
@@ -139,54 +148,6 @@ function onError(error: Error): void {
   console.error(error);
 }
 
-// Custom plugins for HTML transformation
-function CustomTransformHTMLToLexical({
-  description,
-}: {
-  description: string;
-}): null {
-  const [editor] = useLexicalComposerContext();
-
-  useEffect(() => {
-    if (!description) return;
-
-    editor.update(() => {
-      const parser = new DOMParser();
-      const dom = parser.parseFromString(description, "text/html");
-      const nodes = $generateNodesFromDOM(editor, dom);
-      const root = $getRoot();
-      root.clear();
-      $insertNodes(nodes);
-    });
-  }, [description, editor]);
-
-  return null;
-}
-
-function CustomTransformLexicalToHTML({
-  setEditorState,
-}: {
-  setEditorState: (state: string) => void;
-}): null {
-  const [editor] = useLexicalComposerContext();
-
-  useEffect(() => {
-    return editor.registerUpdateListener(
-      ({ editorState }: { editorState: EditorState }) => {
-        editorState.read(() => {
-          let htmlString = $generateHtmlFromNodes(editor, null);
-          htmlString = htmlString.replace(/^(<p[^>]*><br><\/p>)+/, "");
-          htmlString = htmlString.replace(/(<p[^>]*><br><\/p>)+$/, "");
-          setEditorState(htmlString);
-        });
-      }
-    );
-  }, [editor, setEditorState]);
-
-  return null;
-}
-
-
 export const CodeHighlightPlugin = () => {
   const [editor] = useLexicalComposerContext();
 
@@ -195,7 +156,7 @@ export const CodeHighlightPlugin = () => {
   }, [editor]);
 
   return null;
-}
+};
 
 interface CardDetailsEditorProps {
   cardId: string;
@@ -209,6 +170,8 @@ export const CardDetailsEditor = ({
   const [editorState, setEditorState] = useState<string>();
   const columnId = useContext(ColumnContext);
   const { updateCardMutation } = useCardMutation();
+
+  const editorRef = useRef(null);
 
   const initialConfig: InitialConfigType = {
     namespace: "CardDetailsEditor",
@@ -225,6 +188,7 @@ export const CardDetailsEditor = ({
       LinkNode,
       HeadingNode,
       QuoteNode,
+      ImageNode,
     ] as any,
   };
 
@@ -263,6 +227,9 @@ export const CardDetailsEditor = ({
             <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
             <CustomTransformHTMLToLexical description={description} />
             <CustomTransformLexicalToHTML setEditorState={setEditorState} />
+            <ImagesPlugin />
+            <EditorRefPlugin editorRef={editorRef} />
+            <CopyImagePlugin ref={editorRef} />
           </div>
         </div>
 
