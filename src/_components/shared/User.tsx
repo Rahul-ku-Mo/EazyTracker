@@ -43,7 +43,7 @@ const User = () => {
       <PopoverTrigger>
         {user?.imageUrl ? (
           <img
-            src={user.imageUrl}
+            src={user?.imageUrl}
             alt="User"
             className="object-cover w-5 h-5 rounded-full"
           />
