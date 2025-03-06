@@ -58,7 +58,7 @@ const data = {
       isActive: true,
       items: [
         {
-          title: "Boards",
+          title: "Workspaces",
           url: "/boards",
         },
         {

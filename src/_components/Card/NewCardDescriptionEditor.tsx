@@ -165,7 +165,7 @@ export const NewCardDescriptionEditor = ({
               }
               ErrorBoundary={LexicalErrorBoundary}
             />
-            <PlaceholderPlugin placeholder="Add a description..." />
+            <PlaceholderPlugin placeholder="Fill more details..." />
             <HistoryPlugin />
             <ListPlugin />
             <CheckListPlugin />

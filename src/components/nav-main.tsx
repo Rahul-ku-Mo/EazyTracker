@@ -1,7 +1,6 @@
 "use client";
 
 import { ChevronRight, type LucideIcon } from "lucide-react";
-import CreateProject from "./project/create-project";
 
 import {
   Collapsible,
@@ -10,7 +9,7 @@ import {
 } from "./ui/collapsible";
 import {
   SidebarGroup,
-  SidebarGroupLabel,
+
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -35,7 +34,7 @@ export function NavMain({
 }) {
   return (
     <SidebarGroup className="flex flex-col h-full">
-      <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+     
       <SidebarMenu className="flex-1">
         {items.map((item) => (
           <Collapsible

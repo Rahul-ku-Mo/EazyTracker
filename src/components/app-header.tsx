@@ -1,6 +1,4 @@
-import {
-  SidebarTrigger,
-} from "../components/ui/sidebar";
+import { SidebarTrigger } from "../components/ui/sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,13 +8,13 @@ import {
   BreadcrumbSeparator,
 } from "../components/ui/breadcrumb";
 import { Separator } from "../components/ui/separator";
-import { useLocation } from "react-router-dom"; 
+import { useLocation } from "react-router-dom";
 import { ModeToggle } from "./mode-toggle";
+import { ViewToggle } from "./view-toggle";
 
 const AppHeader = ({ title }: { title: string }) => {
   const { pathname } = useLocation();
 
-  
   return (
     <header className="flex h-12 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
       <div className="flex items-center gap-2 px-4">
@@ -37,7 +35,8 @@ const AppHeader = ({ title }: { title: string }) => {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <div className="flex items-center pr-2">
+      <div className="flex items-center gap-2 pr-2">
+        <ViewToggle />
         <ModeToggle />
       </div>
     </header>
