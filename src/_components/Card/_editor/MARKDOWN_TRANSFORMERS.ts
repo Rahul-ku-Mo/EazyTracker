@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
 
 import {
   CHECK_LIST,
@@ -13,6 +6,7 @@ import {
   MULTILINE_ELEMENT_TRANSFORMERS,
   TEXT_FORMAT_TRANSFORMERS,
   TEXT_MATCH_TRANSFORMERS,
+  TextMatchTransformer,
   Transformer,
 } from "@lexical/markdown";
 import {
@@ -20,11 +14,31 @@ import {
   $isHorizontalRuleNode,
   HorizontalRuleNode,
 } from "@lexical/react/LexicalHorizontalRuleNode";
+import { LexicalNode } from "lexical";
+import { $createImageNode, $isImageNode, ImageNode } from "./ImageNode";
 
-import {
-  LexicalNode,
-} from "lexical";
+export const IMAGE: TextMatchTransformer = {
+  dependencies: [ImageNode],  
+  export: (node) => {
+    if (!$isImageNode(node)) {
+      return null;
+    }
 
+    return `![${node.getAltText()}](${node.getSrc()})`;
+  },
+  importRegExp: /!(?:\[([^[]*)\])(?:\(([^(]+)\))/,
+  regExp: /!(?:\[([^[]*)\])(?:\(([^(]+)\))$/,
+  replace: (textNode, match) => {
+    const [, altText, src] = match;
+    const imageNode = $createImageNode({
+      altText,
+      src,
+    });
+    textNode.replace(imageNode);
+  },
+  trigger: ')',
+  type: 'text-match',
+};
 
 
 export const HR: ElementTransformer = {
@@ -48,9 +62,18 @@ export const HR: ElementTransformer = {
   type: "element",
 };
 
-export const PLAYGROUND_TRANSFORMERS: Array<Transformer> = [
+export const MARKDOWN_TRANSFORMERS: Array<Transformer> = [
+  IMAGE,
   HR,
+  CHECK_LIST,
+  ...ELEMENT_TRANSFORMERS,
+  ...MULTILINE_ELEMENT_TRANSFORMERS,
+  ...TEXT_FORMAT_TRANSFORMERS,
+  ...TEXT_MATCH_TRANSFORMERS,
+];
 
+export const AI_ONLY_TEXT_MARKDOWN_TRANSFORMERS: Array<Transformer> = [
+  HR,
   CHECK_LIST,
   ...ELEMENT_TRANSFORMERS,
   ...MULTILINE_ELEMENT_TRANSFORMERS,

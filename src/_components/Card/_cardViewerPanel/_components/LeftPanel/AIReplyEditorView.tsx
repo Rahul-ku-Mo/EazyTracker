@@ -21,7 +21,7 @@ import { ListNode, ListItemNode } from "@lexical/list";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
 
-import { PLAYGROUND_TRANSFORMERS } from "../../../_editor/MARKDOWN_TRANSFORMERS.ts";
+import { AI_ONLY_TEXT_MARKDOWN_TRANSFORMERS } from "../../../_editor/MARKDOWN_TRANSFORMERS.ts";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { Copy, CopyCheck } from "lucide-react";
 
@@ -117,12 +117,12 @@ const StreamingIncomingMessageContentPlugin = ({
       root.clear();
       $convertFromMarkdownString(
         content,
-        PLAYGROUND_TRANSFORMERS,
+        AI_ONLY_TEXT_MARKDOWN_TRANSFORMERS,
         undefined,
         true,
         true
       );
-      setMarkdown($convertToMarkdownString(PLAYGROUND_TRANSFORMERS));
+      setMarkdown($convertToMarkdownString(AI_ONLY_TEXT_MARKDOWN_TRANSFORMERS));
     });
   }, [editor, content, setMarkdown]);
 
@@ -196,7 +196,7 @@ export default function AIReplyEditorView({
         <HistoryPlugin />
         <ListPlugin />
         <CheckListPlugin />
-        <MarkdownShortcutPlugin transformers={PLAYGROUND_TRANSFORMERS} />
+        <MarkdownShortcutPlugin transformers={AI_ONLY_TEXT_MARKDOWN_TRANSFORMERS} />
         <StreamingIncomingMessageContentPlugin
           content={content}
           setMarkdown={setMarkdown}

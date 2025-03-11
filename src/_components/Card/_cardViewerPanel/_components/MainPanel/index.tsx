@@ -2,7 +2,7 @@ import { Button } from "../../../../../components/ui/button";
 import { CardDetailsEditor } from "../../../_editor/editor.tsx";
 import { Lock, Unlock } from "lucide-react";
 import { useContext } from "react";
-import { CardContext } from "../../../../../context/CardProvider";
+import { CardContext } from "../../../../../context/CardProvider.tsx";
 import { TCardContext } from "../../../../../types/cardTypes";
 
 const MainPanel = ({

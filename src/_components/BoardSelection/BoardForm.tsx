@@ -1,25 +1,22 @@
-
 import { Check } from "lucide-react";
-import { Link } from "react-router-dom";
 import clsx from "clsx";
 import useBoardForm from "../../hooks/useBoardForm";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { Label } from "../../components/ui/label";
 
-interface UnsplashImage {
-  id: string;
-  urls: {
-    thumb: string;
-    full: string;
-  };
-  links: {
-    html: string;
-  };
-  user: {
-    name: string;
-  };
-}
+// Macintosh-inspired colors
+const macColors = [
+  { id: "mac-blue", color: "#1E90FF", name: "Macintosh Blue" },
+  { id: "mac-pink", color: "#FF69B4", name: "Macintosh Pink" },
+  { id: "mac-green", color: "#32CD32", name: "Macintosh Green" },
+  { id: "mac-yellow", color: "#FFD700", name: "Macintosh Yellow" },
+  { id: "mac-orange", color: "#FF8C00", name: "Macintosh Orange" },
+  { id: "mac-purple", color: "#9370DB", name: "Macintosh Purple" },
+  { id: "mac-red", color: "#FF6347", name: "Macintosh Red" },
+  { id: "mac-teal", color: "#20B2AA", name: "Macintosh Teal" },
+  { id: "mac-gray", color: "#708090", name: "Macintosh Gray" },
+];
 
 interface BoardFormProps {
   count: number;
@@ -28,7 +25,6 @@ interface BoardFormProps {
 const BoardForm = ({ count }: BoardFormProps) => {
   const {
     isPending,
-    images,
     selectedImageId,
     setCurrentBoardInput,
     currentBoardInput,
@@ -40,47 +36,42 @@ const BoardForm = ({ count }: BoardFormProps) => {
     <form className="flex flex-col space-y-4" onSubmit={handleSubmit}>
       <div className="flex flex-col">
         <Label className="pb-2 text-xs font-bold text-center text-gray-300">
-          Choose Background
+          Choose Background Color
         </Label>
         <div className="grid grid-cols-3 gap-2 mb-2">
-          {images.map((image: UnsplashImage) => (
+          {macColors.map((colorOption) => (
             <div
-              key={image.id}
+              key={colorOption.id}
               className={clsx(
-                "cursor-pointer relative aspect-video group hover:opacity-75 transition bg-gray-800",
+                "cursor-pointer relative aspect-video group hover:opacity-75 transition",
                 isPending && "opacity-50 hover:opacity-50 cursor-auto"
               )}
               onClick={() => {
                 if (isPending) return;
-                setSelectedImageId(image.id);
+                setSelectedImageId(colorOption.id);
               }}
             >
               <input
                 type="radio"
-                id="image"
-                name="image"
-                onChange={() => setSelectedImageId(image.id)}
+                id="color"
+                name="color"
+                onChange={() => setSelectedImageId(colorOption.id)}
                 className="hidden"
-                checked={selectedImageId === image.id}
-                value={`${image.id}|${image.urls.thumb}|${image.urls.full}|${image.links.html}|${image.user.name}`}
+                checked={selectedImageId === colorOption.id}
+                value={`${colorOption.id}|${colorOption.color}|${colorOption.name}`}
               />
-              <img
-                src={image.urls.thumb}
-                alt="Unsplash image"
-                className="object-cover w-full h-16 rounded-sm"
+              <div 
+                className="w-full h-16 rounded-sm"
+                style={{ backgroundColor: colorOption.color }}
               />
-              {selectedImageId === image.id && (
+              {selectedImageId === colorOption.id && (
                 <div className="absolute inset-y-0 flex items-center justify-center w-full h-full bg-black/30">
                   <Check className="w-4 h-4 text-white" />
                 </div>
               )}
-              <Link
-                to={image.links.html}
-                target="_blank"
-                className="opacity-0 group-hover:opacity-100 absolute bottom-0 w-full text-[10px] truncate text-white hover:underline p-1 bg-black/50"
-              >
-                {image.user.name}
-              </Link>
+              <div className="absolute bottom-0 w-full text-[10px] truncate text-white p-1 bg-black/50">
+                {colorOption.name}
+              </div>
             </div>
           ))}
         </div>

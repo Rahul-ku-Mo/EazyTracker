@@ -18,7 +18,6 @@ import {
 
 import { KanbanProvider } from "../context/KanbanProvider";
 import { UserContextProvider } from "../context/UserContext";
-import { NotificationContextProvider } from "../context/NotificationContext";
 import { AuthContext, AuthContextProvider } from "../context/AuthContext";
 
 interface ProtectedRouteProps {
@@ -38,7 +37,7 @@ const WithContexts = ({
 }: WithContextsProps) => {
   return (
     <UserContextProvider>
-      <NotificationContextProvider>
+    
         {includeKanban ? (
           <KanbanProvider>
             <Component {...props} />
@@ -46,7 +45,7 @@ const WithContexts = ({
         ) : (
           <Component {...props} />
         )}
-      </NotificationContextProvider>
+     
     </UserContextProvider>
   );
 };

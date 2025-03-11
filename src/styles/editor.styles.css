@@ -150,6 +150,14 @@
   border-radius: 0.125rem;
 }
 
+.editor-nested-list-item {
+  list-style-type: none;
+}
+.editor-nested-list-item:before,
+.editor-nested-list-item:after {
+  display: none;
+}
+
 .editor-nested-list {
   margin-left: 1rem;
 }

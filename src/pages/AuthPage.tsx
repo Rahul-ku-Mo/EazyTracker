@@ -163,8 +163,8 @@ const AuthPage = () => {
 
                 {!signupStatus && (
                   <Button
-                    variant="destructive"
-                    className="w-full"
+                    variant="outline"
+                    className="w-full bg-emerald-900 text-white hover:bg-emerald-700 transition-colors ease-linear"
                     disabled={isLoading}
                     onClick={signInAsGuest}
                   >

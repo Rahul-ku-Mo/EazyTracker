@@ -20,12 +20,13 @@ import { useState } from "react";
 import DeleteDialog from "../Dialog/DeleteDialog";
 import { useBoardMutation } from "./_mutations/useBoardMutation";
 import InviteBoardDialog from "./InviteBoardDialog";
+
 interface Board {
   id: string;
   title: string;
-  imageId: string;
-  imageFullUrl: string;
-  imageUserName: string;
+  colorId: string;
+  colorValue: string;
+  colorName: string;
 }
 
 const BoardCard = ({ board }: { board: Board }) => {
@@ -71,10 +72,9 @@ const BoardCard = ({ board }: { board: Board }) => {
       >
         <div className="block" onClick={handleOpenBoard}>
           <Card className="relative overflow-hidden border-0 rounded-md group w-52 h-36">
-            <img
-              src={board.imageFullUrl}
-              alt={`${board.title} board background`}
-              className="absolute inset-0 object-cover w-full h-full "
+            <div
+              style={{ backgroundColor: board.colorValue }}
+              className="absolute inset-0 w-full h-full"
             />
             <div
               className={cn(
@@ -88,7 +88,7 @@ const BoardCard = ({ board }: { board: Board }) => {
               </CardTitle>
               <CardFooter className="p-0">
                 <span className="text-xs font-medium text-white/20">
-                  {board.imageUserName}
+                  {board.colorName}
                 </span>
               </CardFooter>
             </div>
@@ -151,8 +151,8 @@ const BoardSelection = () => {
         <EmptyBoardState boards={boards} />
       ) : (
         <div className="flex flex-wrap gap-4 pt-2 ">
-          {boards?.map((board) => (
-            <BoardCard key={`${board.id}${board.imageId}`} board={board} />
+          {boards?.map((board: any) => (
+            <BoardCard key={`${board.id}${board.colorId}`} board={board} />
           ))}
           <BoardPopover count={MAX_BOARDS - (boards?.length ?? 0)} />
         </div>

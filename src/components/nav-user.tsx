@@ -63,7 +63,7 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="w-8 h-8 rounded-lg">
-                <AvatarImage src={user.imageUrl || ""} alt={user.username} />
+                <AvatarImage src={user?.imageUrl || ""} alt={user?.username} />
                 <AvatarFallback className="rounded-lg">
                   {user?.username.charAt(0)}
                 </AvatarFallback>
@@ -84,16 +84,16 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="w-8 h-8 rounded-lg">
-                  <AvatarImage src={user.imageUrl || ""} alt={user.username} />
+                  <AvatarImage src={user?.imageUrl || ""} alt={user?.username} />
                   <AvatarFallback className="rounded-lg">
-                    {user?.username.charAt(0)}
+                    {user?.username?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-sm leading-tight text-left">
                   <span className="font-semibold truncate">
-                    {user.username}
+                      {user?.username}
                   </span>
-                  <span className="text-xs truncate">{user.email}</span>
+                  <span className="text-xs truncate">{user?.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>

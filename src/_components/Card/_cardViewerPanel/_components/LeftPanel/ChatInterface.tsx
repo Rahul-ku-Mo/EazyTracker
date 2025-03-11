@@ -1,10 +1,11 @@
 import { useRef, useEffect, useState } from "react";
-import { Send, MoveLeftIcon } from "lucide-react";
+import { Send, MoveLeftIcon, StopCircle } from "lucide-react";
 import { Button } from "../../../../../components/ui/button";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Cookies from "js-cookie";
 import AIReplyEditorView from "./AIReplyEditorView";
+import { useGeminiStream } from "./useGeminiStream";
 
 interface Message {
   role: "user" | "model";
@@ -26,9 +27,18 @@ const ChatInterface = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const accessToken = Cookies.get("accessToken");
-  const [isStreaming, setIsStreaming] = useState<boolean>(false);
-  
-  // Query for fetching messages
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const [isStreaming, setIsStreaming] = useState(false);
+
+  // Use Gemini stream hook with conversationId
+  const {
+    response,
+    isStreaming: streamIsStreaming,
+    error,
+    submitPrompt,
+    stopStream
+  } = useGeminiStream(`${import.meta.env.VITE_API_URL}/ai/chat/stream`, conversationId || "");
+
   const { data: messages = [], isPending } = useQuery({
     queryKey: ["ai-chat-messages", conversationId],
     queryFn: async () => {
@@ -45,96 +55,6 @@ const ChatInterface = ({
     enabled: !!conversationId,
   });
 
-  // Mutation for sending messages
-  const chatMutation = useMutation({
-    mutationFn: async (message: string) => {
-      // Optimistically update messages
-      queryClient.setQueryData(
-        ["ai-chat-messages", conversationId],
-        (old: Message[] = []) => [...old, { role: "user", content: message }]
-      );
-
-      let currentResponse = "";
-
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/ai/chat/stream`,
-        {
-          message,
-          conversationId,
-        },
-        {
-          responseType: "stream",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          onDownloadProgress: (progressEvent) => {
-            const chunk = progressEvent.event.target.response;
-            setIsStreaming(true);
-            
-            if (!chunk) {
-              setIsStreaming(false);
-              return;
-            }
-
-            const lines = chunk.split("\n");
-
-            lines.forEach((line: string) => {
-              if (line.startsWith("data: ")) {
-                try {
-                  const data = JSON.parse(line.slice(6));
-
-                  if (data.error) {
-                    setIsStreaming(false);
-                    console.error("SSE Error:", data.error);
-                    return;
-                  }
-
-                  if (data.done) {
-                    setIsStreaming(false);
-                    queryClient.invalidateQueries({
-                      queryKey: ["ai-chat-messages", conversationId],
-                    });
-                    return;
-                  }
-
-                  if (data.chunk) {
-                    currentResponse += data.chunk;
-                    // Update the messages with the accumulated response
-                    queryClient.setQueryData(
-                      ["ai-chat-messages", conversationId],
-                      (old: Message[] = []) => {
-                        const messages = [...old];
-                        const lastMessage = messages[messages.length - 1];
-
-                        if (lastMessage?.role === "model") {
-                          messages[messages.length - 1] = {
-                            ...lastMessage,
-                            content: currentResponse,
-                          };
-                        } else {
-                          messages.push({
-                            role: "model",
-                            content: currentResponse,
-                          });
-                        }
-
-                        return messages;
-                      }
-                    );
-                  }
-                } catch (e) {
-                  console.error("Error parsing SSE data:", e);
-                }
-              }
-            });
-          },
-        }
-      );
-      return response.data;
-    },
-  });
-
   // Scroll to bottom when messages change
   useEffect(() => {
     const scrollTimeout = setTimeout(() => {
@@ -142,19 +62,70 @@ const ChatInterface = ({
     }, 100);
 
     return () => clearTimeout(scrollTimeout);
-  }, [messages]);
+  }, [messages, response]);
+
+  // Handle new streaming responses
+  useEffect(() => {
+    if (response && conversationId) {
+      queryClient.setQueryData(
+        ["ai-chat-messages", conversationId],
+        (old: Message[] = []) => {
+          const messages = [...old];
+          const lastMessage = messages[messages.length - 1];
+
+          if (lastMessage?.role === "model") {
+            messages[messages.length - 1] = {
+              ...lastMessage,
+              content: response,
+            };
+          } else {
+            messages.push({
+              role: "model",
+              content: response,
+            });
+          }
+          return messages;
+        }
+      );
+    }
+  }, [response, conversationId, queryClient]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || chatMutation.isPending) return;
+    if (!input.trim() || isStreaming) return;
 
     const userMessage = input.trim();
     setInput("");
 
+    // Add user message to chat immediately
+    queryClient.setQueryData(
+      ["ai-chat-messages", conversationId],
+      (old: Message[] = []) => [...old, { role: "user", content: userMessage }]
+    );
+
     try {
-      await chatMutation.mutateAsync(userMessage);
-    } catch (error) {
-      console.error("Chat error:", error);
+      // Make sure to cancel previous requests before starting new ones
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+
+      // Track request state properly to prevent duplicate requests
+      // Only start a new request if not currently streaming
+      if (!streamIsStreaming) {
+        setIsStreaming(true);
+        // Begin new request...
+        await submitPrompt(userMessage);
+      }
+      
+      // When streaming completes, refresh messages from server
+      if (!streamIsStreaming && conversationId) {
+        queryClient.invalidateQueries({
+          queryKey: ["ai-chat-messages", conversationId],
+        });
+      }
+    } catch (err) {
+      console.error("Chat error:", err);
       queryClient.setQueryData(
         ["ai-chat-messages", conversationId],
         (old: Message[] = []) => [
@@ -210,7 +181,7 @@ const ChatInterface = ({
                 }`}
               >
                 {message.role === "model" ? (
-                  <AIReplyEditorView content={message.content} isStreaming={isStreaming} />
+                  <AIReplyEditorView content={message.content} isStreaming={streamIsStreaming} />
                 ) : (
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                 )}
@@ -221,7 +192,7 @@ const ChatInterface = ({
         </div>
       )}
       <form onSubmit={handleSubmit} className="p-4 border-t dark:border-zinc-700">
-        <div className="flex space-x-2">
+        <div className="flex flex-col space-y-2">
           <textarea
             value={input}
             onKeyDown={(e) => {
@@ -231,14 +202,39 @@ const ChatInterface = ({
               }
             }}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1 min-w-0 px-3 py-2 text-sm border rounded-md min-h-9 h-10 max-h-[312px] border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-            disabled={chatMutation.isPending}
+            placeholder="Enter your prompt here..."
+            className="flex-1 min-w-0 px-3 py-2 text-sm border rounded-md min-h-9 h-20 max-h-[312px] resize-y border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
+            disabled={isStreaming}
+            rows={3}
           />
-          <Button type="submit" disabled={chatMutation.isPending}>
-            <Send className="w-4 h-4" />
-          </Button>
+          <div className="flex justify-end space-x-2">
+            <Button 
+              type="submit" 
+              disabled={isStreaming || !input.trim()}
+              className="bg-blue-500 hover:bg-blue-600"
+            >
+              {isStreaming ? 'Streaming...' : <Send className="w-4 h-4" />}
+            </Button>
+            
+            {streamIsStreaming && (
+              <Button 
+                type="button"
+                variant="destructive"
+                onClick={stopStream}
+                className="flex items-center gap-1"
+              >
+                <StopCircle className="w-4 h-4" />
+                Stop
+              </Button>
+            )}
+          </div>
         </div>
+        
+        {error && (
+          <div className="mt-2 p-2 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm rounded-md">
+            Error: {error.message}
+          </div>
+        )}
       </form>
     </div>
   );

@@ -1,4 +1,4 @@
-import {create } from 'zustand';
+import { create } from 'zustand';
 
 interface ToggleViewState {
   view: 'kanban' | 'table';
@@ -10,4 +10,4 @@ const useToggleViewStore = create<ToggleViewState>((set) => ({
   toggleView: () => set((state) => ({view: state.view === 'kanban' ? 'table' : 'kanban'}))
 }));
 
-export default useToggleViewStore;
+export default useToggleViewStore

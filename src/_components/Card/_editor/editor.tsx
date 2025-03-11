@@ -21,9 +21,10 @@ import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
 import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
 import { $convertFromMarkdownString } from "@lexical/markdown";
-import { PLAYGROUND_TRANSFORMERS as TRANSFORMERS } from "./MARKDOWN_TRANSFORMERS.ts";
+import { MARKDOWN_TRANSFORMERS as TRANSFORMERS } from "./MARKDOWN_TRANSFORMERS.ts";
 import { EditorRefPlugin } from "@lexical/react/LexicalEditorRefPlugin";
 import { CopyImagePlugin } from "./Plugins/CopyImagePlugin";
+import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
 /**Lexical Nodes */
 import { CodeNode, CodeHighlightNode } from "@lexical/code";
 import { LinkNode } from "@lexical/link";
@@ -224,6 +225,7 @@ export const CardDetailsEditor = ({
             <HistoryPlugin />
             <AutoFocusPlugin />
             <CodeHighlightPlugin />
+            <TabIndentationPlugin />
             <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
             <CustomTransformHTMLToLexical description={description} />
             <CustomTransformLexicalToHTML setEditorState={setEditorState} />

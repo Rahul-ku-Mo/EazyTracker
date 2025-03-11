@@ -1,17 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
-import { DEFAULT_IMAGES } from "../constant";
-import { unsplash } from "../services/unsplashService";
 import { useNavigate } from "react-router-dom";
-
 import Cookies from "js-cookie";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createBoard } from "../apis/BoardApis";
 import { useToast } from "../hooks/use-toast";
 
 interface IBoardForm {
   boardTitle: string;
-  selectedImageTitle: any;
+  selectedColor: string;
 }
 
 const useBoardForm = (count: number) => {
@@ -21,33 +17,24 @@ const useBoardForm = (count: number) => {
   const { toast } = useToast();
 
   const [currentBoardInput, setCurrentBoardInput] = useState("");
-  const [selectedImageId, setSelectedImageId] = useState(null);
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
 
   const createBoardMutation = useMutation({
-    mutationFn: async (data : IBoardForm) => {
+    mutationFn: async (data: IBoardForm) => {
       if (!accessToken) {
         throw new Error("No access token found");
       }
 
-      const [
-        imageId,
-        imageThumbUrl,
-        imageFullUrl,
-        imageLinkHTML,
-        imageUserName,
-      ] = data.selectedImageTitle.split("|");
+      const [colorId, colorValue, colorName] = data.selectedColor.split("|");
 
       const kanbanBoardData = {
         title: data.boardTitle,
-        imageId: imageId,
-        imageThumbUrl: imageThumbUrl,
-        imageFullUrl: imageFullUrl,
-        imageLinkHTML: imageLinkHTML,
-        imageUserName: imageUserName,
+        colorId,
+        colorValue,
+        colorName
       };
 
       const response = await createBoard(accessToken, kanbanBoardData);
-
       return response;
     },
     onSuccess: (data) => {
@@ -61,7 +48,7 @@ const useBoardForm = (count: number) => {
         setSelectedImageId(null);
       }
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Failed to create board",
         description: error.message,
@@ -75,11 +62,12 @@ const useBoardForm = (count: number) => {
     },
   });
 
-  const handleSubmit = async (event: any) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    const boardTitle = event.target.elements.title.value;
-    const selectedImageTitle = event.target.elements.image.value;
+    
+    const form = event.target as HTMLFormElement;
+    const boardTitle = (form.elements.namedItem('title') as HTMLInputElement).value;
+    const selectedColor = (form.elements.namedItem('color') as HTMLInputElement).value;
 
     if (boardTitle === "") {
       toast({
@@ -90,10 +78,10 @@ const useBoardForm = (count: number) => {
       return;
     }
 
-    if (selectedImageTitle === "") {
+    if (selectedColor === "") {
       toast({
-        title: "Board background shouldn't be empty!",
-        description: "Please select a board background",
+        title: "Board color shouldn't be empty!",
+        description: "Please select a board color",
         variant: "destructive",
       });
       return;
@@ -119,31 +107,12 @@ const useBoardForm = (count: number) => {
 
     createBoardMutation.mutate({
       boardTitle,
-      selectedImageTitle,
+      selectedColor,
     });
   };
 
-  const { data: images, isPending } = useQuery({
-    queryKey: ["images"],
-    queryFn: async () => {
-      const result = await unsplash.photos.getRandom({
-        collectionIds: ["317099"],
-        count: 9,
-      });
-
-      if (result && result.response) {
-        return result.response;
-      }
-
-      throw new Error("Failed to fetch images");
-    },
-    retry: false,
-    initialData: DEFAULT_IMAGES,
-  });
-
   return {
-    isPending,
-    images,
+    isPending: createBoardMutation.isPending,
     selectedImageId,
     setCurrentBoardInput,
     currentBoardInput,
