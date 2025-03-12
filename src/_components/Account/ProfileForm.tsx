@@ -23,7 +23,7 @@ const ProfileForm = () => {
 
   useEffect(() => {
     setInitialState(formState);
-  }, [user]);
+  }, [user, formState]);
 
   const handleChange = (prop: keyof ProfileFormState) => (event: ChangeEvent<HTMLInputElement>) => {
     setFormState({ ...formState, [prop]: event.target.value });

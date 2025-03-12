@@ -33,7 +33,7 @@ const LocationForm = () => {
 
   useEffect(() => {
     setInitialState(formState);
-  }, [user]);
+  }, [user, formState]);
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: LocationFormState) => {

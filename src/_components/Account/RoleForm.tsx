@@ -24,7 +24,7 @@ const RoleForm = () => {
 
   useEffect(() => {
     setInitialState(formState);
-  }, [user]);
+  }, [user, formState]);
 
   const handleChange = (prop: keyof RoleFormState) => (event: ChangeEvent<HTMLInputElement>) => {
     setFormState({ ...formState, [prop]: event.target.value });
