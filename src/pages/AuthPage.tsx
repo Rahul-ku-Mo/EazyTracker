@@ -1,22 +1,17 @@
-import { useContext, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useGoogleLogin } from "@react-oauth/google";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { GalleryVerticalEnd, Eye, EyeOff } from "lucide-react";
-import axios from "axios";
-import Cookies from "js-cookie";
-import { useQueryClient } from "@tanstack/react-query";
-import { cn } from "../lib/utils";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import useAuthProvider from "../hooks/useAuthProvider";
-import { AuthContext } from "../context/AuthContext";
+
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+import signInWithGoogle from "@/services/googleSSOService";
+import useAuthProvider from "@/hooks/useAuthProvider";
 
 const AuthPage = () => {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [signupStatus, setSignupStatus] = useState(false);
-  const { setIsLoggedIn } = useContext(AuthContext);
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -24,28 +19,11 @@ const AuthPage = () => {
     handleChange,
     signinUser,
     signupUser,
-    signInAsGuest,
     username,
-    handleNameChange,
+    handleUserNameChange,
     errors,
     isLoading,
   } = useAuthProvider();
-
-  const signinWithGoogle = useGoogleLogin({
-    flow: "auth-code",
-    onSuccess: async (codeResponse: { code: string }) => {
-      const tokenResponse = await axios.post(
-        `${import.meta.env.VITE_API_URL}/oauth2/google`,
-        { code: codeResponse.code }
-      );
-
-      setIsLoggedIn(true);
-      Cookies.set("accessToken", tokenResponse.data.token);
-      queryClient.setQueryData(["user"], tokenResponse.data.data);
-      navigate("/boards");
-    },
-    onError: (errorResponse: any) => console.log(errorResponse),
-  });
 
   return (
     <div className="grid min-h-screen place-items-center bg-background">
@@ -79,7 +57,7 @@ const AuthPage = () => {
                       id="username"
                       type="text"
                       value={username}
-                      onChange={handleNameChange}
+                      onChange={handleUserNameChange}
                       placeholder="johndoe"
                       className={cn(errors.username && "border-destructive")}
                     />
@@ -160,17 +138,6 @@ const AuthPage = () => {
                     ? "Create account"
                     : "Sign in"}
                 </Button>
-
-                {!signupStatus && (
-                  <Button
-                    variant="outline"
-                    className="w-full bg-emerald-900 text-white hover:bg-emerald-700 transition-colors ease-linear"
-                    disabled={isLoading}
-                    onClick={signInAsGuest}
-                  >
-                    {isLoading ? "Signing in..." : "Continue as guest"}
-                  </Button>
-                )}
               </div>
 
               <div className="relative text-center">
@@ -186,7 +153,7 @@ const AuthPage = () => {
                 type="button"
                 variant="outline"
                 className="w-full"
-                onClick={() => signinWithGoogle()}
+                onClick={() => signInWithGoogle()}
               >
                 <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
                   <path

@@ -5,18 +5,34 @@ import { useMutation } from "@tanstack/react-query";
 import { updateUserIntegrations } from "../../apis/userApis";
 import { UserContext } from "../../context/UserContext";
 import {
-  FaDiscord,
-  FaSlack,
-  FaMailchimp,
-  FaGithub,
-  FaGoogleDrive,
-} from "react-icons/fa";
+  MessageSquare,
+  MessageCircle,
+  Mail,
+  Github,
+  HardDrive,
+  LucideIcon
+} from "lucide-react";
 
-const IntegrationCard = ({ name, icon: Icon, connected, onToggle }) => {
+interface IntegrationCardProps {
+  name: string;
+  icon: LucideIcon;
+  connected: boolean;
+  onToggle: () => void;
+}
+
+interface IntegrationsState {
+  discord: boolean;
+  slack: boolean;
+  mailchimp: boolean;
+  github: boolean;
+  googleDrive: boolean;
+}
+
+const IntegrationCard = ({ name, icon: Icon, connected, onToggle }: IntegrationCardProps) => {
   return (
     <div className="flex items-center justify-between p-4 rounded-lg bg-white dark:bg-zinc-800 shadow-sm">
       <div className="flex items-center space-x-3">
-        <Icon className="text-2xl text-gray-600 dark:text-gray-300" />
+        <Icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
         <span className="font-medium text-gray-700 dark:text-gray-200">
           {name}
         </span>
@@ -39,7 +55,7 @@ const IntegrationsForm = () => {
   const { accessToken } = useContext(AuthContext);
   const { user } = useContext(UserContext);
 
-  const [integrations, setIntegrations] = useState({
+  const [integrations, setIntegrations] = useState<IntegrationsState>({
     discord: user?.integrations?.discord || false,
     slack: user?.integrations?.slack || false,
     mailchimp: user?.integrations?.mailchimp || false,
@@ -48,7 +64,7 @@ const IntegrationsForm = () => {
   });
 
   const updateIntegrationsMutation = useMutation({
-    mutationFn: async (data) => {
+    mutationFn: async (data: IntegrationsState) => {
       return await updateUserIntegrations(accessToken, data);
     },
     onSuccess: () => {
@@ -60,7 +76,7 @@ const IntegrationsForm = () => {
     },
   });
 
-  const handleToggleIntegration = (integration) => {
+  const handleToggleIntegration = (integration: keyof IntegrationsState) => {
     const updatedIntegrations = {
       ...integrations,
       [integration]: !integrations[integration],
@@ -84,31 +100,31 @@ const IntegrationsForm = () => {
       <div className="grid gap-4 lg:grid-cols-2 ">
         <IntegrationCard
           name="Discord"
-          icon={FaDiscord}
+          icon={MessageCircle}
           connected={integrations.discord}
           onToggle={() => handleToggleIntegration("discord")}
         />
         <IntegrationCard
           name="Slack"
-          icon={FaSlack}
+          icon={MessageSquare}
           connected={integrations.slack}
           onToggle={() => handleToggleIntegration("slack")}
         />
         <IntegrationCard
           name="MailChimp"
-          icon={FaMailchimp}
+          icon={Mail}
           connected={integrations.mailchimp}
           onToggle={() => handleToggleIntegration("mailchimp")}
         />
         <IntegrationCard
           name="GitHub"
-          icon={FaGithub}
+          icon={Github}
           connected={integrations.github}
           onToggle={() => handleToggleIntegration("github")}
         />
         <IntegrationCard
           name="Google Drive"
-          icon={FaGoogleDrive}
+          icon={HardDrive}
           connected={integrations.googleDrive}
           onToggle={() => handleToggleIntegration("googleDrive")}
         />

@@ -82,14 +82,14 @@ export const useGeminiStream = (apiEndpoint: string, conversationId: string): Ge
           if (parsedData.chunk !== undefined) {
             setResponse(prev => prev + parsedData.chunk);
           }
-        } catch (e: any) {
-          console.warn('Failed to parse SSE data:', event.data);
+        } catch (error: any) {
+          console.warn('Failed to parse SSE data:', error);
           // Just in case it's not JSON, add the raw data
           setResponse(prev => prev + event.data);
         }
       };
       
-      eventSource.onerror = (event: Event): void => {
+      eventSource.onerror = (): void => {
         setError(new Error('Connection error. Please try again.'));
         setIsStreaming(false);
         stopStream();

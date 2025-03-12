@@ -2,12 +2,25 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { TCreateCardProps, TCardData } from "../types";
 
+interface CardDetail {
+  id: string;
+  title: string;
+  description?: string;
+  dueDate?: string;
+  columnId: string;
+  createdAt?: string;
+  updatedAt?: string;
+  labels?: any[];
+  attachments?: any[];
+  [key: string]: any;
+}
+
 /***Column CRUD API ***/
 export const createCard = async ({
   accessToken,
   cardData,
   columnId,
-}: TCreateCardProps) => {
+}: TCreateCardProps): Promise<CardDetail | undefined> => {
   const { title, description, dueDate, labels, attachments } = cardData;
 
   try {
@@ -30,12 +43,17 @@ export const createCard = async ({
     if (response.data.data && response.status === 201) {
       return response.data.data;
     }
+    return undefined;
   } catch (err) {
     console.log(err);
+    return undefined;
   }
 };
 
-export const fetchCards = async (accessToken : string, columnId : string) => {
+export const fetchCards = async (
+  accessToken: string, 
+  columnId: string
+): Promise<CardDetail[] | undefined> => {
   try {
     const response = await axios.get(
       `${import.meta.env.VITE_API_URL}/cards?columnId=${columnId}`,
@@ -49,12 +67,17 @@ export const fetchCards = async (accessToken : string, columnId : string) => {
     if (response.data.data && response.status === 200) {
       return response.data.data;
     }
+    return undefined;
   } catch (err) {
     console.log(err);
+    return undefined;
   }
 };
 
-export const fetchCard = async (accessToken : string, cardId : string) => {
+export const fetchCard = async (
+  accessToken: string, 
+  cardId: string
+): Promise<CardDetail | undefined> => {
   try {
     const response = await axios.get(
       `${import.meta.env.VITE_API_URL}/cards/${cardId}`,
@@ -68,8 +91,10 @@ export const fetchCard = async (accessToken : string, cardId : string) => {
     if (response.data.data && response.status === 200) {
       return response.data.data;
     }
+    return undefined;
   } catch (err) {
     console.log(err);
+    return undefined;
   }
 };
 
@@ -77,7 +102,7 @@ export const updateCard = async (
   accessToken: string,
   data: TCardData,
   cardId: string
-) => {
+): Promise<CardDetail | undefined> => {
   try {
     const response = await axios.patch(
       `${import.meta.env.VITE_API_URL}/cards/${cardId}`,
@@ -92,16 +117,20 @@ export const updateCard = async (
     if (response.data.data && response.status === 201) {
       return response.data.data;
     }
+    return undefined;
   } catch (err) {
     console.log(err);
+    return undefined;
   }
 };
 
-export const deleteCard = async (accessToken: string, cardId: string) => {
+export const deleteCard = async (
+  accessToken: string, 
+  cardId: string
+): Promise<string> => {
   try {
     const response = await axios.delete(
       `${import.meta.env.VITE_API_URL}/cards/${cardId}`,
-
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -112,22 +141,21 @@ export const deleteCard = async (accessToken: string, cardId: string) => {
     if (response.data.data && response.status === 204) {
       return "success";
     }
+    return "error";
   } catch (err) {
     console.log(err);
-
     return "error";
   }
 };
 
 /***Card CRUD API ***/
 
-export const getCardDetails = async (cardId : string) => {
+export const getCardDetails = async (cardId: string): Promise<CardDetail | undefined> => {
   const accessToken = Cookies.get("accessToken");
 
   try {
     const response = await axios.get(
       `${import.meta.env.VITE_API_URL}/cards/details/${cardId}`,
-
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -138,7 +166,9 @@ export const getCardDetails = async (cardId : string) => {
     if (response.data.message === "success" && response.status === 200) {
       return response.data.data;
     }
+    return undefined;
   } catch (err) {
     console.log(err);
+    return undefined;
   }
 };

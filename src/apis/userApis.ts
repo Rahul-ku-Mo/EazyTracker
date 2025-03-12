@@ -1,7 +1,30 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-export const fetchUserProfile = async (accessToken: string) => {
+interface UserProfile {
+  username: string;
+  email: string;
+  name?: string;
+  phoneNumber?: string;
+  imageUrl?: string;
+  state?: string;
+  address?: string;
+  zipCode?: string;
+  company?: string;
+  role?: string;
+  department?: string;
+  [key: string]: any;
+}
+
+interface UserIntegrations {
+  discord: boolean;
+  slack: boolean;
+  mailchimp: boolean;
+  github: boolean;
+  googleDrive: boolean;
+}
+
+export const fetchUserProfile = async (accessToken: string): Promise<UserProfile | undefined> => {
   try {
     const response = await axios.get(
       `${import.meta.env.VITE_API_URL}/users/me`,
@@ -19,13 +42,14 @@ export const fetchUserProfile = async (accessToken: string) => {
     return response.data.data;
   } catch (err) {
     console.log(err);
+    return undefined;
   }
 };
 
 export const updateUserProfile = async (
   accessToken: string,
-  formState: any
-) => {
+  formState: Partial<UserProfile>
+): Promise<UserProfile | undefined> => {
   try {
     const response = await axios.patch(
       `${import.meta.env.VITE_API_URL}/users/me`,
@@ -40,10 +64,11 @@ export const updateUserProfile = async (
     return response.data.data;
   } catch (e) {
     console.log(e);
+    return undefined;
   }
 };
 
-export const fetchUsers = async (accessToken : string) => {
+export const fetchUsers = async (accessToken: string): Promise<UserProfile[] | undefined> => {
   try {
     const response = await axios.get(`${import.meta.env.VITE_API_URL}/users`, {
       headers: {
@@ -54,10 +79,14 @@ export const fetchUsers = async (accessToken : string) => {
     return response.data.data;
   } catch (err) {
     console.log(err);
+    return undefined;
   }
 };
 
-export const updateUserIntegrations = async (accessToken : string, integrations : any) => {
+export const updateUserIntegrations = async (
+  accessToken: string, 
+  integrations: UserIntegrations
+): Promise<UserIntegrations> => {
   const response = await fetch(`${import.meta.env.VITE_API_URL}/user/integrations`, {
     method: "PUT",
     headers: {

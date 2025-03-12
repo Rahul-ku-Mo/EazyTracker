@@ -35,6 +35,7 @@ const User = () => {
     Cookies.remove("accessToken");
     setIsLoggedIn(false);
     queryClient.clear();
+
     navigate("/auth");
   };
 

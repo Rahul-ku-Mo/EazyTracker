@@ -34,7 +34,7 @@ import { AuthContext } from "../context/AuthContext";
 export function NavUser({
   user,
 }: {
-  user: {
+  user?: {
     username: string;
     email: string;
     imageUrl: string | null;

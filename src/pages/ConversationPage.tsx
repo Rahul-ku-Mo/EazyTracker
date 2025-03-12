@@ -1,4 +1,4 @@
-import { MessageCircle, Video, Users, Send } from "lucide-react";
+import {  Video, Users, Send } from "lucide-react";
 import Container from "../layouts/Container";
 
 const ConversationList = () => (
@@ -68,7 +68,7 @@ const ChatArea = () => (
 
 export default function ConversationsComponent() {
   return (
-    <Container>
+    <Container title="Conversations">
       <div className="flex h-full overflow-hidden bg-white dark:bg-zinc-900 text-zinc-800 dark:text-white">
         <ConversationList />
         <ChatArea />

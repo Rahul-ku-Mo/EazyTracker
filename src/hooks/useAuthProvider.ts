@@ -6,26 +6,48 @@ import { AuthContext } from "../context/AuthContext";
 import Cookies from "js-cookie";
 import { useQueryClient } from "@tanstack/react-query";
 
+type AuthErrors = {
+  email: string;
+  password: string;
+  username?: string;
+}
+
 const useAuthProvider = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { setIsLoggedIn } = useContext(AuthContext);
+
   const [username, setUserName] = useState("");
+
   const [values, setValues] = useState({
     email: "",
     password: "",
   });
-  const [errors, setErrors] = useState({});
+
+  const [errors, setErrors] = useState<AuthErrors>({
+    email: "",
+    password: "",
+    username: "",
+  });
+
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (prop) => (event) => {
+  const handleChange = (prop: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
     setValues({ ...values, [prop]: event.target.value });
     setErrors({ ...errors, [prop]: "" });
   };
 
+  const handleUserNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserName(e.target.value);
+    setErrors((prev) => ({ ...prev, username: "" }));
+  };
+
   const validateForm = () => {
     let isValid = true;
-    const newErrors = {};
+    const newErrors = {
+      email: "",
+      password: "",
+    };
 
     if (!values.email) {
       newErrors.email = "Email is required";
@@ -66,38 +88,9 @@ const useAuthProvider = () => {
         queryClient.setQueryData(["user"], response.data.data);
         navigate("/boards");
       }
-    } catch (err) {
+    } catch (err : any) {
       toast.error(
         err.response?.data?.message || "An error occurred during login"
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const signInAsGuest = async () => {
-    setIsLoading(true);
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/login`,
-        {
-          email: "rajamohanty12345@gmail.com",
-          password: "123456",
-        }
-      );
-
-      const token = response.data.accesstoken;
-
-      if (response.status === 200) {
-        Cookies.set("accessToken", token);
-        toast.success("Login successful as Guest 🎉");
-        setIsLoggedIn(true);
-        queryClient.setQueryData(["user"], response.data.data);
-        navigate("/boards");
-      }
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message || "An error occurred during guest login"
       );
     } finally {
       setIsLoading(false);
@@ -124,7 +117,7 @@ const useAuthProvider = () => {
       setIsLoggedIn(true);
       queryClient.setQueryData(["user"], response.data.data);
       navigate("/boards");
-    } catch (err) {
+    } catch (err : any) {
       toast.error(
         err.response?.data?.message || "An error occurred during signup"
       );
@@ -133,19 +126,13 @@ const useAuthProvider = () => {
     }
   };
 
-  const handleNameChange = (e) => {
-    setUserName(e.target.value);
-    setErrors((prev) => ({ ...prev, username: "" }));
-  };
-
   return {
     signinUser,
     signupUser,
-    signInAsGuest,
     values,
     handleChange,
     username,
-    handleNameChange,
+    handleUserNameChange,
     errors,
     isLoading,
   };

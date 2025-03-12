@@ -1,5 +1,5 @@
-import { useRoutes, Navigate, Outlet } from "react-router-dom";
 import { useContext } from "react";
+import { useRoutes, Navigate, Outlet } from "react-router-dom";
 import {
   LandingPage,
   KanbanPage,
@@ -14,11 +14,12 @@ import {
   RoleForm,
   IntegrationsForm,
   BoardSettingsPage,
-} from "./element";
+} from "@/routes/element";
 
-import { KanbanProvider } from "../context/KanbanProvider";
-import { UserContextProvider } from "../context/UserContext";
-import { AuthContext, AuthContextProvider } from "../context/AuthContext";
+import { KanbanProvider } from "@/context/KanbanProvider";
+import { UserContextProvider } from "@/context/UserContext";
+import { AuthContext, AuthContextProvider } from "@/context/AuthContext";
+import GoogleCallback from "@/pages/callback/GoogleCallback";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -125,6 +126,10 @@ const Router = () => {
         </AuthContextProvider>
       ),
       children: authenticatedRoutes,
+    },
+    {
+      path: "/auth/google/callback",
+      element: <GoogleCallback />,
     },
     { path: "*", element: <NotFoundPage /> },
   ];

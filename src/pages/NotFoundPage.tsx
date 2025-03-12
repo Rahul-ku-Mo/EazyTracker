@@ -41,7 +41,8 @@ export default function NotFound() {
           className="flex justify-center"
         >
           <Link
-            to={navigate(-1)}
+            to="#"
+            onClick={() => navigate(-1)}
             className="inline-flex items-center justify-center h-10 px-4 py-2 text-sm font-medium transition-colors rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-emerald-800 text-zinc-100 hover:bg-emerald-800/90"
           >
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />

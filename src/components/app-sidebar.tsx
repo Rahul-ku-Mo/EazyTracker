@@ -1,19 +1,13 @@
 import * as React from "react";
 import {
   AudioWaveform,
-  BookOpen,
-  Bot,
   Command,
-  Frame,
   GalleryVerticalEnd,
   Inbox,
-  Map,
-  PieChart,
   SquareTerminal,
 } from "lucide-react";
 
 import { NavMain } from "./nav-main";
-import { NavProjects } from "./nav-projects";
 import { NavUser } from "./nav-user";
 import { TeamSwitcher } from "./team-switcher";
 import {
@@ -102,7 +96,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={userData} />
+        {userData && <NavUser user={{
+          username: userData.username,
+          email: userData.email,
+          imageUrl: userData.imageUrl || null
+        }} />}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

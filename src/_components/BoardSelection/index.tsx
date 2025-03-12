@@ -113,7 +113,7 @@ const BoardCard = ({ board }: { board: Board }) => {
   );
 };
 
-const EmptyBoardState = ({ boards }: { boards: Board[] }) => (
+const EmptyBoardState = ({ boards }: { boards: any }) => (
   <>
     <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
       <Card className="border-0 bg-background/50">

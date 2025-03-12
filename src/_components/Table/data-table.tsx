@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Task } from "./columns";
-import { cn } from "@/lib/utils";
+
 import { Badge } from "@/components/ui/badge";
 
 interface DataTableProps {
