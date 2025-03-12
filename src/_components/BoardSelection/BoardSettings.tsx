@@ -1,7 +1,7 @@
 import {  useState } from "react";
 import { useParams } from "react-router-dom";
 import { Trash2, Users, AlertTriangle, Save } from "lucide-react";
-import { useBoardMutation } from "../../_components/BoardSelection/_mutations/useBoardMutation";
+import { useBoardMutation } from "@/_components/BoardSelection/_mutations/useBoardMutation";
 
 import {
   Card,
@@ -10,9 +10,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../../components/ui/card";
-import { Input } from "../../components/ui/input";
-import { Button } from "../../components/ui/button";
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -21,13 +21,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../../components/ui/dialog";
-import { Label } from "../../components/ui/label";
-import { Separator } from "../../components/ui/separator";
-import MainLayout from "../../layouts/Container";
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import MainLayout from "@/layouts/Container";
 import Cookies from "js-cookie";
 
-import { useBoard } from "../../hooks/useQueries";
+import { useBoard } from "@/hooks/useQueries";
 import LoadingScreen from "../LoadingScreen";
 
 const BoardSettings = () => {

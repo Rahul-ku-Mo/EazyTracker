@@ -2,6 +2,8 @@ import { forwardRef, useEffect, Ref } from "react";
 import { INSERT_IMAGE_COMMAND } from "../ImageNode";
 
 export const CopyImagePlugin = forwardRef((props, ref: Ref<any>) => {
+  console.log(props)
+  
   useEffect(() => {
     if (ref && "current" in ref && ref.current) {
       const editor = ref.current;

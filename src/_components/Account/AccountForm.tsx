@@ -1,11 +1,11 @@
 import isEqual from "lodash.isequal";
 import { useEffect, useState, useContext } from "react";
 import { toast } from "sonner";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext } from "@/context/AuthContext";
 import { useMutation } from "@tanstack/react-query";
-import { updateUserProfile } from "../../apis/userApis";
-import { Input } from "../../components/ui/input";
-import { UserContext } from "../../context/UserContext";
+import { updateUserProfile } from "@/apis/userApis";
+import { Input } from "@/components/ui/input";
+import { UserContext } from "@/context/UserContext";
 import { motion } from "framer-motion";
 
 interface FormState {

@@ -2,7 +2,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "../../components/ui/popover";
+} from "@/components/ui/popover";
 import BoardForm from "./BoardForm";
 
 interface BoardPopoverProps {

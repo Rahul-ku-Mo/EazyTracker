@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
-import { useToast } from "../../hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import Cookies from "js-cookie";
 import {
   Dialog,
@@ -8,9 +8,9 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "../../components/ui/dialog";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface InviteBoardDialogProps {
   isOpen: boolean;

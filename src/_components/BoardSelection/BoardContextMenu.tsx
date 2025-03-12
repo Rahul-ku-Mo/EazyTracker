@@ -4,7 +4,7 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
-} from "../../components/ui/context-menu";
+} from "@/components/ui/context-menu";
 import { FileEdit, Settings, Trash, UserPlus } from "lucide-react";
 
 interface BoardContextMenuProps {

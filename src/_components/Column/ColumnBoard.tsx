@@ -80,12 +80,12 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
   const { columns } = useContext(KanbanContext);
   const inputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
-  const accessToken = Cookies.get("accessToken");
+  const accessToken = Cookies.get("accessToken") as string;
   const [columnName, setColumnName] = useState("");
   const [showListInput, setShowListInput] = useState(false);
 
   const createColumnMutation = useMutation({
-    mutationFn: (title: string) => createColumn(accessToken, title, boardId),
+    mutationFn: (title: string) => createColumn(accessToken, title, boardId as string),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["columns", "boards", boardId],

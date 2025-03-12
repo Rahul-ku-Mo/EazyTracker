@@ -1,8 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
-import { deleteBoard, updateBoard } from "../../../apis/BoardApis";
+import { deleteBoard, updateBoard } from "@/apis/BoardApis";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "../../../hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export const useBoardMutation = () => {
   const navigate = useNavigate();
@@ -39,7 +39,7 @@ export const useBoardMutation = () => {
       updatedBoardData,
     }: {
       boardId: string;
-      updatedBoardData: unknown;
+      updatedBoardData: any;
     }) => {
       await updateBoard(accessToken, boardId, updatedBoardData);
     },

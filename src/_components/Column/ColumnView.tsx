@@ -31,7 +31,7 @@ const ColumnView = ({ title, cards }: ColumnViewProps) => {
   const { id: boardId } = useParams();
   const queryClient = useQueryClient();
   const columnId = useContext(ColumnContext);
-  const accessToken = Cookies.get("accessToken");
+  const accessToken = Cookies.get("accessToken") as string;
 
   // const updateColumnMutation = useMutation({
   //   mutationFn: async ({

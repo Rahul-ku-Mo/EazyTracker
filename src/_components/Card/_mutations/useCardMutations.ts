@@ -92,7 +92,7 @@ export const useCardMutation = () => {
         description: "Please try again later",
         variant: "destructive",
       }),
-    onSettled: async (_, error, variables: TIssueUpdateCard) => {
+    onSettled: async (_, __, variables: TIssueUpdateCard) => {
       await queryClient.invalidateQueries({
         queryKey: ["cards", "columns", variables.columnId],
       });

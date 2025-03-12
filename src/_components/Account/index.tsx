@@ -1,4 +1,4 @@
-import MainLayout from "../../layouts/Container";
+import MainLayout from "@/layouts/Container";
 import { Link, useLocation } from "react-router-dom";
 import clsx from "clsx";
 

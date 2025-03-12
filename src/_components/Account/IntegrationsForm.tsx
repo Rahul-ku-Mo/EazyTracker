@@ -1,9 +1,9 @@
 import { useState, useContext } from "react";
 import { toast } from "sonner";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext } from "@/context/AuthContext";
 import { useMutation } from "@tanstack/react-query";
-import { updateUserIntegrations } from "../../apis/userApis";
-import { UserContext } from "../../context/UserContext";
+import { updateUserIntegrations } from "@/apis/userApis";
+import { UserContext } from "@/context/UserContext";
 import {
   MessageSquare,
   MessageCircle,

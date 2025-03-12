@@ -1,4 +1,4 @@
-export const formatDate = (timestamp) => {
+export const formatDate = (timestamp: any) => {
   const seconds = timestamp.seconds;
   const date = new Date(seconds * 1000); // Convert seconds to milliseconds
   const year = date.getFullYear();

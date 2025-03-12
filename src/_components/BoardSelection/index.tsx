@@ -1,19 +1,19 @@
 import { useNavigate } from "react-router-dom";
 
 import Cookies from "js-cookie";
-import { cn } from "../../lib/utils";
-import Container from "../../layouts/Container";
+import { cn } from "@/lib/utils";
+import Container from "@/layouts/Container";
 import BoardPopover from "./BoardPopover";
-import { useBoards } from "../../hooks/useQueries";
-import { MAX_BOARDS } from "../../constant";
+import { useBoards } from "@/hooks/useQueries";
+import { MAX_BOARDS } from "@/constant";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../../components/ui/card";
-import { Skeleton } from "../../components/ui/skeleton";
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { BoardContextMenu } from "./BoardContextMenu";
 import { useState } from "react";

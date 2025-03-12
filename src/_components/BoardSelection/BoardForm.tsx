@@ -1,9 +1,9 @@
 import { Check } from "lucide-react";
 import clsx from "clsx";
-import useBoardForm from "../../hooks/useBoardForm";
-import { Input } from "../../components/ui/input";
-import { Button } from "../../components/ui/button";
-import { Label } from "../../components/ui/label";
+import useBoardForm from "@/hooks/useBoardForm";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 // Macintosh-inspired colors
 const macColors = [
