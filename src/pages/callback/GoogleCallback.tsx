@@ -31,7 +31,7 @@ const GoogleCallback = () => {
           throw new Error('No authorization code received from Google.');
         }
 
-        const response = await axios.post('http://localhost:8000/api/v1/auth/google', {
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/google`, {
           code,
         });
 
