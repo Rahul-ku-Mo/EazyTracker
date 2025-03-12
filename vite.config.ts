@@ -1,16 +1,15 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
-import tsconfigPaths from "vite-tsconfig-paths";
-
-// Path to your src folder
-const root = path.resolve(__dirname, "src");
 
 export default defineConfig({
-  plugins: [react(), tsconfigPaths()],
+  plugins: [react()],
   resolve: {
-    alias: [
-      { find: "@", replacement: root }
-    ],
+    alias: {
+      '@': path.resolve(__dirname, './src')
+    },
   },
+  build: {
+    sourcemap: true
+  }
 });
