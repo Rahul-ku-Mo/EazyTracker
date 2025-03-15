@@ -1,5 +1,5 @@
 import * as React from "react"
-import { ChevronsUpDown, Plus } from "lucide-react"
+import { ChevronsUpDown, Plus, GalleryVerticalEnd} from "lucide-react"
 
 import {
   DropdownMenu,
@@ -17,35 +17,40 @@ import {
   useSidebar,
 } from "../components/ui/sidebar"
 
+type Team = {
+  name: string
+  id: string
+  joinCode?: string
+}
+
 export function TeamSwitcher({
   teams,
 }: {
-  teams: {
-    name: string
-    logo: React.ElementType
-    plan: string
-  }[]
+  teams: Team | Team[]
 }) {
   const { isMobile } = useSidebar()
-  const [activeTeam, setActiveTeam] = React.useState(teams[0])
+  // Convert single team to array if not already an array
+  const teamArray = Array.isArray(teams) ? teams : [teams]
+  const [activeTeam, setActiveTeam] = React.useState<Team>(teamArray[0])
 
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+        <DropdownMenu >
+          <DropdownMenuTrigger asChild >
             <SidebarMenuButton
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <div className="flex items-center justify-center rounded-lg aspect-square size-8 bg-sidebar-primary text-sidebar-primary-foreground">
-                <activeTeam.logo className="size-4" />
+                <GalleryVerticalEnd className="size-4" />
               </div>
               <div className="grid flex-1 text-sm leading-tight text-left">
                 <span className="font-semibold truncate">
                   {activeTeam.name}
                 </span>
-                <span className="text-xs truncate">{activeTeam.plan}</span>
+               <span className="text-xs truncate">Free Plan</span>
+              
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -59,21 +64,23 @@ export function TeamSwitcher({
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Teams
             </DropdownMenuLabel>
-            {teams.map((team, index) => (
+            
+            {teamArray.map((team, index) => (
               <DropdownMenuItem
-                key={team.name}
+                key={team.id}
                 onClick={() => setActiveTeam(team)}
                 className="gap-2 p-2"
               >
                 <div className="flex items-center justify-center border rounded-sm size-6">
-                  <team.logo className="size-4 shrink-0" />
+                  <GalleryVerticalEnd className="size-4 shrink-0" />
                 </div>
                 {team.name}
                 <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
               </DropdownMenuItem>
             ))}
+            
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2">
+            <DropdownMenuItem className="gap-2 p-2 pointer-events-none cursor-not-allowed">
               <div className="flex items-center justify-center border rounded-md size-6 bg-background">
                 <Plus className="size-4" />
               </div>

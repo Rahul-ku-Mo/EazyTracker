@@ -8,7 +8,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeProvider";
 import { Button } from "../components/ui/button";
 import { cn } from "../lib/utils";
@@ -162,6 +162,8 @@ export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
+  const navigate = useNavigate();
+
   // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true);
@@ -234,6 +236,7 @@ export default function LandingPage() {
             >
               <Button
                 variant="default"
+                onClick={() => navigate("/auth")}
                 className="h-8 px-3.5 py-2.5 text-base tracking-tight font-bold rounded-full"
               >
                 Start for free

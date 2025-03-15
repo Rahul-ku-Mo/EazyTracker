@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { useRoutes, Navigate, Outlet } from "react-router-dom";
+import { useRoutes, Navigate } from "react-router-dom";
 import {
   LandingPage,
   KanbanPage,
@@ -14,12 +14,15 @@ import {
   RoleForm,
   IntegrationsForm,
   BoardSettingsPage,
+  OnboardingPage,
+  TeamMembersPage,
 } from "@/routes/element";
 
 import { KanbanProvider } from "@/context/KanbanProvider";
 import { UserContextProvider } from "@/context/UserContext";
 import { AuthContext, AuthContextProvider } from "@/context/AuthContext";
 import GoogleCallback from "@/pages/callback/GoogleCallback";
+import RequireAuth from "@/_components/shared/RequireAuth";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -38,25 +41,15 @@ const WithContexts = ({
 }: WithContextsProps) => {
   return (
     <UserContextProvider>
-    
-        {includeKanban ? (
-          <KanbanProvider>
-            <Component {...props} />
-          </KanbanProvider>
-        ) : (
+      {includeKanban ? (
+        <KanbanProvider>
           <Component {...props} />
-        )}
-     
+        </KanbanProvider>
+      ) : (
+        <Component {...props} />
+      )}
     </UserContextProvider>
   );
-};
-
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { isLoggedIn } = useContext(AuthContext);
-  if (!isLoggedIn) {
-    return <Navigate to="/auth" replace />;
-  }
-  return <>{children}</>;
 };
 
 const AuthRoute = ({ children }: ProtectedRouteProps) => {
@@ -76,6 +69,10 @@ const settingRoutes = [
 ];
 
 const authenticatedRoutes = [
+  {
+    path: "/onboarding",
+    element: <WithContexts Component={OnboardingPage} />,
+  },
   {
     path: "/kanban/:id",
     element: <WithContexts Component={KanbanPage} includeKanban={true} />,
@@ -102,6 +99,10 @@ const authenticatedRoutes = [
     path: "/conversation/inbox",
     element: <WithContexts Component={ConversationPage} />,
   },
+  {
+    path: "/team/members",
+    element: <WithContexts Component={TeamMembersPage} />,
+  },
 ];
 
 const Router = () => {
@@ -120,9 +121,7 @@ const Router = () => {
     {
       element: (
         <AuthContextProvider>
-          <ProtectedRoute>
-            <Outlet />
-          </ProtectedRoute>
+          <RequireAuth />
         </AuthContextProvider>
       ),
       children: authenticatedRoutes,

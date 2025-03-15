@@ -1,60 +1,153 @@
 import { forwardRef, useEffect, Ref } from "react";
+import { $getNodeByKey } from "lexical";
 import { INSERT_IMAGE_COMMAND } from "../ImageNode";
+import { ImageNode, uploadsInProgress } from "../ImageNode";
 
-export const CopyImagePlugin = forwardRef((props, ref: Ref<any>) => {
-  console.log(props)
+import axios from "axios";
+
+// Helper function to upload image to S3 using pre-signed URL
+async function uploadImageToS3(file: File): Promise<string> {
+  try {
+    // Generate a unique filename with extension
+    const fileName = `image-${Date.now()}.${file.type.split('/')[1] || 'png'}`;
+    
+    // 1. Get pre-signed URL from your server
+    const response = await axios.post(`${import.meta.env.VITE_API_URL}/aws/upload`, {
+      fileName,
+      fileType: file.type
+    });
+    
+    const { url: uploadUrl } = response.data;
+    
+    // 2. Upload directly to S3
+    await axios.put(uploadUrl, file, {
+      headers: {
+        'Content-Type': file.type
+      }
+    });
+    
+    // 3. Create a permanent URL from the upload URL
+    // Extract the permanent URL from the pre-signed URL by removing query parameters
+    const permanentUrl = uploadUrl.split('?')[0];
+    
+    return permanentUrl;
+  } catch (error) {
+    console.error('Failed to upload image:', error);
+    throw error;
+  }
+}
+
+export const CopyImagePlugin = forwardRef((_, ref: Ref<any>) => {
   
   useEffect(() => {
     if (ref && "current" in ref && ref.current) {
       const editor = ref.current;
 
-      const handlePaste = (event: ClipboardEvent) => {
-        // Check if event is already being handled
-        if (event.defaultPrevented) {
-          return;
-        }
+      // Add a custom command to update image source
+      editor.registerCommand(
+        'UPDATE_IMAGE_SOURCE',
+        (payload: { nodeKey: string; src: string }) => {
+          const { nodeKey, src } = payload;
+          
+          editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            if (node instanceof ImageNode) {
+              node.setSrc(src);
+              
+              // Remove this node from uploads in progress
+              uploadsInProgress.delete(nodeKey);
+              
+              // Force re-render of node to remove overlay
+              node.markDirty();
+            }
+          });
+          
+          return true;
+        },
+        0
+      );
+
+      const handlePaste = async (event: ClipboardEvent) => {
+        if (event.defaultPrevented) return;
 
         const clipboardData = event.clipboardData;
-        if (clipboardData) {
-          const items = clipboardData.items;
+        if (!clipboardData) return;
 
-          if (items) {
-            for (let i = 0; i < items.length; i++) {
-              const item = items[i];
+        const items = clipboardData.items;
+        if (!items) return;
 
-              if (item.type.indexOf("image") !== -1) {
-                event.preventDefault();
-                const blob = item.getAsFile();
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
 
-                if (blob) {
-                  const reader = new FileReader();
+          if (item.type.indexOf("image") !== -1) {
+            event.preventDefault();
+            const file = item.getAsFile();
 
-                  reader.onload = function (e) {
-                    if (e.target && typeof e.target.result === "string") {
-                      const dataURL = e.target.result;
+            if (file) {
+              const reader = new FileReader();
 
-                      // Create image to get dimensions
-                      const image = new Image();
-                      image.src = dataURL;
+              reader.onload = function (e) {
+                if (e.target && typeof e.target.result === "string") {
+                  const dataURL = e.target.result;
 
-                      image.onload = function () {
-                        // Dispatch command to insert image directly with dataURL
-                        editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
-                          src: dataURL,
-                          altText: "Pasted image",
-                          width: image.width,
-                          height: "inherit",
-                          showCaption: false,
-                          caption: "",
-                        });
-                      };
-                    }
+                  // Create image to get dimensions
+                  const image = new Image();
+                  image.src = dataURL;
+
+                  image.onload = function () {
+                    // Insert image with temporary data URL
+                    editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
+                      src: dataURL,
+                      altText: "Uploading image...",
+                      width: image.width,
+                      height: "inherit",
+                      showCaption: false,
+                      caption: "",
+                      // Add a flag to indicate this image is being uploaded
+                      isUploading: true
+                    });
+
+                    // Get the node key of the newly inserted image
+                    editor.getEditorState().read(() => {
+                      // Find the image node we just inserted with isUploading flag
+                      const nodes = editor._editorState._nodeMap;
+                      let targetNodeKey: string | null = null;
+                      
+                      nodes.forEach((node: any, key: any) => {
+                        if (node instanceof ImageNode && node.__src === dataURL) {
+                          targetNodeKey = key;
+                        }
+                      });
+
+                      if (targetNodeKey) {
+                        // Mark this node as uploading
+                        uploadsInProgress.set(targetNodeKey, true);
+                        
+                        // Start the upload process
+                        uploadImageToS3(file)
+                          .then(permanentUrl => {
+                            // Update the image source when upload completes
+                            editor.dispatchCommand('UPDATE_IMAGE_SOURCE', {
+                              nodeKey: targetNodeKey,
+                              src: permanentUrl
+                            });
+                          })
+                          .catch(error => {
+                            console.error('Upload failed:', error);
+                            // Update with error state or remove the image
+                            editor.dispatchCommand('UPDATE_IMAGE_SOURCE', {
+                              nodeKey: targetNodeKey,
+                              src: dataURL // Keep using data URL if upload fails
+                            });
+                          });
+                      }
+                    });
                   };
-
-                  reader.readAsDataURL(blob);
-                  break; // Exit after processing first image
                 }
-              }
+              };
+
+              reader.readAsDataURL(file);
+              break;
             }
           }
         }
@@ -95,3 +188,4 @@ export const CopyImagePlugin = forwardRef((props, ref: Ref<any>) => {
 
   return null;
 });
+

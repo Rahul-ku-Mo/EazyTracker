@@ -8,7 +8,8 @@ import axios, { AxiosError } from "axios";
 interface AuthContextType {
   isLoggedIn: boolean;
   setIsLoggedIn: (isLoggedIn: boolean) => void;
-  accessToken: string;
+  accessToken: string;  
+  role: string;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -19,11 +20,11 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(!!accessToken);
 
   /**1. verify user logged in is Authorized or not */
-  useQuery({
+  const { data  : role } = useQuery({
     queryKey: ["auth-verify"],
     queryFn: async () => {
       try {
-        const response = await axios.get<{ success: boolean; role: string }>(
+        const response = await axios.get<{ success: boolean; data: string }>(
           `${import.meta.env.VITE_API_URL}/auth/verify`,
           {
             headers: {
@@ -31,7 +32,7 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
             },
           }
         );
-        return response.data;
+        return response?.data?.data;
       } catch (error) {
         if (error instanceof AxiosError) {
           const status = error.response?.status;
@@ -54,7 +55,8 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         isLoggedIn,
         setIsLoggedIn,
-        accessToken
+        accessToken, 
+        role: role || ""
       }}
     >
       {children}

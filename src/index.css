@@ -27,6 +27,30 @@
   src: url("/fonts/GT-Walsheim/GT-Walsheim-Medium-Trial.woff2") format("woff2");
 }
 
+@font-face {
+  font-family: 'GT Walsheim';
+  src: url('/fonts/GTWalsheimPro-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GT Walsheim';
+  src: url('/fonts/GTWalsheimPro-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GT Walsheim';
+  src: url('/fonts/GTWalsheimPro-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 html {
   height: 100%;
   scroll-behavior: smooth;
@@ -163,4 +187,8 @@ html {
 
 .inter-variable-font {
   font-family: "Inter Variable",  sans-serif;
+}
+
+.font-gt-walsheim {
+  font-family: 'GT Walsheim', system-ui, sans-serif;
 }

@@ -61,3 +61,7 @@ export const RoleForm = Loadable(
 export const IntegrationsForm = Loadable(
   lazy(() => import("../_components/Account/IntegrationsForm"))
 );
+
+export const OnboardingPage = Loadable(lazy(() => import("../pages/OnboardingPage")));
+
+export const TeamMembersPage = Loadable(lazy(() => import("../pages/members/TeamMembersPage")));

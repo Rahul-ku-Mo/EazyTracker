@@ -8,9 +8,7 @@ import { useBoards } from "@/hooks/useQueries";
 import { MAX_BOARDS } from "@/constant";
 import {
   Card,
-  CardContent,
   CardFooter,
-  CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -116,16 +114,12 @@ const BoardCard = ({ board }: { board: Board }) => {
 const EmptyBoardState = ({ boards }: { boards: any }) => (
   <>
     <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
-      <Card className="border-0 bg-background/50">
-        <CardHeader>
-          <CardTitle className="text-2xl">Create your first board</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Start by creating a board to organize your tasks
-          </p>
-        </CardContent>
-      </Card>
+      <div className="border-0 bg-background/50">
+        <div className="text-2xl font-bold text-center gt-walsheim-font">Start your journey!</div>
+        <div className="text-sm max-w-xs text-muted-foreground text-center inter-variable-font">
+          ✨ Create your first board to organize tasks. 🚀
+        </div>
+      </div>
     </div>
     <BoardPopover count={MAX_BOARDS - (boards?.length ?? 0)} />
   </>

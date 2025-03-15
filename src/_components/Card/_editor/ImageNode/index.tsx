@@ -1,26 +1,57 @@
 // ImageNode.tsx - A simplified version of the ImageNode for Lexical Editor
 
-import { $applyNodeReplacement, createCommand, DecoratorNode } from "lexical";
-import type { DOMExportOutput, LexicalNode, NodeKey } from "lexical";
-import * as React from "react";
-import { Suspense, useRef } from "react";
+import { Loader } from "lucide-react";
+import {
+  DOMExportOutput,
+  LexicalNode,
+  NodeKey,
+  SerializedLexicalNode,
+  Spread,
+} from "lexical";
+import { createCommand } from "lexical";
+import { $applyNodeReplacement, DecoratorNode } from "lexical";
 
-// Define the image payload interface
+export const INSERT_IMAGE_COMMAND = createCommand<ImagePayload>("INSERT_IMAGE_COMMAND");
+
 export interface ImagePayload {
   src: string;
   altText: string;
-  width?: number;
-  height?: number;
+  width?: number | string;
+  height?: string | number;
   showCaption?: boolean;
   caption?: string;
   key?: NodeKey;
+  isUploading?: boolean;
 }
 
-// Create a command to insert images
-export const INSERT_IMAGE_COMMAND = createCommand("INSERT_IMAGE_COMMAND");
+export type SerializedImageNode = Spread<
+  {
+    src: string;
+    altText: string;
+    width?: number | string;
+    height?: number | string;
+    showCaption?: boolean;
+    caption?: string;
+    type: "image";
+    version: 1;
+  },
+  SerializedLexicalNode
+>;
 
-// Simple image component that displays the image and optional caption
-const ImageComponent = ({
+// Track uploads in progress globally
+export const uploadsInProgress = new Map<string, boolean>();
+
+export interface ImageComponentProps {
+  src: string;
+  altText: string;
+  width?: number | string;
+  height?: number | string;
+  showCaption?: boolean;
+  caption?: string;
+  nodeKey: NodeKey;
+}
+
+export function ImageComponent({
   src,
   altText,
   width,
@@ -28,51 +59,44 @@ const ImageComponent = ({
   showCaption,
   caption,
   nodeKey,
-}: {
-  src: string;
-  altText: string;
-  width: number | "inherit";
-  height: number | "inherit";
-  showCaption: boolean;
-  caption: string;
-  nodeKey: NodeKey;
-}) => {
-  const imageRef = useRef<HTMLImageElement>(null);
-
+}: ImageComponentProps): JSX.Element {
+  const isLoading = uploadsInProgress.has(nodeKey);
+  
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <div className="image-container" key={nodeKey}>
+    <div className="image-container relative">
+      <div className={`transition-opacity duration-300 ${isLoading ? 'opacity-30' : 'opacity-100'}`}>
         <img
           src={src}
           alt={altText}
-          ref={imageRef}
-          style={{
-            width: width !== "inherit" ? width : undefined,
-            height: height !== "inherit" ? height : undefined,
-            maxWidth: "100%",
-          }}
+          style={{ width, height }}
           draggable="false"
-          className="lexical-image"
+          className="rounded-md"
         />
-
-        {showCaption && caption && (
-          <div className="image-caption-container">
-            <div className="ImageNode__contentEditable" contentEditable>
-              <span className="ImageNode__placeholder">Enter a caption...</span>
-            </div>
-          </div>
-        )}
       </div>
-    </Suspense>
+      
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center z-10">
+          <div className="bg-black/30 p-3 rounded-full">
+            <Loader className="h-8 w-8 text-white animate-spin" />
+          </div>
+          <span className="sr-only">Uploading image...</span>
+        </div>
+      )}
+      
+      {showCaption && (
+        <div className="image-caption mt-2 text-sm text-gray-500 dark:text-gray-400">
+          {caption}
+        </div>
+      )}
+    </div>
   );
-};
+}
 
-// The actual ImageNode class
-export class ImageNode extends DecoratorNode<React.JSX.Element> {
+export class ImageNode extends DecoratorNode<JSX.Element> {
   __src: string;
   __altText: string;
-  __width: number | "inherit";
-  __height: number | "inherit";
+  __width: number | string;
+  __height: number | string;
   __showCaption: boolean;
   __caption: string;
 
@@ -95,8 +119,8 @@ export class ImageNode extends DecoratorNode<React.JSX.Element> {
   constructor(
     src: string,
     altText: string,
-    width?: number | "inherit",
-    height?: number | "inherit",
+    width?: number | string,
+    height?: number | string,
     showCaption?: boolean,
     caption?: string,
     key?: NodeKey
@@ -104,55 +128,51 @@ export class ImageNode extends DecoratorNode<React.JSX.Element> {
     super(key);
     this.__src = src;
     this.__altText = altText;
-    this.__width = width || "inherit";
-    this.__height = height || "inherit";
+    this.__width = width || "auto";
+    this.__height = height || "auto";
     this.__showCaption = showCaption || false;
     this.__caption = caption || "";
   }
 
-  // Export to DOM for serialization
-  exportDOM(): DOMExportOutput {
-    const element = document.createElement("img");
-    element.setAttribute("src", this.__src);
-    element.setAttribute("alt", this.__altText);
-    if (this.__width !== "inherit") {
-      element.setAttribute("width", this.__width.toString());
-    }
-    if (this.__height !== "inherit") {
-      element.setAttribute("height", this.__height.toString());
-    }
-    return { element };
-  }
-
-  // Create DOM node
-  createDOM(): HTMLElement {
-    const div = document.createElement("div");
-    div.className = "editor-image";
-    return div;
-  }
-
-  // We don't need to update the DOM ourselves
-  updateDOM(): false {
-    return false;
-  }
-
-  // Getters
+  // Setters and getters
   getSrc(): string {
     return this.__src;
+  }
+
+  setSrc(src: string): void {
+    const writable = this.getWritable();
+    writable.__src = src;
   }
 
   getAltText(): string {
     return this.__altText;
   }
 
-  // Setters
-  setWidthAndHeight(
-    width: number | "inherit",
-    height: number | "inherit"
-  ): void {
+  setAltText(altText: string): void {
+    const writable = this.getWritable();
+    writable.__altText = altText;
+  }
+
+  getWidth(): number | string {
+    return this.__width;
+  }
+
+  setWidth(width: number | string): void {
     const writable = this.getWritable();
     writable.__width = width;
+  }
+
+  getHeight(): number | string {
+    return this.__height;
+  }
+
+  setHeight(height: number | string): void {
+    const writable = this.getWritable();
     writable.__height = height;
+  }
+
+  getShowCaption(): boolean {
+    return this.__showCaption;
   }
 
   setShowCaption(showCaption: boolean): void {
@@ -160,8 +180,26 @@ export class ImageNode extends DecoratorNode<React.JSX.Element> {
     writable.__showCaption = showCaption;
   }
 
-  // Render the node with React
-  decorate(): React.JSX.Element {
+  getCaption(): string {
+    return this.__caption;
+  }
+
+  setCaption(caption: string): void {
+    const writable = this.getWritable();
+    writable.__caption = caption;
+  }
+
+  createDOM(): HTMLElement {
+    const div = document.createElement("div");
+    div.className = "image-wrapper";
+    return div;
+  }
+
+  updateDOM(): false {
+    return false;
+  }
+
+  decorate(): JSX.Element {
     return (
       <ImageComponent
         src={this.__src}
@@ -170,30 +208,61 @@ export class ImageNode extends DecoratorNode<React.JSX.Element> {
         height={this.__height}
         showCaption={this.__showCaption}
         caption={this.__caption}
-        nodeKey={this.getKey()}
+        nodeKey={this.__key}
       />
     );
   }
+
+  exportDOM(): DOMExportOutput {
+    const element = document.createElement("img");
+    element.setAttribute("src", this.__src);
+    element.setAttribute("alt", this.__altText);
+    if (this.__width) element.setAttribute("width", this.__width.toString());
+    if (this.__height) element.setAttribute("height", this.__height.toString());
+    return { element };
+  }
+
+  static importJSON(serializedNode: SerializedImageNode): ImageNode {
+    const { src, altText, width, height, showCaption, caption } = serializedNode;
+    const node = $createImageNode({
+      src,
+      altText,
+      width,
+      height,
+      showCaption,
+      caption,
+    });
+    return node;
+  }
+
+  exportJSON(): SerializedImageNode {
+    return {
+      type: "image",
+      version: 1,
+      src: this.__src,
+      altText: this.__altText,
+      width: this.__width,
+      height: this.__height,
+      showCaption: this.__showCaption,
+      caption: this.__caption,
+    };
+  }
 }
 
-// Helper function to create an ImageNode
-export function $createImageNode(payload: ImagePayload): ImageNode {
+export function $createImageNode({
+  src,
+  altText,
+  width,
+  height,
+  showCaption,
+  caption,
+  key,
+}: ImagePayload): ImageNode {
   return $applyNodeReplacement(
-    new ImageNode(
-      payload.src,
-      payload.altText,
-      payload.width,
-      payload.height,
-      payload.showCaption,
-      payload.caption,
-      payload.key
-    )
+    new ImageNode(src, altText, width, height, showCaption, caption, key)
   );
 }
 
-// Helper function to check if a node is an ImageNode
-export function $isImageNode(
-  node: LexicalNode | null | undefined
-): node is ImageNode {
+export function $isImageNode(node: LexicalNode | null | undefined): node is ImageNode {
   return node instanceof ImageNode;
 }
