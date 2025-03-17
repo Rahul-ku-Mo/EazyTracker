@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useContext } from "react";
+import { useState, useRef, useEffect, useContext, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,6 +13,9 @@ import ColumnView from "./ColumnView";
 import { createColumn } from "../../apis/ColumnApis";
 import { KanbanContext } from "../../context/KanbanProvider";
 import { ColumnProvider } from "../../context/ColumnProvider";
+import ListView from "@/_components/ListView";
+import { useStore } from "zustand";
+import useToggleViewStore from "@/store/toggleViewStore";
 
 interface Column {
   id: string;
@@ -78,6 +81,9 @@ const ExpandAddColumnButton = ({ onClick }: ExpandAddColumnButtonProps) => {
 const ColumnBoard = ({ title }: ColumnBoardProps) => {
   const { id: boardId } = useParams();
   const { columns } = useContext(KanbanContext);
+
+  const { view } = useStore(useToggleViewStore);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   const accessToken = Cookies.get("accessToken") as string;
@@ -108,6 +114,19 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
     setShowListInput(false);
   };
 
+  const listViewData = useMemo(() => {
+    return columns?.reduce((acc: any, curr: any) => {
+      const columnKey = curr.title;
+
+      return {
+        ...acc,
+        [columnKey]: curr.cards,
+      };
+    }, {});
+  }, [columns]);
+
+
+
   useEffect(() => {
     if (showListInput) {
       inputRef.current?.focus();
@@ -118,7 +137,7 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
     <>
       <Container fwdClassName="bg-transparent" title={title}>
         <div className="relative w-full h-full">
-          <ol className="absolute inset-0 flex items-start h-full gap-2 ">
+          {view === "kanban" ? <ol className="absolute inset-0 flex items-start h-full gap-2 ">
             {sortedColumns?.map((column: Column) => (
               <ColumnProvider columnId={column.id} key={column.id}>
                 <ColumnView title={column.title} cards={column.cards} />
@@ -137,7 +156,7 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
                 <ExpandAddColumnButton onClick={() => setShowListInput(true)} />
               )}
             </div>
-          </ol>
+          </ol> : <ListView data={listViewData} />}
         </div>
       </Container>
     </>
