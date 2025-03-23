@@ -1,9 +1,16 @@
 import { forwardRef, useEffect, Ref } from "react";
 import { $getNodeByKey } from "lexical";
 import { INSERT_IMAGE_COMMAND } from "../ImageNode";
-import { ImageNode, uploadsInProgress } from "../ImageNode";
+import { ImageNode } from "../ImageNode";
 
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
+import Cookies from "js-cookie";
+import { useUploadFileProgressStore } from "@/store/uploadFileProgressStore";
+
+type S3ResponseT = {
+  preSignedUrl: string;
+  key: string;
+}
 
 // Helper function to upload image to S3 using pre-signed URL
 async function uploadImageToS3(file: File): Promise<string> {
@@ -12,25 +19,21 @@ async function uploadImageToS3(file: File): Promise<string> {
     const fileName = `image-${Date.now()}.${file.type.split('/')[1] || 'png'}`;
     
     // 1. Get pre-signed URL from your server
-    const response = await axios.post(`${import.meta.env.VITE_API_URL}/aws/upload`, {
+    const urlResponse: AxiosResponse<S3ResponseT> = await axios.post(`${import.meta.env.VITE_API_URL}/aws/upload`, {
       fileName,
       fileType: file.type
-    });
-    
-    const { url: uploadUrl } = response.data;
-    
-    // 2. Upload directly to S3
-    await axios.put(uploadUrl, file, {
+    }, {
       headers: {
-        'Content-Type': file.type
+        'Authorization': `Bearer ${Cookies.get('accessToken')}`
       }
     });
     
-    // 3. Create a permanent URL from the upload URL
-    // Extract the permanent URL from the pre-signed URL by removing query parameters
-    const permanentUrl = uploadUrl.split('?')[0];
+    const { preSignedUrl: upload_URL , key } = urlResponse.data;
     
-    return permanentUrl;
+    // 2. Upload directly to S3
+     await axios.put(upload_URL, file);
+    
+    return `https://${import.meta.env.VITE_AWS_S3_BUCKET}.s3.ap-south-1.amazonaws.com/${key}`
   } catch (error) {
     console.error('Failed to upload image:', error);
     throw error;
@@ -39,6 +42,8 @@ async function uploadImageToS3(file: File): Promise<string> {
 
 export const CopyImagePlugin = forwardRef((_, ref: Ref<any>) => {
   
+  const {setImageUploadStatusMap, imageUploadStatusMap} = useUploadFileProgressStore((state) => state);
+
   useEffect(() => {
     if (ref && "current" in ref && ref.current) {
       const editor = ref.current;
@@ -55,8 +60,10 @@ export const CopyImagePlugin = forwardRef((_, ref: Ref<any>) => {
               node.setSrc(src);
               
               // Remove this node from uploads in progress
-              uploadsInProgress.delete(nodeKey);
-              
+              if(node.__src.includes(`https://${import.meta.env.VITE_AWS_S3_BUCKET}.s3.ap-south-1.amazonaws.com/`)) {
+
+                setImageUploadStatusMap(new Map(imageUploadStatusMap.set(nodeKey, "completed")));
+              }
               // Force re-render of node to remove overlay
               node.markDirty();
             }
@@ -86,7 +93,7 @@ export const CopyImagePlugin = forwardRef((_, ref: Ref<any>) => {
             if (file) {
               const reader = new FileReader();
 
-              reader.onload = function (e) {
+              reader.onload = async function (e) {
                 if (e.target && typeof e.target.result === "string") {
                   const dataURL = e.target.result;
 
@@ -94,54 +101,44 @@ export const CopyImagePlugin = forwardRef((_, ref: Ref<any>) => {
                   const image = new Image();
                   image.src = dataURL;
 
-                  image.onload = function () {
+                  setImageUploadStatusMap(new Map(imageUploadStatusMap.set(file.name, "uploading")));
+                 
+                  image.onload = async function () {
                     // Insert image with temporary data URL
                     editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
                       src: dataURL,
-                      altText: "Uploading image...",
+                      altText: file.name,
                       width: image.width,
                       height: "inherit",
                       showCaption: false,
                       caption: "",
-                      // Add a flag to indicate this image is being uploaded
                       isUploading: true
                     });
 
-                    // Get the node key of the newly inserted image
-                    editor.getEditorState().read(() => {
-                      // Find the image node we just inserted with isUploading flag
+                    const s3URL = await uploadImageToS3(file);
+
+                   
+                    editor.update(() => {
+
                       const nodes = editor._editorState._nodeMap;
                       let targetNodeKey: string | null = null;
-                      
+
                       nodes.forEach((node: any, key: any) => {
                         if (node instanceof ImageNode && node.__src === dataURL) {
                           targetNodeKey = key;
+                          setImageUploadStatusMap(new Map(imageUploadStatusMap.set(file.name, "completed")));
                         }
                       });
 
                       if (targetNodeKey) {
-                        // Mark this node as uploading
-                        uploadsInProgress.set(targetNodeKey, true);
-                        
-                        // Start the upload process
-                        uploadImageToS3(file)
-                          .then(permanentUrl => {
-                            // Update the image source when upload completes
-                            editor.dispatchCommand('UPDATE_IMAGE_SOURCE', {
-                              nodeKey: targetNodeKey,
-                              src: permanentUrl
-                            });
-                          })
-                          .catch(error => {
-                            console.error('Upload failed:', error);
-                            // Update with error state or remove the image
-                            editor.dispatchCommand('UPDATE_IMAGE_SOURCE', {
-                              nodeKey: targetNodeKey,
-                              src: dataURL // Keep using data URL if upload fails
-                            });
-                          });
+                        const node = $getNodeByKey(targetNodeKey);
+                        if (node instanceof ImageNode) {
+                         node.setSrc(s3URL);
+                        }
                       }
                     });
+
+                   
                   };
                 }
               };
@@ -184,7 +181,7 @@ export const CopyImagePlugin = forwardRef((_, ref: Ref<any>) => {
         }
       };
     }
-  }, [ref]);
+  }, [imageUploadStatusMap, ref, setImageUploadStatusMap]);
 
   return null;
 });

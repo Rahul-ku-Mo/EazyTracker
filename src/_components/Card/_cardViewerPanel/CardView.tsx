@@ -18,7 +18,7 @@ import {
 import { CardContext } from "../../../context/CardProvider";
 import { TCardContext } from "../../../types/cardTypes";
 
-import LeftPanel from "./_components/LeftPanel";
+//import LeftPanel from "./_components/LeftPanel";
 import RightPanel from "./_components/RightPanel";
 import MainPanel from "./_components/MainPanel";
 
@@ -50,7 +50,7 @@ const CardView = ({ columnName, isOpen, closeModal }: CardViewProps) => {
       >
         <ResizablePanelGroup direction="horizontal" className="h-full">
           <ResizablePanel defaultSize={40} minSize={30}>
-            <LeftPanel />
+            {/* <LeftPanel /> */}
           </ResizablePanel>
           <ResizableHandle withHandle />
           <ResizablePanel

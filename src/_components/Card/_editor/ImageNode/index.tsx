@@ -2,6 +2,8 @@
 
 import { Loader } from "lucide-react";
 import {
+  DOMConversionMap,
+  DOMConversionOutput,
   DOMExportOutput,
   LexicalNode,
   NodeKey,
@@ -10,6 +12,7 @@ import {
 } from "lexical";
 import { createCommand } from "lexical";
 import { $applyNodeReplacement, DecoratorNode } from "lexical";
+import { useUploadFileProgressStore } from "@/store/uploadFileProgressStore";
 
 export const INSERT_IMAGE_COMMAND = createCommand<ImagePayload>("INSERT_IMAGE_COMMAND");
 
@@ -38,8 +41,6 @@ export type SerializedImageNode = Spread<
   SerializedLexicalNode
 >;
 
-// Track uploads in progress globally
-export const uploadsInProgress = new Map<string, boolean>();
 
 export interface ImageComponentProps {
   src: string;
@@ -48,7 +49,7 @@ export interface ImageComponentProps {
   height?: number | string;
   showCaption?: boolean;
   caption?: string;
-  nodeKey: NodeKey;
+  nodeKey?: NodeKey;
 }
 
 export function ImageComponent({
@@ -60,7 +61,10 @@ export function ImageComponent({
   caption,
   nodeKey,
 }: ImageComponentProps): JSX.Element {
-  const isLoading = uploadsInProgress.has(nodeKey);
+
+  const imageUploadStatusMap = useUploadFileProgressStore((state) => state.imageUploadStatusMap);
+
+  const isLoading = nodeKey ? imageUploadStatusMap.get(altText) === "uploading" : false;
   
   return (
     <div className="image-container relative">
@@ -90,6 +94,19 @@ export function ImageComponent({
       )}
     </div>
   );
+}
+
+/***Conversion Function for Image Node */
+export function $convertImageElement(domNode: Node): null | DOMConversionOutput {
+  const img = domNode as HTMLImageElement;
+ 
+  if (img.src.startsWith('file:///')) {
+    return null;
+  }
+
+  const {alt: altText, src, width, height} = img;
+  const node = $createImageNode({altText, height, src, width});
+  return {node};
 }
 
 export class ImageNode extends DecoratorNode<JSX.Element> {
@@ -193,6 +210,15 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     const div = document.createElement("div");
     div.className = "image-wrapper";
     return div;
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    return {
+      img: () => ({
+        conversion: $convertImageElement,
+        priority: 0,
+      }),
+    };
   }
 
   updateDOM(): false {

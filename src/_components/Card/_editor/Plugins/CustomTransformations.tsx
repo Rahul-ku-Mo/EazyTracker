@@ -28,6 +28,7 @@ function CustomTransformHTMLToLexical({description}: {
         });
     }, [description, editor]);
 
+
     return null;
 }
 
