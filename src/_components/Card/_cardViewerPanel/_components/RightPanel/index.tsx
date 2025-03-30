@@ -9,7 +9,7 @@ import { CalendarIcon, Flag, Tag, X, Search, Users, Info, Plus } from "lucide-re
 
 import { CardContext } from "../../../../../context/CardProvider";
 import { TCardContext } from "../../../../../types/cardTypes";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 
 import { useCardMutation } from "../../../_mutations/useCardMutations";
 import { cn } from "../../../../../lib/utils";
@@ -44,39 +44,15 @@ const formatDate = (date?: Date | string | null) => {
 
 const RightPanel = () => {
   const cardDetails = useContext(CardContext);
-  const { priority = "low", dueDate, labels = [], id: cardId, createdAt, status = "Backlog", storyPoints = 0 } = cardDetails as TCardContext;
+  const { priority = "low", dueDate, labels = [], id: cardId } = cardDetails as TCardContext;
   const { updateCardMutation } = useCardMutation();
+
+  const createdAt = new Date();
+  const status = "Backlog";
+  const storyPoints = 0;
   
-  // Priority slider value mapping
-  const getPriorityValue = (priority: string) => {
-    switch(priority.toLowerCase()) {
-      case "low": return 25;
-      case "medium": return 50;
-      case "high": return 75;
-      case "urgent": return 100;
-      default: return 0;
-    }
-  };
+ 
   
-  const getPriorityFromValue = (value: number) => {
-    if (value <= 25) return "none";
-    if (value <= 50) return "low";
-    if (value <= 75) return "medium";
-    if (value <= 100) return "high";
-    return "urgent";
-  };
-  
-  const [sliderValue, setSliderValue] = useState(getPriorityValue(priority));
-  
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
-    setSliderValue(value);
-    const newPriority = getPriorityFromValue(value);
-    updateCardMutation.mutate({
-      cardId,
-      priority: newPriority,
-    });
-  };
 
   return (
     <div className="h-full border-l border-border dark:border-zinc-700">
