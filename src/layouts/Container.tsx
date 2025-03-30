@@ -10,21 +10,21 @@ type ContainerProps = {
   background?: string;
   children: React.ReactNode;
   fwdClassName?: string;
-  title: string;
+  title?: string;
 };
 
 const MainLayout = ({
   background,
   children,
   fwdClassName,
-  title,
+  
 }: ContainerProps) => {
   return (
     <>
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <AppHeader title={title} />
+          <AppHeader />
           <main
             className={cn(
               background,

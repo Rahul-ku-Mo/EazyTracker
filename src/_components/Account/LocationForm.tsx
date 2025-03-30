@@ -6,6 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { updateUserProfile } from "@/apis/userApis";
 import { UserContext } from "@/context/UserContext";
 import { Input } from "@/components/ui/input";
+import { motion } from "framer-motion";
 
 interface LocationFormState {
   state: string;
@@ -60,16 +61,23 @@ const LocationForm = () => {
   };
 
   return (
-    <>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="bg-white dark:bg-transparent rounded-lg p-6 shadow-sm dark:shadow-none"
+    >
       <div>
-        <h1 className="text-2xl font-bold text-white ">Location</h1>
-        <p className="text-zinc-400 text-sm">Update your location details.</p>
+        <h1 className="text-lg font-bold text-gray-800 dark:text-white">Location</h1>
+        <p className="text-gray-600 dark:text-zinc-400 text-sm">Update your location details.</p>
       </div>
-      <div className="shrink-0 dark:bg-zinc-700 bg-white/10 h-[1px] w-full my-3"></div>
+      
+      <div className="shrink-0 bg-gray-200 dark:bg-zinc-700 h-[1px] w-full my-6"></div>
+      
       <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
-        <div className="grid gap-4 grid-cols-2">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
           <div className="space-y-2">
-            <label htmlFor="state" className="text-sm font-medium text-zinc-200">
+            <label htmlFor="state" className="text-sm font-medium text-gray-700 dark:text-zinc-200">
               State
             </label>
             <Input
@@ -78,15 +86,15 @@ const LocationForm = () => {
               value={formState.state}
               onChange={handleChange("state")}
               placeholder="Karnataka"
-              className="focus:ring-0 border-zinc-700 bg-zinc-800/50"
+              className="focus:ring-2 focus:ring-blue-500/20 border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-gray-900 dark:text-white"
             />
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-gray-500 dark:text-zinc-400">
               Enter your state of residence. This helps us provide location-specific services.
             </p>
           </div>
           
           <div className="space-y-2">
-            <label htmlFor="zipCode" className="text-sm font-medium text-zinc-200">
+            <label htmlFor="zipCode" className="text-sm font-medium text-gray-700 dark:text-zinc-200">
               Zip Code
             </label>
             <Input
@@ -95,16 +103,16 @@ const LocationForm = () => {
               value={formState.zipCode}
               onChange={handleChange("zipCode")}
               placeholder="560001"
-              className="focus:ring-0 border-zinc-700 bg-zinc-800/50"
+              className="focus:ring-2 focus:ring-blue-500/20 border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-gray-900 dark:text-white"
             />
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-gray-500 dark:text-zinc-400">
               Enter your postal code. This helps us provide location-specific services if needed.
             </p>
           </div>
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="address" className="text-sm font-medium text-zinc-200">
+          <label htmlFor="address" className="text-sm font-medium text-gray-700 dark:text-zinc-200">
             Address
           </label>
           <Input
@@ -113,24 +121,27 @@ const LocationForm = () => {
             value={formState.address}
             onChange={handleChange("address")}
             placeholder="1234, Main Street, Apt 2B"
-            className="focus:ring-0 border-zinc-700 bg-zinc-800/50"
+            className="focus:ring-2 focus:ring-blue-500/20 border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-gray-900 dark:text-white"
           />
-          <p className="text-xs text-zinc-400">
+          <p className="text-xs text-gray-500 dark:text-zinc-400">
             Enter your full address including street, apartment number, city, and state if applicable.
           </p>
         </div>
       </form>
 
-      <div className="mt-6">
+      <motion.div
+        className="mt-8"
+        whileTap={{ scale: 0.98 }}
+      >
         <button
           onClick={handleSubmit}
-          disabled={isEqual(formState, initialState)}
-          className="bg-emerald-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={isEqual(formState, initialState) || updateProfileMutation.isPending}
+          className="px-5 py-2.5 text-sm font-medium text-white rounded-md bg-emerald-600 hover:bg-emerald-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          Save Changes
+          {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
         </button>
-      </div>
-    </>
+      </motion.div>
+    </motion.div>
   );
 };
 

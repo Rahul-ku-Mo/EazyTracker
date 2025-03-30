@@ -43,7 +43,7 @@ const useBoardForm = (count: number) => {
           title: "Board created successfully",
           variant: "default",
         });
-        navigate(`/kanban/${data.id}`);
+        navigate(`/workspace/board/${data.id}`);
         setCurrentBoardInput("");
         setSelectedImageId(null);
       }

@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteBoard, updateBoard } from "@/apis/BoardApis";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 export const useBoardMutation = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const accessToken = Cookies.get("accessToken") as string;
 
@@ -23,6 +24,7 @@ export const useBoardMutation = () => {
         variant: "default",
       });
       navigate("/boards", { replace: true });
+      queryClient.invalidateQueries({ queryKey: ["boards"] });
     },
     onError: () => {
       toast({

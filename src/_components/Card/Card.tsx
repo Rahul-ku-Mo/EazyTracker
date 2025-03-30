@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import {
   Calendar,
   Copy,
@@ -10,6 +10,7 @@ import {
   MessageSquare,
   CalendarClockIcon,
   UserCircle2Icon,
+  EllipsisVerticalIcon,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Badge } from "../../components/ui/badge";
@@ -189,6 +190,9 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
 
   const columnId = useContext(ColumnContext);
 
+  const cardWrapperRef = useRef<HTMLDivElement>(null); // Ref for the context menu trigger element
+
+
   const { deleteCardMutation, createCardMutation } = useCardMutation();
 
   const closeModal = () => setIsOpen(false);
@@ -251,10 +255,29 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
     },
   ];
 
+  const handleEllipsisClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation(); // IMPORTANT: Prevent the card's main onClick (openModal)
+
+    if (cardWrapperRef.current) {
+      // Create a synthetic contextmenu event
+      const contextMenuEvent = new MouseEvent("contextmenu", {
+        bubbles: true,
+        cancelable: false, // Usually false for contextmenu? Check library behavior. True might be safer.
+        clientX: e.clientX, // Use coords from the click event
+        clientY: e.clientY,
+        button: 2, // Simulate right button
+      });
+
+      // Dispatch the event on the element wrapped by CardContextMenu
+      cardWrapperRef.current.dispatchEvent(contextMenuEvent);
+    }
+  };
+
   return (
     <>
       <CardContextMenu items={items} cardId={id}>
         <div
+         ref={cardWrapperRef}
           onClick={openModal}
           className={cn(
             "bg-white dark:bg-zinc-800 hover:dark:bg-zinc-700/70",
@@ -264,9 +287,10 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
             "transition-all ease-linear",
             "flex flex-col justify-between",
             "text-xs",
-            "min-h-[100px] max-h-[200px]",
+            "h-[200px]",
             "shadow-md dark:shadow-none",
-            "cursor-pointer",
+            "cursor-pointer relative",
+            "group",
             index === totalCards - 1 && "mb-10"
           )}
         >
@@ -277,6 +301,18 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
           <CardDescription description={description} />
 
           <CardFooter dueDate={dueDate} priority={priority} labels={labels} />
+          <div 
+              className="absolute top-2 right-2 bg-zinc-900/50 rounded-lg p-1.5 opacity-0 group-hover:opacity-100 transition-all ease-linear cursor-pointer"
+              onClick={(e) => {
+                handleEllipsisClick(e);
+              }}
+              onContextMenu={(e) => {
+                e.stopPropagation();
+                
+              }}
+            >
+              <EllipsisVerticalIcon className="size-5" />
+            </div>
         </div>
       </CardContextMenu>
 

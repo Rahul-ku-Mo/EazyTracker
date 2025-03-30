@@ -49,10 +49,10 @@ const CardView = ({ columnName, isOpen, closeModal }: CardViewProps) => {
         isCloseButtonNotHidden={false}
       >
         <ResizablePanelGroup direction="horizontal" className="h-full">
-          <ResizablePanel defaultSize={40} minSize={30}>
-            {/* <LeftPanel /> */}
+          {/* <ResizablePanel defaultSize={40} minSize={30}>
+            <LeftPanel />
           </ResizablePanel>
-          <ResizableHandle withHandle />
+          <ResizableHandle withHandle /> */}
           <ResizablePanel
             defaultSize={40}
             minSize={30}

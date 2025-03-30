@@ -42,9 +42,6 @@ export const ConversationPage = Loadable(
 );
 
 // Forms
-export const ProfileForm = Loadable(
-  lazy(() => import("../_components/Account/ProfileForm"))
-);
 
 export const AccountForm = Loadable(
   lazy(() => import("../_components/Account/AccountForm"))
@@ -54,9 +51,7 @@ export const LocationForm = Loadable(
   lazy(() => import("../_components/Account/LocationForm"))
 );
 
-export const RoleForm = Loadable(
-  lazy(() => import("../_components/Account/RoleForm"))
-);
+
 
 export const IntegrationsForm = Loadable(
   lazy(() => import("../_components/Account/IntegrationsForm"))

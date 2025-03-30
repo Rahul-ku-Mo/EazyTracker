@@ -15,9 +15,7 @@ interface BoardPopoverProps {
 
 const BoardPopover = ({ count }: BoardPopoverProps) => {
   const { role } = useContext(AuthContext);
-
-  console.log(role)
-
+  
   return (
     <Popover>
       <PopoverTrigger asChild disabled={role !== "ADMIN"}>

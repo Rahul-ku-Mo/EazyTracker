@@ -53,7 +53,7 @@ const BoardCard = ({ board }: { board: Board }) => {
   };
 
   const handleOpenBoard = () => {
-    navigate(`/kanban/${board.id}`);
+    navigate(`/workspace/board/${board.id}`);
   };
 
   const handleOpenBoardSettings = () => {

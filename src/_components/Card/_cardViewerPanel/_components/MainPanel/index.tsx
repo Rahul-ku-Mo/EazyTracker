@@ -4,6 +4,7 @@ import { Lock, Unlock } from "lucide-react";
 import { useContext } from "react";
 import { CardContext } from "../../../../../context/CardProvider.tsx";
 import { TCardContext } from "../../../../../types/cardTypes";
+import { Badge } from "@/components/ui/badge.tsx";
 
 const MainPanel = ({
   columnName,
@@ -21,7 +22,10 @@ const MainPanel = ({
   return (
     <div className="relative p-4">
       <div className="flex items-center justify-between w-full">
-        <Button className="p-2 text-sm">{columnName}</Button>
+        <div className="flex items-center gap-2">
+          <Badge className="rounded-full bg-transparent text-muted-foreground border-muted-foreground dark:text-white dark:border-white hover:bg-muted-foreground hover:text-background dark:hover:bg-white dark:hover:text-black">{columnName}</Badge>
+          <h2 className="py-4 text-lg font-bold">{title}</h2>
+        </div>
         <Button
           variant="ghost"
           size="icon"
@@ -34,7 +38,7 @@ const MainPanel = ({
           )}
         </Button>
       </div>
-      <h2 className="py-4 text-3xl font-bold">{title}</h2>
+      
       <CardDetailsEditor cardId={cardId} description={description as string} />
     </div>
   );

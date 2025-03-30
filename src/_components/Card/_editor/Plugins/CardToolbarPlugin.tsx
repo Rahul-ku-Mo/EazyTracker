@@ -38,7 +38,7 @@ import {
   HelpCircle,
   CheckSquare,
   Loader2,
-  Image,
+  //Image,
 } from "lucide-react";
 import { cn } from "../../../../lib/utils.ts";
 import {
@@ -60,7 +60,7 @@ import {
   TooltipProvider,
   TooltipContent,
 } from "../../../../components/ui/tooltip.tsx";
-import { INSERT_IMAGE_COMMAND } from "../ImageNode";
+//import { INSERT_IMAGE_COMMAND } from "../ImageNode";
 
 const blockTypeToBlockName = {
   h1: "Heading 1",
@@ -236,13 +236,13 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
     }
   };
 
-  const insertImage = () => {
-    editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
-      src: "https://picsum.photos/300/200",
-      altText: "A random image",
-      showCaption: true,
-    });
-  };
+  // const insertImage = () => {
+  //   editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
+  //     src: "https://picsum.photos/300/200",
+  //     altText: "A random image",
+  //     showCaption: true,
+  //   });
+  // };
 
   return (
     <div className="flex items-center gap-1 p-1 mb-2 rounded-md bg-background">
@@ -379,9 +379,9 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
         <CheckSquare className="w-4 h-4" />
       </ToolbarButton>
 
-      <ToolbarButton onClick={insertImage}>
+      {/* <ToolbarButton onClick={insertImage}>
         <Image className="w-4 h-4" />
-      </ToolbarButton>
+      </ToolbarButton> */}
 
       <div className="w-px h-6 mx-1 bg-border" />
 

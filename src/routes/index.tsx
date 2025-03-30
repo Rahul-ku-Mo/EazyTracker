@@ -9,10 +9,10 @@ import {
   NotFoundPage,
   ConversationPage,
   AccountForm,
-  ProfileForm,
+ 
   LocationForm,
-  RoleForm,
-  IntegrationsForm,
+
+  //IntegrationsForm,
   BoardSettingsPage,
   OnboardingPage,
   TeamMembersPage,
@@ -61,11 +61,8 @@ const AuthRoute = ({ children }: ProtectedRouteProps) => {
 };
 
 const settingRoutes = [
-  { path: "profile", element: <ProfileForm /> },
   { path: "account", element: <AccountForm /> },
   { path: "location", element: <LocationForm /> },
-  { path: "role", element: <RoleForm /> },
-  { path: "integrations", element: <IntegrationsForm /> },
 ];
 
 const authenticatedRoutes = [
@@ -74,11 +71,11 @@ const authenticatedRoutes = [
     element: <WithContexts Component={OnboardingPage} />,
   },
   {
-    path: "/kanban/:id",
+    path: "/workspace/board/:id",
     element: <WithContexts Component={KanbanPage} includeKanban={true} />,
   },
   {
-    path: "/boards",
+    path: "/workspace",
     children: [
       {
         index: true,
