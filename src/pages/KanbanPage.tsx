@@ -16,7 +16,7 @@ const KanbanPage = () => {
 
   // Function to handle going back to the boards section
   const handleGoBack = () => {
-    navigate("/boards");
+    navigate("/workspace");
   };
 
   if (isPending) {

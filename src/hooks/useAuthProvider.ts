@@ -86,7 +86,7 @@ const useAuthProvider = () => {
         toast.success("Login successful 🎉");
         setIsLoggedIn(true);
         queryClient.setQueryData(["user"], response.data.data);
-        navigate("/boards");
+        navigate("/workspace");
       }
     } catch (err : any) {
       toast.error(
@@ -116,7 +116,7 @@ const useAuthProvider = () => {
       toast.success("Signed up and logged in successfully 🎉");
       setIsLoggedIn(true);
       queryClient.setQueryData(["user"], response.data.data);
-      navigate("/boards");
+      navigate("/workspace");
     } catch (err : any) {
       toast.error(
         err.response?.data?.message || "An error occurred during signup"

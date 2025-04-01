@@ -66,7 +66,7 @@ const Onboarding = () => {
 
       if (!needsOnboarding) {
         // Already onboarded, redirect to boards
-        navigate("/boards");
+        navigate("/workspace");
         return null;
       }
 
@@ -88,7 +88,7 @@ const Onboarding = () => {
       );
     },
     onSuccess: () => {
-      window.location.href = "/boards";
+      window.location.href = "/workspace";
 
       /**
        * queryClient.invalidateQueries({ queryKey: ['onboarding'] });
@@ -114,7 +114,7 @@ const Onboarding = () => {
       );
     },
     onSuccess: () => {
-      window.location.href = "/boards";
+      window.location.href = "/workspace";
     },
     onError: (error) => {
       console.error("Team join failed:", error);

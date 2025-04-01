@@ -57,7 +57,7 @@ const BoardCard = ({ board }: { board: Board }) => {
   };
 
   const handleOpenBoardSettings = () => {
-    navigate(`/boards/settings/${board.id}`);
+    navigate(`/workspace/settings/${board.id}`);
   };
 
   return (

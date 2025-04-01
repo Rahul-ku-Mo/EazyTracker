@@ -1,4 +1,4 @@
-import { createContext, } from "react";
+import { createContext } from "react";
 import { useUser } from "../hooks/useQueries";
 import Cookies from "js-cookie";
 
@@ -21,8 +21,7 @@ const UserContextProvider = ({ children }: { children: React.ReactNode }) => {
         isPending,
       }}
     >
-        {children}
-     
+      {children}
     </UserContext.Provider>
   );
 };

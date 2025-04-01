@@ -23,7 +23,7 @@ export const useBoardMutation = () => {
           "Unknown user",
         variant: "default",
       });
-      navigate("/boards", { replace: true });
+      navigate("/workspace", { replace: true });
       queryClient.invalidateQueries({ queryKey: ["boards"] });
     },
     onError: () => {

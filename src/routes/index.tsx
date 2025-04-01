@@ -55,7 +55,7 @@ const WithContexts = ({
 const AuthRoute = ({ children }: ProtectedRouteProps) => {
   const { isLoggedIn } = useContext(AuthContext);
   if (isLoggedIn) {
-    return <Navigate to="/boards" replace />;
+    return <Navigate to="/workspace" replace />;
   }
   return <>{children}</>;
 };
