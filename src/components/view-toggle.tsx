@@ -8,7 +8,7 @@ export function ViewToggle() {
 
   return (
     <Button variant="outline" size="icon" onClick={toggleView}>
-      {view === "table" ? (
+      {view === "listview" ? (
         <Table className="h-[1.2rem] w-[1.2rem]  transition-all " />
       ) : (
         <LayoutGrid className=" h-[1.2rem] w-[1.2rem]  transition-all  " />
