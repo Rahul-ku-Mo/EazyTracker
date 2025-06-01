@@ -9,7 +9,7 @@ import {
   NotFoundPage,
   ConversationPage,
   AccountForm,
- 
+  AnalyticsPage,
   LocationForm,
 
   //IntegrationsForm,
@@ -84,6 +84,10 @@ const authenticatedRoutes = [
       {
         path: "settings/:id",
         element: <WithContexts Component={BoardSettingsPage} />,
+      },
+      {
+        path: "analytics",
+        element: <WithContexts Component={AnalyticsPage} />,
       },
     ],
   },

@@ -1,0 +1,143 @@
+"use client";
+
+import { useState } from "react";
+import {
+  Calendar,
+  Filter,
+} from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+import { useTeamAnalytics } from "@/hooks/useAnalytics";
+
+
+import { TeamStats } from "./_team-performance/TeamStats";
+import { TeamPerformance } from "./_team-performance/TeamPerformance";
+import { PerformanceInsights } from "./_team-performance/PerformanceInsights";
+
+import { SingleCardAnalytics } from "./_single-card";
+
+interface VelocityData {
+  week: string;
+  planned: number;
+  completed: number;
+}
+
+interface TeamMember {
+  name: string;
+  role: string;
+  avatar: string;
+  tasksCompleted: number;
+  avgTime: number;
+  efficiency: number;
+  trend: "up" | "down";
+}
+
+const CardCompletionAnalysis = () => {
+  const [timeRange, setTimeRange] = useState<"day" | "week" | "month" | "quarter">("week");
+  const [teamId] = useState("team-1"); // Updated to match seed data
+
+  const { data: teamAnalytics, isLoading, error } = useTeamAnalytics(teamId, timeRange);
+
+  // Debug logging
+  console.log('Team Analytics Data:', { teamAnalytics, isLoading, error, teamId, timeRange });
+
+  // Transform team data for components - now using real dynamic data
+  const teamMembers: TeamMember[] = teamAnalytics?.memberPerformance || [];
+  const velocityData: VelocityData[] = teamAnalytics?.velocityData || [];
+  const teamStatsData = teamAnalytics?.teamStats;
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="container mx-auto p-4">
+        <div className="text-center py-8">
+          <h2 className="text-lg font-semibold text-red-600">Error Loading Analytics</h2>
+          <p className="text-sm text-muted-foreground mt-2">
+            {error instanceof Error ? error.message : 'Failed to load team analytics data'}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Please ensure the backend is running and the database has been seeded with data.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto p-4 space-y-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div>
+          <h1 className="text-xl font-bold">Card Completion Analytics</h1>
+          <p className="text-xs text-muted-foreground">
+            Track time spent and identify optimization opportunities
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Select value={timeRange} onValueChange={(value: "day" | "week" | "month" | "quarter") => setTimeRange(value)}>
+            <SelectTrigger className="w-[180px] text-xs">
+              <SelectValue placeholder="Select time range" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="day" className="text-xs">Today</SelectItem>
+              <SelectItem value="week" className="text-xs">This Week</SelectItem>
+              <SelectItem value="month" className="text-xs">This Month</SelectItem>
+              <SelectItem value="quarter" className="text-xs">This Quarter</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="icon" className="h-8 w-8">
+            <Filter className="h-3 w-3" />
+          </Button>
+          <Button variant="outline" size="icon" className="h-8 w-8">
+            <Calendar className="h-3 w-3" />
+          </Button>
+        </div>
+      </div>
+
+      <Tabs defaultValue="single" className="w-full">
+        <TabsList className="grid w-full md:w-[500px] grid-cols-2">
+          <TabsTrigger value="single" className="text-xs">Task Performance</TabsTrigger>
+          <TabsTrigger value="team" className="text-xs">Team Performance</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="single" className="space-y-6">
+        
+          <SingleCardAnalytics timeRange={timeRange} />
+
+          
+        </TabsContent>
+
+        
+
+        <TabsContent value="team" className="space-y-6">
+          <TeamStats 
+            data={teamStatsData}
+          />
+          <TeamPerformance 
+            teamMembers={teamMembers}
+            velocityData={velocityData}
+            completionRateData={teamAnalytics?.completionRateData || []}
+            timeRange={timeRange}
+          />
+          
+          <PerformanceInsights 
+            insights={teamAnalytics?.insights || []}
+            recommendations={teamAnalytics?.recommendations || []}
+            teamStats={teamAnalytics?.teamStats}
+            isLoading={isLoading}
+          />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default CardCompletionAnalysis;

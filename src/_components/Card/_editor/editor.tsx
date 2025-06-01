@@ -160,7 +160,7 @@ export const CodeHighlightPlugin = () => {
 };
 
 interface CardDetailsEditorProps {
-  cardId: string;
+  cardId: number;
   description: string;
 }
 
@@ -198,7 +198,7 @@ export const CardDetailsEditor = ({
 
     updateCardMutation.mutate({
       cardDescription: editorState,
-      cardId,
+      cardId: cardId,
       columnId,
     });
   };

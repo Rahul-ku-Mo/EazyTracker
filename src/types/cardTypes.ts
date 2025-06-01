@@ -17,7 +17,7 @@ type TCreateCardProps = {
 };
 
 type TCardContext = {
-  id: string;
+  id: number;
   title: string;
   description?: string;
   dueDate?: Date;

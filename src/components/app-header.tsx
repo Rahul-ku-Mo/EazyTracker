@@ -47,6 +47,7 @@ const AppHeader = () => {
       <div className="flex items-center gap-2 pr-2">
         <ViewToggle />
         <ModeToggle />
+       
       </div>
     </header>
   );

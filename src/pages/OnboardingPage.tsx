@@ -16,7 +16,8 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2 } from "lucide-react";
+import { Loader2, Users, Plus, LogIn, Sparkles, Building } from "lucide-react";
+import clsx from "clsx";
 
 // Animation variants
 const containerVariants = {
@@ -89,11 +90,6 @@ const Onboarding = () => {
     },
     onSuccess: () => {
       window.location.href = "/workspace";
-
-      /**
-       * queryClient.invalidateQueries({ queryKey: ['onboarding'] });
-       * navigate('/boards');
-       */
     },
     onError: (error) => {
       console.error("Team creation failed:", error);
@@ -148,29 +144,55 @@ const Onboarding = () => {
     joinTeamMutation.isPending;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-900">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(45%_25%_at_50%_50%,rgba(16,185,129,0.05)_0%,rgba(24,24,27,0)_100%)]"></div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-4">
+      {/* Background decoration */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-secondary/5 rounded-full blur-3xl" />
+      </div>
 
       <motion.div
-        className="w-full max-w-md px-4"
+        className="w-full max-w-lg"
         initial="hidden"
         animate="visible"
         variants={containerVariants}
       >
         <motion.div variants={itemVariants}>
-          <Card className="border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-lg">
-            <CardHeader className="border-b border-zinc-100 dark:border-zinc-800">
-              <CardTitle className="text-2xl text-center gt-walsheim-font text-zinc-900 dark:text-zinc-50">
-                Welcome to your workspace
+          {/* Welcome Header */}
+          <div className="text-center mb-8">
+            <motion.div
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium mb-4"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Sparkles className="h-4 w-4" />
+              Welcome to EzTrack
+            </motion.div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              Let's get you started
+            </h1>
+            <p className="text-muted-foreground">
+              {isAdmin
+                ? "As an admin, you can create your own workspace to get started"
+                : "Create a new workspace or join an existing team"}
+            </p>
+          </div>
+
+          <Card className="border-border/50 shadow-xl bg-card/95 backdrop-blur-sm">
+            <CardHeader className="space-y-1 pb-6">
+              <CardTitle className="text-xl font-semibold flex items-center gap-2 text-foreground">
+                <Building className="h-5 w-5 text-primary" />
+                {isAdmin ? "Create Your Workspace" : "Join or Create Workspace"}
               </CardTitle>
-              <CardDescription className="text-center text-zinc-500 dark:text-zinc-400">
+              <CardDescription>
                 {isAdmin
-                  ? "As an admin, you can create your own workspace"
-                  : "Create a new workspace or join an existing one"}
+                  ? "Set up your team workspace to start collaborating"
+                  : "Choose how you'd like to get started with EzTrack"}
               </CardDescription>
             </CardHeader>
 
-            <CardContent className="pt-6">
+            <CardContent className="space-y-6">
               {isAdmin ? (
                 <motion.div
                   className="space-y-4"
@@ -181,8 +203,9 @@ const Onboarding = () => {
                   <div className="space-y-2">
                     <Label
                       htmlFor="team-name"
-                      className="text-zinc-700 dark:text-zinc-300"
+                      className="text-sm font-medium text-foreground flex items-center gap-2"
                     >
+                      <Users className="h-3 w-3 text-muted-foreground" />
                       Workspace Name
                     </Label>
                     <Input
@@ -190,20 +213,19 @@ const Onboarding = () => {
                       value={teamName}
                       onChange={(e) => setTeamName(e.target.value)}
                       disabled={isLoading}
-                      className="border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 focus:ring-emerald-500 dark:focus:ring-emerald-400"
-                      placeholder="My Awesome Team"
+                      placeholder="Enter your workspace name"
+                      className={clsx(
+                        "transition-all duration-200",
+                        "border-input bg-background text-foreground",
+                        "placeholder:text-muted-foreground",
+                        "focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
+                        "focus:border-primary"
+                      )}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Choose a name that represents your team or organization
+                    </p>
                   </div>
-                  {error && (
-                    <motion.p
-                      className="text-red-500 text-sm mt-2"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {error}
-                    </motion.p>
-                  )}
                 </motion.div>
               ) : (
                 <Tabs
@@ -212,44 +234,22 @@ const Onboarding = () => {
                   onValueChange={setActiveTab}
                   className="w-full"
                 >
-                  <TabsList className="grid grid-cols-2 mb-6 bg-zinc-100 dark:bg-zinc-800">
-                    <TabsTrigger
-                      value="create"
-                      className="data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400"
-                    >
-                      Create
-                    </TabsTrigger>
+                  <TabsList className="grid grid-cols-2 mb-6 bg-muted/50">
                     <TabsTrigger
                       value="join"
-                      className="data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400"
+                      className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
                     >
-                      Join Existing
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Join Team
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="create"
+                      className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create New
                     </TabsTrigger>
                   </TabsList>
-
-                  <TabsContent value="create" className="space-y-4">
-                    <motion.div
-                      className="space-y-2"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <Label
-                        htmlFor="create-team-name"
-                        className="text-zinc-700 dark:text-zinc-300"
-                      >
-                        Workspace Name
-                      </Label>
-                      <Input
-                        id="create-team-name"
-                        value={teamName}
-                        onChange={(e) => setTeamName(e.target.value)}
-                        disabled={isLoading}
-                        className="border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 focus:ring-emerald-500 dark:focus:ring-emerald-400"
-                        placeholder="My Awesome Team"
-                      />
-                    </motion.div>
-                  </TabsContent>
 
                   <TabsContent value="join" className="space-y-4">
                     <motion.div
@@ -260,85 +260,134 @@ const Onboarding = () => {
                     >
                       <Label
                         htmlFor="join-code"
-                        className="text-zinc-700 dark:text-zinc-300"
+                        className="text-sm font-medium text-foreground flex items-center gap-2"
                       >
-                        Join Code
+                        <LogIn className="h-3 w-3 text-muted-foreground" />
+                        Invitation Code
                       </Label>
                       <Input
                         id="join-code"
                         value={joinCode}
                         onChange={(e) => setJoinCode(e.target.value)}
                         disabled={isLoading}
-                        className="border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 focus:ring-emerald-500 dark:focus:ring-emerald-400"
-                        placeholder="Enter workspace join code"
+                        placeholder="Enter your invitation code"
+                        className={clsx(
+                          "transition-all duration-200",
+                          "border-input bg-background text-foreground",
+                          "placeholder:text-muted-foreground",
+                          "focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
+                          "focus:border-primary"
+                        )}
                       />
+                      <p className="text-xs text-muted-foreground">
+                        Ask your team admin for the invitation code
+                      </p>
                     </motion.div>
                   </TabsContent>
 
-                  {error && (
-                    <motion.p
-                      className="text-red-500 text-sm mt-2"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
+                  <TabsContent value="create" className="space-y-4">
+                    <motion.div
+                      className="space-y-2"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      {error}
-                    </motion.p>
-                  )}
+                      <Label
+                        htmlFor="create-team-name"
+                        className="text-sm font-medium text-foreground flex items-center gap-2"
+                      >
+                        <Users className="h-3 w-3 text-muted-foreground" />
+                        Workspace Name
+                      </Label>
+                      <Input
+                        id="create-team-name"
+                        value={teamName}
+                        onChange={(e) => setTeamName(e.target.value)}
+                        disabled={isLoading}
+                        placeholder="Enter your workspace name"
+                        className={clsx(
+                          "transition-all duration-200",
+                          "border-input bg-background text-foreground",
+                          "placeholder:text-muted-foreground",
+                          "focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
+                          "focus:border-primary"
+                        )}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Choose a name that represents your team or project
+                      </p>
+                    </motion.div>
+                  </TabsContent>
                 </Tabs>
+              )}
+
+              {/* Error Message */}
+              {error && (
+                <motion.div
+                  className="p-3 bg-destructive/10 border border-destructive/20 rounded-md"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <p className="text-destructive text-sm font-medium">{error}</p>
+                </motion.div>
               )}
             </CardContent>
 
-            <CardFooter className="border-t border-zinc-100 dark:border-zinc-800 pt-4">
-              {isAdmin ? (
-                <motion.div
-                  className="w-full"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+            <CardFooter className="border-t border-border/50 pt-6">
+              <motion.div
+                className="w-full"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Button
+                  onClick={
+                    isAdmin || activeTab === "create" ? handleCreateTeam : handleJoinTeam
+                  }
+                  disabled={isLoading}
+                  className={clsx(
+                    "w-full h-11 font-medium transition-all duration-200",
+                    "bg-primary hover:bg-primary/90 text-primary-foreground",
+                    "disabled:opacity-50 disabled:cursor-not-allowed",
+                    "focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
+                  )}
                 >
-                  <Button
-                    onClick={handleCreateTeam}
-                    disabled={isLoading}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white"
-                  >
-                    {createTeamMutation.isPending ? (
-                      <span className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" /> Creating...
-                      </span>
-                    ) : (
-                      "Create Workspace"
-                    )}
-                  </Button>
-                </motion.div>
-              ) : (
-                <motion.div
-                  className="w-full"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button
-                    onClick={
-                      activeTab === "create" ? handleCreateTeam : handleJoinTeam
-                    }
-                    disabled={isLoading}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white"
-                  >
-                    {createTeamMutation.isPending ||
-                    joinTeamMutation.isPending ? (
-                      <span className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        {activeTab === "create" ? "Creating..." : "Joining..."}
-                      </span>
-                    ) : activeTab === "create" ? (
-                      "Create Workspace"
-                    ) : (
-                      "Join Workspace"
-                    )}
-                  </Button>
-                </motion.div>
-              )}
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {isAdmin || activeTab === "create" ? "Creating workspace..." : "Joining team..."}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      {isAdmin || activeTab === "create" ? (
+                        <>
+                          <Plus className="h-4 w-4" />
+                          Create Workspace
+                        </>
+                      ) : (
+                        <>
+                          <LogIn className="h-4 w-4" />
+                          Join Team
+                        </>
+                      )}
+                    </div>
+                  )}
+                </Button>
+              </motion.div>
             </CardFooter>
           </Card>
+
+          {/* Footer */}
+          <motion.div
+            className="text-center mt-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <p className="text-xs text-muted-foreground">
+              Need help? Contact your administrator or check our documentation
+            </p>
+          </motion.div>
         </motion.div>
       </motion.div>
     </div>

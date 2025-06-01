@@ -1,9 +1,9 @@
-import { Button } from "../../../../../components/ui/button";
+import { Button } from "@/components/ui/button";
 import { CardDetailsEditor } from "../../../_editor/editor.tsx";
 import { Lock, Unlock } from "lucide-react";
 import { useContext } from "react";
-import { CardContext } from "../../../../../context/CardProvider.tsx";
-import { TCardContext } from "../../../../../types/cardTypes";
+import { CardContext } from "@/context/CardProvider.tsx";
+import { TCardContext } from "@/types/cardTypes";
 import { Badge } from "@/components/ui/badge.tsx";
 
 const MainPanel = ({
@@ -21,10 +21,10 @@ const MainPanel = ({
 
   return (
     <div className="relative p-4">
-      <div className="flex items-center justify-between w-full">
-        <div className="flex items-center gap-2">
-          <Badge className="rounded-full bg-transparent text-muted-foreground border-muted-foreground dark:text-white dark:border-white hover:bg-muted-foreground hover:text-background dark:hover:bg-white dark:hover:text-black">{columnName}</Badge>
-          <h2 className="py-4 text-lg font-bold">{title}</h2>
+      <div className="flex items-center justify-between">
+        <div className="flex gap-2 flex-col">
+          <Badge className="rounded-full bg-transparent w-fit text-muted-foreground border-muted-foreground dark:text-white dark:border-white hover:bg-muted-foreground hover:text-background dark:hover:bg-white dark:hover:text-black">{columnName}</Badge>
+          <h2 className=" text-lg font-bold">{title}</h2>
         </div>
         <Button
           variant="ghost"
@@ -38,7 +38,7 @@ const MainPanel = ({
           )}
         </Button>
       </div>
-      
+
       <CardDetailsEditor cardId={cardId} description={description as string} />
     </div>
   );

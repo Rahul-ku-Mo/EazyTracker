@@ -75,7 +75,7 @@ const data = {
         },
         {
           title: "Settings",
-          url: "/setting",
+          url: "/setting/account",
         },
       ],
     },

@@ -331,7 +331,7 @@ export default function LandingPage() {
               </h2>
               <motion.p
                 className={cn(
-                  "max-w-xl font-semibold inter-variable-font text-[22px] tracking-tight text-center",
+                  "max-w-xl mx-auto font-semibold inter-variable-font text-[22px] tracking-tight text-center",
                   isDark ? "text-zinc-400" : "text-zinc-600"
                 )}
               >

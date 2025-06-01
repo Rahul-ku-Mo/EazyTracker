@@ -1,5 +1,5 @@
-import { TCardData } from "../../../types";
-import { createCard, deleteCard, updateCard } from "../../../apis/CardApis";
+import { TCardData } from "@/types/cardTypes";
+import { createCard, deleteCard, updateCard } from "@/apis/CardApis";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Cookies from "js-cookie";
 import { useParams } from "react-router-dom";
@@ -13,7 +13,7 @@ type TIssueUpdateCard = {
   attachments?: string[];
   dueDate?: Date;
   comments?: string[];
-  cardId: string;
+  cardId: number;
   columnId?: string;
   priority?: string;
   createdAt?: Date;
@@ -104,7 +104,7 @@ export const useCardMutation = () => {
   });
 
   const deleteCardMutation = useMutation({
-    mutationFn: (cardId: string) => deleteCard(accessToken, cardId),
+    mutationFn: (cardId: number) => deleteCard(accessToken, cardId),
     onSuccess: () =>
       toast({
         title: "Card deleted !!",

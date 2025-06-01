@@ -6,7 +6,11 @@ import { useMutation } from "@tanstack/react-query";
 import { updateUserProfile } from "@/apis/userApis";
 import { Input } from "@/components/ui/input";
 import { UserContext } from "@/context/UserContext";
-import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { User, Phone, Image, AtSign, Mail } from "lucide-react";
+import clsx from "clsx";
 
 interface FormState {
   name?: string;
@@ -61,126 +65,198 @@ const AccountForm = () => {
     updateProfileMutation.mutate(formState);
   };
 
+  const hasChanges = !isEqual(formState, initialState);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="bg-white dark:bg-transparent rounded-lg p-6 shadow-sm dark:shadow-none"
-    >
-      <h1 className="text-lg font-bold text-gray-800 dark:text-white">Account Settings</h1>
-      <p className="text-sm text-gray-600 dark:text-zinc-400">
-        Manage your account settings and profile image.
-      </p>
-      <div className="shrink-0 bg-gray-200 dark:bg-zinc-700 h-[1px] w-full my-6"></div>
+    <Card className="w-full border-border/50 shadow-lg">
+      <CardHeader className="space-y-1 pb-6">
+        <CardTitle className="text-xl font-semibold flex items-center gap-2 text-foreground">
+          <User className="h-5 w-5 text-primary" />
+          Account Settings
+        </CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Manage your personal information and profile details
+        </p>
+      </CardHeader>
       
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-zinc-200">
-            Name
-          </label>
-          <Input
-            id="name"
-            type="text"
-            value={formState.name || ""}
-            onChange={handleChange("name")}
-            placeholder="John Doe"
-            className="focus:ring-2 focus:ring-blue-500/20 border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-gray-900 dark:text-white"
-          />
-          <p className="text-xs text-gray-500 dark:text-zinc-400">
-            This is the name that will be displayed on your account and in emails.
-          </p>
-        </div>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Personal Information Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-2 rounded-full bg-primary"></div>
+              <h3 className="text-sm font-medium text-foreground">Personal Information</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <User className="h-3 w-3 text-muted-foreground" />
+                  Full Name
+                </Label>
+                <Input
+                  id="name"
+                  type="text"
+                  value={formState.name || ""}
+                  onChange={handleChange("name")}
+                  placeholder="Enter your full name"
+                  className={clsx(
+                    "transition-all duration-200",
+                    "border-input bg-background text-foreground",
+                    "placeholder:text-muted-foreground",
+                    "focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
+                    "focus:border-primary"
+                  )}
+                />
+                <p className="text-xs text-muted-foreground">
+                  This name will be displayed on your profile and in team communications
+                </p>
+              </div>
 
-        <div className="space-y-2">
-          <label
-            htmlFor="phoneNumber"
-            className="text-sm font-medium text-gray-700 dark:text-zinc-200"
-          >
-            Phone Number
-          </label>
-          <Input
-            id="phoneNumber"
-            type="tel"
-            value={formState.phoneNumber || ""}
-            onChange={handleChange("phoneNumber")}
-            placeholder="+xyz 98765 43210"
-            className="focus:ring-2 focus:ring-blue-500/20 border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-gray-900 dark:text-white"
-          />
-          <p className="text-xs text-gray-500 dark:text-zinc-400">
-            It's up to you to keep it private or public. Don't forget to add country code.
-          </p>
-        </div>
+              <div className="space-y-2">
+                <Label htmlFor="phoneNumber" className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <Phone className="h-3 w-3 text-muted-foreground" />
+                  Phone Number
+                </Label>
+                <Input
+                  id="phoneNumber"
+                  type="tel"
+                  value={formState.phoneNumber || ""}
+                  onChange={handleChange("phoneNumber")}
+                  placeholder="+1 (555) 123-4567"
+                  className={clsx(
+                    "transition-all duration-200",
+                    "border-input bg-background text-foreground",
+                    "placeholder:text-muted-foreground",
+                    "focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
+                    "focus:border-primary"
+                  )}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Include country code for international numbers
+                </p>
+              </div>
+            </div>
+          </div>
 
-        <div className="space-y-2">
-          <label
-            htmlFor="imageUrl"
-            className="text-sm font-medium text-gray-700 dark:text-zinc-200"
-          >
-            Profile Image URL
-          </label>
-          <Input
-            id="imageUrl"
-            type="url"
-            value={formState.imageUrl || ""}
-            onChange={handleChange("imageUrl")}
-            placeholder="https://example.com/profile-image.jpg"
-            className="focus:ring-2 focus:ring-blue-500/20 border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-gray-900 dark:text-white"
-          />
-          <p className="text-xs text-gray-500 dark:text-zinc-400">
-            Enter the URL of your profile image. This image will be displayed on your profile.
-          </p>
-        </div>
+          {/* Profile & Identity Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-2 rounded-full bg-primary"></div>
+              <h3 className="text-sm font-medium text-foreground">Profile & Identity</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="username" className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <AtSign className="h-3 w-3 text-muted-foreground" />
+                  Username
+                </Label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={formState.username || ""}
+                  onChange={handleChange("username")}
+                  placeholder="your-username"
+                  className={clsx(
+                    "transition-all duration-200",
+                    "border-input bg-background text-foreground",
+                    "placeholder:text-muted-foreground",
+                    "focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
+                    "focus:border-primary"
+                  )}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Your unique identifier - can be changed anytime
+                </p>
+              </div>
 
-        <div className="space-y-2">
-          <label htmlFor="username" className="text-sm font-medium text-gray-700 dark:text-zinc-200">
-            Username
-          </label>
-          <Input
-            id="username"
-            type="text"
-            value={formState.username || ""}
-            onChange={handleChange("username")}
-            placeholder="test-k-m"
-            className="focus:ring-2 focus:ring-blue-500/20 border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-gray-900 dark:text-white"
-          />
-          <p className="text-xs text-gray-500 dark:text-zinc-400">
-            This is your unique username. It can be a combination of name or a pseudonym. You can change it whenever you want.
-          </p>
-        </div>
-        
-        <div className="space-y-2">
-          <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-zinc-200">
-            Email
-          </label>
-          <Input
-            id="email"
-            type="email"
-            value={formState.email || ""}
-            onChange={handleChange("email")}
-            placeholder="email@example.com"
-            readOnly
-            className="focus:ring-2 focus:ring-blue-500/20 border-gray-300 dark:border-zinc-700 bg-gray-100 dark:bg-zinc-800/50 text-gray-500 dark:text-zinc-400"
-          />
-          <p className="text-xs text-gray-500 dark:text-zinc-400">
-            You cannot change your email since it's unique.
-          </p>
-        </div>
-      </form>
-      
-      <motion.div
-        className="mt-8"
-        whileTap={{ scale: 0.98 }}
-      >
-        <button
-          onClick={handleSubmit}
-          disabled={isEqual(formState, initialState) || updateProfileMutation.isPending}
-          className="px-5 py-2.5 text-sm font-medium text-white rounded-md bg-emerald-600 hover:bg-emerald-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
-        </button>
-      </motion.div>
-    </motion.div>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <Mail className="h-3 w-3 text-muted-foreground" />
+                  Email Address
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formState.email || ""}
+                  onChange={handleChange("email")}
+                  placeholder="email@example.com"
+                  readOnly
+                  className={clsx(
+                    "transition-all duration-200",
+                    "border-input bg-muted text-muted-foreground",
+                    "cursor-not-allowed opacity-60"
+                  )}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Email cannot be changed as it's your unique identifier
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Profile Image Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-2 rounded-full bg-primary"></div>
+              <h3 className="text-sm font-medium text-foreground">Profile Image</h3>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="imageUrl" className="text-sm font-medium text-foreground flex items-center gap-2">
+                <Image className="h-3 w-3 text-muted-foreground" />
+                Profile Image URL
+              </Label>
+              <Input
+                id="imageUrl"
+                type="url"
+                value={formState.imageUrl || ""}
+                onChange={handleChange("imageUrl")}
+                placeholder="https://example.com/your-profile-image.jpg"
+                className={clsx(
+                  "transition-all duration-200",
+                  "border-input bg-background text-foreground",
+                  "placeholder:text-muted-foreground",
+                  "focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
+                  "focus:border-primary"
+                )}
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter a URL to your profile image - this will be displayed across the platform
+              </p>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-between pt-6 border-t border-border">
+            <div className="text-xs text-muted-foreground">
+              {hasChanges ? "You have unsaved changes" : "All changes saved"}
+            </div>
+            
+            <Button
+              type="submit"
+              disabled={!hasChanges || updateProfileMutation.isPending}
+              className={clsx(
+                "px-6 h-10 font-medium transition-all duration-200",
+                "bg-primary hover:bg-primary/90 text-primary-foreground",
+                "disabled:opacity-50 disabled:cursor-not-allowed",
+                "focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
+              )}
+            >
+              {updateProfileMutation.isPending ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  Saving...
+                </div>
+              ) : (
+                "Save Changes"
+              )}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
 

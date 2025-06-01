@@ -3,7 +3,7 @@ import Cookies from "js-cookie";
 import { TCreateCardProps, TCardData } from "../types";
 
 interface CardDetail {
-  id: string;
+  id: number;
   title: string;
   description?: string;
   dueDate?: string;
@@ -76,7 +76,7 @@ export const fetchCards = async (
 
 export const fetchCard = async (
   accessToken: string, 
-  cardId: string
+  cardId: number
 ): Promise<CardDetail | undefined> => {
   try {
     const response = await axios.get(
@@ -101,7 +101,7 @@ export const fetchCard = async (
 export const updateCard = async (
   accessToken: string,
   data: TCardData,
-  cardId: string
+  cardId: number
 ): Promise<CardDetail | undefined> => {
   try {
     const response = await axios.patch(
@@ -126,7 +126,7 @@ export const updateCard = async (
 
 export const deleteCard = async (
   accessToken: string, 
-  cardId: string
+  cardId: number
 ): Promise<string> => {
   try {
     const response = await axios.delete(
@@ -150,7 +150,7 @@ export const deleteCard = async (
 
 /***Card CRUD API ***/
 
-export const getCardDetails = async (cardId: string): Promise<CardDetail | undefined> => {
+export const getCardDetails = async (cardId: number): Promise<CardDetail | undefined> => {
   const accessToken = Cookies.get("accessToken");
 
   try {
