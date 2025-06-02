@@ -8,13 +8,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, UserPlus, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import TeamInviteDialog from "@/_components/TeamInviteDialog";
 
 const TeamMembersPage = () => {
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+
   const { data, isPending, error } = useQuery({
     queryKey: ["team-members"],
     queryFn: async () => {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/teams/member`,
+        `${import.meta.env.VITE_API_URL}/teams/members`,
         {
           headers: {
             Authorization: `Bearer ${Cookies.get("accessToken")}`,
@@ -24,6 +28,28 @@ const TeamMembersPage = () => {
       return response.data.data;
     },
   });
+
+  // Get team data for the invite dialog
+  const { data: teamData } = useQuery({
+    queryKey: ['team'],
+    queryFn: async () => {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/teams`, {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("accessToken")}`
+        }
+      });
+      return response.data.data;
+    },
+    enabled: !!Cookies.get("accessToken")
+  });
+
+  const openInviteDialog = () => {
+    setIsInviteDialogOpen(true);
+  };
+
+  const closeInviteDialog = () => {
+    setIsInviteDialogOpen(false);
+  };
 
   if (isPending) {
     return (
@@ -124,7 +150,7 @@ const TeamMembersPage = () => {
               </div>
               
               <div className="ml-auto">
-                <Button size="sm" className="gap-2">
+                <Button size="sm" className="gap-2" onClick={openInviteDialog}>
                   <UserPlus className="h-4 w-4" />
                   Invite Member
                 </Button>
@@ -149,7 +175,7 @@ const TeamMembersPage = () => {
                     <p className="text-sm text-muted-foreground mb-4">
                       Start building your team by inviting members to collaborate.
                     </p>
-                    <Button className="gap-2">
+                    <Button className="gap-2" onClick={openInviteDialog}>
                       <UserPlus className="h-4 w-4" />
                       Invite Your First Member
                     </Button>
@@ -160,6 +186,13 @@ const TeamMembersPage = () => {
           </CardContent>
         </Card>
       </div>
+      {isInviteDialogOpen && (
+        <TeamInviteDialog
+          isOpen={isInviteDialogOpen}
+          onClose={closeInviteDialog}
+          teamData={teamData}
+        />
+      )}
     </Container>
   );
 };

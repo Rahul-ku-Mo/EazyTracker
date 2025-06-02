@@ -48,7 +48,7 @@ const useTeamMembers = () => {
     queryFn: async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/teams/member`,
+          `${import.meta.env.VITE_API_URL}/teams/members`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,

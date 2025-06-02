@@ -23,6 +23,7 @@ import { UserContextProvider } from "@/context/UserContext";
 import { AuthContext, AuthContextProvider } from "@/context/AuthContext";
 import GoogleCallback from "@/pages/callback/GoogleCallback";
 import RequireAuth from "@/_components/shared/RequireAuth";
+import JoinTeamPage from "@/pages/JoinTeamPage";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -116,6 +117,14 @@ const Router = () => {
           <AuthRoute>
             <AuthPage />
           </AuthRoute>
+        </AuthContextProvider>
+      ),
+    },
+    {
+      path: "/join",
+      element: (
+        <AuthContextProvider>
+          <JoinTeamPage />
         </AuthContextProvider>
       ),
     },

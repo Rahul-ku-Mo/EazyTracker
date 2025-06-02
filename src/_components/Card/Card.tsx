@@ -301,16 +301,15 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
 
           <CardFooter dueDate={dueDate} priority={priority} labels={labels} />
           <div 
-              className="absolute top-2 right-2 bg-zinc-900/50 rounded-lg p-1.5 opacity-0 group-hover:opacity-100 transition-all ease-linear cursor-pointer"
+              className="absolute top-2 right-2 bg-zinc-100 dark:bg-zinc-900/50 rounded-lg p-1.5 opacity-0 group-hover:opacity-100 transition-all ease-linear cursor-pointer"
               onClick={(e) => {
                 handleEllipsisClick(e);
               }}
               onContextMenu={(e) => {
                 e.stopPropagation();
-                
               }}
             >
-              <EllipsisVerticalIcon className="size-5" />
+              <EllipsisVerticalIcon className="size-5 text-zinc-900 dark:text-zinc-100" />
             </div>
         </div>
       </CardContextMenu>

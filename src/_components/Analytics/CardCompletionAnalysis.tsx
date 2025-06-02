@@ -17,7 +17,9 @@ import {
 } from "@/components/ui/select";
 
 import { useTeamAnalytics } from "@/hooks/useAnalytics";
-
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 import { TeamStats } from "./_team-performance/TeamStats";
 import { TeamPerformance } from "./_team-performance/TeamPerformance";
@@ -41,31 +43,87 @@ interface TeamMember {
   trend: "up" | "down";
 }
 
+// Hook to get current user's team
+const useCurrentTeam = () => {
+  const accessToken = Cookies.get("accessToken") || "";
+  
+  return useQuery({
+    queryKey: ['team'],
+    queryFn: async () => {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/teams`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+      return response.data.data;
+    },
+    enabled: !!accessToken
+  });
+};
+
 const CardCompletionAnalysis = () => {
   const [timeRange, setTimeRange] = useState<"day" | "week" | "month" | "quarter">("week");
-  const [teamId] = useState("team-1"); // Updated to match seed data
+  
+  // Get current user's team dynamically
+  const { data: teamData, isLoading: isLoadingTeam, error: teamError } = useCurrentTeam();
+  const teamId = teamData?.id;
 
-  const { data: teamAnalytics, isLoading, error } = useTeamAnalytics(teamId, timeRange);
+  const { data: teamAnalytics, isLoading: isLoadingAnalytics, error: analyticsError } = useTeamAnalytics(teamId || "", timeRange);
 
   // Debug logging
-  console.log('Team Analytics Data:', { teamAnalytics, isLoading, error, teamId, timeRange });
+  console.log('Team Analytics Data:', { teamAnalytics, teamData, isLoadingAnalytics, isLoadingTeam, analyticsError, teamError, teamId, timeRange });
 
   // Transform team data for components - now using real dynamic data
   const teamMembers: TeamMember[] = teamAnalytics?.memberPerformance || [];
   const velocityData: VelocityData[] = teamAnalytics?.velocityData || [];
   const teamStatsData = teamAnalytics?.teamStats;
 
+  // Show loading state
+  if (isLoadingTeam || (teamId && isLoadingAnalytics)) {
+    return (
+      <div className="container mx-auto p-4">
+        <div className="text-center py-8">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <h2 className="text-lg font-semibold">Loading Analytics</h2>
+          <p className="text-sm text-muted-foreground mt-2">
+            {isLoadingTeam ? "Getting your team information..." : "Loading team analytics data..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Show error state
-  if (error) {
+  if (teamError || analyticsError) {
     return (
       <div className="container mx-auto p-4">
         <div className="text-center py-8">
           <h2 className="text-lg font-semibold text-red-600">Error Loading Analytics</h2>
           <p className="text-sm text-muted-foreground mt-2">
-            {error instanceof Error ? error.message : 'Failed to load team analytics data'}
+            {teamError 
+              ? "Failed to load team information" 
+              : analyticsError instanceof Error ? analyticsError.message : 'Failed to load team analytics data'
+            }
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Please ensure the backend is running and the database has been seeded with data.
+            Please ensure you're part of a team and the backend is running properly.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show no team state
+  if (!teamId) {
+    return (
+      <div className="container mx-auto p-4">
+        <div className="text-center py-8">
+          <h2 className="text-lg font-semibold">No Team Found</h2>
+          <p className="text-sm text-muted-foreground mt-2">
+            You need to be part of a team to view analytics.
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Please join or create a team to access team analytics.
           </p>
         </div>
       </div>
@@ -78,7 +136,7 @@ const CardCompletionAnalysis = () => {
         <div>
           <h1 className="text-xl font-bold">Card Completion Analytics</h1>
           <p className="text-xs text-muted-foreground">
-            Track time spent and identify optimization opportunities
+            Track time spent and identify optimization opportunities for {teamData?.name || 'your team'}
           </p>
         </div>
         <div className="flex gap-2">
@@ -132,7 +190,7 @@ const CardCompletionAnalysis = () => {
             insights={teamAnalytics?.insights || []}
             recommendations={teamAnalytics?.recommendations || []}
             teamStats={teamAnalytics?.teamStats}
-            isLoading={isLoading}
+            isLoading={isLoadingAnalytics}
           />
         </TabsContent>
       </Tabs>
