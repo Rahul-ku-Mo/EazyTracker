@@ -15,3 +15,4 @@ const CardProvider = ({ cardDetails, children }: CardProviderProps) => {
 };
 
 export { CardProvider, CardContext };
+

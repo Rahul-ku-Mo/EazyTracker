@@ -17,7 +17,7 @@ type TIssueUpdateCard = {
   columnId?: string;
   priority?: string;
   createdAt?: Date;
-  assigneeId?: string;
+  assigneeId?: string | null;
   updatedAt?: Date;
   label?: string;
   order?: number;
@@ -71,7 +71,7 @@ export const useCardMutation = () => {
         ...(dueDate !== undefined && { dueDate }),
         ...(columnId !== undefined && { columnId }),
         ...(priority !== undefined && { priority }),
-        ...(assigneeId !== undefined && { assigneeId: assigneeId }),
+        ...(assigneeId !== undefined && { assigneeId }),
         ...(label !== undefined && { label }),
         ...(order !== undefined && { order }),
       };

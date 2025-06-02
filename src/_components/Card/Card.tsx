@@ -192,7 +192,6 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
 
   const cardWrapperRef = useRef<HTMLDivElement>(null); // Ref for the context menu trigger element
 
-
   const { deleteCardMutation, createCardMutation } = useCardMutation();
 
   const closeModal = () => setIsOpen(false);

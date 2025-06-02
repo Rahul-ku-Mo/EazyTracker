@@ -112,8 +112,8 @@ const ListView = ({
                   
                   {/* Priority */}
                   {item.priority && (
-                    <Badge className={`text-xs px-1.5 py-0.5 ${priorityConfig[item.priority].color}`}>
-                      {priorityConfig[item.priority].label}
+                    <Badge className={`text-xs px-1.5 py-0.5 ${priorityConfig[item.priority]?.color}`}>
+                      {priorityConfig[item.priority]?.label}
                     </Badge>
                   )}
                   

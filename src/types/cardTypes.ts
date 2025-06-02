@@ -8,6 +8,13 @@ type TCardData = {
   order?: number;
   priority?: string;
   assigneeId?: string;
+  assignees?: Array<{
+    id: string;
+    name: string;
+    email: string;
+    username?: string;
+    imageUrl?: string;
+  }>;
 };
 
 type TCreateCardProps = {
@@ -24,5 +31,13 @@ type TCardContext = {
   priority?: string;
   order?: number;
   labels?: string[];
+  assigneeId?: string;
+  assignees?: Array<{
+    id: string;
+    name: string;
+    email: string;
+    username?: string;
+    imageUrl?: string;
+  }>;
 };
 export type { TCardData, TCreateCardProps, TCardContext };
