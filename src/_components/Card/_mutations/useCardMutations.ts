@@ -1,5 +1,5 @@
 import { TCardData } from "@/types/cardTypes";
-import { createCard, deleteCard, updateCard } from "@/apis/CardApis";
+import { createCard, deleteCard, updateCard, markCardComplete, markCardIncomplete } from "@/apis/CardApis";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Cookies from "js-cookie";
 import { useParams } from "react-router-dom";
@@ -124,9 +124,53 @@ export const useCardMutation = () => {
     },
   });
 
+  const markCompleteCardMutation = useMutation({
+    mutationFn: (cardId: number) => markCardComplete(accessToken, cardId),
+    onSuccess: () =>
+      toast({
+        title: "Card completed! 🎉",
+        description: "Card marked as complete",
+        variant: "default",
+      }),
+    onError: () =>
+      toast({
+        title: "Something wrong happened 🔥",
+        description: "Please try again later",
+        variant: "destructive",
+      }),
+    onSettled: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["columns", "boards", boardId],
+      });
+    },
+  });
+
+  const markIncompleteCardMutation = useMutation({
+    mutationFn: (cardId: number) => markCardIncomplete(accessToken, cardId),
+    onSuccess: () =>
+      toast({
+        title: "Card reopened",
+        description: "Card marked as incomplete",
+        variant: "default",
+      }),
+    onError: () =>
+      toast({
+        title: "Something wrong happened 🔥",
+        description: "Please try again later",
+        variant: "destructive",
+      }),
+    onSettled: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["columns", "boards", boardId],
+      });
+    },
+  });
+
   return {
     updateCardMutation,
     deleteCardMutation,
     createCardMutation,
+    markCompleteCardMutation,
+    markIncompleteCardMutation,
   };
 };

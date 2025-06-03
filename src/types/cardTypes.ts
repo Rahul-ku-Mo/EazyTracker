@@ -39,5 +39,14 @@ type TCardContext = {
     username?: string;
     imageUrl?: string;
   }>;
+  completedAt?: Date | null;
+  isOnTime?: boolean | null;
+  status?: {
+    isCompleted: boolean;
+    isOverdue: boolean;
+    isOnTime: boolean | null;
+    daysOverdue: number;
+  };
 };
+
 export type { TCardData, TCreateCardProps, TCardContext };

@@ -172,3 +172,85 @@ export const getCardDetails = async (cardId: number): Promise<CardDetail | undef
     return undefined;
   }
 };
+
+// Mark card as complete
+export const markCardComplete = async (
+  accessToken: string,
+  cardId: number
+): Promise<CardDetail | undefined> => {
+  try {
+    const response = await axios.patch(
+      `${import.meta.env.VITE_API_URL}/cards/${cardId}/complete`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (response.data.data && response.status === 200) {
+      return response.data.data;
+    }
+    return undefined;
+  } catch (err) {
+    console.log(err);
+    return undefined;
+  }
+};
+
+// Mark card as incomplete
+export const markCardIncomplete = async (
+  accessToken: string,
+  cardId: number
+): Promise<CardDetail | undefined> => {
+  try {
+    const response = await axios.patch(
+      `${import.meta.env.VITE_API_URL}/cards/${cardId}/incomplete`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (response.data.data && response.status === 200) {
+      return response.data.data;
+    }
+    return undefined;
+  } catch (err) {
+    console.log(err);
+    return undefined;
+  }
+};
+
+// Get cards with status (completed, overdue, etc.)
+export const fetchCardsWithStatus = async (
+  accessToken: string,
+  columnId?: string,
+  boardId?: string
+): Promise<any[] | undefined> => {
+  try {
+    const params = new URLSearchParams();
+    if (columnId) params.append('columnId', columnId);
+    if (boardId) params.append('boardId', boardId);
+
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}/cards/status?${params.toString()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (response.data.data && response.status === 200) {
+      return response.data.data;
+    }
+    return undefined;
+  } catch (err) {
+    console.log(err);
+    return undefined;
+  }
+};

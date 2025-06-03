@@ -221,11 +221,11 @@ export function PerformanceComparison({ cardId }: PerformanceComparisonProps) {
               <Avatar className="h-6 w-6">
                       <AvatarImage src={assignee.imageUrl || undefined} alt={assignee.name} />
                 <AvatarFallback className="text-[10px]">
-                        {assignee.name.split(" ").map((n) => n[0]).join("")}
+                  {assignee.name?.split(" ").map((n) => n[0]).join("") || "??"}
                 </AvatarFallback>
               </Avatar>
                     <div className="flex-1">
-                      <div className="text-xs font-medium">{assignee.name}</div>
+                      <div className="text-xs font-medium">{assignee.name || "Unknown"}</div>
                 <div className="text-[10px] text-muted-foreground">
                         {assignee.role} • {assignee.hoursWorked}h worked
                 </div>
