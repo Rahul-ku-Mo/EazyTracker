@@ -16,6 +16,7 @@ import {
   BoardSettingsPage,
   OnboardingPage,
   TeamMembersPage,
+  TeamManagementPage,
 } from "@/routes/element";
 
 import { KanbanProvider } from "@/context/KanbanProvider";
@@ -104,6 +105,10 @@ const authenticatedRoutes = [
   {
     path: "/team/members",
     element: <WithContexts Component={TeamMembersPage} />,
+  },
+  {
+    path: "/team/management",
+    element: <WithContexts Component={TeamManagementPage} />,
   },
 ];
 

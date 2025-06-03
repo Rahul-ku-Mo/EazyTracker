@@ -254,13 +254,13 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
   const getCardStatus = () => {
     const now = new Date();
     const isCompleted = !!completedAt;
-    const isOverdue = !isCompleted && dueDate && new Date(dueDate) < now;
+    const isOverdue = !isCompleted && dueDate ? new Date(dueDate) < now : false;
     
     return {
       isCompleted,
       isOverdue,
-      isOnTime: (cardDetails as TCardContext).isOnTime,
-      daysOverdue: isOverdue 
+      isOnTime: (cardDetails as TCardContext).isOnTime ?? null,
+      daysOverdue: isOverdue && dueDate
         ? Math.ceil((now.getTime() - new Date(dueDate).getTime()) / (1000 * 60 * 60 * 24))
         : 0
     };
@@ -268,8 +268,7 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
 
   const status = getCardStatus();
 
-  const handleToggleCompletion = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleToggleCompletion = () => {
     if (status.isCompleted) {
       markIncompleteCardMutation.mutate(id);
     } else {
@@ -277,17 +276,22 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
     }
   };
 
+  const handleCompletionClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    handleToggleCompletion();
+  };
+
   const items = [
     {
       icon: <ExternalLink className="w-3 h-3 mr-2" />,
       label: "Open card",
-      onClick: openModal,
+      onClick: () => openModal(),
       shortcut: "⌘O",
     },
     {
       icon: status.isCompleted ? <Circle className="w-3 h-3 mr-2" /> : <CheckCircle2 className="w-3 h-3 mr-2" />,
       label: status.isCompleted ? "Mark incomplete" : "Mark complete",
-      onClick: handleToggleCompletion,
+      onClick: () => handleToggleCompletion(),
       shortcut: "⌘⏎",
     },
     {
@@ -357,7 +361,7 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
 
   return (
     <>
-      <CardContextMenu items={items} cardId={id}>
+      <CardContextMenu items={items} cardId={id.toString()}>
         <div
          ref={cardWrapperRef}
           onClick={openModal}
@@ -381,7 +385,7 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
           {/* Completion checkbox - Linear style */}
           <div className="absolute top-3 left-3 z-10">
             <button
-              onClick={handleToggleCompletion}
+              onClick={handleCompletionClick}
               className={cn(
                 "size-4 rounded-full border-2 flex items-center justify-center transition-all duration-200",
                 "hover:scale-110 active:scale-95",
@@ -424,7 +428,7 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
       />
 
       <DueDateDialog
-        cardId={id}
+        cardId={id.toString()}
         isOpen={isDueDateOpen}
         closeDialog={closeDueDateDialog}
       />

@@ -70,6 +70,10 @@ const data = {
       icon: Settings2,
       items: [
         {
+          title: "Team Management",
+          url: "/team/management",
+        },
+        {
           title: "Members",
           url: "/team/members",
         },

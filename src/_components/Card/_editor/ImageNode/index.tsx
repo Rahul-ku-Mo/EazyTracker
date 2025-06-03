@@ -67,31 +67,38 @@ export function ImageComponent({
   const isLoading = nodeKey ? imageUploadStatusMap.get(altText) === "uploading" : false;
   
   return (
-    <div className="image-container relative">
-      <div className={`transition-opacity duration-300 ${isLoading ? 'opacity-30' : 'opacity-100'}`}>
-        <img
-          src={src}
-          alt={altText}
-          style={{ width, height }}
-          draggable="false"
-          className="rounded-md"
-        />
-      </div>
-      
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center z-10">
-          <div className="bg-black/30 p-3 rounded-full">
-            <Loader className="h-8 w-8 text-white animate-spin" />
+    <div className="editor-image-wrapper w-full flex justify-center">
+      <div className="image-container relative inline-block max-w-full">
+        <div className={`transition-opacity duration-300 ${isLoading ? 'opacity-30' : 'opacity-100'}`}>
+          <img
+            src={src}
+            alt={altText}
+            style={{ 
+              width: width || 'auto',
+              height: height || 'auto',
+              maxWidth: '100%',
+              maxHeight: '500px', // Reasonable max height
+            }}
+            draggable="false"
+            className="rounded-md object-contain block"
+          />
+        </div>
+        
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center z-10">
+            <div className="bg-black/30 p-3 rounded-full">
+              <Loader className="h-8 w-8 text-white animate-spin" />
+            </div>
+            <span className="sr-only">Uploading image...</span>
           </div>
-          <span className="sr-only">Uploading image...</span>
-        </div>
-      )}
-      
-      {showCaption && (
-        <div className="image-caption mt-2 text-sm text-gray-500 dark:text-gray-400">
-          {caption}
-        </div>
-      )}
+        )}
+        
+        {showCaption && (
+          <div className="image-caption mt-2 text-sm text-gray-500 dark:text-gray-400 text-center">
+            {caption}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
