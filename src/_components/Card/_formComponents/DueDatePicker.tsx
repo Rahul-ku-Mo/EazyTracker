@@ -22,6 +22,7 @@ export function DueDatePicker({
     <Popover>
       <PopoverTrigger asChild>
         <Button
+          type="button"
           variant={"outline"}
           className={cn(
             "w-fit justify-start text-left font-normal text-xs h-8",

@@ -179,7 +179,7 @@ const TeamManagement: React.FC = () => {
       setSelectedMembers(new Set());
       setShowBulkActions(false);
     } else {
-      const allIds = new Set(filteredMembers.map((member: TeamMember) => member.id));
+      const allIds = new Set<string>(filteredMembers.map((member: TeamMember) => member.id));
       setSelectedMembers(allIds);
       setShowBulkActions(true);
     }
@@ -713,13 +713,76 @@ const TeamManagement: React.FC = () => {
               {boards.map((board: Board) => (
                 <Card key={board.id}>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <div 
-                        className="w-4 h-4 rounded-full" 
-                        style={{ backgroundColor: board.colorValue }} 
-                      />
-                      {board.title}
-                    </CardTitle>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <div 
+                          className="w-4 h-4 rounded-full" 
+                          style={{ backgroundColor: board.colorValue }} 
+                        />
+                        {board.title}
+                      </CardTitle>
+                      
+                      {/* Add Users to Board Button */}
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="outline">
+                            <UserPlus className="w-4 h-4 mr-2" />
+                            Add Users
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Add Users to {board.title}</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label>Select users to add:</Label>
+                              {teamMembers
+                                .filter((member: TeamMember) => 
+                                  !member.boardAccess.some((access: any) => access.board.id === board.id)
+                                )
+                                .map((member: TeamMember) => (
+                                  <div
+                                    key={member.id}
+                                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent cursor-pointer"
+                                    onClick={() => {
+                                      addToBoardMutation.mutate({
+                                        userId: member.id,
+                                        boardId: board.id,
+                                        role: 'MEMBER'
+                                      });
+                                    }}
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <Avatar className="w-8 h-8">
+                                        <AvatarImage src={member.imageUrl} />
+                                        <AvatarFallback>
+                                          {member?.name?.split(' ').map((n: string) => n[0]).join('') || member?.email?.charAt(0).toUpperCase() || 'U'}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div>
+                                        <div className="font-medium">{member.name || member.email}</div>
+                                        <div className="text-sm text-muted-foreground">{member.department || 'No department'}</div>
+                                      </div>
+                                    </div>
+                                    <Button size="sm">
+                                      <Plus className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                ))
+                              }
+                              {teamMembers.filter((member: TeamMember) => 
+                                !member.boardAccess.some((access: any) => access.board.id === board.id)
+                              ).length === 0 && (
+                                <p className="text-sm text-muted-foreground text-center py-4">
+                                  All team members already have access to this board
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <Table>

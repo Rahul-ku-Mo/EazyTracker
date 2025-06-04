@@ -24,12 +24,21 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
   const titleRef = useRef<HTMLInputElement>(null);
   const [description, setDescription] = useState<string>("");
   const [dueDate, setDueDate] = useState<Date | undefined>();
+  const [priority, setPriority] = useState<string>("none");
+  const [labels, setLabels] = useState<string[]>([]);
+  const [assignees, setAssignees] = useState<string[]>([]);
 
   const { createCardMutation } = useCardMutation();
 
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => titleRef.current?.focus(), 100);
+      // Reset form when dialog opens
+      setDescription("");
+      setDueDate(undefined);
+      setPriority("none");
+      setLabels([]);
+      setAssignees([]);
     }
   }, [isOpen]);
 
@@ -40,7 +49,16 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
 
     if (!title.trim()) return;
 
-    createCardMutation.mutate({ title, description, dueDate });
+    const cardData = {
+      title,
+      description,
+      dueDate,
+      priority,
+      labels,
+      assigneeIds: assignees,
+    };
+
+    createCardMutation.mutate(cardData);
     onClose();
   };
 
@@ -73,7 +91,16 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
             description={description}
             setDescription={setDescription}
           />
-          <NewCardActions dueDate={dueDate} setDueDate={setDueDate} />
+          <NewCardActions 
+            dueDate={dueDate} 
+            setDueDate={setDueDate}
+            priority={priority}
+            setPriority={setPriority}
+            labels={labels}
+            setLabels={setLabels}
+            assignees={assignees}
+            setAssignees={setAssignees}
+          />
 
           <div className="flex items-center justify-between pt-4">
             <div className="flex items-center gap-2">

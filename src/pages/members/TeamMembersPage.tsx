@@ -14,7 +14,7 @@ import TeamInviteDialog from "@/_components/TeamInviteDialog";
 const TeamMembersPage = () => {
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
 
-  const { data, isPending, error } = useQuery({
+  const { data: teamData, isPending, error } = useQuery({
     queryKey: ["team-members"],
     queryFn: async () => {
       const response = await axios.get(
@@ -30,7 +30,7 @@ const TeamMembersPage = () => {
   });
 
   // Get team data for the invite dialog
-  const { data: teamData } = useQuery({
+  const { data: teamInfo } = useQuery({
     queryKey: ['team'],
     queryFn: async () => {
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/teams`, {
@@ -117,8 +117,20 @@ const TeamMembersPage = () => {
     );
   }
 
-  const memberCount = data?.length || 0;
-  const adminCount = data?.filter((member: any) => member.role === 'admin')?.length || 0;
+  // Transform the team members data to match the UserTable expected format
+  const members = teamData?.members || [];
+  const transformedData = members.map((member: any) => ({
+    id: member.id,
+    name: member.name || member.email,
+    email: member.email,
+    role: member.role || 'USER',
+    status: member.isActive !== false ? 'Active' : 'Inactive',
+    imageUrl: member.imageUrl || '',
+    action: 'actions', // This will be handled by the table component
+  }));
+
+  const memberCount = transformedData.length;
+  const adminCount = transformedData.filter((member: any) => member.role === 'ADMIN').length;
   const userCount = memberCount - adminCount;
 
   return (
@@ -163,7 +175,7 @@ const TeamMembersPage = () => {
         <Card className="w-full border-border/50 shadow-lg">
           <CardContent className="p-0">
             {memberCount > 0 ? (
-              <UserTable columns={columns} data={data} />
+              <UserTable columns={columns} data={transformedData} />
             ) : (
               <div className="flex items-center justify-center py-12">
                 <div className="flex flex-col items-center gap-4 text-center">
@@ -190,7 +202,7 @@ const TeamMembersPage = () => {
         <TeamInviteDialog
           isOpen={isInviteDialogOpen}
           onClose={closeInviteDialog}
-          teamData={teamData}
+          teamData={teamInfo}
         />
       )}
     </Container>

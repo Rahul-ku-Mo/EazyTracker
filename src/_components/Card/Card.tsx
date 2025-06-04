@@ -14,6 +14,8 @@ import {
   CheckCircle2,
   Circle,
   AlertTriangle,
+  AlertCircle,
+  Minus,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Badge } from "../../components/ui/badge";
@@ -102,6 +104,21 @@ const getPriorityStyles = (priority?: string) => {
   }
 };
 
+const getPriorityIcon = (priority?: string) => {
+  switch (priority?.toLowerCase()) {
+    case "urgent":
+      return <AlertCircle className="w-3 h-3 text-red-500" />;
+    case "high":
+      return <AlertTriangle className="w-3 h-3 text-orange-500" />;
+    case "medium":
+      return <Circle className="w-3 h-3 text-blue-500" />;
+    case "low":
+      return <Circle className="w-3 h-3 text-green-500" />;
+    default:
+      return <Minus className="w-3 h-3 text-gray-400" />;
+  }
+};
+
 const CardFooter = ({
   dueDate,
   attachmentsCount = 0,
@@ -184,17 +201,14 @@ const CardFooter = ({
           <Badge
             variant="outline"
             className={cn(
-              "text-[10px] px-1.5 py-0  flex items-center gap-1 font-semibold border rounded-full capitalize",
+              "text-xs px-1.5 py-0 flex items-center gap-1 font-semibold border rounded-full capitalize",
               priorityStyles?.text,
-
               "border-zinc-200",
               priorityStyles?.border
             )}
           >
-            <div
-              className={cn("w-2 h-2 rounded-full ", priorityStyles?.bg)}
-            ></div>
-            {priority}
+            {getPriorityIcon(priority)}
+            <span className="text-xs">{priority}</span>
           </Badge>
         )}
         {attachmentsCount > 0 && (
