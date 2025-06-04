@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AlertCircle, X, Link as LinkIcon } from "lucide-react";
+import { X } from "lucide-react";
 import {
   Dialog,
   DialogTitle,
@@ -26,7 +26,7 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
   const [dueDate, setDueDate] = useState<Date | undefined>();
   const [priority, setPriority] = useState<string>("none");
   const [labels, setLabels] = useState<string[]>([]);
-  const [assignees, setAssignees] = useState<string[]>([]);
+  const [assignee, setAssignee] = useState<string | null>(null);
 
   const { createCardMutation } = useCardMutation();
 
@@ -38,7 +38,7 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
       setDueDate(undefined);
       setPriority("none");
       setLabels([]);
-      setAssignees([]);
+      setAssignee(null);
     }
   }, [isOpen]);
 
@@ -55,7 +55,7 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
       dueDate,
       priority,
       labels,
-      assigneeIds: assignees,
+      assigneeIds: assignee ? [assignee] : [],
     };
 
     createCardMutation.mutate(cardData);
@@ -98,22 +98,11 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
             setPriority={setPriority}
             labels={labels}
             setLabels={setLabels}
-            assignees={assignees}
-            setAssignees={setAssignees}
+            assignee={assignee}
+            setAssignee={setAssignee}
           />
 
-          <div className="flex items-center justify-between pt-4">
-            <div className="flex items-center gap-2">
-              <Button type="button" variant="outline" size="sm">
-                <LinkIcon className="w-4 h-4 mr-2" />
-                Attach
-              </Button>
-              <Button type="button" variant="outline" size="sm">
-                <AlertCircle className="w-4 h-4 mr-2" />
-                Templates
-              </Button>
-            </div>
-
+          <div className="flex items-center justify-end pt-4">
             <div className="flex items-center gap-2">
               <Button
                 type="submit"

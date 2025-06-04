@@ -39,8 +39,8 @@ type TNewCardActionsProps = {
   setPriority: React.Dispatch<React.SetStateAction<string>>;
   labels: string[];
   setLabels: React.Dispatch<React.SetStateAction<string[]>>;
-  assignees: string[];
-  setAssignees: React.Dispatch<React.SetStateAction<string[]>>;
+  assignee: string | null;
+  setAssignee: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 interface TeamMember {
@@ -94,8 +94,8 @@ const NewCardActions = ({
   setPriority,
   labels,
   setLabels,
-  assignees,
-  setAssignees 
+  assignee,
+  setAssignee 
 }: TNewCardActionsProps) => {
   
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
@@ -127,10 +127,10 @@ const NewCardActions = ({
   };
 
   const handleAssigneeSelect = (memberId: string) => {
-    if (assignees.includes(memberId)) {
-      setAssignees(assignees.filter(id => id !== memberId));
+    if (assignee === memberId) {
+      setAssignee(null);
     } else {
-      setAssignees([...assignees, memberId]);
+      setAssignee(memberId);
     }
   };
 
@@ -151,10 +151,6 @@ const NewCardActions = ({
 
   const handleRemoveLabel = (label: string) => {
     setLabels(labels.filter(l => l !== label));
-  };
-
-  const handleRemoveAssignee = (memberId: string) => {
-    setAssignees(assignees.filter(id => id !== memberId));
   };
 
   return (
@@ -223,7 +219,7 @@ const NewCardActions = ({
             )}
           >
             <Users className="w-4 h-4 mr-2" />
-            Assignee{assignees.length > 0 && ` (${assignees.length})`}
+            Assignee{assignee && ` (${teamMembers.find(m => m.id === assignee)?.name || teamMembers.find(m => m.id === assignee)?.email || 'Unknown'})`}
             <ChevronDown className="w-4 h-4 ml-2" />
           </Button>
         </PopoverTrigger>
@@ -236,7 +232,7 @@ const NewCardActions = ({
             
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {teamMembers.map((member) => {
-                const isSelected = assignees.includes(member.id);
+                const isSelected = assignee === member.id;
                 return (
                   <div
                     key={member.id}
@@ -352,37 +348,28 @@ const NewCardActions = ({
 
       <DueDatePicker dueDate={dueDate} setDueDate={setDueDate} />
 
-      {/* Display selected assignees */}
-      {assignees.length > 0 && (
-        <div className="flex items-center gap-1 flex-wrap">
-          {assignees.map((assigneeId) => {
-            const member = teamMembers.find(m => m.id === assigneeId);
-            if (!member) return null;
-            return (
-              <Badge
-                key={assigneeId}
-                variant="secondary"
-                className="text-xs h-8 pl-1 pr-2 flex items-center gap-1"
-              >
-                <Avatar className="w-4 h-4">
-                  <AvatarImage src={member.imageUrl} />
-                  <AvatarFallback className="text-[8px]">
-                    {(member.name || member.email)?.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span>{member.name || member.username || member.email}</span>
-                <X
-                  className="w-3 h-3 cursor-pointer hover:text-destructive"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleRemoveAssignee(assigneeId);
-                  }}
-                />
-              </Badge>
-            );
-          })}
-        </div>
+      {/* Display selected assignee */}
+      {assignee && (
+        <Badge
+          variant="secondary"
+          className="text-xs h-8 pl-1 pr-2 flex items-center gap-1"
+        >
+          <Avatar className="w-4 h-4">
+            <AvatarImage src={teamMembers.find(m => m.id === assignee)?.imageUrl} />
+            <AvatarFallback className="text-[8px]">
+              {(teamMembers.find(m => m.id === assignee)?.name || teamMembers.find(m => m.id === assignee)?.email)?.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <span>{teamMembers.find(m => m.id === assignee)?.name || teamMembers.find(m => m.id === assignee)?.email}</span>
+          <X
+            className="w-3 h-3 cursor-pointer hover:text-destructive"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setAssignee(null);
+            }}
+          />
+        </Badge>
       )}
 
       {/* Display selected labels */}
