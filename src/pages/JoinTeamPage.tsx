@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Users, Mail, Lock, User, ArrowRight, CheckCircle } from "lucide-react";
+import { Users, Mail, User, ArrowRight, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -17,7 +17,7 @@ const JoinTeamPage = () => {
   
   const [inviteCode, setInviteCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [teamInfo, setTeamInfo] = useState(null);
+  const [teamInfo, setTeamInfo] = useState<{ name: string } | null>(null);
   const [showRegistration, setShowRegistration] = useState(false);
   const [registrationData, setRegistrationData] = useState({
     email: "",
@@ -30,15 +30,7 @@ const JoinTeamPage = () => {
   const accessToken = Cookies.get("accessToken");
   const isLoggedIn = !!accessToken;
 
-  useEffect(() => {
-    const codeFromUrl = searchParams.get("code");
-    if (codeFromUrl) {
-      setInviteCode(codeFromUrl.toUpperCase());
-      validateInviteCode(codeFromUrl.toUpperCase());
-    }
-  }, [searchParams]);
-
-  const validateInviteCode = async (code) => {
+  const validateInviteCode = useCallback(async (code: string) => {
     try {
       setIsLoading(true);
       const response = await axios.get(
@@ -48,7 +40,7 @@ const JoinTeamPage = () => {
       if (response.data.status === 200) {
         setTeamInfo(response.data.data);
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Invalid invite code",
         description: "The invite code is invalid or has expired.",
@@ -57,7 +49,17 @@ const JoinTeamPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    const codeFromUrl = searchParams.get("code");
+    if (codeFromUrl) {
+      setInviteCode(codeFromUrl.toUpperCase());
+      validateInviteCode(codeFromUrl.toUpperCase());
+    }
+  }, [searchParams, validateInviteCode]);
+
+
 
   const handleJoinTeam = async () => {
     if (!inviteCode.trim()) {
@@ -89,7 +91,7 @@ const JoinTeamPage = () => {
         });
         navigate("/workspace");
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Failed to join team",
         description: error.response?.data?.message || "An error occurred while joining the team.",
@@ -100,7 +102,7 @@ const JoinTeamPage = () => {
     }
   };
 
-  const handleRegistration = async (e) => {
+  const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (registrationData.password !== registrationData.confirmPassword) {
@@ -135,7 +137,7 @@ const JoinTeamPage = () => {
         });
         navigate("/workspace");
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Registration failed",
         description: error.response?.data?.message || "An error occurred during registration.",
@@ -146,7 +148,7 @@ const JoinTeamPage = () => {
     }
   };
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: string, value: string) => {
     setRegistrationData(prev => ({
       ...prev,
       [field]: value

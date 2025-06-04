@@ -7,6 +7,8 @@ import {
   Copy,
   CheckCircle,
   Settings2,
+  Users,
+  Hash,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -24,6 +26,8 @@ import {
 } from "./ui/sidebar";
 import { useUser } from "../hooks/useQueries";
 import Cookies from "js-cookie";
+import { Badge } from "./ui/badge";
+import { cn } from "@/lib/utils";
 
 // This is sample data.
 const data = {
@@ -127,37 +131,109 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={data.navMain} />
       </SidebarContent>
-      <div className={`p-4 border rounded-lg dark:bg-zinc-800/90 shadow-md m-2 ${state === "collapsed" ? "hidden" : ""}`}>
+      
+      {/* Enhanced Team Code Section */}
+      <div className={cn(
+        "transition-all duration-300 ease-in-out",
+        state === "collapsed" ? "hidden" : "block"
+      )}>
         {teamData?.joinCode && (
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-black dark:text-white gt-walsheim-font">Invite Code</span>
-              <button 
-                type="button"
-                onClick={toggleJoinCode}
-                className="text-xs text-black dark:text-white/70 hover:text-black dark:hover:text-white transition-colors"
-                aria-label={showJoinCode ? "Hide join code" : "Show join code"}
-              >
-                {showJoinCode ? 
-                  <EyeOff className="size-4" /> : 
-                  <Eye className="size-4" />
-                }
-              </button>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-sm text-black dark:text-white">
-                {showJoinCode ? teamData.joinCode : "••••••"}
-              </span>
-              {showJoinCode && (
-                <button
-                  type="button"
-                  onClick={() => copyToClipboard(teamData.joinCode)}
-                  className="text-xs text-black dark:text-white/70 hover:text-black dark:hover:text-white transition-colors ml-2"
-                  aria-label="Copy join code"
-                >
-                  {copied ? <CheckCircle className="size-4" /> : <Copy className="size-4" />}
-                </button>
-              )}
+          <div className="m-3 mb-4">
+            <div className={cn(
+              "relative overflow-hidden rounded-xl",
+              "bg-gradient-to-br from-emerald-50 to-green-50",
+              "dark:from-zinc-800/50 dark:to-zinc-900/50",
+              "border border-emerald-200/50 dark:border-zinc-700/50",
+              "backdrop-blur-sm shadow-sm",
+              "hover:shadow-md transition-all duration-200"
+            )}>
+              {/* Header */}
+              <div className="flex items-center justify-between p-3 pb-2">
+                <div className="flex items-center gap-2">
+                  <div className={cn(
+                    "flex items-center justify-center w-7 h-7 rounded-lg",
+                    "bg-emerald-100 dark:bg-emerald-900/30",
+                    "text-emerald-600 dark:text-emerald-400"
+                  )}>
+                    <Users className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-sm font-semibold text-emerald-900 dark:text-emerald-100 gt-walsheim-font">
+                      Team Invite
+                    </span>
+                    <div className="text-xs text-emerald-600/70 dark:text-emerald-300/70">
+                      Share with your team
+                    </div>
+                  </div>
+                </div>
+                <Badge variant="secondary" className="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                  Active
+                </Badge>
+              </div>
+
+              {/* Code Display */}
+              <div className="px-3 pb-3">
+                <div className={cn(
+                  "flex items-center justify-between p-3 rounded-lg",
+                  "bg-white/80 dark:bg-zinc-800/80",
+                  "border border-emerald-200/30 dark:border-zinc-600/30",
+                  "backdrop-blur-sm"
+                )}>
+                  <div className="flex items-center gap-2 flex-1">
+                    <Hash className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+                    <span className={cn(
+                      "font-mono text-sm font-medium tracking-wider",
+                      "text-emerald-900 dark:text-emerald-100",
+                      showJoinCode ? "select-all" : ""
+                    )}>
+                      {showJoinCode ? teamData.joinCode : "••••••••"}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-1">
+                    <button 
+                      type="button"
+                      onClick={toggleJoinCode}
+                      className={cn(
+                        "p-1.5 rounded-md transition-all duration-200",
+                        "hover:bg-emerald-100 dark:hover:bg-emerald-900/30",
+                        "text-emerald-600 dark:text-emerald-400",
+                        "hover:text-emerald-700 dark:hover:text-emerald-300"
+                      )}
+                      aria-label={showJoinCode ? "Hide join code" : "Show join code"}
+                    >
+                      {showJoinCode ? 
+                        <EyeOff className="w-4 h-4" /> : 
+                        <Eye className="w-4 h-4" />
+                      }
+                    </button>
+                    
+                    {showJoinCode && (
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(teamData.joinCode)}
+                        className={cn(
+                          "p-1.5 rounded-md transition-all duration-200",
+                          "hover:bg-green-100 dark:hover:bg-green-900/30",
+                          "text-emerald-600 dark:text-emerald-400",
+                          "hover:text-green-600 dark:hover:text-green-400",
+                          copied && "text-green-600 dark:text-green-400"
+                        )}
+                        aria-label="Copy join code"
+                      >
+                        {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Helper Text */}
+                {showJoinCode && (
+                  <div className="mt-2 text-xs text-emerald-600/70 dark:text-emerald-300/70 text-center">
+                    {copied ? "Copied to clipboard!" : "Click to copy and share with team members"}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

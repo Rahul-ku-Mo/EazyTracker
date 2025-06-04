@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import Cookies from "js-cookie";
@@ -11,7 +10,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Users, 
@@ -93,7 +91,7 @@ const BoardPermissionsDialog = ({
         }
       );
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       toast({
         title: "Access granted",
         description: `Board access has been granted successfully`,

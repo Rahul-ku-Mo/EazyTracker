@@ -1,4 +1,3 @@
- 
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import {
   $findMatchingParent,
@@ -14,17 +13,21 @@ import {
   FORMAT_TEXT_COMMAND,
   REDO_COMMAND,
   UNDO_COMMAND,
+  $getRoot,
+  $createTextNode,
 } from "lexical";
 import { ListNode, $isListNode } from "@lexical/list";
-import { $isHeadingNode } from "@lexical/rich-text";
+import {
+  $isHeadingNode,
+} from "@lexical/rich-text";
 import { useCallback, useEffect, useState } from "react";
-import { Button } from "../../../../components/ui/button.tsx";
+import { Button } from "../../../../components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../../../../components/ui/dropdown-menu.tsx";
+} from "../../../../components/ui/dropdown-menu";
 import {
   Bold,
   Italic,
@@ -40,12 +43,12 @@ import {
   Loader2,
   //Image,
 } from "lucide-react";
-import { cn } from "../../../../lib/utils.ts";
+import { cn } from "../../../../lib/utils";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "../../../../components/ui/popover.tsx";
+} from "../../../../components/ui/popover";
 
 import {
   formatBulletList,
@@ -53,14 +56,17 @@ import {
   formatNumberedList,
   formatHeading,
   convertToMarkdown,
-} from "../utils.ts";
+} from "../utils";
 import {
   Tooltip,
   TooltipTrigger,
   TooltipProvider,
   TooltipContent,
-} from "../../../../components/ui/tooltip.tsx";
+} from "../../../../components/ui/tooltip";
 //import { INSERT_IMAGE_COMMAND } from "../ImageNode";
+
+import { useImproveWriting } from "../../_cardViewerPanel/_components/LeftPanel/useGeminiStream";
+import { toast } from "sonner";
 
 const blockTypeToBlockName = {
   h1: "Heading 1",
@@ -105,9 +111,10 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
   const [canRedo, setCanRedo] = useState(false);
   const [showAIPopover, setShowAIPopover] = useState(false);
   const [showHelpPopover, setShowHelpPopover] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-
   const [isSaving, setIsSaving] = useState(false);
+
+  // AI improve writing hook
+  const { improvedText, isImproving, error, improveText, stopImproving } = useImproveWriting();
 
   const [formats, setFormats] = useState({
     bold: false,
@@ -225,16 +232,73 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
   }, [editor, updateToolbar]);
 
   const generateAIContent = async () => {
-    setIsGenerating(true);
-    try {
-      //Implement your AI generation logic here
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("AI content generation");
-    } finally {
-      setIsGenerating(false);
-      setShowAIPopover(false);
-    }
+    editor.update(() => {
+      const selection = $getSelection();
+      
+      if ($isRangeSelection(selection)) {
+        const selectedText = selection.getTextContent();
+        
+        if (!selectedText.trim()) {
+          toast.error("Please select some text to improve");
+          return;
+        }
+        
+        // Start the improvement process
+        improveText(selectedText);
+      } else {
+        // If no selection, get all text content
+        const root = $getRoot();
+        const allText = root.getTextContent();
+        
+        if (!allText.trim()) {
+          toast.error("No content to improve");
+          return;
+        }
+        
+        improveText(allText);
+      }
+    });
+    
+    setShowAIPopover(false);
   };
+
+  // Handle improved text result
+  useEffect(() => {
+    if (improvedText && !isImproving) {
+      editor.update(() => {
+        const selection = $getSelection();
+        
+        if ($isRangeSelection(selection)) {
+          // Replace selected text with improved version
+          const selectedText = selection.getTextContent();
+          if (selectedText.trim()) {
+            selection.insertText(improvedText);
+          } else {
+            // If no selection, replace all content
+            const root = $getRoot();
+            root.clear();
+            const textNode = $createTextNode(improvedText);
+            root.append(textNode);
+          }
+        } else {
+          // Replace all content if no selection
+          const root = $getRoot();
+          root.clear();
+          const textNode = $createTextNode(improvedText);
+          root.append(textNode);
+        }
+      });
+      
+      toast.success("Text improved successfully!");
+    }
+  }, [improvedText, isImproving, editor]);
+
+  // Handle errors
+  useEffect(() => {
+    if (error) {
+      toast.error(`Failed to improve text: ${error.message}`);
+    }
+  }, [error]);
 
   // const insertImage = () => {
   //   editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
@@ -391,9 +455,13 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
             variant="ghost"
             size="sm"
             className="w-8 h-8 p-0"
-            disabled={isGenerating}
+            disabled={isImproving}
           >
-            <Stars className="w-4 h-4" />
+            {isImproving ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Stars className="w-4 h-4" />
+            )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-64">
@@ -405,12 +473,27 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
                 size="sm"
                 className="justify-start w-full"
                 onClick={generateAIContent}
-                disabled={isGenerating}
+                disabled={isImproving}
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                {isGenerating ? "Generating..." : "Improve writing"}
+                {isImproving ? "Improving..." : "Improve writing"}
               </Button>
+              {isImproving && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="justify-start w-full"
+                  onClick={stopImproving}
+                >
+                  Stop
+                </Button>
+              )}
             </div>
+            {isImproving && (
+              <div className="text-xs text-muted-foreground">
+                Analyzing and improving your text...
+              </div>
+            )}
           </div>
         </PopoverContent>
       </Popover>

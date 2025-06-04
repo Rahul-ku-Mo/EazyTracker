@@ -42,20 +42,20 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
   const updatePriorityForATicket = (priority: string) => {
     updateCardMutation.mutate({
       priority,
-      cardId,
+      cardId: parseInt(cardId),
     });
   };
 
   const updateAssigneeForATicket = (userId: string) => {
     updateCardMutation.mutate({
-      cardId,
+      cardId: parseInt(cardId),
       assigneeId: userId,
     });
   };
 
   const updateLabelForATicket = (label: string) => {
     updateCardMutation.mutate({
-      cardId,
+      cardId: parseInt(cardId),
       label,
     });
   };

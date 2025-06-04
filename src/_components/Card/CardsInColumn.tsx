@@ -8,24 +8,21 @@ interface CardColumnsProps {
 }
 
 const CardsInColumn = ({ columnName, cards = [] }: CardColumnsProps) => {
-  const sortedCards = [...cards].sort(
-    (a, b) => (a.order ?? 0) - (b.order ?? 0)
-  );
-
-  if (sortedCards.length === 0) {
+  // Don't sort here - use the cards as they are passed (already sorted by parent)
+  if (cards.length === 0) {
     return null;
   }
 
   return (
     <div className="flex flex-col rounded-md h-full overflow-y-auto">
       <ol className="space-y-2">
-        {sortedCards.map((card, index) => (
+        {cards.map((card, index) => (
           <li key={card.id}>
             <CardProvider cardDetails={card}>
               <Card
                 columnName={columnName}
                 index={index}
-                totalCards={sortedCards.length}
+                totalCards={cards.length}
               />
             </CardProvider>
           </li>

@@ -48,20 +48,20 @@ const ListViewContextMenu = ({
   const updatePriorityForATicket = (priority: string) => {
     updateCardMutation.mutate({
       priority,
-      cardId: cardId.toString(),
+      cardId,
     });
   };
 
   const updateAssigneeForATicket = (userId: string) => {
     updateCardMutation.mutate({
-      cardId: cardId.toString(),
+      cardId,
       assigneeId: userId,
     });
   };
 
   const updateLabelForATicket = (label: string) => {
     updateCardMutation.mutate({
-      cardId: cardId.toString(),
+      cardId,
       label,
     });
   };

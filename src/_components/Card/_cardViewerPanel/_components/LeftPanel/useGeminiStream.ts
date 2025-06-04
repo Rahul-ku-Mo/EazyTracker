@@ -4,6 +4,9 @@ import Cookies from 'js-cookie';
 interface GeminiChunk {
   chunk?: string;
   done?: boolean;
+  type?: string;
+  fullText?: string;
+  error?: string;
 }
 
 export interface GeminiStreamHook {
@@ -12,6 +15,14 @@ export interface GeminiStreamHook {
   error: Error | null;
   submitPrompt: (prompt: string) => Promise<void>;
   stopStream: () => void;
+}
+
+export interface ImproveWritingHook {
+  improvedText: string;
+  isImproving: boolean;
+  error: Error | null;
+  improveText: (text: string) => Promise<void>;
+  stopImproving: () => void;
 }
 
 export const useGeminiStream = (apiEndpoint: string, conversationId: string): GeminiStreamHook => {
@@ -108,5 +119,115 @@ export const useGeminiStream = (apiEndpoint: string, conversationId: string): Ge
     error,
     submitPrompt,
     stopStream
+  };
+};
+
+export const useImproveWriting = (): ImproveWritingHook => {
+  const [improvedText, setImprovedText] = useState<string>('');
+  const [isImproving, setIsImproving] = useState<boolean>(false);
+  const [error, setError] = useState<Error | null>(null);
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const accessToken = Cookies.get('accessToken');
+
+  const stopImproving = useCallback((): void => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+    setIsImproving(false);
+  }, []);
+
+  // Clean up on component unmount
+  useEffect(() => {
+    return stopImproving;
+  }, [stopImproving]);
+
+  const improveText = async (text: string): Promise<void> => {
+    if (!text.trim()) {
+      setError(new Error('Text cannot be empty'));
+      return;
+    }
+
+    // Clean up existing connection
+    stopImproving();
+    
+    // Reset state
+    setImprovedText('');
+    setError(null);
+    setIsImproving(true);
+    
+    try {
+      // Initialize improve writing request
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/ai/improve-writing`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ text }),
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: 'Request failed' }));
+        throw new Error(errorData.error || `Request failed with status ${res.status}`);
+      }
+      
+      // Read the streaming response
+      const reader = res.body?.getReader();
+      if (!reader) {
+        throw new Error('Response body is not readable');
+      }
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) break;
+        
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data: GeminiChunk = JSON.parse(line.slice(6));
+              
+              if (data.type === 'error') {
+                setError(new Error(data.error || 'An error occurred'));
+                setIsImproving(false);
+                return;
+              }
+              
+              if (data.type === 'complete' && data.done) {
+                setIsImproving(false);
+                return;
+              }
+              
+              if (data.chunk && data.type === 'content') {
+                setImprovedText(prev => prev + data.chunk);
+              }
+            } catch (parseError) {
+              console.warn('Failed to parse SSE data:', parseError);
+            }
+          }
+        }
+      }
+      
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
+      setError(new Error(errorMessage));
+      setIsImproving(false);
+    }
+  };
+
+  return {
+    improvedText,
+    isImproving,
+    error,
+    improveText,
+    stopImproving
   };
 };

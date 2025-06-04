@@ -42,7 +42,7 @@ export const DueDateDialog = ({
 
       updateCardMutation.mutate({
         dueDate: tempDate,
-        cardId,
+        cardId: parseInt(cardId),
       });
     }
     closeDialog();

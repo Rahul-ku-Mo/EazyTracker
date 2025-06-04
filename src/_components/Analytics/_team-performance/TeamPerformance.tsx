@@ -158,7 +158,7 @@ export const TeamPerformance = ({
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {completionRateData.map((entry: any, index: any) => (
+                    {completionRateData.map((_: any, index: any) => (
                       <Cell
                         key={`cell-${index}`}
                         fill={COLORS[index % COLORS.length]}

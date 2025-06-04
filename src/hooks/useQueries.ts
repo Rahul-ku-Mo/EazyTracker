@@ -10,7 +10,7 @@ import { fetchNotifications } from "../apis/NotificationApis";
 const useCard = (accessToken: string, cardId: string) => {
   return useQuery({
     queryKey: ["cards", cardId],
-    queryFn: async () => await fetchCard(accessToken, cardId),
+    queryFn: async () => await fetchCard(accessToken, parseInt(cardId)),
   });
 };
 
