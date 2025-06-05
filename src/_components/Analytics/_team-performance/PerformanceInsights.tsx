@@ -92,10 +92,10 @@ export const PerformanceInsights = ({
               variant="outline"
                   className={`text-[10px] ${
                     teamStats.teamEfficiencyTrend > 0 
-                      ? "bg-green-50 text-green-600 border-green-200" 
+                      ? "bg-green-50 text-green-600 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800" 
                       : teamStats.teamEfficiencyTrend < 0
-                      ? "bg-red-50 text-red-600 border-red-200"
-                      : "bg-gray-50 text-gray-600 border-gray-200"
+                      ? "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
+                      : "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-800"
                   }`}
                 >
                   {teamStats.teamEfficiencyTrend > 0 ? (

@@ -8,6 +8,7 @@ import {
   BoardPage,
   NotFoundPage,
   ConversationPage,
+  InboxPage,
   AccountForm,
   AnalyticsPage,
   LocationForm,
@@ -101,6 +102,10 @@ const authenticatedRoutes = [
   {
     path: "/conversation/inbox",
     element: <WithContexts Component={ConversationPage} />,
+  },
+  {
+    path: "/inbox",
+    element: <WithContexts Component={InboxPage} />,
   },
   {
     path: "/team/members",

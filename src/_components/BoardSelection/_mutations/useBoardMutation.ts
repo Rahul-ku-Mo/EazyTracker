@@ -51,6 +51,8 @@ export const useBoardMutation = () => {
         description: "Board has been successfully updated",
         variant: "default",
       });
+      queryClient.invalidateQueries({ queryKey: ["boards"] });
+      queryClient.invalidateQueries({ queryKey: ["board"] });
     },
     onError: () => {
       toast({

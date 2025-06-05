@@ -2,7 +2,7 @@ import isEqual from "lodash.isequal";
 import { useEffect, useState, useContext } from "react";
 import { toast } from "sonner";
 import { AuthContext } from "@/context/AuthContext";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateUserProfile } from "@/apis/userApis";
 import { Input } from "@/components/ui/input";
 import { UserContext } from "@/context/UserContext";
@@ -22,23 +22,39 @@ interface FormState {
 
 const AccountForm = () => {
   const { accessToken } = useContext(AuthContext);
-  const { user } = useContext(UserContext);
-
-  const { name = "", phoneNumber = "", imageUrl = "", username = "", email = "" } = user || {};
+  const { user, isPending } = useContext(UserContext);
+  const queryClient = useQueryClient();
 
   const [formState, setFormState] = useState<FormState>({
-    name,
-    phoneNumber,
-    imageUrl,
-    username,
-    email,
+    name: "",
+    phoneNumber: "",
+    imageUrl: "",
+    username: "",
+    email: "",
   });
 
-  const [initialState, setInitialState] = useState<FormState>(formState);
+  const [initialState, setInitialState] = useState<FormState>({
+    name: "",
+    phoneNumber: "",
+    imageUrl: "",
+    username: "",
+    email: "",
+  });
 
+  // Update form state when user data loads
   useEffect(() => {
-    setInitialState(formState);
-  }, [formState, user]);
+    if (user) {
+      const newFormState = {
+        name: user.name || "",
+        phoneNumber: user.phoneNumber || "",
+        imageUrl: user.imageUrl || "",
+        username: user.username || "",
+        email: user.email || "",
+      };
+      setFormState(newFormState);
+      setInitialState(newFormState);
+    }
+  }, [user?.id, user?.name, user?.phoneNumber, user?.imageUrl, user?.username, user?.email]);
 
   const handleChange =
     (prop: keyof FormState) => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,8 +63,11 @@ const AccountForm = () => {
 
   const updateProfileMutation = useMutation({
     mutationFn: (data: FormState) => updateUserProfile(accessToken, data),
-    onSuccess: () => {
+    onSuccess: (updatedUser) => {
       toast.success("Account updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      // Reset the initial state to the current form state after successful save
+      setInitialState(formState);
     },
     onError: (error) => {
       console.error(error);
@@ -65,7 +84,22 @@ const AccountForm = () => {
     updateProfileMutation.mutate(formState);
   };
 
+  // Custom comparison to handle form changes more reliably
   const hasChanges = !isEqual(formState, initialState);
+
+  // Show loading while user data is being fetched
+  if (isPending) {
+    return (
+      <Card className="w-full border-border/50 shadow-lg">
+        <CardContent className="flex items-center justify-center h-64">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            <span>Loading account data...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full border-border/50 shadow-lg">

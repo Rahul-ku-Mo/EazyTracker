@@ -2,7 +2,7 @@ import isEqual from "lodash.isequal";
 import { useEffect, useState, useContext, ChangeEvent, FormEvent } from "react";
 import { toast } from "sonner";
 import { AuthContext } from "@/context/AuthContext";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateUserProfile } from "@/apis/userApis";
 import { UserContext } from "@/context/UserContext";
 import { Input } from "@/components/ui/input";
@@ -21,31 +21,46 @@ interface LocationFormState {
 const LocationForm = () => {
   const { accessToken } = useContext(AuthContext);
   const { user } = useContext(UserContext);
-
-  const { state = "", address = "", zipCode = "" } = user || {};
+  const queryClient = useQueryClient();
 
   const [formState, setFormState] = useState<LocationFormState>({
-    state,
-    address,
-    zipCode,
+    state: "",
+    address: "",
+    zipCode: "",
   });
+
+  const [initialState, setInitialState] = useState<LocationFormState>({
+    state: "",
+    address: "",
+    zipCode: "",
+  });
+
+  // Update form state when user data loads
+  useEffect(() => {
+    if (user) {
+      const newFormState = {
+        state: user.state || "",
+        address: user.address || "",
+        zipCode: user.zipCode || "",
+      };
+      setFormState(newFormState);
+      setInitialState(newFormState);
+    }
+  }, [user]);
 
   const handleChange = (prop: keyof LocationFormState) => (event: ChangeEvent<HTMLInputElement>) => {
     setFormState({ ...formState, [prop]: event.target.value });
   };
 
-  const [initialState, setInitialState] = useState<LocationFormState>(formState);
-
-  useEffect(() => {
-    setInitialState(formState);
-  }, [user, formState]);
-
   const updateProfileMutation = useMutation({
     mutationFn: async (data: LocationFormState) => {
       return await updateUserProfile(accessToken, data);
     },
-    onSuccess: () => {
+    onSuccess: (updatedUser) => {
       toast.success("Location updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      // Reset the initial state to the current form state after successful save
+      setInitialState(formState);
     },
     onError: (error) => {
       console.error(error);

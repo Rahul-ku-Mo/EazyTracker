@@ -41,6 +41,10 @@ export const ConversationPage = Loadable(
   lazy(() => import("../pages/ConversationPage"))
 );
 
+export const InboxPage = Loadable(
+  lazy(() => import("../pages/InboxPage"))
+);
+
 // Forms
 
 export const AccountForm = Loadable(

@@ -39,3 +39,40 @@ export const fetchNotifications = async (accessToken: string) => {
     console.log(err);
   }
 };
+
+export const markNotificationAsRead = async (
+  accessToken: string,
+  notificationId: number
+) => {
+  try {
+    const response = await axios.patch(
+      `${import.meta.env.VITE_API_URL}/notifications/${notificationId}/read`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    if (response.status === 200) return response.data.data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const markAllNotificationsAsRead = async (accessToken: string) => {
+  try {
+    const response = await axios.patch(
+      `${import.meta.env.VITE_API_URL}/notifications/mark-all-read`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    if (response.status === 200) return response.data;
+  } catch (err) {
+    console.log(err);
+  }
+};

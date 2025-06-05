@@ -11,6 +11,8 @@ import { Separator } from "@/components/ui/separator";
 import { useLocation } from "react-router-dom";
 import { ModeToggle } from "./mode-toggle";
 import { ViewToggle } from "./view-toggle";
+import { NotificationCenter } from "../_components/NotificationCenter";
+import { OnlineStatus } from "../_components/OnlineStatus";
 
 const AppHeader = () => {
   const { pathname } = useLocation();
@@ -44,10 +46,11 @@ const AppHeader = () => {
         </Breadcrumb>
       </div>
       
-      <div className="flex items-center gap-2 pr-2">
+      <div className="flex items-center gap-3 pr-2">
+        <OnlineStatus />
+        <NotificationCenter />
         <ViewToggle />
         <ModeToggle />
-       
       </div>
     </header>
   );

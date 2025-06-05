@@ -1,6 +1,6 @@
 import * as React from "react";
 import {
-  //Inbox,
+  Inbox,
   SquareTerminal,
   Eye,
   EyeOff,
@@ -49,25 +49,17 @@ const data = {
         },
       ],
     },
-    // {
-    //   title: "Team Chat",
-    //   url: "#",
-    //   icon: Inbox,
-    //   items: [
-    //     {
-    //       title: "Inbox",
-    //       url: "/conversation/inbox",
-    //     },
-    //     {
-    //       title: "Meetings",
-    //       url: "/conversation/meetings",
-    //     },
-    //     {
-    //       title: "Settings",
-    //       url: "/conversation/settings",
-    //     },
-    //   ],
-    // },
+    {
+      title: "Inbox",
+      url: "#",
+      icon: Inbox,
+      items: [
+        {
+          title: "Notifications",
+          url: "/inbox",
+        },
+      ],
+    },
     {
       title: "Manage Team",
       url: "#",

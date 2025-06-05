@@ -1,4 +1,4 @@
-import {  useState } from "react";
+import {  useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Trash2, Users, AlertTriangle, Save } from "lucide-react";
 import { useBoardMutation } from "@/_components/BoardSelection/_mutations/useBoardMutation";
@@ -41,14 +41,30 @@ const BoardSettings = () => {
 
 
   const [inviteEmail, setInviteEmail] = useState("");
-  const [boardName, setBoardName] = useState(data?.title || "");
+  const [boardName, setBoardName] = useState("");
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+
+  // Update boardName when data loads
+  useEffect(() => {
+    if (data?.title) {
+      setBoardName(data.title);
+    }
+  }, [data]);
 
   const handleInviteMember = (e: React.FormEvent) => {
     e.preventDefault();
     // Implement your invite logic here
     console.log("Inviting:", inviteEmail);
     setInviteEmail("");
+  };
+
+  const handleSaveBoard = () => {
+    if (boardName.trim() && boardName !== data?.title) {
+      updateBoardMutation.mutate({
+        boardId: id as string,
+        updatedBoardData: { title: boardName.trim() },
+      });
+    }
   };
 
   const handleDeleteBoard = () => {
@@ -77,13 +93,10 @@ const BoardSettings = () => {
               <Input
                 id="boardName"
                 placeholder="Enter board name"
-                value={data?.title || ""}
+                value={boardName}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    updateBoardMutation.mutate({
-                      boardId: id as string,
-                      updatedBoardData: { title: boardName },
-                    });
+                    handleSaveBoard();
                   }
                 }}
                 onChange={(e) => setBoardName(e.target.value)}
@@ -92,9 +105,14 @@ const BoardSettings = () => {
           </div>
         </CardContent>
         <CardFooter className="px-0 flex justify-end ">
-          <Button variant="secondary" className="items-center">
+          <Button 
+            variant="secondary" 
+            className="items-center"
+            onClick={handleSaveBoard}
+            disabled={!boardName.trim() || boardName === data?.title || updateBoardMutation.isPending}
+          >
             <Save className="w-4 h-4" />
-            Save Changes
+            {updateBoardMutation.isPending ? "Saving..." : "Save Changes"}
           </Button>
         </CardFooter>
       </Card>

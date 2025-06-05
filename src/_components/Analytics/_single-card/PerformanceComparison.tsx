@@ -77,8 +77,8 @@ export function PerformanceComparison({ cardId }: PerformanceComparisonProps) {
                   <span
                     className={`text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full ${
                       timeEfficiency.isUnderBudget 
-                        ? "text-green-600 bg-green-100" 
-                        : "text-amber-600 bg-amber-100"
+                        ? "text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/30" 
+                        : "text-amber-600 bg-amber-100 dark:text-amber-400 dark:bg-amber-900/30"
                     }`}
                   >
                     {timeEfficiency.label}
@@ -94,7 +94,7 @@ export function PerformanceComparison({ cardId }: PerformanceComparisonProps) {
               </div>
               <div
                 className={`overflow-hidden h-2 mb-4 text-xs flex rounded ${
-                  timeEfficiency.isUnderBudget ? "bg-green-200" : "bg-amber-200"
+                  timeEfficiency.isUnderBudget ? "bg-green-200 dark:bg-green-800/30" : "bg-amber-200 dark:bg-amber-800/30"
                 }`}
               >
                 <div
@@ -102,7 +102,7 @@ export function PerformanceComparison({ cardId }: PerformanceComparisonProps) {
                     width: `${timeEfficiency.displayEfficiency}%`,
                   }}
                   className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${
-                    timeEfficiency.isUnderBudget ? "bg-green-500" : "bg-amber-500"
+                    timeEfficiency.isUnderBudget ? "bg-green-500 dark:bg-green-600" : "bg-amber-500 dark:bg-amber-600"
                   }`}
                 ></div>
               </div>
@@ -126,7 +126,7 @@ export function PerformanceComparison({ cardId }: PerformanceComparisonProps) {
             <div className="relative pt-1">
               <div className="flex mb-2 items-center justify-between">
                 <div>
-                  <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-purple-600 bg-purple-100">
+                  <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-900/30">
                     {complexity.level}
                   </span>
                 </div>
@@ -136,12 +136,12 @@ export function PerformanceComparison({ cardId }: PerformanceComparisonProps) {
                   </span>
                 </div>
               </div>
-              <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-purple-200">
+              <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-purple-200 dark:bg-purple-800/30">
                 <div
                   style={{
                     width: `${Math.min((complexity.score / 3) * 100, 100)}%`,
                   }}
-                  className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-purple-500"
+                  className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-purple-500 dark:bg-purple-600"
                 ></div>
               </div>
               <div className="text-xs text-muted-foreground">
@@ -169,8 +169,8 @@ export function PerformanceComparison({ cardId }: PerformanceComparisonProps) {
                   <span
                     className={`text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full ${
                       completion.isOnTime 
-                        ? "text-green-600 bg-green-100" 
-                        : "text-red-600 bg-red-100"
+                        ? "text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/30" 
+                        : "text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/30"
                     }`}
                   >
                     {completion.status}
@@ -190,7 +190,7 @@ export function PerformanceComparison({ cardId }: PerformanceComparisonProps) {
               </div>
               <div
                 className={`overflow-hidden h-2 mb-4 text-xs flex rounded ${
-                  completion.isOnTime ? "bg-green-200" : "bg-red-200"
+                  completion.isOnTime ? "bg-green-200 dark:bg-green-800/30" : "bg-red-200 dark:bg-red-800/30"
                 }`}
               >
                 <div
@@ -198,7 +198,7 @@ export function PerformanceComparison({ cardId }: PerformanceComparisonProps) {
                     width: `${completion.isOnTime ? 100 : Math.max(100 - completion.daysLate * 10, 30)}%`,
                   }}
                   className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${
-                    completion.isOnTime ? "bg-green-500" : "bg-red-500"
+                    completion.isOnTime ? "bg-green-500 dark:bg-green-600" : "bg-red-500 dark:bg-red-600"
                   }`}
                 ></div>
               </div>
@@ -235,8 +235,8 @@ export function PerformanceComparison({ cardId }: PerformanceComparisonProps) {
                   variant="outline"
                         className={`text-[10px] ${
                           assignee.trend === "up" 
-                            ? "bg-green-50 text-green-600 border-green-200" 
-                            : "bg-red-50 text-red-600 border-red-200"
+                            ? "bg-green-50 text-green-600 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800" 
+                            : "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
                         }`}
                 >
                         {assignee.trend === "up" ? (

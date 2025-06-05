@@ -1,7 +1,7 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { toast } from "sonner";
 import { AuthContext } from "@/context/AuthContext";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateUserIntegrations } from "@/apis/userApis";
 import { UserContext } from "@/context/UserContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -101,15 +101,29 @@ const IntegrationCard = ({
 
 const IntegrationsForm = () => {
   const { accessToken } = useContext(AuthContext);
-  const { user } = useContext(UserContext);
+  const { user, isPending } = useContext(UserContext);
+  const queryClient = useQueryClient();
 
   const [integrations, setIntegrations] = useState<IntegrationsState>({
-    discord: user?.integrations?.discord || false,
-    slack: user?.integrations?.slack || false,
-    mailchimp: user?.integrations?.mailchimp || false,
-    github: user?.integrations?.github || false,
-    googleDrive: user?.integrations?.googleDrive || false,
+    discord: false,
+    slack: false,
+    mailchimp: false,
+    github: false,
+    googleDrive: false,
   });
+
+  // Update integrations when user data loads
+  useEffect(() => {
+    if (user && user.integrations) {
+      setIntegrations({
+        discord: user.integrations.discord || false,
+        slack: user.integrations.slack || false,
+        mailchimp: user.integrations.mailchimp || false,
+        github: user.integrations.github || false,
+        googleDrive: user.integrations.googleDrive || false,
+      });
+    }
+  }, [user?.integrations]);
 
   const updateIntegrationsMutation = useMutation({
     mutationFn: async (data: IntegrationsState) => {
@@ -117,6 +131,7 @@ const IntegrationsForm = () => {
     },
     onSuccess: () => {
       toast.success("Integrations updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["user"] });
     },
     onError: (error) => {
       console.error(error);
@@ -167,6 +182,20 @@ const IntegrationsForm = () => {
   ];
 
   const connectedCount = Object.values(integrations).filter(Boolean).length;
+
+  // Show loading while user data is being fetched
+  if (isPending) {
+    return (
+      <Card className="w-full border-border/50 shadow-lg">
+        <CardContent className="flex items-center justify-center h-64">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            <span>Loading integrations...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full border-border/50 shadow-lg">
