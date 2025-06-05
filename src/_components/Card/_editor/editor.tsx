@@ -1,4 +1,3 @@
- 
 import { useContext, useEffect, useState, useRef } from "react";
 
 import { ParagraphNode } from "lexical";
@@ -25,6 +24,7 @@ import { MARKDOWN_TRANSFORMERS as TRANSFORMERS } from "./MARKDOWN_TRANSFORMERS.t
 import { EditorRefPlugin } from "@lexical/react/LexicalEditorRefPlugin";
 import { CopyImagePlugin } from "./Plugins/CopyImagePlugin";
 import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
+import { mergeRegister } from "@lexical/utils";
 /**Lexical Nodes */
 import { CodeNode, CodeHighlightNode } from "@lexical/code";
 import { LinkNode } from "@lexical/link";
@@ -32,6 +32,13 @@ import { ListNode, ListItemNode } from "@lexical/list";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
 import { registerCodeHighlighting } from "@lexical/code";
+import {
+  KEY_DOWN_COMMAND,
+  COMMAND_PRIORITY_EDITOR,
+  FORMAT_TEXT_COMMAND,
+  UNDO_COMMAND,
+  REDO_COMMAND,
+} from "lexical";
 
 import { useCardMutation } from "../_mutations/useCardMutations.ts";
 import { ColumnContext } from "../../../context/ColumnProvider.tsx";
@@ -227,6 +234,7 @@ export const CardDetailsEditor = ({
             <CodeHighlightPlugin />
             <TabIndentationPlugin />
             <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+            <KeyboardShortcutsPlugin />
             <CustomTransformHTMLToLexical description={description} />
             <CustomTransformLexicalToHTML setEditorState={setEditorState} />
             <ImagesPlugin />
@@ -240,4 +248,79 @@ export const CardDetailsEditor = ({
       </LexicalComposer>
     </div>
   );
+};
+
+// KeyboardShortcuts plugin component
+const KeyboardShortcutsPlugin = () => {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    return mergeRegister(
+      editor.registerCommand(
+        KEY_DOWN_COMMAND,
+        (event: KeyboardEvent) => {
+          const { ctrlKey, metaKey, key, shiftKey, altKey } = event;
+          const isModKey = ctrlKey || metaKey;
+
+          if (!isModKey) return false;
+
+          switch (key.toLowerCase()) {
+            case 'b':
+              if (!shiftKey && !altKey) {
+                event.preventDefault();
+                editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
+                return true;
+              }
+              break;
+            case 'i':
+              if (!shiftKey && !altKey) {
+                event.preventDefault();
+                editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
+                return true;
+              }
+              break;
+            case 'u':
+              if (!shiftKey && !altKey) {
+                event.preventDefault();
+                editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
+                return true;
+              }
+              break;
+            case 'z':
+              if (!shiftKey && !altKey) {
+                event.preventDefault();
+                editor.dispatchCommand(UNDO_COMMAND, undefined);
+                return true;
+              } else if (shiftKey && !altKey) {
+                event.preventDefault();
+                editor.dispatchCommand(REDO_COMMAND, undefined);
+                return true;
+              }
+              break;
+            case 'y':
+              if (!shiftKey && !altKey) {
+                event.preventDefault();
+                editor.dispatchCommand(REDO_COMMAND, undefined);
+                return true;
+              }
+              break;
+            case 's':
+              if (!shiftKey && !altKey) {
+                event.preventDefault();
+                // Save functionality - we'll trigger the save callback
+                const saveEvent = new CustomEvent('lexical-save');
+                document.dispatchEvent(saveEvent);
+                return true;
+              }
+              break;
+          }
+
+          return false;
+        },
+        COMMAND_PRIORITY_EDITOR
+      )
+    );
+  }, [editor]);
+
+  return null;
 };

@@ -13,8 +13,6 @@ import {
   FORMAT_TEXT_COMMAND,
   REDO_COMMAND,
   UNDO_COMMAND,
-  $getRoot,
-  $createTextNode,
 } from "lexical";
 import { ListNode, $isListNode } from "@lexical/list";
 import {
@@ -232,34 +230,32 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
   }, [editor, updateToolbar]);
 
   const generateAIContent = async () => {
+    let hasValidSelection = false;
+    let selectedText = "";
+
     editor.update(() => {
       const selection = $getSelection();
       
-      if ($isRangeSelection(selection)) {
-        const selectedText = selection.getTextContent();
-        
-        if (!selectedText.trim()) {
-          toast.error("Please select some text to improve");
-          return;
-        }
-        
-        // Start the improvement process
-        improveText(selectedText);
-      } else {
-        // If no selection, get all text content
-        const root = $getRoot();
-        const allText = root.getTextContent();
-        
-        if (!allText.trim()) {
-          toast.error("No content to improve");
-          return;
-        }
-        
-        improveText(allText);
+      if ($isRangeSelection(selection) && !selection.isCollapsed()) {
+        selectedText = selection.getTextContent();
+        hasValidSelection = selectedText.trim().length > 0;
       }
     });
-    
+
+    if (!hasValidSelection) {
+      toast.error("Please select some text to improve");
+      return;
+    }
+
+    if (selectedText.length > 10000) {
+      toast.error("Selected text is too long. Please select less than 10,000 characters.");
+      return;
+    }
+
     setShowAIPopover(false);
+    
+    // Start the improvement process
+    improveText(selectedText);
   };
 
   // Handle improved text result
@@ -269,23 +265,14 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
         const selection = $getSelection();
         
         if ($isRangeSelection(selection)) {
-          // Replace selected text with improved version
-          const selectedText = selection.getTextContent();
-          if (selectedText.trim()) {
+          try {
+            // Insert the improved text at the current selection
             selection.insertText(improvedText);
-          } else {
-            // If no selection, replace all content
-            const root = $getRoot();
-            root.clear();
-            const textNode = $createTextNode(improvedText);
-            root.append(textNode);
+          } catch (insertError) {
+            console.error("Error inserting improved text:", insertError);
+            toast.error("Failed to insert improved text. Please try again.");
+            return;
           }
-        } else {
-          // Replace all content if no selection
-          const root = $getRoot();
-          root.clear();
-          const textNode = $createTextNode(improvedText);
-          root.append(textNode);
         }
       });
       
@@ -307,6 +294,22 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
   //     showCaption: true,
   //   });
   // };
+
+  // Add save event listener for keyboard shortcuts
+  useEffect(() => {
+    const handleSaveEvent = (event: CustomEvent) => {
+      if (event.type === 'lexical-save') {
+        save();
+        toast.success("Document saved!");
+      }
+    };
+
+    document.addEventListener('lexical-save', handleSaveEvent as EventListener);
+    
+    return () => {
+      document.removeEventListener('lexical-save', handleSaveEvent as EventListener);
+    };
+  }, [save]);
 
   return (
     <div className="flex items-center gap-1 p-1 mb-2 rounded-md bg-background">
@@ -508,14 +511,33 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
           <div className="space-y-2">
             <h4 className="text-sm font-medium">Keyboard Shortcuts</h4>
             <div className="space-y-1 text-sm">
-              <p>Bold: Ctrl/⌘ + B</p>
-              <p>Italic: Ctrl/⌘ + I</p>
-              <p>Underline: Ctrl/⌘ + U</p>
-              <p>Undo: Ctrl/⌘ + Z</p>
-              <p>Redo: Ctrl/⌘ + Y</p>
-              <p>Bullet List: Ctrl/⌘ + Shift + 8</p>
-              <p>Numbered List: Ctrl/⌘ + Shift + 7</p>
-              <p>Check List: Ctrl/⌘ + Shift + 9</p>
+              <div className="flex justify-between">
+                <span>Bold:</span>
+                <span className="text-muted-foreground">Ctrl/⌘ + B</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Italic:</span>
+                <span className="text-muted-foreground">Ctrl/⌘ + I</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Underline:</span>
+                <span className="text-muted-foreground">Ctrl/⌘ + U</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Undo:</span>
+                <span className="text-muted-foreground">Ctrl/⌘ + Z</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Redo:</span>
+                <span className="text-muted-foreground">Ctrl/⌘ + Y or Ctrl/⌘ + Shift + Z</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Save:</span>
+                <span className="text-muted-foreground">Ctrl/⌘ + S</span>
+              </div>
+              <div className="mt-2 pt-2 border-t text-xs text-muted-foreground">
+                <p>Select text and use AI to improve writing with the ✨ button</p>
+              </div>
             </div>
           </div>
         </PopoverContent>
@@ -552,3 +574,5 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
     </div>
   );
 };
+
+
