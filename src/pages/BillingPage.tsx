@@ -2,9 +2,10 @@ import React, { useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PricingPlans, BillingOverview } from '@/_components/Billing';
+import { UsageDashboard } from '@/components/billing/UsageDashboard';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { CreditCard, Package } from 'lucide-react';
+import { CreditCard, Package, BarChart3 } from 'lucide-react';
 import MainLayout from '@/layouts/Container';
 
 const BillingPage: React.FC = () => {
@@ -40,17 +41,25 @@ const BillingPage: React.FC = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+        <Tabs defaultValue="usage" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
+            <TabsTrigger value="usage" className="flex items-center space-x-2">
+              <BarChart3 className="w-4 h-4" />
+              <span>Usage</span>
+            </TabsTrigger>
             <TabsTrigger value="overview" className="flex items-center space-x-2">
               <CreditCard className="w-4 h-4" />
-              <span>Overview</span>
+              <span>Billing</span>
             </TabsTrigger>
             <TabsTrigger value="plans" className="flex items-center space-x-2">
               <Package className="w-4 h-4" />
-              <span>Plans & Pricing</span>
+              <span>Plans</span>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="usage" className="space-y-6">
+            <UsageDashboard />
+          </TabsContent>
 
           <TabsContent value="overview" className="space-y-6">
             <Card>

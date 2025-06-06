@@ -13,15 +13,13 @@ import { useTheme } from '@/context/ThemeProvider';
 const planIcons = {
   free: Zap,
   pro: Sparkles,
-  team: Crown,
   enterprise: Crown,
 };
 
 const planColors = {
   free: 'bg-gray-50 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700',
   pro: 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800',
-  team: 'bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800',
-  enterprise: 'bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-orange-200 dark:border-orange-800',
+  enterprise: 'bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800',
 };
 
 const PricingPage: React.FC = () => {
@@ -201,10 +199,11 @@ const PricingPage: React.FC = () => {
               ))}
             </div>
           ) : (
-            <div className="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto">
+            <div className="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
               {plans?.map((plan) => {
                 const Icon = planIcons[plan.id as keyof typeof planIcons] || Zap;
-                const isPro = plan.id === 'pro';
+                                  const isPro = plan.id === 'pro';
+                  const isEnterprise = plan.id === 'enterprise';
 
                 return (
                   <Card
@@ -300,6 +299,8 @@ const PricingPage: React.FC = () => {
                               "w-full h-10 sm:h-12 text-sm sm:text-lg",
                               isPro 
                                 ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
+                                : isEnterprise
+                                ? "bg-purple-600 hover:bg-purple-700 text-white"
                                 : "bg-gray-900 hover:bg-gray-800 text-white"
                             )}>
                               Start Free Trial

@@ -20,7 +20,6 @@ import {
   //IntegrationsForm,
   BoardSettingsPage,
   OnboardingPage,
-  TeamMembersPage,
   TeamManagementPage,
 } from "@/routes/element";
 
@@ -114,10 +113,6 @@ const authenticatedRoutes = [
   {
     path: "/inbox",
     element: <WithContexts Component={InboxPage} />,
-  },
-  {
-    path: "/team/members",
-    element: <WithContexts Component={TeamMembersPage} />,
   },
   {
     path: "/team/management",

@@ -82,10 +82,6 @@ const data = {
           url: "/team/management",
         },
         {
-          title: "Members",
-          url: "/team/members",
-        },
-        {
           title: "Settings",
           url: "/setting/account",
         },
