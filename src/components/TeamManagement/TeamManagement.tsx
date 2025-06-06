@@ -887,7 +887,7 @@ const TeamManagement: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-green-600">
-                    {teamMembers.filter((member: TeamMember) => member.isActive !== false).length * 3.2}
+                    {(teamMembers.filter((member: TeamMember) => member.isActive !== false).length * 3.2).toFixed(0)}
                   </div>
                   <p className="text-xs text-gray-500">Cards per week</p>
                   <div className="text-xs text-green-600 mt-1">+12% from last week</div>
@@ -1035,13 +1035,13 @@ const TeamManagement: React.FC = () => {
                     <div className="pt-4 border-t">
                       <div className="text-sm font-medium mb-2">Key Insights</div>
                       <div className="space-y-2">
-                        <div className="text-xs text-green-600 bg-green-50 p-2 rounded border-l-2 border-green-500">
+                        <div className="text-xs text-green-600 bg-green-50 dark:bg-green-900/10 p-2 rounded border-l-2 border-green-500">
                           ✓ Team velocity improved by 12% this week
                         </div>
-                        <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded border-l-2 border-blue-500">
+                        <div className="text-xs text-blue-600 bg-blue-50 dark:bg-blue-900/10 p-2 rounded border-l-2 border-blue-500">
                           → Average task completion time decreased to 2.3 hours
                         </div>
-                        <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded border-l-2 border-orange-500">
+                        <div className="text-xs text-orange-600 bg-orange-50 dark:bg-orange-900/10 p-2 rounded border-l-2 border-orange-500">
                           ⚠ Consider redistributing workload for better balance
                         </div>
                       </div>
@@ -1062,15 +1062,15 @@ const TeamManagement: React.FC = () => {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="text-sm font-semibold mb-3 text-green-600">🎯 Strengths</h4>
+                    <h4 className="text-sm font-semibold mb-3 text-green-600 dark:text-green-900 p-2 rounded-lg">🎯 Strengths</h4>
                     <div className="space-y-2">
-                      <div className="text-xs bg-green-50 p-3 rounded border-l-2 border-green-500">
+                      <div className="text-xs bg-green-50 dark:bg-green-900/10 p-3 rounded border-l-2 border-green-500">
                         High team velocity with consistent delivery rates
                       </div>
-                      <div className="text-xs bg-green-50 p-3 rounded border-l-2 border-green-500">
+                      <div className="text-xs bg-green-50 dark:bg-green-900/10 p-3 rounded border-l-2 border-green-500">
                         Strong collaboration across {boards.length} active projects
                       </div>
-                      <div className="text-xs bg-green-50 p-3 rounded border-l-2 border-green-500">
+                      <div className="text-xs bg-green-50 dark:bg-green-900/10 p-3 rounded border-l-2 border-green-500">
                         Efficient task completion with {teamMembers.filter((m: TeamMember) => (m.efficiency || 0) > 90).length} high-performers
                       </div>
                     </div>
@@ -1079,13 +1079,13 @@ const TeamManagement: React.FC = () => {
                   <div>
                     <h4 className="text-sm font-semibold mb-3 text-orange-600">💡 Recommendations</h4>
                     <div className="space-y-2">
-                      <div className="text-xs bg-orange-50 p-3 rounded border-l-2 border-orange-500">
+                      <div className="text-xs bg-orange-50 dark:bg-orange-900/10 p-3 rounded border-l-2 border-orange-500">
                         Consider pairing junior members with high-performers for knowledge transfer
                       </div>
-                      <div className="text-xs bg-orange-50 p-3 rounded border-l-2 border-orange-500">
+                      <div className="text-xs bg-orange-50 dark:bg-orange-900/10 p-3 rounded border-l-2 border-orange-500">
                         Implement daily standups to improve communication and reduce blockers
                       </div>
-                      <div className="text-xs bg-orange-50 p-3 rounded border-l-2 border-orange-500">
+                      <div className="text-xs bg-orange-50 dark:bg-orange-900/10 p-3 rounded border-l-2 border-orange-500">
                         Review workload distribution to prevent burnout in top performers
                       </div>
                     </div>

@@ -126,7 +126,6 @@ const TeamMembersPage = () => {
     role: member.role || 'USER',
     status: member.isActive !== false ? 'Active' : 'Inactive',
     imageUrl: member.imageUrl || '',
-    action: 'actions', // This will be handled by the table component
   }));
 
   const memberCount = transformedData.length;

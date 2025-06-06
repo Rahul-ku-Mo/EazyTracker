@@ -30,7 +30,7 @@ export const TeamStats = ({ data }: TeamStatsProps) => {
         </CardHeader>
         <CardContent className="pt-2">
           <div className="text-2xl font-bold">
-            {data?.velocity || 88}
+            {data?.velocity ? parseFloat(data.velocity.toFixed(2)) : 88}
             <span className="text-xs font-normal text-muted-foreground ml-1">
               points
             </span>
@@ -38,7 +38,7 @@ export const TeamStats = ({ data }: TeamStatsProps) => {
           <div className="text-xs text-muted-foreground mb-2">
             <span className={`${(data?.velocityTrend || 0) >= 0 ? 'text-green-500' : 'text-red-500'} inline-flex items-center`}>
               {(data?.velocityTrend || 0) >= 0 ? <ArrowUpRight className="h-3 w-3 mr-1" /> : <ArrowDownRight className="h-3 w-3 mr-1" />}
-              {Math.abs(data?.velocityTrend || 12)}% from last sprint
+              {data?.velocityTrend ? Math.abs(parseFloat(data.velocityTrend.toFixed(2))) : 12}% from last sprint
             </span>
           </div>
           <Progress value={data?.velocity || 88} className="h-1.5" />
