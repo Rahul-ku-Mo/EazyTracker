@@ -63,7 +63,7 @@ const AccountForm = () => {
 
   const updateProfileMutation = useMutation({
     mutationFn: (data: FormState) => updateUserProfile(accessToken, data),
-    onSuccess: (updatedUser) => {
+    onSuccess: () => {
       toast.success("Account updated successfully");
       queryClient.invalidateQueries({ queryKey: ["user"] });
       // Reset the initial state to the current form state after successful save

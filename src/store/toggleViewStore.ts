@@ -8,7 +8,7 @@ interface ToggleViewState {
 // Helper functions for localStorage
 const getStoredView = (): 'kanban' | 'listview' => {
   try {
-    const stored = localStorage.getItem('eztrack-view-type');
+    const stored = localStorage.getItem('pulseboard-view-type');
     return stored === 'listview' ? 'listview' : 'kanban';
   } catch {
     return 'kanban';
@@ -17,7 +17,7 @@ const getStoredView = (): 'kanban' | 'listview' => {
 
 const setStoredView = (view: 'kanban' | 'listview') => {
   try {
-    localStorage.setItem('eztrack-view-type', view);
+    localStorage.setItem('pulseboard-view-type', view);
   } catch {
     // Silently fail if localStorage is not available
   }

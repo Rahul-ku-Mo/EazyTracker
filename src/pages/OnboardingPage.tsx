@@ -167,7 +167,7 @@ const Onboarding = () => {
               transition={{ delay: 0.2 }}
             >
               <Sparkles className="h-4 w-4" />
-              Welcome to EzTrack
+              Welcome to PulseBoard
             </motion.div>
             <h1 className="text-3xl font-bold text-foreground mb-2">
               Let's get you started
@@ -188,7 +188,7 @@ const Onboarding = () => {
               <CardDescription>
                 {isAdmin
                   ? "Set up your team workspace to start collaborating"
-                  : "Choose how you'd like to get started with EzTrack"}
+                  : "Choose how you'd like to get started with PulseBoard"}
               </CardDescription>
             </CardHeader>
 

@@ -12,6 +12,10 @@ import {
   AccountForm,
   AnalyticsPage,
   LocationForm,
+  BillingPage,
+  PricingPage,
+  FeedbackPage,
+  SupportPage,
 
   //IntegrationsForm,
   BoardSettingsPage,
@@ -92,6 +96,10 @@ const authenticatedRoutes = [
         path: "analytics",
         element: <WithContexts Component={AnalyticsPage} />,
       },
+      {
+        path: "billing",
+        element: <WithContexts Component={BillingPage} />,
+      },
     ],
   },
   {
@@ -120,6 +128,30 @@ const authenticatedRoutes = [
 const Router = () => {
   const routes = [
     { path: "/", element: <LandingPage /> },
+    { 
+      path: "/pricing", 
+      element: (
+        <AuthContextProvider>
+          <WithContexts Component={PricingPage} />
+        </AuthContextProvider>
+      ) 
+    },
+    { 
+      path: "/feedback", 
+      element: (
+        <AuthContextProvider>
+          <WithContexts Component={FeedbackPage} />
+        </AuthContextProvider>
+      ) 
+    },
+    { 
+      path: "/support", 
+      element: (
+        <AuthContextProvider>
+          <WithContexts Component={SupportPage} />
+        </AuthContextProvider>
+      ) 
+    },
     {
       path: "/auth",
       element: (

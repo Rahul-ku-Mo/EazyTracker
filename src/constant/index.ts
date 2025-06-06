@@ -24,7 +24,7 @@ export const MAX_BOARDS = 5;
 
 export const DEFAULT_LABEL = {
   name: "None",
-  color: "bg-slate-500",
+  color: "bg-zinc-500",
 };
 
 export const DEFAULT_IMAGES = [

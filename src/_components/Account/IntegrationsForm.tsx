@@ -246,7 +246,7 @@ const IntegrationsForm = () => {
           {/* Help Text */}
           <div className="mt-6 p-4 bg-muted/50 rounded-lg border border-border/50">
             <p className="text-xs text-muted-foreground">
-              <strong>Note:</strong> Integrations help you connect EzTrack with your existing tools. 
+                              <strong>Note:</strong> Integrations help you connect PulseBoard with your existing tools. 
               Each integration may require additional setup and permissions. 
               You can enable or disable them at any time.
             </p>

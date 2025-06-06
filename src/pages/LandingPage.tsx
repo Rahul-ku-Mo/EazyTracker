@@ -20,7 +20,8 @@ import {
   Eye,
   Share,
   Settings,
-
+  Sun,
+  Moon,
   Play,
   Rocket,
   Check
@@ -118,7 +119,7 @@ const LandingPage = () => {
       <div className="relative z-10">
         {/* Header */}
         <header className="absolute top-0 left-0 right-0 z-50">
-          <div className="container mx-auto px-6 py-6">
+          <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6">
             <div className="flex items-center justify-between">
               <motion.div
                 className="flex items-center space-x-2"
@@ -126,38 +127,55 @@ const LandingPage = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-white" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
                 <span className={cn(
-                  "text-xl font-bold",
+                  "text-lg sm:text-xl font-bold",
                   isDark ? "text-white" : "text-zinc-900"
                 )}>
-                  EzTrack
+                  PulseBoard
                 </span>
               </motion.div>
 
               <motion.div
-                className="flex items-center space-x-4"
+                className="flex items-center space-x-2 sm:space-x-4"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
               >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setTheme(isDark ? "light" : "dark")}
-                  className="text-sm font-semibold"
+                <Link to="/pricing" className="hidden sm:block">
+                  <Button variant="ghost" className="text-sm">
+                    Pricing
+                  </Button>
+                </Link>
+                              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setTheme(isDark ? "light" : "dark")}
+                className="p-2 w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-300"
+                aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+              >
+                <motion.div
+                  initial={false}
+                  animate={{ rotate: isDark ? 180 : 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="w-4 h-4 sm:w-5 sm:h-5"
                 >
-                  {isDark ? "Light" : "Dark"} Mode
-                </Button>
-                <Link to="/auth">
+                  {isDark ? (
+                    <Sun className="w-full h-full text-yellow-500" />
+                  ) : (
+                    <Moon className="w-full h-full text-slate-600 dark:text-slate-400" />
+                  )}
+                </motion.div>
+              </Button>
+                <Link to="/auth" className="hidden sm:block">
                   <Button variant="ghost" className="text-sm">
                     Sign In
                   </Button>
                 </Link>
                 <Link to="/auth">
-                  <Button className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white border-0 text-sm">
+                  <Button className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white border-0 text-xs sm:text-sm px-3 sm:px-4">
                     Get Started
                   </Button>
                 </Link>
@@ -167,7 +185,7 @@ const LandingPage = () => {
         </header>
 
         {/* Hero Section */}
-        <section className="relative pt-32 pb-20 px-6">
+        <section className="relative pt-24 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6">
           <div className="container mx-auto max-w-7xl">
             <motion.div
               className="text-center max-w-4xl mx-auto"
@@ -188,7 +206,7 @@ const LandingPage = () => {
 
               <motion.h1
                 className={cn(
-                  "text-5xl md:text-7xl font-bold mb-6 leading-tight",
+                  "text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-tight",
                   isDark ? "text-white" : "text-zinc-900"
                 )}
                 initial={{ opacity: 0, y: 30 }}
@@ -204,7 +222,7 @@ const LandingPage = () => {
 
               <motion.p
                 className={cn(
-                  "text-xl md:text-2xl mb-8 font-medium leading-relaxed max-w-3xl mx-auto",
+                  "text-lg sm:text-xl md:text-2xl mb-8 font-medium leading-relaxed max-w-3xl mx-auto",
                   isDark ? "text-zinc-300" : "text-zinc-600"
                 )}
                 initial={{ opacity: 0, y: 30 }}
@@ -217,38 +235,38 @@ const LandingPage = () => {
               </motion.p>
 
               <motion.div
-                className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
+                className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-8 sm:mb-12"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
               >
-                <Link to="/auth">
+                <Link to="/auth" className="w-full sm:w-auto">
                   <Button 
                     size="lg" 
-                    className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white border-0 text-lg px-8 py-3 h-auto rounded-xl shadow-lg hover:shadow-xl transition-all duration-500 ease-out"
+                    className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white border-0 text-base sm:text-lg px-6 sm:px-8 py-3 h-auto rounded-xl shadow-lg hover:shadow-xl transition-all duration-500 ease-out"
                   >
-                    <Play className="w-5 h-5 mr-2" />
+                    <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     Start Free Trial
                   </Button>
                 </Link>
                 <Button 
                   variant="outline" 
                   size="lg"
-                  className="text-lg px-8 py-3 h-auto rounded-xl border-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all duration-500 ease-out"
+                  className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-3 h-auto rounded-xl border-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all duration-500 ease-out"
                 >
-                  <Rocket className="w-5 h-5 mr-2" />
+                  <Rocket className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   View Demo
                 </Button>
               </motion.div>
 
               {/* Rotating Feature Showcase */}
               <motion.div
-                className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm rounded-2xl p-8 border border-zinc-200 dark:border-zinc-800 shadow-xl"
+                className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 lg:p-8 border border-zinc-200 dark:border-zinc-800 shadow-xl"
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
               >
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
                   {features.map((feature, index) => {
                     const Icon = feature.icon;
                     const isActive = index === activeFeature;
@@ -257,27 +275,27 @@ const LandingPage = () => {
                       <div
                         key={feature.title}
                         className={cn(
-                          "p-4 rounded-xl transition-all duration-500 ease-out text-center",
+                          "p-3 sm:p-4 rounded-xl transition-all duration-500 ease-out text-center",
                           isActive
                             ? "bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/50 dark:to-emerald-800/30 shadow-lg transform scale-105"
                             : "bg-transparent"
                         )}
                       >
                         <div className={cn(
-                          "w-12 h-12 rounded-lg mb-3 flex items-center justify-center mx-auto",
+                          "w-10 h-10 sm:w-12 sm:h-12 rounded-lg mb-2 sm:mb-3 flex items-center justify-center mx-auto",
                           `bg-gradient-to-br ${feature.color}`,
                           isActive ? "shadow-lg" : "shadow-md"
                         )}>
-                          <Icon className="w-6 h-6 text-white" />
+                          <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                         </div>
                         <h3 className={cn(
-                          "font-semibold text-sm mb-1",
+                          "font-semibold text-xs sm:text-sm mb-1",
                           isDark ? "text-zinc-100" : "text-zinc-900"
                         )}>
                           {feature.title}
                         </h3>
                         <p className={cn(
-                          "text-xs",
+                          "text-xs hidden sm:block",
                           isDark ? "text-zinc-400" : "text-zinc-600"
                         )}>
                           {feature.description}
@@ -292,10 +310,10 @@ const LandingPage = () => {
         </section>
 
         {/* Core Features Section */}
-        <section className="py-24">
-          <div className="container mx-auto px-6">
+        <section className="py-16 sm:py-20 lg:py-24">
+          <div className="container mx-auto px-4 sm:px-6">
             <motion.div
-              className="text-center mb-16"
+              className="text-center mb-12 sm:mb-16"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
@@ -305,7 +323,7 @@ const LandingPage = () => {
                 Core Features
               </Badge>
               <h2 className={cn(
-                "text-4xl md:text-5xl font-bold mb-4",
+                "text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4",
                 isDark ? "text-white" : "text-zinc-900"
               )}>
                 Everything You Need to{" "}
@@ -314,14 +332,14 @@ const LandingPage = () => {
                 </span>
               </h2>
               <p className={cn(
-                "text-xl max-w-2xl mx-auto",
+                "text-lg sm:text-xl max-w-2xl mx-auto",
                 isDark ? "text-zinc-300" : "text-zinc-600"
               )}>
                 Powerful features designed to streamline your workflow and boost team productivity.
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
               {[
                 {
                   icon: CheckCircle,
@@ -351,7 +369,7 @@ const LandingPage = () => {
                 <motion.div
                   key={feature.title}
                   className={cn(
-                    "group relative p-8 rounded-2xl border-2 border-transparent transition-all duration-300",
+                    "group relative p-6 sm:p-8 rounded-2xl border-2 border-transparent transition-all duration-300",
                     "bg-white dark:bg-zinc-900",
                     "shadow-lg hover:shadow-2xl",
                     "hover:border-emerald-200 dark:hover:border-emerald-800"
@@ -363,14 +381,14 @@ const LandingPage = () => {
                   whileHover={{ y: -2 }}
                 >
                   <div className={cn(
-                    "w-16 h-16 rounded-xl mb-6 flex items-center justify-center",
+                    "w-12 h-12 sm:w-16 sm:h-16 rounded-xl mb-4 sm:mb-6 flex items-center justify-center",
                     `bg-gradient-to-br ${feature.gradient}`,
                     "shadow-lg group-hover:shadow-xl transition-shadow duration-300"
                   )}>
-                    <feature.icon className="w-8 h-8 text-white" />
+                    <feature.icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                   </div>
                   <h3 className={cn(
-                    "text-xl font-bold mb-3",
+                    "text-lg sm:text-xl font-bold mb-3",
                     isDark ? "text-white" : "text-zinc-900"
                   )}>
                     {feature.title}
@@ -599,7 +617,7 @@ const LandingPage = () => {
                 "text-xl max-w-2xl mx-auto",
                 isDark ? "text-zinc-300" : "text-zinc-600"
               )}>
-                We're constantly improving EzTrack. Here's what's coming next.
+                We're constantly improving PulseBoard. Here's what's coming next.
               </p>
             </motion.div>
 
@@ -689,13 +707,13 @@ const LandingPage = () => {
         </section>
 
                  {/* CTA Section */}
-         <section className="py-24 relative overflow-hidden">
+         <section className="py-16 sm:py-20 lg:py-24 relative overflow-hidden">
            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-emerald-600 to-cyan-600" />
            <div className="absolute inset-0 opacity-20">
              <div className="w-full h-full bg-gradient-to-br from-white/5 to-transparent"></div>
            </div>
           
-          <div className="container mx-auto px-6 relative z-10">
+          <div className="container mx-auto px-4 sm:px-6 relative z-10">
             <motion.div
               className="text-center max-w-4xl mx-auto"
               initial={{ opacity: 0, y: 30 }}
@@ -703,58 +721,52 @@ const LandingPage = () => {
               transition={{ duration: 0.6 }}
               viewport={{ once: true, margin: "-100px" }}
             >
-              <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-6">
                 Ready to Transform Your
-                <br />
+                <br className="hidden sm:block" />
                 <span className="text-emerald-100">Project Management?</span>
               </h2>
-              <p className="text-xl text-emerald-100 mb-8 max-w-2xl mx-auto">
-                Join thousands of teams already using EzTrack to deliver projects faster and more efficiently.
+              <p className="text-lg sm:text-xl text-emerald-100 mb-8 max-w-2xl mx-auto">
+                Experience the next generation of project management designed for modern teams. 
+                Start your free trial today.
               </p>
               
               <motion.div
-                className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
+                className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 sm:mb-12"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
                 viewport={{ once: true }}
               >
-                <Link to="/auth">
+                <Link to="/auth" className="w-full sm:w-auto">
                   <Button 
                     size="lg" 
-                    className="bg-white text-emerald-600 hover:bg-emerald-50 border-0 text-lg px-8 py-3 h-auto rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-semibold"
+                    className="w-full sm:w-auto bg-white text-emerald-600 hover:bg-emerald-50 border-0 text-base sm:text-lg px-6 sm:px-8 py-3 h-auto rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-semibold"
                   >
-                    <Rocket className="w-5 h-5 mr-2" />
+                    <Rocket className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     Start Your Free Trial
                   </Button>
                 </Link>
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  className="text-white border-2 border-white/20 hover:bg-white/10 text-lg px-8 py-3 h-auto rounded-xl backdrop-blur-sm transition-all duration-300"
-                >
-                  <Play className="w-5 h-5 mr-2" />
-                  Watch Demo
-                </Button>
+              
               </motion.div>
 
               <motion.div
-                className="flex items-center justify-center space-x-8 text-emerald-100"
+                className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-8 text-emerald-100"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
                 viewport={{ once: true }}
               >
                 <div className="flex items-center space-x-2">
-                  <Check className="w-5 h-5" />
+                  <Check className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span className="text-sm">No credit card required</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Check className="w-5 h-5" />
+                  <Check className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span className="text-sm">14-day free trial</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Check className="w-5 h-5" />
+                  <Check className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span className="text-sm">Cancel anytime</span>
                 </div>
               </motion.div>
@@ -764,12 +776,12 @@ const LandingPage = () => {
 
         {/* Footer */}
         <footer className={cn(
-          "py-16 border-t",
+          "py-12 sm:py-16 border-t",
           isDark ? "bg-zinc-900 border-zinc-800" : "bg-zinc-50 border-zinc-200"
         )}>
-          <div className="container mx-auto px-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div className="col-span-1 md:col-span-2">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              <div className="col-span-1 sm:col-span-2 lg:col-span-2">
                 <div className="flex items-center space-x-2 mb-4">
                   <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
                     <CheckCircle className="w-5 h-5 text-white" />
@@ -778,7 +790,7 @@ const LandingPage = () => {
                     "text-xl font-bold",
                     isDark ? "text-white" : "text-zinc-900"
                   )}>
-                    EzTrack
+                    PulseBoard
                   </span>
                 </div>
                 <p className={cn(
@@ -805,7 +817,7 @@ const LandingPage = () => {
                   isDark ? "text-zinc-400" : "text-zinc-600"
                 )}>
                   <li><a href="#" className="hover:text-emerald-500 transition-colors">Features</a></li>
-                  <li><span className="line-through opacity-50 cursor-not-allowed">Pricing</span></li>
+                  <li><Link to="/pricing" className="hover:text-emerald-500 transition-colors">Pricing</Link></li>
                   <li><span className="line-through opacity-50 cursor-not-allowed">Integrations</span></li>
                   <li><span className="line-through opacity-50 cursor-not-allowed">API</span></li>
                 </ul>
@@ -822,8 +834,8 @@ const LandingPage = () => {
                   "space-y-2 text-sm",
                   isDark ? "text-zinc-400" : "text-zinc-600"
                 )}>
-                  <li><a href="#" className="hover:text-emerald-500 transition-colors">Help Center</a></li>
-                  <li><a href="#" className="hover:text-emerald-500 transition-colors">Contact</a></li>
+                  <li><a href="/feedback" className="hover:text-emerald-500 transition-colors">Feedback</a></li>
+                  <li><a href="/support" className="hover:text-emerald-500 transition-colors">Contact</a></li>
                   <li><a href="#" className="hover:text-emerald-500 transition-colors">Status</a></li>
                   <li><a href="#" className="hover:text-emerald-500 transition-colors">Community</a></li>
                 </ul>
@@ -834,7 +846,7 @@ const LandingPage = () => {
               "mt-12 pt-8 border-t text-center text-sm",
               isDark ? "border-zinc-800 text-zinc-400" : "border-zinc-200 text-zinc-600"
             )}>
-              <p>&copy; 2024 EzTrack. All rights reserved. Built with ❤️ for productive teams.</p>
+              <p>&copy; 2024 PulseBoard. All rights reserved. Built with ❤️ for productive teams.</p>
             </div>
           </div>
         </footer>

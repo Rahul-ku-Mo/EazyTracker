@@ -9,6 +9,7 @@ import {
   Settings2,
   Users,
   Hash,
+  CreditCard,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -57,6 +58,17 @@ const data = {
         {
           title: "Notifications",
           url: "/inbox",
+        },
+      ],
+    },
+    {
+      title: "Billing & Plans",
+      url: "#",
+      icon: CreditCard,
+      items: [
+        {
+          title: "Subscription",
+          url: "/workspace/billing",
         },
       ],
     },

@@ -56,7 +56,7 @@ const LocationForm = () => {
     mutationFn: async (data: LocationFormState) => {
       return await updateUserProfile(accessToken, data);
     },
-    onSuccess: (updatedUser) => {
+    onSuccess: () => {
       toast.success("Location updated successfully");
       queryClient.invalidateQueries({ queryKey: ["user"] });
       // Reset the initial state to the current form state after successful save
