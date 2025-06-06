@@ -108,9 +108,15 @@
 }
 
 .editor-list-checklist {
-  list-style: none;
+  list-style: none !important;
+  list-style-type: none !important;
   margin: 0.75rem 0;
   padding-left: 0;
+}
+
+.editor-list-checklist * {
+  list-style: none !important;
+  list-style-type: none !important;
 }
 
 /* Regular list items */
@@ -122,8 +128,47 @@
   user-select: text;
 }
 
+/* Override list-item styling specifically for checkboxes */
+.editor-list-item.editor-list-item-checked,
+.editor-list-item.editor-list-item-unchecked {
+  list-style: none !important;
+  list-style-type: none !important;
+  list-style-image: none !important;
+  padding-left: 2rem;
+  margin: 0.5rem 0;
+  display: block !important;
+}
+
+.editor-list-item.editor-list-item-checked::marker,
+.editor-list-item.editor-list-item-unchecked::marker {
+  display: none !important;
+  content: none !important;
+}
+
 /* Bullet list bullets */
 .editor-list-ul .editor-list-item::before {
+  content: "•";
+  position: absolute;
+  left: 0.5rem;
+  top: 0;
+  color: var(--muted-foreground);
+  font-weight: bold;
+  font-size: 1.1em;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Completely remove bullet styling when checkbox classes are present */
+.editor-list-ul .editor-list-item-checked,
+.editor-list-ul .editor-list-item-unchecked,
+.editor-list-checklist .editor-list-item-checked,
+.editor-list-checklist .editor-list-item-unchecked {
+  list-style: none !important;
+  list-style-type: none !important;
+}
+
+/* Hide bullet content but show checkbox styling */
+.editor-list-ul .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked)::before {
   content: "•";
   position: absolute;
   left: 0.5rem;
@@ -153,78 +198,144 @@
   user-select: none;
 }
 
-/* Enhanced checklist items */
-.editor-list-item-checked {
+/* Enhanced checklist items with emerald styling */
+.editor-list-item-checked,
+.editor-list-item-unchecked {
   position: relative;
   padding-left: 2rem;
   margin: 0.5rem 0;
-  list-style: none;
+  list-style: none !important;
+  list-style-type: none !important;
+  list-style-image: none !important;
+  list-style-position: outside !important;
   outline: none;
-  color: var(--muted-foreground);
-  text-decoration: line-through;
-  text-decoration-color: var(--muted-foreground);
   user-select: text;
+  cursor: pointer;
+  display: block;
 }
 
-.editor-list-item-checked::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 2px;
-  width: 1.125rem;
-  height: 1.125rem;
-  border: 1.5px solid var(--primary);
-  background-color: var(--primary);
-  border-radius: 3px;
-  cursor: pointer;
-  pointer-events: none;
-  user-select: none;
+.editor-list-item-checked::marker,
+.editor-list-item-unchecked::marker {
+  display: none;
+}
+
+.editor-list-item-checked,
+.editor-list-item-unchecked {
+  list-style: none !important;
+  list-style-type: none !important;
+  list-style-position: outside !important;
+}
+
+.editor-list-item-checked::marker,
+.editor-list-item-unchecked::marker {
+  content: none !important;
+  display: none !important;
+}
+
+.editor-list-item-checked {
+  color: #6b7280;
+  text-decoration: line-through;
+  text-decoration-color: #6b7280;
+}
+
+.dark .editor-list-item-checked {
+  color: #9ca3af;
+  text-decoration-color: #9ca3af;
+}
+
+.editor-list-item-unchecked {
+  color: #374151;
+}
+
+.dark .editor-list-item-unchecked {
+  color: #d1d5db;
+}
+
+/* Checkbox styling - CHECKED */
+.editor-list-item-checked::before,
+.editor-list-ul .editor-list-item-checked::before,
+.editor-list-checklist .editor-list-item-checked::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0.125rem !important;
+  width: 1rem !important;
+  height: 1rem !important;
+  border: 1.5px solid #10b981 !important;
+  background-color: #10b981 !important;
+  border-radius: 2px !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  user-select: none !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+  display: block !important;
+  font-size: inherit !important;
+  color: transparent !important;
+}
+
+.editor-list-item-checked:hover::before {
+  background-color: #059669;
+  border-color: #059669;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .editor-list-item-checked::after {
   content: "✓";
   position: absolute;
-  left: 2px;
-  top: 0px;
-  width: 1rem;
-  height: 1rem;
-  color: var(--primary-foreground);
-  font-size: 0.8rem;
+  left: 0.125rem;
+  top: 0.225rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  color: white;
+  font-size: 0.75rem;
   font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
-}
-
-.editor-list-item-unchecked {
-  position: relative;
-  padding-left: 2rem;
-  margin: 0.5rem 0;
-  list-style: none;
-  outline: none;
-  color: var(--foreground);
-  user-select: text;
-}
-
-.editor-list-item-unchecked::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 2px;
-  width: 1.125rem;
-  height: 1.125rem;
-  border: 1.5px solid var(--border);
-  background-color: var(--background);
-  border-radius: 3px;
-  cursor: pointer;
-  transition: border-color 0.2s ease;
-  pointer-events: none;
   user-select: none;
+  line-height: 1;
+}
+
+.editor-list-item-unchecked::before,
+.editor-list-ul .editor-list-item-unchecked::before,
+.editor-list-checklist .editor-list-item-unchecked::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0.125rem !important;
+  width: 1rem !important;
+  height: 1rem !important;
+  border: 1.5px solid #d1d5db !important;
+  background-color: white !important;
+  border-radius: 2px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  pointer-events: auto !important;
+  user-select: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  display: block !important;
+  font-size: inherit !important;
+  color: transparent !important;
+}
+
+.dark .editor-list-item-unchecked::before {
+  border-color: #4b5563;
+  background-color: #1f2937;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .editor-list-item-unchecked:hover::before {
-  border-color: var(--primary);
+  border-color: #10b981;
+  background-color: #f0fdf4;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.1);
+}
+
+.dark .editor-list-item-unchecked:hover::before {
+  border-color: #10b981;
+  background-color: #064e3b;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
 }
 
 /* Nested lists */
