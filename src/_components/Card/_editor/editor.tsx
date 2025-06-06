@@ -88,7 +88,7 @@ interface EditorTheme {
 
 const theme: EditorTheme = {
   root: "editor-root",
-  paragraph: "editor-paragraph text-sm",
+  paragraph: "editor-paragraph",
   text: {
     bold: "editor-text-bold",
     italic: "editor-text-italic",
@@ -96,7 +96,7 @@ const theme: EditorTheme = {
     strikethrough: "editor-text-strikethrough",
     underlineStrikethrough: "editor-text-underline-strikethrough",
   },
-  code: "editor-Theme__code dark:bg-zinc-900/80 bg-zinc-200",
+  code: "editor-Theme__code",
   codeHighlight: {
     atrule: "editor-Theme__tokenAttr",
     attr: "editor-Theme__tokenAttr",
@@ -138,12 +138,12 @@ const theme: EditorTheme = {
     h6: "editor-heading-h6 editor-heading-font",
   },
   list: {
-    ul: "editor-list-ul text-sm",
-    ol: "editor-list-ol text-sm",
-    checklist: "editor-list-checklist text-sm",
-    listitem: "editor-list-item text-sm",
-    listitemChecked: "editor-list-item-checked text-sm",
-    listitemUnchecked: "editor-list-item-unchecked text-sm",
+    ul: "editor-list-ul",
+    ol: "editor-list-ol",
+    checklist: "editor-list-checklist",
+    listitem: "editor-list-item",
+    listitemChecked: "editor-list-item-checked",
+    listitemUnchecked: "editor-list-item-unchecked",
     nested: {
       list: "editor-nested-list",
       listitem: "editor-nested-list-item",
@@ -220,6 +220,7 @@ export const CardDetailsEditor = ({
               contentEditable={
                 <ContentEditable
                   className={cn(
+                    "editor-root",
                     "w-full px-3 py-2 overflow-y-auto",
                     "dark:text-zinc-100 focus:outline-none",
                     "min-h-[300px]",

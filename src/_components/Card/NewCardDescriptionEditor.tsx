@@ -40,26 +40,26 @@ interface EditorTheme {
 }
 const theme: EditorTheme = {
   root: cn(
-    "bg-background text-foreground relative outline-none p-0",
+    "editor-root bg-background text-foreground relative outline-none p-0",
   ),
-  paragraph: "leading-normal",
+  paragraph: "editor-paragraph",
   text: {
-    bold: "font-bold",
-    italic: "italic",
-    underline: "underline",
-    strikethrough: "line-through",
-    underlineStrikethrough: "underline line-through",
+    bold: "editor-text-bold",
+    italic: "editor-text-italic",
+    underline: "editor-text-underline",
+    strikethrough: "editor-text-strikethrough",
+    underlineStrikethrough: "editor-text-underline-strikethrough",
   },
   list: {
-    ul: "list-disc list-inside",
-    ol: "list-decimal list-inside",
-    checklist: "card-list-description__checklist",
-    listitem: "my-1",
-    listitemChecked: "card-list-description__checked",
-    listitemUnchecked: "card-list-description__unchecked",
+    ul: "editor-list-ul",
+    ol: "editor-list-ol",
+    checklist: "editor-list-checklist",
+    listitem: "editor-list-item",
+    listitemChecked: "editor-list-item-checked",
+    listitemUnchecked: "editor-list-item-unchecked",
     nested: {
-      list: "ml-4",
-      listitem: "my-1",
+      list: "editor-nested-list",
+      listitem: "editor-nested-list-item",
     },
   },
 };
