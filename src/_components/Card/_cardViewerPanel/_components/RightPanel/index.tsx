@@ -141,8 +141,8 @@ const RightPanel = () => {
   };
 
   return (
-    <div className="h-full border-l border-border dark:border-zinc-700">
-      <div className="p-4 space-y-6">
+    <div className="h-full border-l border-border dark:border-zinc-700 flex flex-col">
+      <div className="p-4 space-y-6 overflow-y-auto flex-1">
         {/* Task Details Header */}
         <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
           <div className="flex items-center gap-2">

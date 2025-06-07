@@ -147,7 +147,7 @@ export const NewCardDescriptionEditor = ({
                     "text-sm text-foreground",
                     "focus:outline-none border-none",
                     "relative",
-                    "px-0 py-0",
+                    "px-0 py-0 !p-0",
                     // Styles for the placeholder
                     "[&[data-empty-text]]:before:content-[attr(data-empty-text)]",
                     "[&[data-empty-text]]:before:text-muted-foreground/60",
@@ -165,7 +165,7 @@ export const NewCardDescriptionEditor = ({
               }
               ErrorBoundary={LexicalErrorBoundary}
             />
-            <PlaceholderPlugin placeholder="Fill more details..." />
+            <PlaceholderPlugin placeholder="Add more details..." />
             <HistoryPlugin />
             <ListPlugin />
             <CheckListPlugin />

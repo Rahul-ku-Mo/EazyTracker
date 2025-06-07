@@ -84,7 +84,7 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
           <Input
             ref={titleRef}
             name="title"
-            placeholder="hm.. Let's name this card"
+            placeholder="What's on your mind?"
             className="px-0 text-base border-0 shadow-none placeholder:text-muted-foreground/60 md:text-base focus-visible:ring-0"
           />
           <NewCardDescriptionEditor

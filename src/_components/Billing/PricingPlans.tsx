@@ -18,10 +18,10 @@ const planIcons = {
 };
 
 const planColors = {
-  free: 'bg-gray-100',
-  pro: 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200',
-  team: 'bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200',
-  enterprise: 'bg-gradient-to-br from-orange-50 to-red-50 border-orange-200',
+  free: 'bg-gray-100 dark:bg-gray-800',
+  pro: 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 dark:from-blue-900/20 dark:to-indigo-900/20 dark:border-blue-800',
+  team: 'bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 dark:from-purple-900/20 dark:to-pink-900/20 dark:border-purple-800',
+  enterprise: 'bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200 dark:from-purple-900/20 dark:to-violet-900/20 dark:border-purple-800',
 };
 
 export const PricingPlans: React.FC<PricingPlansProps> = ({ showCurrentPlan = true }) => {
@@ -53,8 +53,8 @@ export const PricingPlans: React.FC<PricingPlansProps> = ({ showCurrentPlan = tr
 
   if (isLoading) {
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
-        {Array.from({ length: 2 }).map((_, i) => (
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
           <Card key={i} className="relative">
             <CardHeader>
               <Skeleton className="h-6 w-24" />
@@ -82,17 +82,24 @@ export const PricingPlans: React.FC<PricingPlansProps> = ({ showCurrentPlan = tr
   const currentPlan = subscription?.plan || 'free';
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
+    <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
       {plans.map((plan) => {
         const Icon = planIcons[plan.id as keyof typeof planIcons] || Zap;
         const isCurrentPlan = currentPlan === plan.id;
         const isPro = plan.id === 'pro';
+        const isEnterprise = plan.id === 'enterprise';
 
         return (
           <Card
             key={plan.id}
             className={`relative ${planColors[plan.id as keyof typeof planColors]} ${
-              isPro ? 'ring-2 ring-blue-500 shadow-lg scale-105' : ''
+              isCurrentPlan 
+                ? 'ring-2 ring-green-500 shadow-lg scale-105 bg-green-50/50 dark:bg-green-900/10' 
+                : isPro 
+                ? 'ring-2 ring-blue-500 shadow-lg' 
+                : isEnterprise
+                ? 'ring-2 ring-purple-500 shadow-lg'
+                : ''
             }`}
           >
             {isPro && (
@@ -101,9 +108,15 @@ export const PricingPlans: React.FC<PricingPlansProps> = ({ showCurrentPlan = tr
               </div>
             )}
 
+            {isEnterprise && (
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <Badge className="bg-purple-500 text-white px-3 py-1">Premium</Badge>
+              </div>
+            )}
+
             {showCurrentPlan && isCurrentPlan && (
               <div className="absolute -top-3 right-4">
-                <Badge variant="secondary" className="bg-green-100 text-green-700">
+                <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
                   Current Plan
                 </Badge>
               </div>
@@ -161,7 +174,7 @@ export const PricingPlans: React.FC<PricingPlansProps> = ({ showCurrentPlan = tr
 
             <CardFooter>
               {isCurrentPlan ? (
-                <Button variant="outline" className="w-full" disabled>
+                <Button variant="outline" className="w-full bg-green-100 text-green-700 border-green-300 dark:bg-green-900 dark:text-green-300 dark:border-green-700" disabled>
                   Current Plan
                 </Button>
               ) : plan.id === 'free' ? (
@@ -170,10 +183,16 @@ export const PricingPlans: React.FC<PricingPlansProps> = ({ showCurrentPlan = tr
                 </Button>
               ) : (
                 <Button
-                  className="w-full"
+                  className={`w-full ${
+                    isPro 
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                      : isEnterprise
+                      ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                      : ''
+                  }`}
                   onClick={() => handleUpgrade(plan)}
                   disabled={createCheckoutSession.isPending}
-                  variant={isPro ? 'default' : 'outline'}
+                  variant={isPro || isEnterprise ? 'default' : 'outline'}
                 >
                   {createCheckoutSession.isPending ? 'Processing...' : `Upgrade to ${plan.name}`}
                 </Button>

@@ -4,6 +4,7 @@ import Cookies from "js-cookie";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createBoard } from "../apis/BoardApis";
 import { useToast } from "../hooks/use-toast";
+import { useFeatureGating } from "./useFeatureGating";
 
 interface IBoardForm {
   boardTitle: string;
@@ -15,6 +16,7 @@ const useBoardForm = (count: number) => {
   const queryClient = useQueryClient();
   const accessToken = Cookies.get("accessToken");
   const { toast } = useToast();
+  const { getUpgradeMessage } = useFeatureGating();
 
   const [currentBoardInput, setCurrentBoardInput] = useState("");
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
@@ -96,10 +98,11 @@ const useBoardForm = (count: number) => {
       return;
     }
 
+    // Check if user can create more boards (count -1 means unlimited)
     if (count === 0) {
       toast({
-        title: "Maximum boards reached",
-        description: "Please delete some boards or upgrade your plan",
+        title: "Project limit reached",
+        description: getUpgradeMessage('projects'),
         variant: "destructive",
       });
       return;

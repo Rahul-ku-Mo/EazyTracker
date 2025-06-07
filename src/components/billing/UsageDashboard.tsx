@@ -74,13 +74,14 @@ export const UsageDashboard: React.FC = () => {
     return 'text-green-600';
   };
 
-  const getProgressColor = (current: number, limit: number | null) => {
-    if (limit === null) return 'bg-green-500'; // Unlimited
-    const percentage = (current / limit) * 100;
-    if (percentage >= 90) return 'bg-red-500';
-    if (percentage >= 75) return 'bg-yellow-500';
-    return 'bg-green-500';
-  };
+  // Progress color helper (currently unused but may be needed for future features)
+  // const getProgressColor = (current: number, limit: number | null) => {
+  //   if (limit === null) return 'bg-green-500'; // Unlimited
+  //   const percentage = (current / limit) * 100;
+  //   if (percentage >= 90) return 'bg-red-500';
+  //   if (percentage >= 75) return 'bg-yellow-500';
+  //   return 'bg-green-500';
+  // };
 
   const formatLimit = (limit: number | null) => {
     return limit === null ? 'Unlimited' : limit.toString();
@@ -133,7 +134,7 @@ export const UsageDashboard: React.FC = () => {
       </Card>
 
       {/* Usage Statistics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Projects */}
         <Card>
           <CardHeader className="pb-2">
@@ -234,6 +235,43 @@ export const UsageDashboard: React.FC = () => {
               {usage.usage.storageGB.limit !== null && (
                 <Progress 
                   value={getUsagePercentage(usage.usage.storageGB.current, usage.usage.storageGB.limit)}
+                  className="h-2"
+                />
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Image Uploads */}
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Sparkles className="w-4 h-4 text-orange-500" />
+                <CardTitle className="text-sm font-medium">Image Uploads</CardTitle>
+              </div>
+              {usage.usage.imageUploads?.limit !== null && 
+               usage.usage.imageUploads?.current >= usage.usage.imageUploads?.limit && (
+                <AlertTriangle className="w-4 h-4 text-red-500" />
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className={cn(
+                  "text-2xl font-bold",
+                  getUsageColor(usage.usage.imageUploads?.current || 0, usage.usage.imageUploads?.limit || null)
+                )}>
+                  {usage.usage.imageUploads?.current || 0}
+                </span>
+                <span className="text-sm text-gray-500">
+                  of {formatLimit(usage.usage.imageUploads?.limit || null)}
+                </span>
+              </div>
+              {usage.usage.imageUploads?.limit !== null && (
+                <Progress 
+                  value={getUsagePercentage(usage.usage.imageUploads?.current || 0, usage.usage.imageUploads?.limit || null)}
                   className="h-2"
                 />
               )}

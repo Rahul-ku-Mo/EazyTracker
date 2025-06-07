@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import Container from "@/layouts/Container";
 import BoardPopover from "./BoardPopover";
 import { useBoards } from "@/hooks/useQueries";
-import { MAX_BOARDS } from "@/constant";
+import { useFeatureGating } from "@/hooks/useFeatureGating";
 import {
   Card,
   CardFooter,
@@ -111,7 +111,7 @@ const BoardCard = ({ board }: { board: Board }) => {
   );
 };
 
-const EmptyBoardState = ({ boards }: { boards: any }) => (
+const EmptyBoardState = ({ remainingBoards }: { remainingBoards: number }) => (
   <>
     <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
       <div className="border-0 bg-background/50">
@@ -121,7 +121,7 @@ const EmptyBoardState = ({ boards }: { boards: any }) => (
         </div>
       </div>
     </div>
-    <BoardPopover count={MAX_BOARDS - (boards?.length ?? 0)} />
+    <BoardPopover count={remainingBoards} />
   </>
 );
 
@@ -136,19 +136,25 @@ const LoadingState = () => (
 const BoardSelection = () => {
   const accessToken = Cookies.get("accessToken");
   const { data: boards, isPending } = useBoards(accessToken as string);
+  const { canCreate } = useFeatureGating();
+  
+  const currentBoardCount = boards?.length ?? 0;
+  const { remaining } = canCreate('projects', currentBoardCount);
+  // For unlimited plans, remaining will be -1, otherwise show actual remaining count
+  const remainingBoards = remaining === null ? 0 : remaining;
 
   return (
     <Container fwdClassName="pl-2 bg-background" title="Manage Boards">
       {isPending ? (
         <LoadingState />
       ) : boards?.length === 0 ? (
-        <EmptyBoardState boards={boards} />
+        <EmptyBoardState remainingBoards={remainingBoards} />
       ) : (
         <div className="flex flex-wrap gap-4 pt-2 ">
           {boards?.map((board: any) => (
             <BoardCard key={`${board.id}${board.colorId}`} board={board} />
           ))}
-          <BoardPopover count={MAX_BOARDS - (boards?.length ?? 0)} />
+          <BoardPopover count={remainingBoards} />
         </div>
       )}
     </Container>

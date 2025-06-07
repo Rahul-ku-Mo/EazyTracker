@@ -254,3 +254,61 @@ export const fetchCardsWithStatus = async (
     return undefined;
   }
 };
+
+// Update card column (for drag and drop)
+export const updateCardColumn = async (
+  accessToken: string,
+  cardId: number,
+  columnId: number
+): Promise<CardDetail | undefined> => {
+  try {
+    const response = await axios.patch(
+      `${import.meta.env.VITE_API_URL}/cards/${cardId}`,
+      {
+        columnId: columnId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (response.data.data && response.status === 201) {
+      return response.data.data;
+    }
+    return undefined;
+  } catch (err) {
+    console.log(err);
+    return undefined;
+  }
+};
+
+// Update card order (for drag and drop)
+export const updateCardOrder = async (
+  accessToken: string,
+  cardId: number,
+  order: number
+): Promise<CardDetail | undefined> => {
+  try {
+    const response = await axios.patch(
+      `${import.meta.env.VITE_API_URL}/cards/${cardId}`,
+      {
+        order: order,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (response.data.data && response.status === 201) {
+      return response.data.data;
+    }
+    return undefined;
+  } catch (err) {
+    console.log(err);
+    return undefined;
+  }
+};

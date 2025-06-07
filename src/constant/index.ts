@@ -20,7 +20,7 @@ export const randomColorGenerator = () => {
   );
 };
 
-export const MAX_BOARDS = 5;
+// MAX_BOARDS removed - now using dynamic subscription-based limits
 
 export const DEFAULT_LABEL = {
   name: "None",

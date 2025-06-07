@@ -32,14 +32,9 @@ import {
   AvatarFallback,
 } from "../../components/ui/avatar";
 
-type TUser = {
-  username: string;
-  imageUrl?: string;
-};
+
 interface CardProps {
   columnName: string;
-  index: number;
-  totalCards: number;
 }
 
 const CardTitle = ({ title, isCompleted }: { title: string; isCompleted?: boolean }) => (
@@ -123,7 +118,7 @@ const CardFooter = ({
   dueDate,
   attachmentsCount = 0,
   commentsCount = 0,
-  assignee,
+  assignees = [],
   priority,
   labels,
   status,
@@ -131,7 +126,13 @@ const CardFooter = ({
   dueDate?: Date;
   attachmentsCount?: number;
   commentsCount?: number;
-  assignee?: TUser;
+  assignees?: Array<{
+    id: string;
+    name: string;
+    email: string;
+    username?: string;
+    imageUrl?: string;
+  }>;
   priority?: string;
   labels?: string[];
   status?: {
@@ -171,11 +172,11 @@ const CardFooter = ({
       <div className="flex items-center gap-2 text-[10px]">
         {/* Status indicator */}
         {statusInfo && (
-          <div className={cn("flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-medium", statusInfo.bg)}>
+          <div className={cn("flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] leading-3 font-medium", statusInfo.bg)}>
             <statusInfo.icon className={cn("w-2.5 h-2.5", statusInfo.color)} strokeWidth={2.5} />
-            <span className={statusInfo.color}>
+            <div className={statusInfo.color}>
               {statusInfo.text}
-            </span>
+            </div>
           </div>
         )}
 
@@ -218,9 +219,24 @@ const CardFooter = ({
           </div>
         )}
         {labels && labels.length > 0 && (
-          <div className="flex items-center gap-1 text-[10px] text-zinc-700 dark:text-zinc-300">
-            <Tag className="w-3 h-3" />
-            <span>{labels.length}</span>
+          <div className="flex items-center gap-1 flex-wrap">
+            {labels.slice(0, 2).map((label, index) => (
+              <Badge
+                key={index}
+                variant="secondary"
+                className="text-[9px] px-1.5 py-0.5 h-4 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700 hover:bg-blue-200 dark:hover:bg-blue-900/50"
+              >
+                {label}
+              </Badge>
+            ))}
+            {labels.length > 2 && (
+              <Badge
+                variant="outline"
+                className="text-[9px] px-1.5 py-0.5 h-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-600"
+              >
+                +{labels.length - 2}
+              </Badge>
+            )}
           </div>
         )}
         {commentsCount > 0 && (
@@ -229,27 +245,40 @@ const CardFooter = ({
             <span>{commentsCount}</span>
           </div>
         )}
-        {assignee && (
-          <Avatar className="w-4 h-4">
-            <AvatarImage src={assignee?.imageUrl} />
-            <AvatarFallback className="text-[8px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-              {assignee.username.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+        {assignees.length > 0 && (
+          <div className="flex items-center -space-x-1">
+            {assignees.slice(0, 3).map((assignee, index) => (
+              <Avatar 
+                key={assignee.id} 
+                className="w-4 h-4 border border-white dark:border-zinc-800 relative"
+                style={{ zIndex: assignees.length - index }}
+              >
+                <AvatarImage src={assignee.imageUrl} />
+                <AvatarFallback className="text-[8px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                  {(assignee.name || assignee.username || assignee.email)?.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            ))}
+            {assignees.length > 3 && (
+              <div className="w-4 h-4 bg-zinc-200 dark:bg-zinc-700 rounded-full flex items-center justify-center text-[8px] text-zinc-600 dark:text-zinc-300 border border-white dark:border-zinc-800">
+                +{assignees.length - 3}
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>
   );
 };
 
-const Card = ({ columnName, index, totalCards }: CardProps) => {
+const Card = ({ columnName }: CardProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const [isDueDateOpen, setIsDueDateOpen] = useState(false);
 
   const cardDetails = useContext(CardContext);
 
-  const { title, description, dueDate, priority, id, labels, completedAt } =
+  const { title, description, dueDate, priority, id, labels, completedAt, assignees } =
     cardDetails as TCardContext;
 
   const columnId = useContext(ColumnContext);
@@ -380,20 +409,20 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
          ref={cardWrapperRef}
           onClick={openModal}
           className={cn(
-            "bg-white dark:bg-zinc-800 hover:dark:bg-zinc-700/70",
+            "bg-white dark:bg-zinc-800 hover:bg-zinc-50 hover:dark:bg-zinc-700/70",
             "text-zinc-900 dark:text-zinc-100",
-            "border border-zinc-200 dark:border-none",
-            "rounded-lg pt-2 mt-4 relative",
-            "transition-all ease-linear",
+            "border border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600",
+            "rounded-lg pt-2 relative",
+            "transition-all duration-300 ease-out",
             "flex flex-col justify-between",
             "text-xs",
             "h-[200px]",
-            "shadow-md dark:shadow-none",
+            "shadow-md hover:shadow-lg dark:shadow-none dark:hover:shadow-zinc-900/20",
             "cursor-pointer relative",
             "group",
-            index === totalCards - 1 && "mb-10",
+            "hover:scale-[1.02] active:scale-[0.98] transform-gpu",
             status.isCompleted && "opacity-75 bg-zinc-50 dark:bg-zinc-800/50",
-            status.isOverdue && "border-red-200 dark:border-red-800/50"
+            status.isOverdue && "border-red-200 dark:border-red-800/50 hover:border-red-300 dark:hover:border-red-700"
           )}
         >
           {/* Completion checkbox - Linear style */}
@@ -420,7 +449,7 @@ const Card = ({ columnName, index, totalCards }: CardProps) => {
 
           <CardDescription description={description} isCompleted={status.isCompleted} />
 
-          <CardFooter dueDate={dueDate} priority={priority} labels={labels} status={status} />
+          <CardFooter dueDate={dueDate} priority={priority} labels={labels} status={status} assignees={assignees} />
           <div 
               className="absolute top-2 right-2 bg-zinc-100 dark:bg-zinc-900/50 rounded-lg p-1.5 opacity-0 group-hover:opacity-100 transition-all ease-linear cursor-pointer"
               onClick={(e) => {

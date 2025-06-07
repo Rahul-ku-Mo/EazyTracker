@@ -374,23 +374,34 @@ const NewCardActions = ({
       {/* Display selected labels */}
       {labels.length > 0 && (
         <div className="flex items-center gap-1 flex-wrap">
-          {labels.map((label) => (
-            <Badge
-              key={label}
-              variant="outline"
-              className="text-xs h-8 pr-2 flex items-center gap-1"
-            >
-              <span>{label}</span>
-              <X
-                className="w-3 h-3 cursor-pointer hover:text-destructive"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleRemoveLabel(label);
-                }}
-              />
-            </Badge>
-          ))}
+          {labels.map((label, index) => {
+            const colorVariants = [
+              "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700",
+              "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700", 
+              "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700",
+              "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700",
+              "bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-700"
+            ];
+            const colorClass = colorVariants[index % colorVariants.length];
+            
+            return (
+              <Badge
+                key={label}
+                variant="secondary"
+                className={`text-xs h-8 pr-2 flex items-center gap-1 ${colorClass} hover:opacity-80 transition-opacity`}
+              >
+                <span>{label}</span>
+                <X
+                  className="w-3 h-3 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleRemoveLabel(label);
+                  }}
+                />
+              </Badge>
+            );
+          })}
         </div>
       )}
     </div>

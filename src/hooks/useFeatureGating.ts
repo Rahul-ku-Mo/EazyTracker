@@ -1,7 +1,7 @@
 import { useFeatureAccess } from './useBilling';
 
 export type PlanType = 'free' | 'pro' | 'enterprise';
-export type FeatureType = 'analytics' | 'timeTracking' | 'customFields' | 'aiFeatures' | 'prioritySupport' | 'apiAccess' | 'ssoIntegration';
+export type FeatureType = 'analytics' | 'timeTracking' | 'customFields' | 'aiFeatures' | 'prioritySupport';
 
 // Feature requirements mapping
 const FEATURE_REQUIREMENTS: Record<FeatureType, PlanType> = {
@@ -10,8 +10,6 @@ const FEATURE_REQUIREMENTS: Record<FeatureType, PlanType> = {
   customFields: 'pro',
   aiFeatures: 'pro',
   prioritySupport: 'enterprise',
-  apiAccess: 'enterprise',
-  ssoIntegration: 'enterprise',
 };
 
 // Plan hierarchy for comparison
@@ -25,9 +23,7 @@ export const useFeatureGating = () => {
   const {
     subscription,
     plans,
-    checkFeatureAccess,
     getCurrentPlanLimits,
-    isWithinLimits,
     isFreePlan,
     isProPlan,
     isEnterprisePlan,
@@ -43,17 +39,42 @@ export const useFeatureGating = () => {
     return PLAN_HIERARCHY[currentPlan] >= PLAN_HIERARCHY[requiredPlan];
   };
 
-  // Get upgrade message for a feature
-  const getUpgradeMessage = (feature: FeatureType): string => {
-    const requiredPlan = FEATURE_REQUIREMENTS[feature];
+  // Get upgrade message for a feature or resource
+  const getUpgradeMessage = (feature: FeatureType | 'projects' | 'teamMembers' | 'imageUploads'): string => {
+    if (feature === 'projects') {
+      return `You've reached your project limit. Upgrade to Professional for unlimited projects.`;
+    }
+    if (feature === 'teamMembers') {
+      return `You've reached your team member limit. Upgrade to Professional for more team members.`;
+    }
+    if (feature === 'imageUploads') {
+      return `You've reached your image upload limit. Upgrade to Professional for more uploads.`;
+    }
+    
+    const requiredPlan = FEATURE_REQUIREMENTS[feature as FeatureType];
     const planName = requiredPlan === 'pro' ? 'Professional' : 'Enterprise';
     
     return `This feature requires a ${planName} subscription. Upgrade to unlock ${feature}.`;
   };
 
   // Check if user can create more of a resource type
-  const canCreate = (resourceType: 'projects' | 'teamMembers'): boolean => {
-    return isWithinLimits(resourceType, 0); // 0 as placeholder, actual count checked in backend
+  const canCreate = (resourceType: 'projects' | 'teamMembers', currentCount: number = 0) => {
+    if (!limits) {
+      return { canCreate: false, remaining: 0 };
+    }
+    
+    const limit = limits[resourceType];
+    
+    // If limit is -1, it means unlimited
+    if (limit === -1) {
+      return { canCreate: true, remaining: -1 };
+    }
+    
+    const remaining = Math.max(0, limit - currentCount);
+    return {
+      canCreate: remaining > 0,
+      remaining
+    };
   };
 
   // Get current plan limits
@@ -77,8 +98,6 @@ export const useFeatureGating = () => {
   const canUseCustomFields = hasFeature('customFields');
   const canUseAI = hasFeature('aiFeatures');
   const hasPrioritySupport = hasFeature('prioritySupport');
-  const hasAPIAccess = hasFeature('apiAccess');
-  const hasSSO = hasFeature('ssoIntegration');
 
   // Plan comparison helpers
   const isHigherPlan = (targetPlan: PlanType): boolean => {
@@ -105,8 +124,6 @@ export const useFeatureGating = () => {
     canUseCustomFields,
     canUseAI,
     hasPrioritySupport,
-    hasAPIAccess,
-    hasSSO,
     
     // Resource limits
     canCreate,

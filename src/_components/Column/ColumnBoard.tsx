@@ -16,9 +16,11 @@ import { ColumnProvider } from "../../context/ColumnProvider";
 import ListView from "@/_components/ListView";
 import { useStore } from "zustand";
 import useToggleViewStore from "@/store/toggleViewStore";
+import { DragDropContext, DropResult } from "react-beautiful-dnd";
+import { updateCardColumn, updateCardOrder } from "../../apis/CardApis";
 
 interface Column {
-  id: string;
+  id: number;
   title: string;
   order: number;
   cards: Array<any>; // Define proper card type
@@ -99,7 +101,80 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
       toast.success("Column created successfully!");
     },
     onError: () => {
-      toast.error("Something went wrong while creating the column 🔥");
+      toast.error("Something went wrong while creating the column ��");
+    },
+  });
+
+  // Drag and drop mutation for updating card column/order
+  const moveCardMutation = useMutation({
+    mutationFn: async ({ cardId, columnId, order }: { cardId: number; columnId: number; order: number }) => {
+      await updateCardColumn(accessToken, cardId, columnId);
+      await updateCardOrder(accessToken, cardId, order);
+    },
+    onMutate: async ({ cardId, columnId, order }) => {
+      // Cancel any outgoing refetches to prevent race conditions
+      await queryClient.cancelQueries({ queryKey: ["columns", "boards", boardId] });
+
+      // Snapshot the previous value for rollback
+      const previousColumns = queryClient.getQueryData(["columns", "boards", boardId]);
+
+      // Optimistically update the cache for immediate UI feedback
+      queryClient.setQueryData(["columns", "boards", boardId], (old: any) => {
+        if (!old || !Array.isArray(old)) return old;
+
+        const columnsCopy = [...old];
+        let cardToMove: any = null;
+
+        // First pass: find and remove the card from its source column
+        const updatedColumns = columnsCopy.map((column: any) => {
+          const cardIndex = column.cards.findIndex((card: any) => card.id === cardId);
+          if (cardIndex >= 0) {
+            cardToMove = { ...column.cards[cardIndex] };
+            return {
+              ...column,
+              cards: column.cards.filter((card: any) => card.id !== cardId)
+            };
+          }
+          return column;
+        });
+
+        // Second pass: add the card to the destination column
+        if (cardToMove) {
+          return updatedColumns.map((column: any) => {
+            if (column.id === columnId) {
+              const updatedCard = { ...cardToMove, columnId, order };
+              const newCards = [...column.cards, updatedCard].sort((a, b) => a.order - b.order);
+              
+              return {
+                ...column,
+                cards: newCards
+              };
+            }
+            return column;
+          });
+        }
+
+        return updatedColumns;
+      });
+
+      return { previousColumns };
+    },
+    onError: (error, _, context) => {
+      console.error("Error moving card:", error);
+      toast.error("Failed to move card");
+      
+      // Rollback to previous state on error
+      if (context?.previousColumns) {
+        queryClient.setQueryData(["columns", "boards", boardId], context.previousColumns);
+      }
+    },
+    onSettled: () => {
+      // Refetch after a short delay to ensure server state is synced
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: ["columns", "boards", boardId],
+        });
+      }, 500);
     },
   });
 
@@ -125,7 +200,82 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
     }, {});
   }, [columns]);
 
+  // Handle drag end with improved error handling and order calculation
+  const handleDragEnd = (result: DropResult) => {
+    const { destination, source, draggableId } = result;
 
+    // If dropped outside a droppable area or draggableId is invalid
+    if (!destination || !draggableId) {
+      return;
+    }
+
+    // If dropped in the same position, no action needed
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
+    }
+
+    // Parse IDs with validation
+    const sourceColumnId = parseInt(source.droppableId);
+    const destinationColumnId = parseInt(destination.droppableId);
+    const cardId = parseInt(draggableId);
+
+    // Validate parsed IDs
+    if (isNaN(sourceColumnId) || isNaN(destinationColumnId) || isNaN(cardId)) {
+      console.error('Invalid IDs in drag operation');
+      return;
+    }
+
+    // Find source and destination columns
+    const sourceColumn = columns?.find((col: any) => col.id === sourceColumnId);
+    const destinationColumn = columns?.find((col: any) => col.id === destinationColumnId);
+
+    if (!sourceColumn || !destinationColumn) {
+      console.error('Source or destination column not found');
+      return;
+    }
+
+    // Get destination cards and sort them by order for accurate positioning
+    const destinationCards = [...(destinationColumn.cards || [])].sort((a, b) => a.order - b.order);
+    let newOrder: number;
+
+    // Calculate new order with better precision
+    if (destinationCards.length === 0) {
+      newOrder = 1000; // Start with a reasonable base order
+    } else if (destination.index === 0) {
+      // Moving to top
+      const firstCard = destinationCards[0];
+      newOrder = Math.max(1, firstCard.order - 1000);
+    } else if (destination.index >= destinationCards.length) {
+      // Moving to bottom
+      const lastCard = destinationCards[destinationCards.length - 1];
+      newOrder = lastCard.order + 1000;
+    } else {
+      // Moving between cards - use more precision to avoid conflicts
+      const previousCard = destinationCards[destination.index - 1];
+      const nextCard = destinationCards[destination.index];
+      newOrder = (previousCard.order + nextCard.order) / 2;
+      
+      // If the difference is too small, recalculate with larger gaps
+      if (nextCard.order - previousCard.order < 2) {
+        newOrder = previousCard.order + 500;
+      }
+    }
+
+    // Prevent mutation if already in progress to avoid race conditions
+    if (moveCardMutation.isPending) {
+      return;
+    }
+
+    // Execute the move
+    moveCardMutation.mutate({
+      cardId,
+      columnId: destinationColumnId,
+      order: newOrder,
+    });
+  };
 
   useEffect(() => {
     if (showListInput) {
@@ -137,26 +287,32 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
     <>
       <Container fwdClassName="bg-transparent" title={title}>
         <div className="relative w-full h-full">
-          {view === "kanban" ? <ol className="absolute inset-0 flex items-start h-full gap-2 ">
-            {sortedColumns?.map((column: Column) => (
-              <ColumnProvider columnId={column.id} key={column.id}>
-                <ColumnView title={column.title} cards={column.cards} />
-              </ColumnProvider>
-            ))}
-            <div className="p-1 rounded-md">
-              {showListInput ? (
-                <NewColumnForm
-                  columnName={columnName}
-                  setColumnName={setColumnName}
-                  onAddColumn={handleAddColumn}
-                  onCancel={() => setShowListInput(false)}
-                  inputRef={inputRef}
-                />
-              ) : (
-                <ExpandAddColumnButton onClick={() => setShowListInput(true)} />
-              )}
-            </div>
-          </ol> : <ListView data={listViewData} />}
+          {view === "kanban" ? (
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <ol className="absolute inset-0 flex items-start h-full gap-2">
+                {sortedColumns?.map((column: Column) => (
+                  <ColumnProvider columnId={column.id.toString()} key={column.id}>
+                    <ColumnView title={column.title} cards={column.cards} columnId={column.id} />
+                  </ColumnProvider>
+                ))}
+                <div className="p-1 rounded-md">
+                  {showListInput ? (
+                    <NewColumnForm
+                      columnName={columnName}
+                      setColumnName={setColumnName}
+                      onAddColumn={handleAddColumn}
+                      onCancel={() => setShowListInput(false)}
+                      inputRef={inputRef}
+                    />
+                  ) : (
+                    <ExpandAddColumnButton onClick={() => setShowListInput(true)} />
+                  )}
+                </div>
+              </ol>
+            </DragDropContext>
+          ) : (
+            <ListView data={listViewData} />
+          )}
         </div>
       </Container>
     </>

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { Plus, ArrowUpDown, Trash, ChevronDown, Calendar, Flag, Clock, SortAsc } from "lucide-react";
@@ -12,7 +12,6 @@ import NewCardForm from "../../_components/Card/NewCardForm";
 
 import ColumnActionTooltipWrapper from "./ColumnActionTooltipWrapper";
 import CardsInColumn from "../Card/CardsInColumn";
-import { ColumnContext } from "../../context/ColumnProvider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,9 +20,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "../../components/ui/dropdown-menu";
+import { Droppable } from "react-beautiful-dnd";
 
 interface ColumnViewProps {
   title: string;
+  columnId: number;
   cards: Array<{
     id: number;
     title: string;
@@ -44,14 +45,13 @@ type SortOption = {
   sortFn: (a: any, b: any) => number;
 };
 
-const ColumnView = ({ title, cards }: ColumnViewProps) => {
+const ColumnView = ({ title, cards, columnId }: ColumnViewProps) => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isNewCardOpen, setIsNewCardOpen] = useState(false);
   const [currentSort, setCurrentSort] = useState<string>("manual");
 
   const { id: boardId } = useParams();
   const queryClient = useQueryClient();
-  const columnId = useContext(ColumnContext);
   const accessToken = Cookies.get("accessToken") as string;
 
   const sortOptions: SortOption[] = React.useMemo(() => [
@@ -308,7 +308,22 @@ const ColumnView = ({ title, cards }: ColumnViewProps) => {
           </div>
         </div>
 
-        <CardsInColumn columnName={title} cards={sortedCards} />
+        <Droppable droppableId={columnId.toString()}>
+          {(provided, snapshot) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className={cn(
+                "flex-1 h-full min-h-[200px] transition-all duration-300 ease-in-out",
+                snapshot.isDraggingOver && 
+                  "bg-emerald-50 dark:bg-emerald-900/20 border-2 border-dashed border-emerald-300 dark:border-emerald-500 rounded-xl mx-1 my-2 max-h-[85vh] shadow-inner"
+              )}
+            >
+              <CardsInColumn columnName={title} cards={sortedCards} />
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
       </li>
       <NewCardForm
         columnName={title}
@@ -319,7 +334,7 @@ const ColumnView = ({ title, cards }: ColumnViewProps) => {
         closeModal={closeDeleteModal}
         isOpen={isDeleteModalOpen}
         title="column"
-        id={columnId}
+        id={columnId.toString()}
         deleteItem={deleteColumnMutation}
       />
     </>

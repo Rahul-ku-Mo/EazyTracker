@@ -36,14 +36,14 @@ export const UpgradePrompt: React.FC<UpgradePromptProps> = ({
   variant = 'card',
   showIcon = true,
 }) => {
-  const { getUpgradeMessage, currentPlan, needsUpgrade } = useFeatureGating();
+  const { getUpgradeMessage, needsUpgrade } = useFeatureGating();
 
   // Don't show if user already has access
   if (!needsUpgrade(feature)) {
     return null;
   }
 
-  const requiredPlan: PlanType = feature === 'prioritySupport' || feature === 'apiAccess' || feature === 'ssoIntegration' 
+  const requiredPlan: PlanType = feature === 'prioritySupport' 
     ? 'enterprise' 
     : 'pro';
 
@@ -68,7 +68,7 @@ export const UpgradePrompt: React.FC<UpgradePromptProps> = ({
             </p>
           </div>
         </div>
-        <Link to="/billing">
+        <Link to="/workspace/billing">
           <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
             Upgrade
           </Button>
@@ -111,7 +111,7 @@ export const UpgradePrompt: React.FC<UpgradePromptProps> = ({
               View Plans
             </Button>
           </Link>
-          <Link to="/billing">
+          <Link to="/workspace/billing">
             <Button className={cn(
               "w-full sm:w-auto",
               requiredPlan === 'pro' 
@@ -178,7 +178,7 @@ export const UpgradePrompt: React.FC<UpgradePromptProps> = ({
               View Plans
             </Button>
           </Link>
-          <Link to="/billing" className="flex-1">
+          <Link to="/workspace/billing" className="flex-1">
             <Button className={cn(
               "w-full",
               requiredPlan === 'pro' 

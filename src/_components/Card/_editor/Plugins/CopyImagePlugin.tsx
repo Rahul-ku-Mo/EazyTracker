@@ -31,11 +31,29 @@ async function uploadImageToS3(file: File): Promise<string> {
     const { preSignedUrl: upload_URL , key } = urlResponse.data;
     
     // 2. Upload directly to S3
-     await axios.put(upload_URL, file);
+    await axios.put(upload_URL, file);
     
-    return `https://${import.meta.env.VITE_AWS_S3_BUCKET}.s3.ap-south-1.amazonaws.com/${key}`
+    // 3. Confirm upload with backend for tracking
+    await axios.post(`${import.meta.env.VITE_API_URL}/aws/confirm-upload`, {
+      key,
+      fileName,
+      fileSize: file.size,
+      mimeType: file.type
+    }, {
+      headers: {
+        'Authorization': `Bearer ${Cookies.get('accessToken')}`
+      }
+    });
+    
+    return `https://${import.meta.env.VITE_AWS_S3_BUCKET}.s3.${import.meta.env.VITE_AWS_REGION || 'ap-south-1'}.amazonaws.com/${key}`
   } catch (error) {
     console.error('Failed to upload image:', error);
+    
+    // Handle specific error cases
+    if ((error as any).response?.status === 403) {
+      throw new Error('Image upload limit reached. Please upgrade your plan to upload more images.');
+    }
+    
     throw error;
   }
 }
@@ -115,28 +133,59 @@ export const CopyImagePlugin = forwardRef((_, ref: Ref<any>) => {
                       isUploading: true
                     });
 
-                    const s3URL = await uploadImageToS3(file);
+                    try {
+                      const s3URL = await uploadImageToS3(file);
+                      
+                      // Success - update the image node with the S3 URL
+                      editor.update(() => {
+                        const nodes = editor._editorState._nodeMap;
+                        let targetNodeKey: string | null = null;
 
-                   
-                    editor.update(() => {
+                        nodes.forEach((node: any, key: any) => {
+                          if (node instanceof ImageNode && node.__src === dataURL) {
+                            targetNodeKey = key;
+                            setImageUploadStatusMap(new Map(imageUploadStatusMap.set(file.name, "completed")));
+                          }
+                        });
 
-                      const nodes = editor._editorState._nodeMap;
-                      let targetNodeKey: string | null = null;
-
-                      nodes.forEach((node: any, key: any) => {
-                        if (node instanceof ImageNode && node.__src === dataURL) {
-                          targetNodeKey = key;
-                          setImageUploadStatusMap(new Map(imageUploadStatusMap.set(file.name, "completed")));
+                        if (targetNodeKey) {
+                          const node = $getNodeByKey(targetNodeKey);
+                          if (node instanceof ImageNode) {
+                           node.setSrc(s3URL);
+                          }
                         }
                       });
+                    } catch (uploadError) {
+                      console.error('Image upload failed:', uploadError);
+                      
+                      // Mark upload as failed and show error
+                      setImageUploadStatusMap(new Map(imageUploadStatusMap.set(file.name, "failed")));
+                      
+                      // Remove the failed image node
+                      editor.update(() => {
+                        const nodes = editor._editorState._nodeMap;
+                        let targetNodeKey: string | null = null;
 
-                      if (targetNodeKey) {
-                        const node = $getNodeByKey(targetNodeKey);
-                        if (node instanceof ImageNode) {
-                         node.setSrc(s3URL);
+                        nodes.forEach((node: any, key: any) => {
+                          if (node instanceof ImageNode && node.__src === dataURL) {
+                            targetNodeKey = key;
+                          }
+                        });
+
+                        if (targetNodeKey) {
+                          const node = $getNodeByKey(targetNodeKey);
+                          if (node instanceof ImageNode) {
+                            node.remove();
+                          }
                         }
-                      }
-                    });
+                      });
+                      
+                      // Show user-friendly error message
+                      const errorMessage = (uploadError as any).message || 'Failed to upload image';
+                      alert(errorMessage); // You might want to use a toast notification instead
+                    }
+
+
 
                    
                   };
