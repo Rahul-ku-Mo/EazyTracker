@@ -805,6 +805,283 @@ const LandingPage = () => {
           </div>
         </section>
 
+        {/* Static Pricing Section */}
+        <section className={cn(
+          "py-16 sm:py-20 lg:py-24",
+          isDark ? "bg-zinc-900/50" : "bg-zinc-50"
+        )}>
+          <div className="container mx-auto px-4 sm:px-6">
+            <motion.div
+              className="text-center mb-12 sm:mb-16"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true, margin: "-100px" }}
+            >
+              <Badge className="mb-4 bg-emerald-100 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800">
+                Simple Pricing
+              </Badge>
+              <h2 className={cn(
+                "text-3xl sm:text-4xl md:text-5xl font-bold mb-6",
+                isDark ? "text-white" : "text-zinc-900"
+              )}>
+                Start Free, Scale as You{" "}
+                <span className="bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent">
+                  Grow
+                </span>
+              </h2>
+              <p className={cn(
+                "text-lg sm:text-xl max-w-2xl mx-auto",
+                isDark ? "text-zinc-300" : "text-zinc-600"
+              )}>
+                Choose the plan that fits your team. No hidden fees, no long-term commitments.
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
+              {/* Free Plan */}
+              <motion.div
+                className={cn(
+                  "relative p-6 sm:p-8 rounded-2xl border transition-all duration-300 hover:shadow-lg",
+                  isDark ? "bg-zinc-800 border-zinc-700" : "bg-white border-zinc-200"
+                )}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                viewport={{ once: true, margin: "-100px" }}
+              >
+                <div className="text-center mb-6">
+                  <div className="w-12 h-12 bg-gray-100 dark:bg-zinc-700 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Zap className="w-6 h-6 text-gray-600 dark:text-zinc-300" />
+                  </div>
+                  <h3 className={cn(
+                    "text-xl sm:text-2xl font-bold mb-2",
+                    isDark ? "text-white" : "text-zinc-900"
+                  )}>
+                    Free
+                  </h3>
+                  <p className={cn(
+                    "text-sm sm:text-base mb-4",
+                    isDark ? "text-zinc-400" : "text-zinc-600"
+                  )}>
+                    Perfect for personal projects
+                  </p>
+                  <div className="flex items-baseline justify-center">
+                    <span className={cn(
+                      "text-3xl sm:text-4xl font-bold",
+                      isDark ? "text-white" : "text-zinc-900"
+                    )}>
+                      $0
+                    </span>
+                    <span className={cn(
+                      "text-sm ml-1",
+                      isDark ? "text-zinc-400" : "text-zinc-500"
+                    )}>
+                      /month
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="space-y-3 mb-6">
+                  {[
+                    "Up to 3 projects",
+                    "5 team members",
+                    "Basic templates",
+                    "Email support",
+                    "Mobile app access"
+                  ].map((feature, index) => (
+                    <div key={index} className="flex items-start space-x-3">
+                      <Check className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                      <span className={cn(
+                        "text-sm sm:text-base",
+                        isDark ? "text-zinc-300" : "text-zinc-700"
+                      )}>
+                        {feature}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <Link to="/auth" className="block">
+                  <Button className="w-full" variant="outline">
+                    Get Started Free
+                  </Button>
+                </Link>
+              </motion.div>
+
+              {/* Pro Plan */}
+              <motion.div
+                className={cn(
+                  "relative p-6 sm:p-8 rounded-2xl border-2 transition-all duration-300 hover:shadow-lg ring-2 ring-emerald-500 scale-105",
+                  isDark ? "bg-zinc-800 border-emerald-500" : "bg-white border-emerald-500"
+                )}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                viewport={{ once: true, margin: "-100px" }}
+              >
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <Badge className="bg-emerald-500 text-white px-4 py-1">
+                    Most Popular
+                  </Badge>
+                </div>
+
+                <div className="text-center mb-6">
+                  <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Sparkles className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <h3 className={cn(
+                    "text-xl sm:text-2xl font-bold mb-2",
+                    isDark ? "text-white" : "text-zinc-900"
+                  )}>
+                    Pro
+                  </h3>
+                  <p className={cn(
+                    "text-sm sm:text-base mb-4",
+                    isDark ? "text-zinc-400" : "text-zinc-600"
+                  )}>
+                    Best for growing teams
+                  </p>
+                  <div className="flex items-baseline justify-center">
+                    <span className={cn(
+                      "text-3xl sm:text-4xl font-bold",
+                      isDark ? "text-white" : "text-zinc-900"
+                    )}>
+                      $12
+                    </span>
+                    <span className={cn(
+                      "text-sm ml-1",
+                      isDark ? "text-zinc-400" : "text-zinc-500"
+                    )}>
+                      /month
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="space-y-3 mb-6">
+                  {[
+                    "Unlimited projects",
+                    "25 team members",
+                    "Advanced templates",
+                    "Priority support",
+                    "Custom workflows",
+                    "Time tracking",
+                    "Advanced analytics"
+                  ].map((feature, index) => (
+                    <div key={index} className="flex items-start space-x-3">
+                      <Check className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                      <span className={cn(
+                        "text-sm sm:text-base",
+                        isDark ? "text-zinc-300" : "text-zinc-700"
+                      )}>
+                        {feature}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <Link to="/auth" className="block">
+                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
+                    Start Free Trial
+                  </Button>
+                </Link>
+              </motion.div>
+
+              {/* Enterprise Plan */}
+              <motion.div
+                className={cn(
+                  "relative p-6 sm:p-8 rounded-2xl border transition-all duration-300 hover:shadow-lg",
+                  isDark ? "bg-zinc-800 border-zinc-700" : "bg-white border-zinc-200"
+                )}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                viewport={{ once: true, margin: "-100px" }}
+              >
+                <div className="text-center mb-6">
+                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <h3 className={cn(
+                    "text-xl sm:text-2xl font-bold mb-2",
+                    isDark ? "text-white" : "text-zinc-900"
+                  )}>
+                    Enterprise
+                  </h3>
+                  <p className={cn(
+                    "text-sm sm:text-base mb-4",
+                    isDark ? "text-zinc-400" : "text-zinc-600"
+                  )}>
+                    For large organizations
+                  </p>
+                  <div className="flex items-baseline justify-center">
+                    <span className={cn(
+                      "text-3xl sm:text-4xl font-bold",
+                      isDark ? "text-white" : "text-zinc-900"
+                    )}>
+                      $49
+                    </span>
+                    <span className={cn(
+                      "text-sm ml-1",
+                      isDark ? "text-zinc-400" : "text-zinc-500"
+                    )}>
+                      /month
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="space-y-3 mb-6">
+                  {[
+                    "Everything in Pro",
+                    "Unlimited team members",
+                    "Advanced security",
+                    "SSO integration",
+                    "24/7 phone support",
+                    "Custom integrations",
+                    "Dedicated account manager"
+                  ].map((feature, index) => (
+                    <div key={index} className="flex items-start space-x-3">
+                      <Check className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                      <span className={cn(
+                        "text-sm sm:text-base",
+                        isDark ? "text-zinc-300" : "text-zinc-700"
+                      )}>
+                        {feature}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <Link to="/pricing" className="block">
+                  <Button className="w-full" variant="outline">
+                    Contact Sales
+                  </Button>
+                </Link>
+              </motion.div>
+            </div>
+
+            <motion.div
+              className="text-center mt-12"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              viewport={{ once: true }}
+            >
+              <p className={cn(
+                "text-sm sm:text-base mb-4",
+                isDark ? "text-zinc-400" : "text-zinc-600"
+              )}>
+                All plans include a 14-day free trial. No credit card required.
+              </p>
+              <Link to="/pricing">
+                <Button variant="ghost" className="text-emerald-600 hover:text-emerald-700">
+                  View detailed pricing →
+                </Button>
+              </Link>
+            </motion.div>
+          </div>
+        </section>
+
         {/* CTA Section */}
         <section className="py-16 sm:py-20 lg:py-24 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-emerald-600 to-cyan-600" />

@@ -141,9 +141,9 @@ const PrivacyPage: React.FC = () => {
             </p>
 
             <Alert className="max-w-2xl mx-auto border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20">
-              <Shield className="h-4 w-4 text-emerald-600" />
-              <AlertDescription className="text-emerald-800 dark:text-emerald-400">
-                <strong>Last Updated:</strong> December 16, 2024. We are GDPR compliant and committed to data protection.
+              <AlertDescription className="text-emerald-800 dark:text-emerald-400 flex items-center gap-2">
+              <Shield className="size-4 text-emerald-600" />
+                <strong>Last Updated:</strong> June 5, 2025. We are GDPR compliant and committed to data protection.
               </AlertDescription>
             </Alert>
           </motion.div>
@@ -214,7 +214,7 @@ const PrivacyPage: React.FC = () => {
                     "flex items-start space-x-3 text-xl font-semibold",
                     isDark ? "text-white" : "text-zinc-900"
                   )}>
-                    <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                    <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
                       {section.icon ? (
                         <section.icon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                       ) : (

@@ -107,9 +107,9 @@ const TermsPage: React.FC = () => {
             </p>
 
             <Alert className="max-w-2xl mx-auto border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20">
-              <AlertTriangle className="h-4 w-4 text-amber-600" />
-              <AlertDescription className="text-amber-800 dark:text-amber-400">
-                <strong>Last Updated:</strong> December 16, 2024. By using PulseBoard, you agree to these terms.
+              <AlertDescription className="text-amber-800 dark:text-amber-400 flex items-center gap-2">
+              <AlertTriangle className="size-4 text-amber-600" />
+                <strong>Last Updated:</strong> June 5, 2025. By using PulseBoard, you agree to these terms.
               </AlertDescription>
             </Alert>
           </motion.div>
@@ -131,7 +131,7 @@ const TermsPage: React.FC = () => {
                     "flex items-start space-x-3 text-xl font-semibold",
                     isDark ? "text-white" : "text-zinc-900"
                   )}>
-                    <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                    <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center flex-shrink-0git stat">
                       <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <span>{section.title}</span>
