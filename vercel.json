@@ -2,6 +2,26 @@
     "rewrites": [
         {
             "source": "/(.*)",
+            "destination": "/",
+            "has": [
+                {
+                    "type": "host",
+                    "value": "(?<subdomain>www|pulseboard)\\.pulseboard\\.co\\.in"
+                }
+            ]
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/workspace",
+            "has": [
+                {
+                    "type": "host",
+                    "value": "app\\.pulseboard\\.co\\.in"
+                }
+            ]
+        },
+        {
+            "source": "/(.*)",
             "destination": "/"
         }
     ]
