@@ -971,36 +971,36 @@ const LandingPage = () => {
                   )}
                 >
                   <li>
-                    <a
-                      href="/feedback"
+                    <Link
+                      to="/feedback"
                       className="hover:text-emerald-500 transition-colors"
                     >
                       Feedback
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
-                      href="/support"
+                    <Link
+                      to="/support"
                       className="hover:text-emerald-500 transition-colors"
                     >
                       Contact
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
-                      href="#"
+                    <Link
+                      to="/terms"
                       className="hover:text-emerald-500 transition-colors"
                     >
-                      Status
-                    </a>
+                      Terms
+                    </Link>
                   </li>
                   <li>
-                    <a
-                      href="#"
+                    <Link
+                      to="/privacy"
                       className="hover:text-emerald-500 transition-colors"
                     >
-                      Community
-                    </a>
+                      Privacy
+                    </Link>
                   </li>
                 </ul>
               </div>

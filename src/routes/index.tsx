@@ -21,6 +21,8 @@ import {
   OnboardingPage,
   TeamManagementPage,
   ComingSoonPage,
+  TermsPage,
+  PrivacyPage,
 } from "@/routes/element";
 
 import { KanbanProvider } from "@/context/KanbanProvider";
@@ -136,6 +138,14 @@ const Router = () => {
     { 
       path: "/coming-soon", 
       element: <ComingSoonPage />
+    },
+    { 
+      path: "/terms", 
+      element: <TermsPage />
+    },
+    { 
+      path: "/privacy", 
+      element: <PrivacyPage />
     },
     { 
       path: "/feedback", 

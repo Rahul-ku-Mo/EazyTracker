@@ -78,3 +78,7 @@ export const FeedbackPage = Loadable(lazy(() => import("../pages/FeedbackPage"))
 export const SupportPage = Loadable(lazy(() => import("../pages/SupportPage")));
 
 export const ComingSoonPage = Loadable(lazy(() => import("../pages/ComingSoonPage")));
+
+export const TermsPage = Loadable(lazy(() => import("../pages/TermsPage")));
+
+export const PrivacyPage = Loadable(lazy(() => import("../pages/PrivacyPage")));

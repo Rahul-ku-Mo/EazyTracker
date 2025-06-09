@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+Allow: /pricing
+Allow: /support
+Allow: /feedback
+
+# Block private application routes
+Disallow: /workspace
+Disallow: /auth
+Disallow: /onboarding
+Disallow: /setting
+Disallow: /team
+Disallow: /inbox
+Disallow: /conversation
+
+# Block API routes
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://www.pulseboard.co.in/sitemap.xml
+
+# Crawl delay (optional)
+Crawl-delay: 1 

@@ -490,8 +490,8 @@ const PricingPage: React.FC = () => {
               )}>
                 <li><Link to="/support" className="hover:text-emerald-500 transition-colors">Help Center</Link></li>
                 <li><Link to="/support" className="hover:text-emerald-500 transition-colors">Contact</Link></li>
-                <li><a href="#" className="hover:text-emerald-500 transition-colors">Status</a></li>
-                <li><a href="#" className="hover:text-emerald-500 transition-colors">Community</a></li>
+                <li><Link to="/terms" className="hover:text-emerald-500 transition-colors">Terms</Link></li>
+                <li><Link to="/privacy" className="hover:text-emerald-500 transition-colors">Privacy</Link></li>
               </ul>
             </div>
           </div>
