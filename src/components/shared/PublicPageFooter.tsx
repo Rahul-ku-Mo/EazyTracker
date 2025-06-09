@@ -45,15 +45,14 @@ const PublicPageFooter: React.FC = () => {
             )}>
               Product
             </h3>
-            <ul className={cn(
-              "space-y-2 text-sm",
-              isDark ? "text-zinc-400" : "text-zinc-600"
-            )}>
-              <li><a href="#" className="hover:text-emerald-500 transition-colors">Features</a></li>
-              <li><Link to="/pricing" className="hover:text-emerald-500 transition-colors">Pricing</Link></li>
-              <li><span className="line-through opacity-50 cursor-not-allowed">Integrations</span></li>
-              <li><span className="line-through opacity-50 cursor-not-allowed">API</span></li>
-            </ul>
+                          <ul className={cn(
+                "space-y-2 text-sm",
+                isDark ? "text-zinc-400" : "text-zinc-600"
+              )}>
+                <li><Link to="/pricing" className="hover:text-emerald-500 transition-colors">Pricing</Link></li>
+                <li><span className="line-through opacity-50 cursor-not-allowed">Integrations</span></li>
+                <li><span className="line-through opacity-50 cursor-not-allowed">API</span></li>
+              </ul>
           </div>
           
           <div>

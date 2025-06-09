@@ -4,11 +4,71 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check, Crown, Sparkles, Zap, CheckCircle, ArrowRight, Sun, Moon } from 'lucide-react';
-import { useGetPlans } from '@/hooks/useBilling';
-import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeProvider';
+
+// Static pricing data
+const staticPlans = [
+  {
+    "id": "free",
+    "name": "Free Trial",
+    "description": "Perfect for trying out PulseBoard",
+    "price": 0,
+    "currency": "usd",
+    "interval": "month",
+    "features": [
+      "2 projects",
+      "3 team members",
+      "25 tasks per project",
+      "100 image uploads",
+      "Basic task management",
+      "7-day activity history",
+      "Community support"
+    ]
+  },
+  {
+    "id": "pro",
+    "name": "Professional",
+    "description": "For growing teams and small businesses",
+    "price": 12,
+    "currency": "usd",
+    "interval": "month",
+    "features": [
+      "100 projects",
+      "15 team members",
+      "500 tasks per project",
+      "1,000 image uploads",
+      "Advanced analytics & reporting",
+      "90-day activity history",
+      "Time tracking",
+      "Custom fields",
+      "AI-powered insights",
+      "Email support"
+    ]
+  },
+  {
+    "id": "enterprise",
+    "name": "Enterprise",
+    "description": "For large teams and organizations",
+    "price": 25,
+    "currency": "usd",
+    "interval": "month",
+    "features": [
+      "Unlimited projects",
+      "Unlimited team members",
+      "Unlimited tasks",
+      "Unlimited image uploads",
+      "Advanced analytics & reporting",
+      "Unlimited activity history",
+      "Time tracking",
+      "Custom fields",
+      "AI-powered insights",
+      "Advanced team management",
+      "Priority support"
+    ]
+  }
+];
 
 const planIcons = {
   free: Zap,
@@ -23,7 +83,6 @@ const planColors = {
 };
 
 const PricingPage: React.FC = () => {
-  const { data: plans, isLoading } = useGetPlans();
   const { setTheme, isDark } = useTheme();
 
   const formatPrice = (price: number, currency: string) => {
@@ -179,148 +238,127 @@ const PricingPage: React.FC = () => {
         isDark ? "bg-zinc-800/50" : "bg-gray-50"
       )}>
         <div className="container max-w-6xl mx-auto">
-          {isLoading ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 max-w-4xl mx-auto">
-              {Array.from({ length: 2 }).map((_, i) => (
-                <Card key={i} className="relative">
-                  <CardHeader>
-                    <Skeleton className="h-6 w-24" />
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-8 w-20" />
+          <div className="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+            {staticPlans.map((plan) => {
+              const Icon = planIcons[plan.id as keyof typeof planIcons] || Zap;
+              const isPro = plan.id === 'pro';
+              const isEnterprise = plan.id === 'enterprise';
+
+              return (
+                <Card
+                  key={plan.id}
+                  className={cn(
+                    'relative transition-all duration-300 hover:shadow-lg',
+                    planColors[plan.id as keyof typeof planColors],
+                    isPro ? 'ring-2 ring-emerald-500 shadow-lg scale-105' : ''
+                  )}
+                >
+                  {isPro && (
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <Badge className="bg-emerald-500 text-white px-4 py-1">
+                        Most Popular
+                      </Badge>
+                    </div>
+                  )}
+
+                  <CardHeader className="text-center pb-6 sm:pb-8">
+                    <div className="flex items-center justify-center space-x-2 mb-4">
+                      <div className={cn(
+                        'w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center',
+                        isPro 
+                          ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' 
+                          : 'bg-gray-100 dark:bg-zinc-700 text-gray-600 dark:text-zinc-300'
+                      )}>
+                        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                      </div>
+                    </div>
+                    
+                    <CardTitle className={cn(
+                      "text-xl sm:text-2xl mb-2",
+                      isDark ? "text-white" : "text-zinc-900"
+                    )}>{plan.name}</CardTitle>
+                    <CardDescription className={cn(
+                      "mb-4 sm:mb-6 text-sm sm:text-base",
+                      isDark ? "text-zinc-400" : "text-zinc-600"
+                    )}>
+                      {plan.description}
+                    </CardDescription>
+
+                    <div className="space-y-1">
+                      <div className="flex items-baseline justify-center space-x-1">
+                        <span className={cn(
+                          "text-3xl sm:text-4xl font-bold",
+                          isDark ? "text-white" : "text-zinc-900"
+                        )}>
+                          {plan.price === 0 ? 'Free' : formatPrice(plan.price, plan.currency)}
+                        </span>
+                        {plan.price > 0 && (
+                          <span className={cn(
+                            "text-sm sm:text-base",
+                            isDark ? "text-zinc-400" : "text-zinc-500"
+                          )}>/{plan.interval}</span>
+                        )}
+                      </div>
+                      {plan.price > 0 && (
+                        <p className={cn(
+                          "text-xs sm:text-sm",
+                          isDark ? "text-zinc-400" : "text-zinc-500"
+                        )}>
+                          Billed monthly, cancel anytime
+                        </p>
+                      )}
+                    </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {Array.from({ length: 6 }).map((_, j) => (
-                        <Skeleton key={j} className="h-4 w-full" />
+
+                  <CardContent className="space-y-6">
+                    <div className="space-y-4">
+                      {plan.features.map((feature, index) => (
+                        <div key={index} className="flex items-start space-x-3">
+                          <Check className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                          <span className={cn(
+                            isDark ? "text-zinc-300" : "text-zinc-700"
+                          )}>{feature}</span>
+                        </div>
                       ))}
+                    </div>
+
+                    <div className={cn(
+                      "pt-6 border-t",
+                      isDark ? "border-zinc-700" : "border-gray-200"
+                    )}>
+                      {plan.id === 'free' ? (
+                        <Link to="/auth" className="block">
+                          <Button className="w-full h-10 sm:h-12 text-sm sm:text-lg" variant="outline">
+                            Start Free Trial
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Link to="/auth" className="block">
+                          <Button className={cn(
+                            "w-full h-10 sm:h-12 text-sm sm:text-lg",
+                            isPro 
+                              ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
+                              : isEnterprise
+                              ? "bg-purple-600 hover:bg-purple-700 text-white"
+                              : "bg-gray-900 hover:bg-gray-800 text-white"
+                          )}>
+                            Start Free Trial
+                            <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                          </Button>
+                        </Link>
+                      )}
+                      <p className={cn(
+                        "text-xs text-center mt-3",
+                        isDark ? "text-zinc-400" : "text-zinc-500"
+                      )}>
+                        14-day free trial • No credit card required
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
-              {plans?.map((plan) => {
-                const Icon = planIcons[plan.id as keyof typeof planIcons] || Zap;
-                                  const isPro = plan.id === 'pro';
-                  const isEnterprise = plan.id === 'enterprise';
-
-                return (
-                  <Card
-                    key={plan.id}
-                    className={cn(
-                      'relative transition-all duration-300 hover:shadow-lg',
-                      planColors[plan.id as keyof typeof planColors],
-                      isPro ? 'ring-2 ring-emerald-500 shadow-lg scale-105' : ''
-                    )}
-                  >
-                    {isPro && (
-                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                        <Badge className="bg-emerald-500 text-white px-4 py-1">
-                          Most Popular
-                        </Badge>
-                      </div>
-                    )}
-
-                    <CardHeader className="text-center pb-6 sm:pb-8">
-                      <div className="flex items-center justify-center space-x-2 mb-4">
-                        <div className={cn(
-                          'w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center',
-                          isPro 
-                            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' 
-                            : 'bg-gray-100 dark:bg-zinc-700 text-gray-600 dark:text-zinc-300'
-                        )}>
-                          <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
-                        </div>
-                      </div>
-                      
-                      <CardTitle className={cn(
-                        "text-xl sm:text-2xl mb-2",
-                        isDark ? "text-white" : "text-zinc-900"
-                      )}>{plan.name}</CardTitle>
-                      <CardDescription className={cn(
-                        "mb-4 sm:mb-6 text-sm sm:text-base",
-                        isDark ? "text-zinc-400" : "text-zinc-600"
-                      )}>
-                        {plan.description}
-                      </CardDescription>
-
-                      <div className="space-y-1">
-                        <div className="flex items-baseline justify-center space-x-1">
-                          <span className={cn(
-                            "text-3xl sm:text-4xl font-bold",
-                            isDark ? "text-white" : "text-zinc-900"
-                          )}>
-                            {plan.price === 0 ? 'Free' : formatPrice(plan.price, plan.currency)}
-                          </span>
-                          {plan.price > 0 && (
-                            <span className={cn(
-                              "text-sm sm:text-base",
-                              isDark ? "text-zinc-400" : "text-zinc-500"
-                            )}>/{plan.interval}</span>
-                          )}
-                        </div>
-                        {plan.price > 0 && (
-                          <p className={cn(
-                            "text-xs sm:text-sm",
-                            isDark ? "text-zinc-400" : "text-zinc-500"
-                          )}>
-                            Billed monthly, cancel anytime
-                          </p>
-                        )}
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="space-y-6">
-                      <div className="space-y-4">
-                        {plan.features.map((feature, index) => (
-                          <div key={index} className="flex items-start space-x-3">
-                            <Check className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                            <span className={cn(
-                              isDark ? "text-zinc-300" : "text-zinc-700"
-                            )}>{feature}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className={cn(
-                        "pt-6 border-t",
-                        isDark ? "border-zinc-700" : "border-gray-200"
-                      )}>
-                        {plan.id === 'free' ? (
-                          <Link to="/auth" className="block">
-                            <Button className="w-full h-10 sm:h-12 text-sm sm:text-lg" variant="outline">
-                              Start Free Trial
-                            </Button>
-                          </Link>
-                        ) : (
-                          <Link to="/auth" className="block">
-                            <Button className={cn(
-                              "w-full h-10 sm:h-12 text-sm sm:text-lg",
-                              isPro 
-                                ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
-                                : isEnterprise
-                                ? "bg-purple-600 hover:bg-purple-700 text-white"
-                                : "bg-gray-900 hover:bg-gray-800 text-white"
-                            )}>
-                              Start Free Trial
-                              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
-                            </Button>
-                          </Link>
-                        )}
-                        <p className={cn(
-                          "text-xs text-center mt-3",
-                          isDark ? "text-zinc-400" : "text-zinc-500"
-                        )}>
-                          14-day free trial • No credit card required
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
+              );
+            })}
+          </div>
         </div>
       </section>
 
@@ -470,7 +508,6 @@ const PricingPage: React.FC = () => {
                 "space-y-2 text-sm",
                 isDark ? "text-zinc-400" : "text-zinc-600"
               )}>
-                <li><a href="#" className="hover:text-emerald-500 transition-colors">Features</a></li>
                 <li><Link to="/pricing" className="hover:text-emerald-500 transition-colors">Pricing</Link></li>
                 <li><span className="line-through opacity-50 cursor-not-allowed">Integrations</span></li>
                 <li><span className="line-through opacity-50 cursor-not-allowed">API</span></li>
