@@ -5,7 +5,6 @@ import {
   Users, 
   Settings, 
   Mail, 
-  Ban, 
   Crown,
   Eye,
   EyeOff,

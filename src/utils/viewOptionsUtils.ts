@@ -83,9 +83,10 @@ export const orderCards = (cards: CardItem[], viewOptions: ViewOptions): CardIte
         return new Date(card.createdAt).getTime();
       case 'updated':
         return new Date(card.updatedAt).getTime();
-      case 'priority':
+      case 'priority': {
         const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
         return priorityOrder[card.priority as keyof typeof priorityOrder] || 0;
+      }
       case 'dueDate':
         return card.dueDate ? new Date(card.dueDate).getTime() : Infinity;
       case 'manual':
