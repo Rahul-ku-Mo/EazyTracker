@@ -20,6 +20,7 @@ import {
   BoardSettingsPage,
   OnboardingPage,
   TeamManagementPage,
+  ComingSoonPage,
 } from "@/routes/element";
 
 import { KanbanProvider } from "@/context/KanbanProvider";
@@ -28,6 +29,7 @@ import { AuthContext, AuthContextProvider } from "@/context/AuthContext";
 import GoogleCallback from "@/pages/callback/GoogleCallback";
 import RequireAuth from "@/_components/shared/RequireAuth";
 import JoinTeamPage from "@/pages/JoinTeamPage";
+import LaunchGuard from "@/components/LaunchGuard";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -132,52 +134,70 @@ const Router = () => {
       ) 
     },
     { 
+      path: "/coming-soon", 
+      element: <ComingSoonPage />
+    },
+    { 
       path: "/feedback", 
       element: (
-        <AuthContextProvider>
-          <WithContexts Component={FeedbackPage} />
-        </AuthContextProvider>
+        <LaunchGuard>
+          <AuthContextProvider>
+            <WithContexts Component={FeedbackPage} />
+          </AuthContextProvider>
+        </LaunchGuard>
       ) 
     },
     { 
       path: "/support", 
       element: (
-        <AuthContextProvider>
-          <WithContexts Component={SupportPage} />
-        </AuthContextProvider>
+        <LaunchGuard>
+          <AuthContextProvider>
+            <WithContexts Component={SupportPage} />
+          </AuthContextProvider>
+        </LaunchGuard>
       ) 
     },
     {
       path: "/auth",
       element: (
-        <AuthContextProvider>
-          <AuthRoute>
-            <AuthPage />
-          </AuthRoute>
-        </AuthContextProvider>
+        <LaunchGuard>
+          <AuthContextProvider>
+            <AuthRoute>
+              <AuthPage />
+            </AuthRoute>
+          </AuthContextProvider>
+        </LaunchGuard>
       ),
     },
     {
       path: "/join",
       element: (
-        <AuthContextProvider>
-          <JoinTeamPage />
-        </AuthContextProvider>
+        <LaunchGuard>
+          <AuthContextProvider>
+            <JoinTeamPage />
+          </AuthContextProvider>
+        </LaunchGuard>
       ),
     },
     {
       element: (
-        <AuthContextProvider>
-          <RequireAuth />
-        </AuthContextProvider>
+        <LaunchGuard>
+          <AuthContextProvider>
+            <RequireAuth />
+          </AuthContextProvider>
+        </LaunchGuard>
       ),
       children: authenticatedRoutes,
     },
     {
       path: "/auth/google/callback",
-      element: <GoogleCallback />,
+      element: (
+        <LaunchGuard>
+          <GoogleCallback />
+        </LaunchGuard>
+      ),
     },
-    { path: "*", element: <NotFoundPage /> },
+    { path: "*", element: <LaunchGuard><NotFoundPage /></LaunchGuard> },
   ];
 
   return useRoutes(routes);

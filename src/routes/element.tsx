@@ -76,3 +76,5 @@ export const PricingPage = Loadable(lazy(() => import("../pages/PricingPage")));
 export const FeedbackPage = Loadable(lazy(() => import("../pages/FeedbackPage")));
 
 export const SupportPage = Loadable(lazy(() => import("../pages/SupportPage")));
+
+export const ComingSoonPage = Loadable(lazy(() => import("../pages/ComingSoonPage")));
