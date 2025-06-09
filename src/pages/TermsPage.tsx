@@ -172,7 +172,7 @@ const TermsPage: React.FC = () => {
                 <div className="space-y-2 text-emerald-600 dark:text-emerald-400">
                   <p><strong>Email:</strong> <a href="mailto:support@pulseboard.co.in" className="underline hover:no-underline">support@pulseboard.co.in</a></p>
                   <p><strong>Website:</strong> <a href="https://www.pulseboard.co.in" className="underline hover:no-underline">www.pulseboard.co.in</a></p>
-                  <p><strong>Address:</strong> India</p>
+                 
                 </div>
               </CardContent>
             </Card>
