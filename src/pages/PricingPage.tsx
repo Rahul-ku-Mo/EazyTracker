@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Crown, Sparkles, Zap, CheckCircle, ArrowRight, Sun, Moon } from 'lucide-react';
+import { Check, Crown, Sparkles, Zap, CheckCircle, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeProvider';
@@ -83,7 +83,7 @@ const planColors = {
 };
 
 const PricingPage: React.FC = () => {
-  const { setTheme, isDark } = useTheme();
+  const { isDark } = useTheme();
 
   const formatPrice = (price: number, currency: string) => {
     const currencySymbol = currency === 'usd' ? '$' : '₹';
@@ -129,31 +129,6 @@ const PricingPage: React.FC = () => {
               <Link to="/pricing" className="hidden sm:block">
                 <Button variant="ghost" className="text-sm text-emerald-600 font-medium">
                   Pricing
-                </Button>
-              </Link>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setTheme(isDark ? "light" : "dark")}
-                className="p-2 w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-300"
-                aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
-              >
-                <motion.div
-                  initial={false}
-                  animate={{ rotate: isDark ? 180 : 0 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                  className="w-4 h-4 sm:w-5 sm:h-5"
-                >
-                  {isDark ? (
-                    <Sun className="w-full h-full text-yellow-500" />
-                  ) : (
-                    <Moon className="w-full h-full text-slate-600 dark:text-slate-400" />
-                  )}
-                </motion.div>
-              </Button>
-              <Link to="/auth" className="hidden sm:block">
-                <Button variant="ghost" className="text-sm">
-                  Sign In
                 </Button>
               </Link>
               <Link to="/auth">
