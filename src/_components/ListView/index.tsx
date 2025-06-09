@@ -1,6 +1,14 @@
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
-import { CalendarIcon, ArrowRightIcon, TagIcon, DatabaseZap, Library, Flag, User } from 'lucide-react';
+import { 
+  CalendarIcon, 
+  ArrowRightIcon, 
+  TagIcon, 
+  DatabaseZap, 
+  Library, 
+  Flag, 
+  User
+} from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -43,7 +51,10 @@ interface CardItem {
 
 interface ListViewProps {
   data: {
-    [key: string]: CardItem[];
+    [key: string]: {
+      id: number;
+      cards: CardItem[];
+    };
   };
   onEditItem?: (itemId: number) => void;
   onDeleteItem?: (itemId: number) => void;
@@ -179,11 +190,17 @@ const ListView = ({
     }
 
     // Find column IDs from titles
-    const sourceCards = data[sourceColumnTitle] || [];
-    const destinationCards = [...(data[destinationColumnTitle] || [])].sort((a, b) => a.order - b.order);
+    const sourceColumnData = data[sourceColumnTitle];
+    const destinationColumnData = data[destinationColumnTitle];
     
-    const sourceColumnId = sourceCards[0]?.columnId;
-    const destinationColumnId = destinationCards[0]?.columnId || sourceCards[0]?.columnId; // Fallback for empty columns
+    if (!sourceColumnData || !destinationColumnData) {
+      console.error('Source or destination column data not found');
+      return;
+    }
+    
+    const sourceColumnId = sourceColumnData.id;
+    const destinationColumnId = destinationColumnData.id;
+    const destinationCards = [...(destinationColumnData.cards || [])].sort((a, b) => a.order - b.order);
 
     if (!sourceColumnId || !destinationColumnId) {
       console.error('Source or destination column ID not found');
@@ -257,7 +274,9 @@ const ListView = ({
           animate="visible"
           variants={listVariants}
         >
-          {Object.entries(data).map(([columnTitle, items]) => (
+          {Object.entries(data).map(([columnTitle, columnData]) => {
+            const items = columnData.cards || [];
+            return (
             <div key={columnTitle} className="mb-6">
               <h2 className="text-sm flex items-center gap-2 font-bold px-4 py-2 text-zinc-900 dark:text-zinc-100 w-full border dark:bg-zinc-800 bg-zinc-100 border-zinc-200 dark:border-zinc-800">
                 <Library strokeWidth={2} className="size-4 " />
@@ -270,8 +289,9 @@ const ListView = ({
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     className={cn(
-                      "min-h-[100px] max-h-[90vh] transition-all duration-300 ease-in-out",
-                      snapshot.isDraggingOver && "bg-emerald-50 dark:bg-emerald-900/20 border-2 border-dashed border-emerald-300 dark:border-emerald-500 rounded-xl p-3 max-h-[90vh] overflow-y-auto shadow-inner"
+                      "min-h-[100px] transition-all duration-300 ease-in-out",
+                      snapshot.isDraggingOver && "bg-emerald-50 dark:bg-emerald-900/20 border-2 border-dashed border-emerald-300 dark:border-emerald-500 rounded-lg p-3 shadow-inner",
+                      items.length === 0 && "border-2 border-dashed border-emerald-300/50 dark:border-emerald-500/50 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/10"
                     )}
                   >
                     {items.map((item, index) => {
@@ -329,7 +349,7 @@ const ListView = ({
                                       className="flex items-center gap-1 hover:bg-muted rounded px-2 py-1 transition-colors"
                                       onClick={(e) => e.stopPropagation()}
                                     >
-                                      {item.priority ? (
+                                      {item.priority && (item.priority === 'urgent' || item.priority === 'high') ? (
                                         <Badge className={`text-xs px-1.5 py-0.5 cursor-pointer ${priorityConfig[item.priority]?.color}`}>
                                           <Flag className="h-3 w-3 mr-1" />
                                           {priorityConfig[item.priority]?.label}
@@ -443,28 +463,22 @@ const ListView = ({
                                   >
                                     <TagIcon className="h-3 w-3 text-zinc-400" />
                                     <div className="flex gap-1">
-                                      {item.labels.slice(0, 2).map((tag, index) => {
-                                        const colorVariants = [
-                                          "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700",
-                                          "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700", 
-                                          "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700",
-                                          "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700",
-                                          "bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-700"
-                                        ];
-                                        const colorClass = colorVariants[index % colorVariants.length];
-                                        
-                                        return (
-                                          <Badge 
-                                            key={index} 
-                                            variant="secondary" 
-                                            className={`text-xs px-1.5 py-0.5 ${colorClass}`}
-                                          >
-                                            {tag}
-                                          </Badge>
-                                        );
-                                      })}
-                                      {item.labels.length > 2 && (
-                                        <span className="text-xs text-zinc-400">+{item.labels.length - 2}</span>
+                                      {item.labels.slice(0, 1).map((tag, index) => (
+                                        <Badge 
+                                          key={index} 
+                                          variant="secondary" 
+                                          className="text-xs px-1.5 py-0.5 font-medium border transition-colors hover:opacity-80 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700"
+                                        >
+                                          {tag}
+                                        </Badge>
+                                      ))}
+                                      {item.labels.length > 1 && (
+                                        <Badge 
+                                          variant="outline"
+                                          className="text-xs px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-600"
+                                        >
+                                          +{item.labels.length - 1}
+                                        </Badge>
                                       )}
                                     </div>
                                   </div>
@@ -548,7 +562,8 @@ const ListView = ({
                 )}
               </Droppable>
             </div>
-          ))}
+            );
+          })}
           
           {/* Empty state when no data at all */}
           {Object.keys(data).length === 0 && (

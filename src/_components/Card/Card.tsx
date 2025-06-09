@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   AlertCircle,
   Minus,
+  User,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Badge } from "../../components/ui/badge";
@@ -31,17 +32,46 @@ import {
   AvatarImage,
   AvatarFallback,
 } from "../../components/ui/avatar";
-
+import { ViewOptions } from "@/store/useViewOptionsStore";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../../components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "../../components/ui/popover";
+import { Calendar as CalendarComponent } from "../../components/ui/calendar";
+import { Button } from "../../components/ui/button";
+import { useMembers } from "../../hooks/useMembers";
+import { useParams } from "react-router-dom";
+import { formatDistanceToNow } from "date-fns";
+import { TUser } from "../../types";
+import { Input } from "../../components/ui/input";
 
 interface CardProps {
   columnName: string;
+  viewOptions?: ViewOptions;
 }
 
-const CardTitle = ({ title, isCompleted }: { title: string; isCompleted?: boolean }) => (
+const CardTitle = ({ title, isCompleted, cardId, showCardId }: { 
+  title: string; 
+  isCompleted?: boolean;
+  cardId?: number;
+  showCardId?: boolean;
+}) => (
   <h3 className={cn(
     "pb-2 text-base font-bold truncate line-clamp-1 text-foreground",
     isCompleted && "line-through text-zinc-500 dark:text-zinc-400"
   )}>
+    {showCardId && cardId && (
+      <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400 mr-2">
+        #{cardId}
+      </span>
+    )}
     {title}
   </h3>
 );
@@ -102,17 +132,19 @@ const getPriorityStyles = (priority?: string) => {
 const getPriorityIcon = (priority?: string) => {
   switch (priority?.toLowerCase()) {
     case "urgent":
-      return <AlertCircle className="w-3 h-3 text-red-500" />;
+      return <AlertCircle className="w-3 h-3 text-white" />;
     case "high":
-      return <AlertTriangle className="w-3 h-3 text-orange-500" />;
+      return <AlertTriangle className="w-3 h-3 text-white" />;
     case "medium":
-      return <Circle className="w-3 h-3 text-blue-500" />;
+      return <Circle className="w-3 h-3 text-white" />;
     case "low":
-      return <Circle className="w-3 h-3 text-green-500" />;
+      return <Circle className="w-3 h-3 text-white" />;
     default:
-      return <Minus className="w-3 h-3 text-gray-400" />;
+      return <Minus className="w-3 h-3 text-white" />;
   }
 };
+
+
 
 const CardFooter = ({
   dueDate,
@@ -122,6 +154,7 @@ const CardFooter = ({
   priority,
   labels,
   status,
+  cardId,
 }: {
   dueDate?: Date;
   attachmentsCount?: number;
@@ -141,8 +174,45 @@ const CardFooter = ({
     isOnTime: boolean | null;
     daysOverdue: number;
   };
+  cardId: number;
 }) => {
   const priorityStyles = getPriorityStyles(priority);
+  const { id } = useParams();
+  const { members } = useMembers(id as string);
+  const { updateCardMutation } = useCardMutation();
+
+  const updatePriority = (newPriority: string) => {
+    updateCardMutation.mutate({
+      priority: newPriority,
+      cardId,
+    });
+  };
+
+  const updateAssignee = (userId: string) => {
+    updateCardMutation.mutate({
+      cardId,
+      assigneeId: userId,
+    });
+  };
+
+  const updateDueDate = (date: Date | null) => {
+    updateCardMutation.mutate({
+      cardId,
+      dueDate: date || undefined,
+    });
+  };
+
+  const updateLabel = (label: string) => {
+    updateCardMutation.mutate({
+      cardId,
+      label,
+    });
+  };
+
+  const [newLabel, setNewLabel] = useState("");
+  const predefinedLabels = [
+    "Bug", "Feature", "Enhancement", "Documentation"
+  ];
 
   // Status indicator for footer
   const getStatusInfo = () => {
@@ -180,98 +250,322 @@ const CardFooter = ({
           </div>
         )}
 
-        {/* Due date (only show if not completed or overdue) */}
-        {!statusInfo && dueDate && (
-          <div className="flex items-center gap-0.5">
-            <CalendarClockIcon
-              className="w-3 h-3 text-zinc-700 dark:text-zinc-300"
-              strokeWidth={3}
-            />
-            <div className="font-bold relative top-0.5 text-zinc-700 dark:text-zinc-300">
-              {new Date(dueDate).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </div>
-          </div>
+        {/* Due date - Inline editable */}
+        {!statusInfo && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <div 
+                className="flex items-center gap-0.5 hover:bg-muted rounded px-1 py-0.5 transition-colors cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {dueDate ? (
+                  <>
+                    <CalendarClockIcon className="w-3 h-3 text-zinc-700 dark:text-zinc-300" strokeWidth={3} />
+                    <div className="font-bold relative top-0.5 text-zinc-700 dark:text-zinc-300 text-[10px]">
+                      {formatDistanceToNow(new Date(dueDate), { addSuffix: true })}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground cursor-pointer">
+                    <CalendarClockIcon className="h-3 w-3" strokeWidth={3} />
+                  </div>
+                )}
+              </div>
+            </PopoverTrigger>
+            <PopoverContent 
+              className="w-auto p-0" 
+              align="start"
+              side="top" 
+              sideOffset={8}
+              onClick={(e) => e.stopPropagation()}
+              style={{ zIndex: 9999 }}
+            >
+              <CalendarComponent
+                mode="single"
+                selected={dueDate ? new Date(dueDate) : undefined}
+                onSelect={(date) => {
+                  if (date) {
+                    updateDueDate(date);
+                  }
+                }}
+                initialFocus
+                className="p-3"
+              />
+              <div className="p-3 border-t">
+                {dueDate && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateDueDate(null);
+                    }}
+                  >
+                    Clear due date
+                  </Button>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
         )}
       </div>
-      <div className="flex items-center gap-2">
-        {priority && (
-          <Badge
-            variant="outline"
-            className={cn(
-              "text-xs px-1.5 py-0 flex items-center gap-1 font-semibold border rounded-full capitalize",
-              priorityStyles?.text,
-              "border-zinc-200",
-              priorityStyles?.border
-            )}
+      <div className="flex items-center gap-0.5">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <div 
+              className="flex items-center gap-1 hover:bg-muted rounded px-1 py-0.5 transition-colors cursor-pointer"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {priority && (priority.toLowerCase() === 'urgent' || priority.toLowerCase() === 'high') && (
+                <Badge
+                  variant="secondary"
+                  className={cn(
+                    "text-[9px] px-1.5 py-0.5 h-4 font-medium border transition-colors hover:opacity-80",
+                    priorityStyles?.bg,
+                    priorityStyles?.border,
+                    "text-white"
+                  )}
+                  title={`Priority: ${priority}`}
+                >
+                  {getPriorityIcon(priority)}
+                </Badge>
+              )}
+              {(!priority || (priority.toLowerCase() !== 'urgent' && priority.toLowerCase() !== 'high')) && (
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground cursor-pointer">
+                  <Flag className="h-3 w-3" />
+                </div>
+              )}
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent 
+            align="start" 
+            className="w-32"
+            onClick={(e) => e.stopPropagation()}
           >
-            {getPriorityIcon(priority)}
-            <span className="text-xs">{priority}</span>
-          </Badge>
-        )}
+            <DropdownMenuItem onClick={(e) => {
+              e.stopPropagation();
+              updatePriority("urgent");
+            }}>
+              <Flag className="w-3 h-3 text-red-500 mr-2" />
+              Urgent
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={(e) => {
+              e.stopPropagation();
+              updatePriority("high");
+            }}>
+              <Flag className="w-3 h-3 text-amber-500 mr-2" />
+              High
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={(e) => {
+              e.stopPropagation();
+              updatePriority("medium");
+            }}>
+              <Flag className="w-3 h-3 text-blue-500 mr-2" />
+              Medium
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={(e) => {
+              e.stopPropagation();
+              updatePriority("low");
+            }}>
+              <Flag className="w-3 h-3 text-green-500 mr-2" />
+              Low
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={(e) => {
+              e.stopPropagation();
+              updatePriority("");
+            }}>
+              <Flag className="w-3 h-3 mr-2" />
+              No priority
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         {attachmentsCount > 0 && (
           <div className="flex items-center gap-1 text-[10px] text-zinc-700 dark:text-zinc-300">
             <Paperclip className="w-3 h-3" />
             <span>{attachmentsCount}</span>
           </div>
         )}
-        {labels && labels.length > 0 && (
-          <div className="flex items-center gap-1 flex-wrap">
-            {labels.slice(0, 2).map((label, index) => (
-              <Badge
-                key={index}
-                variant="secondary"
-                className="text-[9px] px-1.5 py-0.5 h-4 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700 hover:bg-blue-200 dark:hover:bg-blue-900/50"
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <div 
+              className="flex items-center gap-1 hover:bg-muted rounded px-1 py-0.5 transition-colors cursor-pointer"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {labels && labels.length > 0 ? (
+                <div className="flex items-center gap-1 flex-nowrap">
+                  {labels.slice(0, 1).map((label, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className={cn(
+                        "text-[9px] px-1.5 py-0.5 h-4 font-medium border transition-colors shrink-0",
+                        "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700",
+                        "hover:opacity-80 truncate max-w-[80px]"
+                      )}
+                      title={label}
+                    >
+                      {label}
+                    </Badge>
+                  ))}
+                  {labels.length > 1 && (
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] px-1.5 py-0.5 h-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-600 shrink-0"
+                    >
+                      +{labels.length - 1}
+                    </Badge>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground cursor-pointer">
+                  <Tag className="h-3 w-3" />
+                </div>
+              )}
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent 
+            align="start" 
+            className="w-60"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-2">
+              <Input
+                placeholder="Add new label..."
+                value={newLabel}
+                onChange={(e) => setNewLabel(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newLabel.trim()) {
+                    e.stopPropagation();
+                    updateLabel(newLabel.trim());
+                    setNewLabel("");
+                  }
+                }}
+                className="text-xs h-7"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+            <div className="border-t" />
+            {predefinedLabels.map((label) => (
+              <DropdownMenuItem 
+                key={label}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateLabel(label);
+                }}
               >
+                <Tag className="w-3 h-3 mr-2" />
                 {label}
-              </Badge>
+              </DropdownMenuItem>
             ))}
-            {labels.length > 2 && (
-              <Badge
-                variant="outline"
-                className="text-[9px] px-1.5 py-0.5 h-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-600"
-              >
-                +{labels.length - 2}
-              </Badge>
+            {labels && labels.length > 0 && (
+              <>
+                <div className="border-t" />
+                <div className="p-2 text-xs text-muted-foreground">Current labels:</div>
+                {labels.map((label, index) => (
+                  <DropdownMenuItem 
+                    key={index}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Remove label functionality could be added here
+                    }}
+                    className="text-xs"
+                  >
+                    <Badge 
+                      variant="secondary" 
+                      className="text-[9px] bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
+                    >
+                      {label}
+                    </Badge>
+                  </DropdownMenuItem>
+                ))}
+              </>
             )}
-          </div>
-        )}
+          </DropdownMenuContent>
+        </DropdownMenu>
         {commentsCount > 0 && (
           <div className="flex items-center gap-1 text-[10px] text-zinc-700 dark:text-zinc-300">
             <MessageSquare className="w-3 h-3" />
             <span>{commentsCount}</span>
           </div>
         )}
-        {assignees.length > 0 && (
-          <div className="flex items-center -space-x-1">
-            {assignees.slice(0, 3).map((assignee, index) => (
-              <Avatar 
-                key={assignee.id} 
-                className="w-4 h-4 border border-white dark:border-zinc-800 relative"
-                style={{ zIndex: assignees.length - index }}
+        <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+            <div 
+              className="flex items-center gap-1 hover:bg-muted rounded px-1 py-0.5 transition-colors cursor-pointer"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {assignees && assignees.length > 0 ? (
+                <div className="flex items-center -space-x-1">
+                  {assignees.slice(0, 3).map((assignee, index) => (
+                    <Avatar 
+                      key={assignee.id} 
+                      className="w-4 h-4 border border-white dark:border-zinc-800 relative"
+                      style={{ zIndex: assignees.length - index }}
+                    >
+                      <AvatarImage src={assignee.imageUrl} />
+                      <AvatarFallback className="text-[8px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                        {(assignee.name || assignee.username || assignee.email)?.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  ))}
+                  {assignees.length > 3 && (
+                    <div className="w-4 h-4 bg-zinc-200 dark:bg-zinc-700 rounded-full flex items-center justify-center text-[8px] text-zinc-600 dark:text-zinc-300 border border-white dark:border-zinc-800">
+                      +{assignees.length - 3}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground cursor-pointer">
+                  <User className="h-3 w-3" />
+                </div>
+              )}
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent 
+            align="start" 
+            className="w-40"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {members?.map((member: TUser) => (
+              <DropdownMenuItem
+                key={member.id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateAssignee(member.id);
+                }}
               >
-                <AvatarImage src={assignee.imageUrl} />
-                <AvatarFallback className="text-[8px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                  {(assignee.name || assignee.username || assignee.email)?.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center">
+                    {member.imageUrl ? (
+                      <img
+                        src={member.imageUrl}
+                        alt={member.username}
+                        className="w-full h-full rounded-full"
+                      />
+                    ) : (
+                      <span className="text-xs">{member.username.charAt(0)}</span>
+                    )}
+                  </div>
+                  <span className="text-xs">{member.username}</span>
+                </div>
+              </DropdownMenuItem>
             ))}
-            {assignees.length > 3 && (
-              <div className="w-4 h-4 bg-zinc-200 dark:bg-zinc-700 rounded-full flex items-center justify-center text-[8px] text-zinc-600 dark:text-zinc-300 border border-white dark:border-zinc-800">
-                +{assignees.length - 3}
-              </div>
-            )}
-          </div>
-        )}
+            <DropdownMenuItem onClick={(e) => {
+              e.stopPropagation();
+              updateAssignee("");
+            }}>
+              <User className="w-3 h-3 mr-2" />
+              Unassigned
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
 };
 
-const Card = ({ columnName }: CardProps) => {
+const Card = ({ columnName, viewOptions }: CardProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const [isDueDateOpen, setIsDueDateOpen] = useState(false);
@@ -444,12 +738,26 @@ const Card = ({ columnName }: CardProps) => {
           </div>
 
           <div className="px-2 pl-10">
-            <CardTitle title={title} isCompleted={status.isCompleted} />
+            <CardTitle 
+              title={title} 
+              isCompleted={status.isCompleted}
+              cardId={id}
+              showCardId={viewOptions?.showCardIds || false}
+            />
           </div>
 
-          <CardDescription description={description} isCompleted={status.isCompleted} />
+          {viewOptions?.displayProperties.description !== false && (
+            <CardDescription description={description} isCompleted={status.isCompleted} />
+          )}
 
-          <CardFooter dueDate={dueDate} priority={priority} labels={labels} status={status} assignees={assignees} />
+          <CardFooter 
+            dueDate={viewOptions?.displayProperties.dueDate !== false ? dueDate : undefined} 
+            priority={viewOptions?.displayProperties.priority !== false ? priority : undefined} 
+            labels={viewOptions?.displayProperties.labels !== false ? labels : undefined} 
+            status={status} 
+            assignees={viewOptions?.displayProperties.assignee !== false ? assignees : undefined}
+            cardId={id}
+          />
           <div 
               className="absolute top-2 right-2 bg-zinc-100 dark:bg-zinc-900/50 rounded-lg p-1.5 opacity-0 group-hover:opacity-100 transition-all ease-linear cursor-pointer"
               onClick={(e) => {

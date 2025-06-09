@@ -26,9 +26,9 @@ const planIcons = {
 };
 
 const planColors = {
-  free: 'text-gray-500',
-  pro: 'text-blue-500',
-  enterprise: 'text-purple-500',
+  free: 'text-gray-500 dark:text-gray-400',
+  pro: 'text-blue-500 dark:text-blue-400',
+  enterprise: 'text-purple-500 dark:text-purple-400',
 };
 
 export const UsageDashboard: React.FC = () => {
@@ -58,7 +58,7 @@ export const UsageDashboard: React.FC = () => {
     return (
       <Card>
         <CardContent className="pt-6">
-          <p className="text-center text-gray-500">Unable to load usage statistics</p>
+          <p className="text-center text-gray-500 dark:text-gray-400">Unable to load usage statistics</p>
         </CardContent>
       </Card>
     );
@@ -113,12 +113,12 @@ export const UsageDashboard: React.FC = () => {
                 )} />
               </div>
               <div>
-                <CardTitle className="text-lg">
+                <CardTitle className="text-lg text-gray-900 dark:text-white">
                   {currentPlan === 'free' ? 'Free Trial' : 
                    currentPlan === 'pro' ? 'Professional' : 
                    'Enterprise'} Plan
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-600 dark:text-gray-400">
                   Current subscription and usage overview
                 </CardDescription>
               </div>
@@ -140,8 +140,8 @@ export const UsageDashboard: React.FC = () => {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <FolderOpen className="w-4 h-4 text-blue-500" />
-                <CardTitle className="text-sm font-medium">Projects</CardTitle>
+                <FolderOpen className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+                <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">Projects</CardTitle>
               </div>
               {usage.usage.projects.limit !== null && 
                usage.usage.projects.current >= usage.usage.projects.limit && (
@@ -158,7 +158,7 @@ export const UsageDashboard: React.FC = () => {
                 )}>
                   {usage.usage.projects.current}
                 </span>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
                   of {formatLimit(usage.usage.projects.limit)}
                 </span>
               </div>
@@ -177,8 +177,8 @@ export const UsageDashboard: React.FC = () => {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Users className="w-4 h-4 text-green-500" />
-                <CardTitle className="text-sm font-medium">Team Members</CardTitle>
+                <Users className="w-4 h-4 text-green-500 dark:text-green-400" />
+                <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">Team Members</CardTitle>
               </div>
               {usage.usage.teamMembers.limit !== null && 
                usage.usage.teamMembers.current >= usage.usage.teamMembers.limit && (
@@ -195,7 +195,7 @@ export const UsageDashboard: React.FC = () => {
                 )}>
                   {usage.usage.teamMembers.current}
                 </span>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
                   of {formatLimit(usage.usage.teamMembers.limit)}
                 </span>
               </div>
@@ -214,8 +214,8 @@ export const UsageDashboard: React.FC = () => {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <BarChart3 className="w-4 h-4 text-purple-500" />
-                <CardTitle className="text-sm font-medium">Storage</CardTitle>
+                <BarChart3 className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+                <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">Storage</CardTitle>
               </div>
             </div>
           </CardHeader>
@@ -228,7 +228,7 @@ export const UsageDashboard: React.FC = () => {
                 )}>
                   {usage.usage.storageGB.current}GB
                 </span>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
                   of {formatLimit(usage.usage.storageGB.limit)}GB
                 </span>
               </div>
@@ -247,8 +247,8 @@ export const UsageDashboard: React.FC = () => {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Sparkles className="w-4 h-4 text-orange-500" />
-                <CardTitle className="text-sm font-medium">Image Uploads</CardTitle>
+                <Sparkles className="w-4 h-4 text-orange-500 dark:text-orange-400" />
+                <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">Image Uploads</CardTitle>
               </div>
               {usage.usage.imageUploads?.limit !== null && 
                usage.usage.imageUploads?.current >= usage.usage.imageUploads?.limit && (
@@ -265,7 +265,7 @@ export const UsageDashboard: React.FC = () => {
                 )}>
                   {usage.usage.imageUploads?.current || 0}
                 </span>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
                   of {formatLimit(usage.usage.imageUploads?.limit || null)}
                 </span>
               </div>
@@ -283,8 +283,8 @@ export const UsageDashboard: React.FC = () => {
       {/* Feature Access */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Feature Access</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-lg text-gray-900 dark:text-white">Feature Access</CardTitle>
+          <CardDescription className="text-gray-600 dark:text-gray-400">
             Features available with your current plan
           </CardDescription>
         </CardHeader>

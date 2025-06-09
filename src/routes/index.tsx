@@ -16,8 +16,7 @@ import {
   PricingPage,
   FeedbackPage,
   SupportPage,
-
-  //IntegrationsForm,
+  IntegrationsForm,
   BoardSettingsPage,
   OnboardingPage,
   TeamManagementPage,
@@ -69,6 +68,7 @@ const AuthRoute = ({ children }: ProtectedRouteProps) => {
 const settingRoutes = [
   { path: "account", element: <AccountForm /> },
   { path: "location", element: <LocationForm /> },
+  { path: "integrations", element: <IntegrationsForm /> },
 ];
 
 const authenticatedRoutes = [

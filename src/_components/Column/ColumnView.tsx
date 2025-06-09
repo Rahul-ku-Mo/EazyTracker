@@ -7,9 +7,7 @@ import Cookies from "js-cookie";
 import { cn } from "../../lib/utils";
 import { deleteColumn } from "../../apis/ColumnApis";
 import DeleteDialog from "../../_components/Dialog/DeleteDialog";
-
 import NewCardForm from "../../_components/Card/NewCardForm";
-
 import ColumnActionTooltipWrapper from "./ColumnActionTooltipWrapper";
 import CardsInColumn from "../Card/CardsInColumn";
 import {
@@ -21,10 +19,19 @@ import {
   DropdownMenuLabel,
 } from "../../components/ui/dropdown-menu";
 import { Droppable } from "react-beautiful-dnd";
+import { ViewOptions } from "@/store/useViewOptionsStore";
+
+type SortOption = {
+  label: string;
+  value: string;
+  icon: React.ComponentType<{ className?: string }>;
+  sortFn: (a: any, b: any) => number;
+};
 
 interface ColumnViewProps {
   title: string;
   columnId: number;
+  viewOptions?: ViewOptions;
   cards: Array<{
     id: number;
     title: string;
@@ -38,14 +45,7 @@ interface ColumnViewProps {
   }>;
 }
 
-type SortOption = {
-  label: string;
-  value: string;
-  icon: React.ComponentType<{ className?: string }>;
-  sortFn: (a: any, b: any) => number;
-};
-
-const ColumnView = ({ title, cards, columnId }: ColumnViewProps) => {
+const ColumnView = ({ title, cards, columnId, viewOptions }: ColumnViewProps) => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isNewCardOpen, setIsNewCardOpen] = useState(false);
   const [currentSort, setCurrentSort] = useState<string>("manual");
@@ -319,7 +319,7 @@ const ColumnView = ({ title, cards, columnId }: ColumnViewProps) => {
                   "bg-emerald-50 dark:bg-emerald-900/20 border-2 border-dashed border-emerald-300 dark:border-emerald-500 rounded-xl mx-1 my-2 max-h-[85vh] shadow-inner"
               )}
             >
-              <CardsInColumn columnName={title} cards={sortedCards} />
+              <CardsInColumn columnName={title} cards={sortedCards} viewOptions={viewOptions} />
               {provided.placeholder}
             </div>
           )}

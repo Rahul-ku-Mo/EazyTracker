@@ -124,19 +124,19 @@ export const PricingPlans: React.FC<PricingPlansProps> = ({ showCurrentPlan = tr
 
             <CardHeader className="text-center">
               <div className="flex items-center justify-center space-x-2">
-                <Icon className="w-6 h-6 text-blue-600" />
-                <CardTitle className="text-xl">{plan.name}</CardTitle>
+                <Icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <CardTitle className="text-xl text-gray-900 dark:text-white">{plan.name}</CardTitle>
               </div>
-              <CardDescription className="text-sm text-gray-600">
+              <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
                 {plan.description}
               </CardDescription>
               <div className="mt-4">
                 <div className="flex items-baseline justify-center space-x-1">
-                  <span className="text-3xl font-bold text-gray-900">
+                  <span className="text-3xl font-bold text-gray-900 dark:text-white">
                     {plan.price === 0 ? 'Free' : formatPrice(plan.price, plan.currency)}
                   </span>
                   {plan.price > 0 && (
-                    <span className="text-sm text-gray-500">/{plan.interval}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">/{plan.interval}</span>
                   )}
                 </div>
               </div>
@@ -146,16 +146,16 @@ export const PricingPlans: React.FC<PricingPlansProps> = ({ showCurrentPlan = tr
               <div className="space-y-3">
                 {plan.features.map((feature, index) => (
                   <div key={index} className="flex items-center space-x-3">
-                    <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">{feature}</span>
+                    <Check className="w-4 h-4 text-green-500 dark:text-green-400 flex-shrink-0" />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">{feature}</span>
                   </div>
                 ))}
               </div>
 
               {/* Limits display */}
-              <div className="pt-4 border-t border-gray-200">
-                <h4 className="text-sm font-medium text-gray-900 mb-2">Plan Limits</h4>
-                <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Plan Limits</h4>
+                <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400">
                   <div>
                     Projects: {plan.limits.projects === -1 ? 'Unlimited' : plan.limits.projects}
                   </div>

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useContext, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
@@ -16,8 +16,11 @@ import { ColumnProvider } from "../../context/ColumnProvider";
 import ListView from "@/_components/ListView";
 import { useStore } from "zustand";
 import useToggleViewStore from "@/store/toggleViewStore";
+import { useViewOptionsStore } from "@/store/useViewOptionsStore";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { updateCardColumn, updateCardOrder } from "../../apis/CardApis";
+import ViewOptionsPanel from "@/_components/ViewOptions/ViewOptionsPanel";
+import { generateDummyData, groupCards, filterCards, orderCards } from "@/utils/viewOptionsUtils";
 
 interface Column {
   id: number;
@@ -82,9 +85,20 @@ const ExpandAddColumnButton = ({ onClick }: ExpandAddColumnButtonProps) => {
 
 const ColumnBoard = ({ title }: ColumnBoardProps) => {
   const { id: boardId } = useParams();
-  const { columns } = useContext(KanbanContext);
+  const { columns: contextColumns } = useContext(KanbanContext);
 
-  const { view } = useStore(useToggleViewStore);
+  const { view, toggleView } = useStore(useToggleViewStore);
+  const { 
+    viewOptions, 
+    isPanelOpen, 
+    updateViewOptions, 
+    openPanel, 
+    closePanel 
+  } = useViewOptionsStore();
+
+  // Use dummy data for testing - replace with real data later
+  const { columns: dummyColumns } = useMemo(() => generateDummyData(), []);
+  const columns = contextColumns && contextColumns.length > 0 ? contextColumns : dummyColumns;
 
   const inputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
@@ -178,9 +192,55 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
     },
   });
 
-  const sortedColumns = columns?.sort(
-    (a: Column, b: Column) => a.order - b.order
-  );
+  // Apply view options to columns for Kanban view - Enhanced logic
+  const processedColumns = useMemo(() => {
+    if (!columns) return [];
+    
+    let filteredColumns = [...columns].sort((a: Column, b: Column) => a.order - b.order);
+    
+    // Apply comprehensive view options to each column's cards
+    filteredColumns = filteredColumns.map(column => {
+      let columnCards = column.cards || [];
+      
+      // 1. Filter cards based on active filters
+      columnCards = filterCards(columnCards, viewOptions);
+      
+             // 2. Hide completed cards if option is disabled
+       if (!viewOptions.showCompletedCards) {
+         columnCards = columnCards.filter((card: any) => card.status !== 'completed' && card.status !== 'done');
+       }
+      
+      // 3. Order cards within the column
+      columnCards = orderCards(columnCards, viewOptions);
+      
+      console.log(`Column "${column.title}" after processing:`, {
+        originalCount: (column.cards || []).length,
+        filteredCount: columnCards.length,
+        orderBy: viewOptions.orderBy,
+        activeFilters: viewOptions.activeFilters
+      });
+      
+      return { ...column, cards: columnCards };
+    });
+    
+    // Hide empty columns if option is disabled
+    if (!viewOptions.showEmptyColumns) {
+      filteredColumns = filteredColumns.filter(column => column.cards && column.cards.length > 0);
+    }
+    
+    console.log('Processed columns for Kanban:', {
+      totalColumns: filteredColumns.length,
+      viewOptions: viewOptions,
+      columnsWithCards: filteredColumns.map(col => ({
+        title: col.title,
+        cardCount: col.cards.length
+      }))
+    });
+    
+    return filteredColumns;
+  }, [columns, viewOptions]);
+
+  const sortedColumns = processedColumns;
 
   const handleAddColumn = () => {
     if (!columnName.trim()) return;
@@ -190,15 +250,19 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
   };
 
   const listViewData = useMemo(() => {
-    return columns?.reduce((acc: any, curr: any) => {
-      const columnKey = curr.title;
-
-      return {
-        ...acc,
-        [columnKey]: curr.cards,
-      };
-    }, {});
-  }, [columns]);
+    if (!columns) return {};
+    
+    // Get all cards from all columns
+    const allCards = columns.flatMap((col: any) => col.cards || []);
+    
+    // Apply view options (grouping, filtering, ordering)
+    const groupedData = groupCards(allCards, columns, viewOptions);
+    
+    console.log('Applied view options:', viewOptions);
+    console.log('Grouped data:', groupedData);
+    
+    return groupedData;
+  }, [columns, viewOptions]);
 
   // Handle drag end with improved error handling and order calculation
   const handleDragEnd = (result: DropResult) => {
@@ -285,14 +349,34 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
 
   return (
     <>
-      <Container fwdClassName="bg-transparent" title={title}>
+      <Container 
+        fwdClassName="bg-transparent" 
+        title={title}
+        headerChildren={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={openPanel}
+            className="flex items-center gap-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-md"
+          >
+            <Settings className="h-4 w-4" />
+            View Options
+          </Button>
+        }
+      >
+
         <div className="relative w-full h-full">
           {view === "kanban" ? (
             <DragDropContext onDragEnd={handleDragEnd}>
-              <ol className="absolute inset-0 flex items-start h-full gap-2">
+              <ol className="absolute inset-0 flex items-start h-full">
                 {sortedColumns?.map((column: Column) => (
                   <ColumnProvider columnId={column.id.toString()} key={column.id}>
-                    <ColumnView title={column.title} cards={column.cards} columnId={column.id} />
+                    <ColumnView 
+                      title={column.title} 
+                      cards={column.cards} 
+                      columnId={column.id}
+                      viewOptions={viewOptions}
+                    />
                   </ColumnProvider>
                 ))}
                 <div className="p-1 rounded-md">
@@ -315,6 +399,20 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
           )}
         </div>
       </Container>
+
+      {/* View Options Panel */}
+      <ViewOptionsPanel
+        isOpen={isPanelOpen}
+        onClose={closePanel}
+        currentView={view}
+        onViewChange={(newView) => {
+          if (newView !== view) {
+            toggleView();
+          }
+        }}
+        viewOptions={viewOptions}
+        onOptionsChange={updateViewOptions}
+      />
     </>
   );
 };

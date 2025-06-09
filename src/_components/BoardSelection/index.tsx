@@ -12,6 +12,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Star } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
+import { useToast } from "@/hooks/use-toast";
 
 import { BoardContextMenu } from "./BoardContextMenu";
 import { useState } from "react";
@@ -25,13 +29,16 @@ interface Board {
   colorId: string;
   colorValue: string;
   colorName: string;
+  isFavorite?: boolean;
 }
 
 const BoardCard = ({ board }: { board: Board }) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const accessToken = Cookies.get("accessToken");
 
   const [isOpenDeleteBoardDialog, setIsOpenDeleteBoardDialog] = useState(false);
-
   const [isOpenInviteBoardDialog, setIsOpenInviteBoardDialog] = useState(false);
 
   const openInviteBoardDialog = () => {
@@ -43,6 +50,38 @@ const BoardCard = ({ board }: { board: Board }) => {
   };
 
   const { deleteBoardMutation } = useBoardMutation();
+
+  // Favorite mutation
+  const favoriteMutation = useMutation({
+    mutationFn: async (boardId: string) => {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/boards/${boardId}/favorite`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: data.message,
+        variant: "default",
+      });
+      // Invalidate queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["boards"] });
+      queryClient.invalidateQueries({ queryKey: ["favoriteBoards"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update favorite status",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleDeleteBoard = () => {
     setIsOpenDeleteBoardDialog(true);
@@ -58,6 +97,11 @@ const BoardCard = ({ board }: { board: Board }) => {
 
   const handleOpenBoardSettings = () => {
     navigate(`/workspace/settings/${board.id}`);
+  };
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent opening the board
+    favoriteMutation.mutate(board.id);
   };
 
   return (
@@ -81,9 +125,29 @@ const BoardCard = ({ board }: { board: Board }) => {
                 "transition-colors duration-200"
               )}
             >
-              <CardTitle className="text-sm font-bold text-white">
-                {board.title}
-              </CardTitle>
+              <div className="flex items-start justify-between">
+                <CardTitle className="text-sm font-bold text-white flex-1">
+                  {board.title}
+                </CardTitle>
+                <button
+                  onClick={handleToggleFavorite}
+                  className={cn(
+                    "p-1 rounded-full transition-all duration-200 hover:bg-white/20",
+                    "opacity-70 group-hover:opacity-100",
+                    favoriteMutation.isPending && "animate-pulse"
+                  )}
+                  disabled={favoriteMutation.isPending}
+                >
+                  <Star
+                    className={cn(
+                      "w-4 h-4 transition-colors",
+                      board.isFavorite
+                        ? "text-yellow-400 fill-yellow-400"
+                        : "text-white hover:text-yellow-400"
+                    )}
+                  />
+                </button>
+              </div>
               <CardFooter className="p-0">
                 <span className="text-xs font-medium text-white/20">
                   {board.colorName}

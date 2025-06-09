@@ -41,19 +41,49 @@ export const useFeatureGating = () => {
 
   // Get upgrade message for a feature or resource
   const getUpgradeMessage = (feature: FeatureType | 'projects' | 'teamMembers' | 'imageUploads'): string => {
+    const currentPlan = subscription?.plan?.toLowerCase();
+    
     if (feature === 'projects') {
+      if (currentPlan === 'pro') {
+        return `You've reached your project limit. Upgrade to Enterprise for unlimited projects and advanced features.`;
+      }
       return `You've reached your project limit. Upgrade to Professional for unlimited projects.`;
     }
+    
     if (feature === 'teamMembers') {
+      if (currentPlan === 'pro') {
+        return `You've reached your team member limit. Upgrade to Enterprise for unlimited team members and advanced collaboration.`;
+      }
       return `You've reached your team member limit. Upgrade to Professional for more team members.`;
     }
+    
     if (feature === 'imageUploads') {
+      if (currentPlan === 'pro') {
+        return `You've reached your image upload limit. Upgrade to Enterprise for unlimited uploads and advanced storage.`;
+      }
       return `You've reached your image upload limit. Upgrade to Professional for more uploads.`;
     }
     
     const requiredPlan = FEATURE_REQUIREMENTS[feature as FeatureType];
-    const planName = requiredPlan === 'pro' ? 'Professional' : 'Enterprise';
     
+    // If user is on free plan
+    if (currentPlan === 'free' || !currentPlan) {
+      const planName = requiredPlan === 'pro' ? 'Professional' : 'Enterprise';
+      return `This feature requires a ${planName} subscription. Upgrade to unlock ${feature}.`;
+    }
+    
+    // If user is on pro plan and needs enterprise
+    if (currentPlan === 'pro' && requiredPlan === 'enterprise') {
+      return `This feature requires an Enterprise subscription. Upgrade to unlock ${feature} and other advanced features.`;
+    }
+    
+    // If user is on enterprise (shouldn't happen but fallback)
+    if (currentPlan === 'enterprise') {
+      return `Contact our sales team for custom solutions and additional features.`;
+    }
+    
+    // Default fallback
+    const planName = requiredPlan === 'pro' ? 'Professional' : 'Enterprise';
     return `This feature requires a ${planName} subscription. Upgrade to unlock ${feature}.`;
   };
 
@@ -110,6 +140,42 @@ export const useFeatureGating = () => {
     return !hasFeature(feature);
   };
 
+  // Get the appropriate upgrade action based on current plan
+  const getUpgradeAction = () => {
+    const currentPlan = subscription?.plan?.toLowerCase();
+    
+    switch (currentPlan) {
+      case 'free':
+        return {
+          action: 'upgrade',
+          target: 'pro',
+          url: '/billing',
+          text: 'Upgrade to Pro'
+        };
+      case 'pro':
+        return {
+          action: 'upgrade',
+          target: 'enterprise',
+          url: '/billing',
+          text: 'Upgrade to Enterprise'
+        };
+      case 'enterprise':
+        return {
+          action: 'contact',
+          target: 'custom',
+          url: 'mailto:sales@eztrack.com?subject=Enterprise%20Custom%20Solution%20Inquiry',
+          text: 'Contact Sales'
+        };
+      default:
+        return {
+          action: 'upgrade',
+          target: 'pro',
+          url: '/billing',
+          text: 'Upgrade to Pro'
+        };
+    }
+  };
+
   return {
     // Plan info
     currentPlan: subscription?.plan as PlanType,
@@ -133,6 +199,7 @@ export const useFeatureGating = () => {
     // Upgrade helpers
     needsUpgrade,
     getUpgradeMessage,
+    getUpgradeAction,
     isHigherPlan,
     
     // Raw data

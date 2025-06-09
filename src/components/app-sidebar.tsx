@@ -10,6 +10,7 @@ import {
   Users,
   Hash,
   CreditCard,
+  Star,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -24,11 +25,61 @@ import {
   SidebarHeader,
   SidebarRail,
   useSidebar,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
 } from "./ui/sidebar";
 import { useUser } from "../hooks/useQueries";
 import Cookies from "js-cookie";
 import { Badge } from "./ui/badge";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
+
+// Favorites navigation component
+const NavFavorites = ({ favoriteBoards }: { favoriteBoards: any[] }) => {
+  const navigate = useNavigate();
+  
+  if (!favoriteBoards || favoriteBoards.length === 0) {
+    return (
+      <SidebarGroup>
+        <SidebarGroupLabel className="flex items-center gap-2">
+          <Star className="h-4 w-4" />
+          Favorites
+        </SidebarGroupLabel>
+        <div className="px-2 py-1 text-xs text-muted-foreground">
+          No favorite boards yet
+        </div>
+      </SidebarGroup>
+    );
+  }
+
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel className="flex items-center gap-2">
+        <Star className="h-4 w-4" />
+        Favorites
+      </SidebarGroupLabel>
+      <SidebarMenu>
+        {favoriteBoards.map((board) => (
+          <SidebarMenuItem key={board.id}>
+            <SidebarMenuButton
+              onClick={() => navigate(`/workspace/board/${board.id}`)}
+              className="flex items-center gap-2"
+            >
+              <div 
+                className="w-3 h-3 rounded-sm" 
+                style={{ backgroundColor: board.colorValue }}
+              />
+              <span className="truncate">{board.title}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
+      </SidebarMenu>
+    </SidebarGroup>
+  );
+};
 
 // This is sample data.
 const data = {
@@ -81,10 +132,6 @@ const data = {
           title: "Team Management",
           url: "/team/management",
         },
-        {
-          title: "Settings",
-          url: "/setting/account",
-        },
       ],
     },
   ],
@@ -122,6 +169,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     enabled: !!accessToken
   });
 
+  // Fetch favorite boards
+  const { data: favoriteBoards } = useQuery({
+    queryKey: ['favoriteBoards'],
+    queryFn: async () => {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/boards/favorites`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+      return response.data.data;
+    },
+    enabled: !!accessToken
+  });
+
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -130,6 +191,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
+        <NavFavorites favoriteBoards={favoriteBoards || []} />
       </SidebarContent>
       
       {/* Enhanced Team Code Section */}

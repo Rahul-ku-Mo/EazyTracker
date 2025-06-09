@@ -59,7 +59,6 @@ const LocationForm = () => {
     onSuccess: () => {
       toast.success("Location updated successfully");
       queryClient.invalidateQueries({ queryKey: ["user"] });
-      // Reset the initial state to the current form state after successful save
       setInitialState(formState);
     },
     onError: (error) => {
@@ -86,22 +85,16 @@ const LocationForm = () => {
       <CardHeader className="space-y-1 pb-6">
         <CardTitle className="text-xl font-semibold flex items-center gap-2 text-foreground">
           <MapPin className="h-5 w-5 text-primary" />
-          Location Settings
+          Location
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Update your location details for better service delivery
+          Manage your location information
         </p>
       </CardHeader>
       
       <CardContent>
         <form className="space-y-6" onSubmit={handleSubmit}>
-          {/* Location Information Section */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-2 h-2 rounded-full bg-primary"></div>
-              <h3 className="text-sm font-medium text-foreground">Address Information</h3>
-            </div>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="state" className="text-sm font-medium text-foreground flex items-center gap-2">
@@ -113,7 +106,7 @@ const LocationForm = () => {
                   type="text"
                   value={formState.state}
                   onChange={handleChange("state")}
-                  placeholder="e.g., California, Karnataka"
+                  placeholder="California"
                   className={clsx(
                     "transition-all duration-200",
                     "border-input bg-background text-foreground",
@@ -123,21 +116,21 @@ const LocationForm = () => {
                   )}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Enter your state or province for location-specific services
+                  Your state or province for timezone and regional settings
                 </p>
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="zipCode" className="text-sm font-medium text-foreground flex items-center gap-2">
                   <Hash className="h-3 w-3 text-muted-foreground" />
-                  Postal Code
+                  ZIP Code
                 </Label>
                 <Input
                   id="zipCode"
                   type="text"
                   value={formState.zipCode}
                   onChange={handleChange("zipCode")}
-                  placeholder="e.g., 90210, 560001"
+                  placeholder="90210"
                   className={clsx(
                     "transition-all duration-200",
                     "border-input bg-background text-foreground",
@@ -147,7 +140,7 @@ const LocationForm = () => {
                   )}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Your postal/ZIP code for precise location services
+                  Used for team collaboration and meeting coordination
                 </p>
               </div>
             </div>
@@ -155,14 +148,14 @@ const LocationForm = () => {
             <div className="space-y-2">
               <Label htmlFor="address" className="text-sm font-medium text-foreground flex items-center gap-2">
                 <MapPin className="h-3 w-3 text-muted-foreground" />
-                Full Address
+                Address
               </Label>
               <Input
                 id="address"
                 type="text"
                 value={formState.address}
                 onChange={handleChange("address")}
-                placeholder="1234 Main Street, Apt 2B, City, State"
+                placeholder="123 Main Street, City, State"
                 className={clsx(
                   "transition-all duration-200",
                   "border-input bg-background text-foreground",
@@ -172,15 +165,14 @@ const LocationForm = () => {
                 )}
               />
               <p className="text-xs text-muted-foreground">
-                Complete address including street, apartment, city, and state
+                Complete address for team meetups and office locations
               </p>
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex items-center justify-between pt-6 border-t border-border">
             <div className="text-xs text-muted-foreground">
-              {hasChanges ? "You have unsaved changes" : "All changes saved"}
+              {hasChanges ? "Unsaved changes" : "All changes saved"}
             </div>
             
             <Button

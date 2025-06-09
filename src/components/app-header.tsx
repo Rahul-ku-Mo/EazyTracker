@@ -10,11 +10,15 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useLocation } from "react-router-dom";
 import { ModeToggle } from "./mode-toggle";
-import { ViewToggle } from "./view-toggle";
 import { NotificationCenter } from "../_components/NotificationCenter";
 import { OnlineStatus } from "../_components/OnlineStatus";
+import { ReactNode } from "react";
 
-const AppHeader = () => {
+interface AppHeaderProps {
+  children?: ReactNode;
+}
+
+const AppHeader = ({ children }: AppHeaderProps) => {
   const { pathname } = useLocation();
   const pathArray = pathname.split("/").filter((path) => path !== "");
 
@@ -47,10 +51,14 @@ const AppHeader = () => {
       </div>
       
       <div className="flex items-center gap-3 pr-2">
+        {/* Custom children elements (like settings button) */}
+      
+        
+        {/* Default header elements */}
         <OnlineStatus />
         <NotificationCenter />
-        <ViewToggle />
         <ModeToggle />
+        {children}
       </div>
     </header>
   );

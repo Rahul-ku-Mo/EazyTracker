@@ -98,7 +98,7 @@ const CardCompletionAnalysis = () => {
   }
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
+    <div className="p-4 space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
           <h1 className="text-xl font-bold">Task Performance Analytics</h1>

@@ -16,7 +16,9 @@ import {
   MoreHorizontal,
   UserX,
   CheckSquare,
-  Square
+  Square,
+  Link,
+  UserMinus
 } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -368,6 +370,10 @@ const TeamManagement: React.FC = () => {
           description: 'User has been removed from the board.',
           variant: 'default',
         });
+        // Close the member dialog if removing from selected member
+        if (selectedMember && selectedMember.id === userId) {
+          setSelectedMember(null);
+        }
       },
       onError: () => {
         toast({
@@ -553,20 +559,36 @@ const TeamManagement: React.FC = () => {
                         onValueChange={(value) => setSelectedBoardForBulk(parseInt(value))}
                       >
                         <SelectTrigger className="w-48">
-                          <SelectValue placeholder="Select board for bulk action" />
+                          <SelectValue placeholder={
+                            boards.length === 0 
+                              ? "No boards available" 
+                              : "Select board for bulk action"
+                          } />
                         </SelectTrigger>
                         <SelectContent>
-                          {boards.map((board: Board) => (
-                            <SelectItem key={board.id} value={board.id.toString()}>
-                              {board.title}
-                            </SelectItem>
-                          ))}
+                          {boards.length === 0 ? (
+                            <div className="p-2 text-sm text-muted-foreground text-center">
+                              No boards available for bulk actions
+                            </div>
+                          ) : (
+                            boards.map((board: Board) => (
+                              <SelectItem key={board.id} value={board.id.toString()}>
+                                <div className="flex items-center gap-2">
+                                  <div 
+                                    className="w-3 h-3 rounded-full" 
+                                    style={{ backgroundColor: board.colorValue }} 
+                                  />
+                                  {board.title}
+                                </div>
+                              </SelectItem>
+                            ))
+                          )}
                         </SelectContent>
                       </Select>
                       <Button 
                         size="sm" 
                         onClick={handleBulkAddToBoard}
-                        disabled={!selectedBoardForBulk}
+                        disabled={!selectedBoardForBulk || boards.length === 0}
                       >
                         <Plus className="h-4 w-4 mr-1" />
                         Add to Board
@@ -575,7 +597,7 @@ const TeamManagement: React.FC = () => {
                         size="sm" 
                         variant="destructive"
                         onClick={handleBulkRemoveFromBoard}
-                        disabled={!selectedBoardForBulk}
+                        disabled={!selectedBoardForBulk || boards.length === 0}
                       >
                         <Minus className="h-4 w-4 mr-1" />
                         Remove from Board
@@ -819,27 +841,61 @@ const TeamManagement: React.FC = () => {
                                 <TableCell>
                                   {currentUser?.role === 'ADMIN' && member.id !== currentUser?.id && (
                                     <div className="flex items-center gap-2">
-                                      <Select
-                                        onValueChange={(value: 'ADMIN' | 'MEMBER') => 
-                                          handleUpdatePermissions(member.id, board.id, value)
-                                        }
-                                      >
-                                        <SelectTrigger className="w-32">
-                                          <SelectValue placeholder={boardAccess?.role} />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="MEMBER">Member</SelectItem>
-                                          <SelectItem value="ADMIN">Admin</SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                      <Button
-                                        size="sm"
-                                        variant="destructive"
-                                        onClick={() => handleRemoveFromBoard(member.id, board.id)}
-                                      >
-                                        <Ban className="w-4 h-4" />
-                                      </Button>
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <Button variant="ghost" size="sm">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                          </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                          <DropdownMenuLabel>Board Actions</DropdownMenuLabel>
+                                          <DropdownMenuSeparator />
+                                          <DropdownMenuItem
+                                            onClick={() => handleUpdatePermissions(member.id, board.id, 
+                                              boardAccess?.role === 'ADMIN' ? 'MEMBER' : 'ADMIN'
+                                            )}
+                                          >
+                                            <Shield className="mr-2 h-4 w-4" />
+                                            Make {boardAccess?.role === 'ADMIN' ? 'Member' : 'Admin'}
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem
+                                            onClick={() => {
+                                              navigator.clipboard.writeText(`${window.location.origin}/boards/${board.id}`);
+                                              toast({
+                                                title: 'Board link copied',
+                                                description: 'Board link has been copied to clipboard',
+                                              });
+                                            }}
+                                          >
+                                            <Link className="mr-2 h-4 w-4" />
+                                            Copy Board Link
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem
+                                            onClick={() => {
+                                              const subject = `Board Access: ${board.title}`;
+                                              const body = `You have ${boardAccess?.role?.toLowerCase()} access to the board "${board.title}". You can access it here: ${window.location.origin}/boards/${board.id}`;
+                                              window.open(`mailto:${member.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+                                            }}
+                                          >
+                                            <Mail className="mr-2 h-4 w-4" />
+                                            Send Access Email
+                                          </DropdownMenuItem>
+                                          <DropdownMenuSeparator />
+                                          <DropdownMenuItem
+                                            className="text-destructive"
+                                            onClick={() => handleRemoveFromBoard(member.id, board.id)}
+                                          >
+                                            <UserMinus className="mr-2 h-4 w-4" />
+                                            Remove from Board
+                                          </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
                                     </div>
+                                  )}
+                                  {member.id === currentUser?.id && (
+                                    <Badge variant="outline" className="text-xs">
+                                      You
+                                    </Badge>
                                   )}
                                 </TableCell>
                               </TableRow>
@@ -1146,18 +1202,33 @@ const TeamManagement: React.FC = () => {
                         onValueChange={(value) => setSelectedBoard(parseInt(value))}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select board" />
+                          <SelectValue placeholder={
+                            boards.filter((board: Board) => 
+                              !selectedMember.boardAccess.some((access: any) => access.board.id === board.id)
+                            ).length === 0 
+                              ? "No boards available" 
+                              : "Select board"
+                          } />
                         </SelectTrigger>
                         <SelectContent>
                           {boards
                             .filter((board: Board) => 
                               !selectedMember.boardAccess.some((access: any) => access.board.id === board.id)
-                            )
-                            .map((board: Board) => (
-                              <SelectItem key={board.id} value={board.id.toString()}>
-                                {board.title}
-                              </SelectItem>
-                            ))}
+                            ).length === 0 ? (
+                            <div className="p-2 text-sm text-muted-foreground text-center">
+                              No boards available to add
+                            </div>
+                          ) : (
+                            boards
+                              .filter((board: Board) => 
+                                !selectedMember.boardAccess.some((access: any) => access.board.id === board.id)
+                              )
+                              .map((board: Board) => (
+                                <SelectItem key={board.id} value={board.id.toString()}>
+                                  {board.title}
+                                </SelectItem>
+                              ))
+                          )}
                         </SelectContent>
                       </Select>
                       <Select value={inviteRole} onValueChange={(value: 'ADMIN' | 'MEMBER') => setInviteRole(value)}>
@@ -1169,7 +1240,12 @@ const TeamManagement: React.FC = () => {
                           <SelectItem value="ADMIN">Admin</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Button onClick={handleInviteToBoard} disabled={!selectedBoard}>
+                      <Button 
+                        onClick={handleInviteToBoard} 
+                        disabled={!selectedBoard || boards.filter((board: Board) => 
+                          !selectedMember.boardAccess.some((access: any) => access.board.id === board.id)
+                        ).length === 0}
+                      >
                         Add
                       </Button>
                     </div>
@@ -1178,30 +1254,40 @@ const TeamManagement: React.FC = () => {
                   <div>
                     <Label>Current Board Access</Label>
                     <div className="space-y-2 mt-1">
-                      {selectedMember.boardAccess.map((access: any) => (
-                        <div key={access.board.id} className="flex items-center justify-between p-2 border rounded">
-                          <div className="flex items-center space-x-2">
-                            <div 
-                              className="w-3 h-3 rounded" 
-                              style={{ backgroundColor: access.board.colorValue }}
-                            />
-                            <span className="text-sm">{access.board.title}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Badge variant={access.role === 'ADMIN' ? 'default' : 'secondary'}>
-                              {access.role}
-                            </Badge>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleRemoveFromBoard(selectedMember.id, access.board.id)}
-                              className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                            >
-                              ×
-                            </Button>
-                          </div>
+                      {selectedMember.boardAccess.length === 0 ? (
+                        <div className="p-4 text-sm text-muted-foreground text-center border rounded-lg border-dashed">
+                          <UserX className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                          No board access yet
+                          <p className="text-xs mt-1">Add this member to boards to get started</p>
                         </div>
-                      ))}
+                      ) : (
+                        selectedMember.boardAccess.map((access: any) => (
+                          <div key={access.board.id} className="flex items-center justify-between p-2 border rounded">
+                            <div className="flex items-center space-x-2">
+                              <div 
+                                className="w-3 h-3 rounded" 
+                                style={{ backgroundColor: access.board.colorValue }}
+                              />
+                              <span className="text-sm">{access.board.title}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Badge variant={access.role === 'ADMIN' ? 'default' : 'secondary'}>
+                                {access.role}
+                              </Badge>
+                              {currentUser?.role === 'ADMIN' && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleRemoveFromBoard(selectedMember.id, access.board.id)}
+                                  className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                                >
+                                  ×
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
                 </div>
