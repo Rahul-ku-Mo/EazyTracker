@@ -94,7 +94,7 @@ const LandingPage = () => {
                 transition={{ duration: 0.5 }}
               >
                 <img 
-                  src="/landing-page.svg" 
+                  src="/landing-page.png" 
                   alt="PulseBoard Logo" 
                   className="h-12 w-auto"
                 />
