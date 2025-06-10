@@ -31,7 +31,7 @@ const staticPlans = [
     "id": "pro",
     "name": "Professional",
     "description": "For growing teams and small businesses",
-    "price": 12,
+    "price": 9.99,
     "currency": "usd",
     "interval": "month",
     "features": [
@@ -49,9 +49,9 @@ const staticPlans = [
   },
   {
     "id": "enterprise",
-    "name": "Enterprise",
-    "description": "For large teams and organizations",
-    "price": 25,
+    "name": "Business",
+    "description": "For larger teams with advanced needs",
+    "price": 29.99,
     "currency": "usd",
     "interval": "month",
     "features": [
@@ -87,7 +87,7 @@ const PricingPage: React.FC = () => {
 
   const formatPrice = (price: number, currency: string) => {
     const currencySymbol = currency === 'usd' ? '$' : '₹';
-    return `${currencySymbol}${price}`;
+    return `${currencySymbol}${price.toFixed(2)}`;
   };
 
   return (
