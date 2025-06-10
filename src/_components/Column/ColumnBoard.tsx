@@ -20,7 +20,7 @@ import { useViewOptionsStore } from "@/store/useViewOptionsStore";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { updateCardColumn, updateCardOrder } from "../../apis/CardApis";
 import ViewOptionsPanel from "@/_components/ViewOptions/ViewOptionsPanel";
-import { generateDummyData, groupCards, filterCards, orderCards } from "@/utils/viewOptionsUtils";
+import { groupCards, filterCards, orderCards } from "@/utils/viewOptionsUtils";
 
 interface Column {
   id: number;
@@ -96,9 +96,8 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
     closePanel 
   } = useViewOptionsStore();
 
-  // Use dummy data for testing - replace with real data later
-  const { columns: dummyColumns } = useMemo(() => generateDummyData(), []);
-  const columns = contextColumns && contextColumns.length > 0 ? contextColumns : dummyColumns;
+  // Use context columns data
+  const columns = contextColumns || [];
 
   const inputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();

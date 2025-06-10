@@ -1055,51 +1055,11 @@ const TeamManagement: React.FC = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {/* Mock velocity data - replace with real charts */}
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">This Week</span>
-                        <div className="flex items-center gap-2">
-                          <div className="w-24 bg-gray-200 rounded-full h-2">
-                            <div className="bg-green-500 h-2 rounded-full" style={{width: '85%'}}></div>
-                          </div>
-                          <span className="text-sm text-green-600">85%</span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">Last Week</span>
-                        <div className="flex items-center gap-2">
-                          <div className="w-24 bg-gray-200 rounded-full h-2">
-                            <div className="bg-blue-500 h-2 rounded-full" style={{width: '78%'}}></div>
-                          </div>
-                          <span className="text-sm text-blue-600">78%</span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">Two Weeks Ago</span>
-                        <div className="flex items-center gap-2">
-                          <div className="w-24 bg-gray-200 rounded-full h-2">
-                            <div className="bg-purple-500 h-2 rounded-full" style={{width: '72%'}}></div>
-                          </div>
-                          <span className="text-sm text-purple-600">72%</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="pt-4 border-t">
-                      <div className="text-sm font-medium mb-2">Key Insights</div>
-                      <div className="space-y-2">
-                        <div className="text-xs text-green-600 bg-green-50 dark:bg-green-900/10 p-2 rounded border-l-2 border-green-500">
-                          ✓ Team velocity improved by 12% this week
-                        </div>
-                        <div className="text-xs text-blue-600 bg-blue-50 dark:bg-blue-900/10 p-2 rounded border-l-2 border-blue-500">
-                          → Average task completion time decreased to 2.3 hours
-                        </div>
-                        <div className="text-xs text-orange-600 bg-orange-50 dark:bg-orange-900/10 p-2 rounded border-l-2 border-orange-500">
-                          ⚠ Consider redistributing workload for better balance
-                        </div>
-                      </div>
+                  <div className="flex items-center justify-center h-48">
+                    <div className="text-center">
+                      <div className="text-muted-foreground mb-2">📊</div>
+                      <div className="text-sm font-medium">Velocity Analytics</div>
+                      <div className="text-xs text-muted-foreground">Coming soon</div>
                     </div>
                   </div>
                 </CardContent>
