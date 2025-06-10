@@ -264,7 +264,7 @@ const ViewOptionsPanel = ({
               )}
 
               {/* Options */}
-              <SectionHeader title="Options" icon={Filter} sectionKey="options" />
+              <SectionHeader title="Options" icon={Settings} sectionKey="options" />
               {expandedSections.includes('options') && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}

@@ -109,7 +109,6 @@ const useAuthProvider = () => {
       }
     } catch (err : any) {
       console.error("Login error:", err);
-      let errorMessage = "Something went wrong while signing you in";
       let fieldErrors: AuthErrors = {
         email: "",
         password: "",
@@ -123,33 +122,25 @@ const useAuthProvider = () => {
         // Make server messages more user-friendly
         if (serverMessage.toLowerCase().includes('email')) {
           if (serverMessage.toLowerCase().includes('invalid')) {
-            errorMessage = "We couldn't find an account with that email";
             fieldErrors.email = "We couldn't find an account with that email";
           } else {
-            errorMessage = serverMessage;
             fieldErrors.email = serverMessage;
           }
         } else if (serverMessage.toLowerCase().includes('password')) {
           if (serverMessage.toLowerCase().includes('invalid')) {
-            errorMessage = "That password doesn't match our records";
             fieldErrors.password = "That password doesn't match our records";
           } else {
-            errorMessage = serverMessage;
             fieldErrors.password = serverMessage;
           }
         } else {
           // General error - show under password field
-          errorMessage = serverMessage;
           fieldErrors.password = serverMessage;
         }
       } else if (err.response?.status === 401) {
-        errorMessage = "Email or password is incorrect";
         fieldErrors.password = "Double-check your email and password and try again";
       } else if (err.response?.status >= 500) {
-        errorMessage = "Our servers are having trouble right now";
         fieldErrors.general = "Our servers are having trouble. Please try again in a moment.";
       } else if (err.code === 'NETWORK_ERROR' || !err.response) {
-        errorMessage = "Can't connect to our servers";
         fieldErrors.general = "Check your internet connection and try again";
       }
       
@@ -190,7 +181,6 @@ const useAuthProvider = () => {
       navigate("/workspace");
     } catch (err : any) {
       console.error("Signup error:", err);
-      let errorMessage = "We couldn't create your account right now";
       let fieldErrors: AuthErrors = {
         email: "",
         password: "",
@@ -204,36 +194,27 @@ const useAuthProvider = () => {
         // Make server messages more user-friendly
         if (serverMessage.toLowerCase().includes('email')) {
           if (serverMessage.toLowerCase().includes('already exists') || serverMessage.toLowerCase().includes('already taken')) {
-            errorMessage = "Someone's already using that email";
             fieldErrors.email = "This email is already registered. Try signing in instead?";
           } else {
-            errorMessage = serverMessage;
             fieldErrors.email = serverMessage;
           }
         } else if (serverMessage.toLowerCase().includes('username')) {
           if (serverMessage.toLowerCase().includes('already taken') || serverMessage.toLowerCase().includes('already exists')) {
-            errorMessage = "That username is already taken";
             fieldErrors.username = "This username is already taken. Try a different one?";
           } else {
-            errorMessage = serverMessage;
             fieldErrors.username = serverMessage;
           }
         } else if (serverMessage.toLowerCase().includes('password')) {
-          errorMessage = serverMessage;
           fieldErrors.password = serverMessage;
         } else {
           // General error
-          errorMessage = serverMessage;
           fieldErrors.general = serverMessage;
         }
       } else if (err.response?.status === 400) {
-        errorMessage = "Something's not quite right with your info";
         fieldErrors.general = "Please double-check your information and try again";
       } else if (err.response?.status >= 500) {
-        errorMessage = "Our servers are having trouble right now";
         fieldErrors.general = "Our servers are having trouble. Please try again in a moment.";
       } else if (err.code === 'NETWORK_ERROR' || !err.response) {
-        errorMessage = "Can't connect to our servers";
         fieldErrors.general = "Check your internet connection and try again";
       }
       
