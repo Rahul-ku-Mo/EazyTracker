@@ -125,7 +125,7 @@ const ComingSoonPage = () => {
                   "text-sm",
                   isDark ? "text-zinc-400" : "text-zinc-600"
                 )}>
-                  Finalizing Stripe integration
+                  Finalizing Paddle integration
                 </p>
               </div>
 

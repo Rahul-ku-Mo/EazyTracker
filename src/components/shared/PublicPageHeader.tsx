@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Sun, Moon } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeProvider';
-import { cn } from '@/lib/utils';
+// cn removed - not needed after logo update
 
 const PublicPageHeader: React.FC = () => {
   const { setTheme, isDark } = useTheme();
@@ -20,15 +20,11 @@ const PublicPageHeader: React.FC = () => {
             transition={{ duration: 0.5 }}
           >
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <span className={cn(
-                "text-lg sm:text-xl font-bold",
-                isDark ? "text-white" : "text-zinc-900"
-              )}>
-                PulseBoard
-              </span>
+              <img 
+                src="/landing-page.svg" 
+                alt="PulseBoard Logo" 
+                className="h-12 sm:h-8 w-auto"
+              />
             </Link>
           </motion.div>
 

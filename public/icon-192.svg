@@ -1,10 +1,17 @@
 <svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#06845A;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#04845A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#07855B;stop-opacity:1" />
     </linearGradient>
   </defs>
-  <rect width="192" height="192" rx="38" fill="url(#icon-gradient)"/>
-  <path d="M138 72L84 126L54 96" stroke="white" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect width="192" height="192" rx="32" fill="url(#icon-gradient)"/>
+  <!-- Enhanced E letter design for larger size -->
+  <g fill="white">
+    <rect x="48" y="48" width="72" height="12" rx="6"/>
+    <rect x="48" y="48" width="12" height="96" rx="6"/>
+    <rect x="48" y="90" width="60" height="12" rx="6"/>
+    <rect x="48" y="132" width="72" height="12" rx="6"/>
+  </g>
 </svg> 

@@ -93,17 +93,11 @@ const LandingPage = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                </div>
-                <span
-                  className={cn(
-                    "text-lg sm:text-xl font-bold",
-                    isDark ? "text-white" : "text-zinc-900"
-                  )}
-                >
-                  PulseBoard
-                </span>
+                <img 
+                  src="/landing-page.svg" 
+                  alt="PulseBoard Logo" 
+                  className="h-12 w-auto"
+                />
               </motion.div>
 
               <motion.div

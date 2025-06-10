@@ -1,10 +1,17 @@
 <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="apple-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#06845A;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#04845A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#07855B;stop-opacity:1" />
     </linearGradient>
   </defs>
-  <rect width="180" height="180" rx="32" fill="url(#apple-gradient)"/>
-  <path d="M130 67.5L78.75 118.75L49.5 89.5" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect width="180" height="180" rx="40" fill="url(#apple-gradient)"/>
+  <!-- Apple-optimized E letter design -->
+  <g fill="white">
+    <rect x="45" y="45" width="68" height="11" rx="5.5"/>
+    <rect x="45" y="45" width="11" height="90" rx="5.5"/>
+    <rect x="45" y="84.5" width="56" height="11" rx="5.5"/>
+    <rect x="45" y="124" width="68" height="11" rx="5.5"/>
+  </g>
 </svg> 

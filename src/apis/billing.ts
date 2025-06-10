@@ -9,14 +9,16 @@ export interface Plan {
   price: number;
   currency: string;
   interval: string;
-  stripePrice?: string;
+  paddlePrice?: string;
   features: string[];
   limits: {
     projects: number;
-    teamMembers: number;
+    members: number;
     tasksPerProject: number;
+    storageGB: number;
     activityHistoryDays: number;
   };
+  popular: boolean;
 }
 
 export interface SubscriptionStatus {
@@ -92,14 +94,14 @@ export const getUsageStatistics = async (): Promise<any> => {
     );
 
     if (response.status === 200) {
-      return response.data.data;
+      return response.data;
     }
     return null;
   } catch (error) {
     console.error('Error fetching usage statistics:', error);
     // For new applications, return empty statistics instead of failing
     return {
-      teamMembers: { current: 0, limit: null },
+      members: { current: 0, limit: null },
       projects: { current: 0, limit: null },
       tasksPerProject: { current: 0, limit: null },
       storageUsed: { current: 0, limit: null },

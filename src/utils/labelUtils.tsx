@@ -82,7 +82,7 @@ export const getLabelIcon = (label: string) => {
   }
   
   // Payment/Billing
-  if (labelLower.includes('payment') || labelLower.includes('billing') || labelLower.includes('stripe')) {
+  if (labelLower.includes('payment') || labelLower.includes('billing') || labelLower.includes('paddle')) {
     return <CreditCard className="w-3 h-3" />;
   }
   

@@ -440,7 +440,7 @@ export const generateDummyData = (): { columns: Column[]; cards: CardItem[] } =>
     {
       id: 12,
       title: 'Payment Gateway Integration',
-      description: 'Integrate multiple payment gateways including Stripe, PayPal, and Apple Pay to provide flexible payment options for users. Implementation should include secure payment processing, webhook handling, subscription management, refund processing, and comprehensive error handling. Ensure PCI compliance, implement fraud detection, create payment analytics dashboards, and support multiple currencies. Include thorough testing with sandbox environments.',
+      description: 'Integrate multiple payment gateways including Paddle, PayPal, and Apple Pay to provide flexible payment options for users. Implementation should include secure payment processing, webhook handling, subscription management, refund processing, and comprehensive error handling. Ensure PCI compliance, implement fraud detection, create payment analytics dashboards, and support multiple currencies. Include thorough testing with sandbox environments.',
       order: 12,
       columnId: 2,
       labels: ['Backend', 'Payment', 'Integration'],

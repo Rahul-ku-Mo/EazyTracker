@@ -397,7 +397,7 @@ const PricingPage: React.FC = () => {
                 isDark ? "text-zinc-300" : "text-zinc-600"
               )}>
                 We accept all major credit cards (Visa, MasterCard, American Express) 
-                through our secure Stripe integration.
+                through our secure payment integration.
               </p>
             </div>
             

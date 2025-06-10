@@ -30,16 +30,25 @@ export const PricingPlans: React.FC<PricingPlansProps> = ({ showCurrentPlan = tr
   const createCheckoutSession = useCreateCheckoutSession();
 
   const handleUpgrade = async (plan: any) => {
-    if (!plan.stripePrice) return;
+    if (!plan.paddlePrice) {
+      alert('This plan is not available for purchase yet.');
+      return;
+    }
 
     try {
-      await createCheckoutSession.mutateAsync({
-        priceId: plan.stripePrice,
+      const response = await createCheckoutSession.mutateAsync({
+        priceId: plan.paddlePrice,
         successUrl: `${window.location.origin}/billing?success=true`,
         cancelUrl: `${window.location.origin}/billing?canceled=true`,
       });
+
+      // Redirect to Paddle checkout
+      if (response.url) {
+        window.location.href = response.url;
+      }
     } catch (error) {
       console.error('Failed to create checkout session:', error);
+      alert('Failed to start checkout. Please try again.');
     }
   };
 
@@ -160,7 +169,7 @@ export const PricingPlans: React.FC<PricingPlansProps> = ({ showCurrentPlan = tr
                     Projects: {plan.limits.projects === -1 ? 'Unlimited' : plan.limits.projects}
                   </div>
                   <div>
-                    Members: {plan.limits.teamMembers === -1 ? 'Unlimited' : plan.limits.teamMembers}
+                    Members: {plan.limits.members === -1 ? 'Unlimited' : plan.limits.members}
                   </div>
                   <div>
                     Tasks: {plan.limits.tasksPerProject === -1 ? 'Unlimited' : plan.limits.tasksPerProject}

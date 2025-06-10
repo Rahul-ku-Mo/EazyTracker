@@ -79,7 +79,7 @@ Best regards,
 ${user?.username}`);
 
       window.open(
-        `mailto:sales@eztrack.com?subject=${subject}&body=${body}`,
+        `mailto:support@pulseboard.co.in?subject=${subject}&body=${body}`,
         "_blank"
       );
     } else {

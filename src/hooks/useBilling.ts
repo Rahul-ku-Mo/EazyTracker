@@ -55,7 +55,7 @@ export const useCreateCheckoutSession = () => {
   return useMutation({
     mutationFn: createCheckoutSession,
     onSuccess: (data) => {
-      // Redirect to Stripe checkout
+      // Redirect to payment checkout
       window.location.href = data.url;
     },
     onError: (error: any) => {
@@ -69,7 +69,7 @@ export const useCreateBillingPortalSession = () => {
   return useMutation({
     mutationFn: createBillingPortalSession,
     onSuccess: (data) => {
-      // Redirect to Stripe billing portal
+      // Redirect to billing portal
       window.location.href = data.url;
     },
     onError: (error: any) => {
@@ -136,7 +136,7 @@ export const useFeatureAccess = () => {
     return currentPlan?.limits || null;
   };
 
-  const isWithinLimits = (type: 'projects' | 'teamMembers' | 'tasksPerProject', current: number) => {
+  const isWithinLimits = (type: 'projects' | 'members' | 'tasksPerProject', current: number) => {
     const limits = getCurrentPlanLimits();
     if (!limits) return false;
 

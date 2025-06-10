@@ -40,7 +40,7 @@ export const useFeatureGating = () => {
   };
 
   // Get upgrade message for a feature or resource
-  const getUpgradeMessage = (feature: FeatureType | 'projects' | 'teamMembers' | 'imageUploads'): string => {
+  const getUpgradeMessage = (feature: FeatureType | 'projects' | 'members' | 'imageUploads'): string => {
     const currentPlan = subscription?.plan?.toLowerCase();
     
     if (feature === 'projects') {
@@ -50,7 +50,7 @@ export const useFeatureGating = () => {
       return `You've reached your project limit. Upgrade to Professional for unlimited projects.`;
     }
     
-    if (feature === 'teamMembers') {
+    if (feature === 'members') {
       if (currentPlan === 'pro') {
         return `You've reached your team member limit. Upgrade to Enterprise for unlimited team members and advanced collaboration.`;
       }
@@ -88,7 +88,7 @@ export const useFeatureGating = () => {
   };
 
   // Check if user can create more of a resource type
-  const canCreate = (resourceType: 'projects' | 'teamMembers', currentCount: number = 0) => {
+  const canCreate = (resourceType: 'projects' | 'members', currentCount: number = 0) => {
     if (!limits) {
       return { canCreate: false, remaining: 0 };
     }
@@ -111,7 +111,7 @@ export const useFeatureGating = () => {
   const limits = getCurrentPlanLimits();
 
   // Get usage statistics (from the billing hook)
-  const getUsagePercentage = (type: 'projects' | 'teamMembers'): number => {
+  const getUsagePercentage = (type: 'projects' | 'members'): number => {
     if (!limits) return 0;
     
     const limit = limits[type];
@@ -163,7 +163,7 @@ export const useFeatureGating = () => {
         return {
           action: 'contact',
           target: 'custom',
-          url: 'mailto:sales@eztrack.com?subject=Enterprise%20Custom%20Solution%20Inquiry',
+          url: 'mailto:support@pulseboard.co.in?subject=Enterprise%20Custom%20Solution%20Inquiry',
           text: 'Contact Sales'
         };
       default:

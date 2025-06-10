@@ -190,7 +190,7 @@ export const BillingOverview: React.FC = () => {
                       Projects: {currentPlan.limits.projects === -1 ? 'Unlimited' : currentPlan.limits.projects}
                     </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">
-                      Team Members: {currentPlan.limits.teamMembers === -1 ? 'Unlimited' : currentPlan.limits.teamMembers}
+                      Team Members: {currentPlan.limits.members === -1 ? 'Unlimited' : currentPlan.limits.members}
                     </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">
                       Tasks per Project: {currentPlan.limits.tasksPerProject === -1 ? 'Unlimited' : currentPlan.limits.tasksPerProject}
@@ -267,17 +267,17 @@ export const BillingOverview: React.FC = () => {
                 </div>
                 <span className="text-sm text-gray-600 dark:text-gray-400">
                   {usageStats?.teamMembers?.current || 0} / {
-                    currentPlan?.limits.teamMembers === -1 
+                    currentPlan?.limits.members === -1 
                       ? '∞' 
-                      : currentPlan?.limits.teamMembers || '∞'
+                      : currentPlan?.limits.members || '∞'
                   }
                 </span>
               </div>
-              {currentPlan?.limits.teamMembers !== -1 && (
+              {currentPlan?.limits.members !== -1 && (
                 <Progress 
                   value={calculateUsagePercentage(
                     usageStats?.teamMembers?.current || 0, 
-                    currentPlan?.limits.teamMembers || 0
+                    currentPlan?.limits.members || 0
                   )} 
                   className="h-2"
                 />
@@ -356,8 +356,8 @@ export const BillingOverview: React.FC = () => {
           {/* Usage Warnings */}
           {currentPlan && (
             <div className="space-y-2">
-              {currentPlan.limits.teamMembers !== -1 && usageStats?.teamMembers && 
-               calculateUsagePercentage(usageStats.teamMembers.current, currentPlan.limits.teamMembers) >= 80 && (
+              {currentPlan.limits.members !== -1 && usageStats?.teamMembers && 
+               calculateUsagePercentage(usageStats.teamMembers.current, currentPlan.limits.members) >= 80 && (
                 <Alert className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/50">
                   <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                   <AlertDescription className="text-orange-800 dark:text-orange-200">
