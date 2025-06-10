@@ -56,7 +56,7 @@ export const PricingPlans: React.FC<PricingPlansProps> = ({ showCurrentPlan = tr
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency.toUpperCase(),
-      minimumFractionDigits: 0,
+      minimumFractionDigits: 2,
     }).format(price);
   };
 
