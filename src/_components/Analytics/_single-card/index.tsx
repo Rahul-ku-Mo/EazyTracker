@@ -8,23 +8,6 @@ import { cardsService } from "@/services/cards.service"
 import { analyticsService, TimeRange } from "@/services/analytics.service"
 import { useSearchParams } from "react-router-dom"
 
-const dummySelectedCard = {
-  id: 1,
-  title: "Task 1: UI Design",
-  complexity: "High",
-  assignee: "Rahul Kumar Mohanty"
-};
-
-const dummyCardTimeData = [
-  { day: "Mon", time: 2 },
-  { day: "Tue", time: 3 },
-  { day: "Wed", time: 1.5 },
-  { day: "Thu", time: 4 },
-  { day: "Fri", time: 2.5 },
-  { day: "Sat", time: 0 },
-  { day: "Sun", time: 0 }
-];
-
 interface SingleCardAnalyticsProps {
   timeRange: TimeRange;
 }
@@ -52,6 +35,14 @@ const SingleCardAnalytics = ({ timeRange }: SingleCardAnalyticsProps) => {
         enabled: !!taskId // Only run query if taskId exists
     });
 
+    if (!taskId) {
+        return (
+            <div className="flex items-center justify-center h-64 text-muted-foreground">
+                Please select a task to view analytics.
+            </div>
+        );
+    }
+
     if(isPending) {
         return (
             <div className="flex items-center justify-center h-64">
@@ -60,7 +51,7 @@ const SingleCardAnalytics = ({ timeRange }: SingleCardAnalyticsProps) => {
         );
     }
 
-    if(isError) {
+    if(isError || !cardAnalytics) {
         return (
             <div className="flex items-center justify-center h-64 text-red-500">
                 Error loading card analytics. Please try again later.
@@ -68,21 +59,18 @@ const SingleCardAnalytics = ({ timeRange }: SingleCardAnalyticsProps) => {
         );
     }
 
-    // Use cardAnalytics data if available, otherwise fall back to dummy data
-    const analyticsData = cardAnalytics || dummySelectedCard;
-
     return (
         <div className="space-y-6">
-            <TimeTracker {...analyticsData} />
+            <TimeTracker {...cardAnalytics} />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <TimeSpentPerday 
-                    selectedCard={analyticsData.title} 
-                    cardTimeData={cardTimeData?.cardTimeData || dummyCardTimeData}
+                    selectedCard={cardAnalytics.title} 
+                    cardTimeData={cardTimeData?.cardTimeData || []}
                     timeRange={timeRange}
                     isLoading={isTimeDataPending}
                 />
                 <PerformanceComparison 
-                    cardId={taskId ? Number(taskId) : 1} 
+                    cardId={Number(taskId)} 
                 />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
