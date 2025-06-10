@@ -17,7 +17,7 @@ const PublicPageFooter: React.FC = () => {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
               <img 
-                src="/landing-page.svg" 
+                src="/landing-page.png" 
                 alt="PulseBoard Logo" 
                 className="h-8 w-auto"
               />
