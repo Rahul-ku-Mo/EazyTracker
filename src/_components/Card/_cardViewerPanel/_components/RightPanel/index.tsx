@@ -273,7 +273,7 @@ const RightPanel = () => {
             )}
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button
               variant={isToday(dueDate) ? "destructive" : "outline"}
               className={cn(
@@ -319,8 +319,30 @@ const RightPanel = () => {
                   }
                   className="bg-white border rounded-md dark:bg-zinc-900"
                 />
+                {dueDate && (
+                  <div className="p-3 border-t">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => updateCardMutation.mutate({ cardId, dueDate: null })}
+                    >
+                      Clear due date
+                    </Button>
+                  </div>
+                )}
               </PopoverContent>
             </Popover>
+            {dueDate && (
+              <Button
+                variant="ghost"
+                className="rounded-full text-xs py-1 px-4 h-auto text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                onClick={() => updateCardMutation.mutate({ cardId, dueDate: null })}
+              >
+                <X className="w-3 h-3 mr-1" />
+                Clear
+              </Button>
+            )}
           </div>
         </div>
 

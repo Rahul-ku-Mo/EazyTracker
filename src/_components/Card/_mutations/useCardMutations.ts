@@ -11,7 +11,7 @@ type TIssueUpdateCard = {
   title?: string;
   cardDescription?: string;
   attachments?: string[];
-  dueDate?: Date;
+  dueDate?: Date | null;
   comments?: string[];
   cardId: number;
   columnId?: string;

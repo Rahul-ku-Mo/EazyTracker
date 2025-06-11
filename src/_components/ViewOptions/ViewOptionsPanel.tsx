@@ -44,6 +44,9 @@ export interface ViewOptions {
   showEmptyColumns: boolean;
   showCardIds: boolean;
   
+  // Date Format
+  dateFormat: 'readable' | 'calendar';
+  
   // Display Properties
   displayProperties: {
     priority: boolean;
@@ -303,6 +306,14 @@ const ViewOptionsPanel = ({
                     <Switch
                       checked={viewOptions.showCardIds}
                       onCheckedChange={(checked) => onOptionsChange({ showCardIds: checked })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between px-4 py-2.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors">
+                    <span className="text-sm text-zinc-700 dark:text-zinc-300">Readable date format</span>
+                    <Switch
+                      checked={viewOptions.dateFormat === 'readable'}
+                      onCheckedChange={(checked) => onOptionsChange({ dateFormat: checked ? 'readable' : 'calendar' })}
                     />
                   </div>
                 </motion.div>

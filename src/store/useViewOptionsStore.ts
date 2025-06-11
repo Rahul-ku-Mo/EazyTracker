@@ -14,6 +14,9 @@ export interface ViewOptions {
   showEmptyColumns: boolean;
   showCardIds: boolean;
   
+  // Date Format
+  dateFormat: 'readable' | 'calendar';
+  
   // Display Properties
   displayProperties: {
     priority: boolean;
@@ -60,6 +63,8 @@ const defaultViewOptions: ViewOptions = {
   showEmptyGroups: true,
   showEmptyColumns: true,
   showCardIds: false,
+  
+  dateFormat: 'readable',
   
   displayProperties: {
     priority: true,

@@ -48,7 +48,7 @@ import { Calendar as CalendarComponent } from "../../components/ui/calendar";
 import { Button } from "../../components/ui/button";
 import { useMembers } from "../../hooks/useMembers";
 import { useParams } from "react-router-dom";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import { TUser } from "../../types";
 import { Input } from "../../components/ui/input";
 
@@ -155,6 +155,7 @@ const CardFooter = ({
   labels,
   status,
   cardId,
+  dateFormat = 'readable',
 }: {
   dueDate?: Date;
   attachmentsCount?: number;
@@ -175,6 +176,7 @@ const CardFooter = ({
     daysOverdue: number;
   };
   cardId: number;
+  dateFormat?: 'readable' | 'calendar';
 }) => {
   const priorityStyles = getPriorityStyles(priority);
   const { id } = useParams();
@@ -262,7 +264,10 @@ const CardFooter = ({
                   <>
                     <CalendarClockIcon className="w-3 h-3 text-zinc-700 dark:text-zinc-300" strokeWidth={3} />
                     <div className="font-bold relative top-0.5 text-zinc-700 dark:text-zinc-300 text-[10px]">
-                      {formatDistanceToNow(new Date(dueDate), { addSuffix: true })}
+                      {dateFormat === 'readable' 
+                        ? formatDistanceToNow(new Date(dueDate), { addSuffix: true })
+                        : format(new Date(dueDate), 'MMM dd, yyyy')
+                      }
                     </div>
                   </>
                 ) : (
@@ -284,27 +289,23 @@ const CardFooter = ({
                 mode="single"
                 selected={dueDate ? new Date(dueDate) : undefined}
                 onSelect={(date) => {
-                  if (date) {
-                    updateDueDate(date);
-                  }
+                  updateDueDate(date || null);
                 }}
                 initialFocus
                 className="p-3"
               />
               <div className="p-3 border-t">
-                {dueDate && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      updateDueDate(null);
-                    }}
-                  >
-                    Clear due date
-                  </Button>
-                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateDueDate(null);
+                  }}
+                >
+                  Clear due date
+                </Button>
               </div>
             </PopoverContent>
           </Popover>
@@ -757,6 +758,7 @@ const Card = ({ columnName, viewOptions }: CardProps) => {
             status={status} 
             assignees={viewOptions?.displayProperties.assignee !== false ? assignees : undefined}
             cardId={id}
+            dateFormat={viewOptions?.dateFormat || 'readable'}
           />
           <div 
               className="absolute top-2 right-2 bg-zinc-100 dark:bg-zinc-900/50 rounded-lg p-1.5 opacity-0 group-hover:opacity-100 transition-all ease-linear cursor-pointer"

@@ -1,6 +1,6 @@
 // Launch Configuration
 // Set this to false to lock the application and show "Coming Soon" page for all routes except landing and pricing
-export const IS_LAUNCHED = false;
+export const IS_LAUNCHED = true;
 
 // Routes that are always accessible even when locked
 export const ALWAYS_ACCESSIBLE_ROUTES = [
