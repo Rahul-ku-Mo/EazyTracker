@@ -93,6 +93,10 @@ const data = {
           title: "Workspaces",
           url: "/workspace",
         },
+        {
+          title: "Notes",
+          url: "/notes",
+        }
       ],
     },
     {

@@ -1,5 +1,5 @@
 
-import Account from "../_components/Account";
+import Account from "@/_components/Account";
 import { Outlet } from "react-router-dom";
 
 const AccountPage = () => {

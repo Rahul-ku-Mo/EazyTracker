@@ -23,6 +23,9 @@ import {
   ComingSoonPage,
   TermsPage,
   PrivacyPage,
+  NotePage,
+  NoteViewPage,
+  NoteEditPage,
 } from "@/routes/element";
 
 import { KanbanProvider } from "@/context/KanbanProvider";
@@ -121,6 +124,22 @@ const authenticatedRoutes = [
   {
     path: "/team/management",
     element: <WithContexts Component={TeamManagementPage} />,
+  },
+  {
+    path: "/notes",
+    element: <WithContexts Component={NotePage} />,
+  },
+  {
+    path: "/notes/view/:id",
+    element: <WithContexts Component={NoteViewPage} />,
+  },
+  {
+    path: "/notes/:id/edit",
+    element: <WithContexts Component={NoteEditPage} />,
+  },
+  {
+    path: "/notes/:slug",
+    element: <WithContexts Component={NotePage} />,
   },
 ];
 
