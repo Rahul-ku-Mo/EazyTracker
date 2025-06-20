@@ -1,11 +1,11 @@
 import MainLayout from "@/layouts/Container";
-import { Star, RotateCcw, ArrowRight, Calendar, Users, FileText, Plus, Globe, Lock, Trash2 } from "lucide-react";
+import { ArrowRight,  FileText, Plus, Globe, Lock, Trash2 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTheme } from "@/context/ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useRef, useEffect } from "react";
-
+import { iconMap } from "@/interfaces/notes";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,73 +25,9 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { Note, Category } from "@/interfaces/notes";
 
-// Icon mapping to handle serialization
-const iconMap = {
-  RotateCcw: RotateCcw,
-  Star: Star,
-  Calendar: Calendar,
-  Users: Users,
-  FileText: FileText,
-  Plus: Plus,
-  ArrowRight: ArrowRight,
-};
-
-type IconName = keyof typeof iconMap;
-
-interface Note {
-  id: string;
-  title: string;
-  content: string;
-  icon: IconName;
-  iconColor: string;
-  isCompleted: boolean;
-  isPublic: boolean;
-  priority?: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  hoverColor: string;
-  isDefault: boolean;
-  notes: Note[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-// API functions
-const fetchCategories = async (): Promise<Category[]> => {
-  const response = await api.get('/notes/categories');
-  return response.data;
-};
-
-const createCategory = async (data: { name: string; hoverColor?: string }): Promise<Category> => {
-  const response = await api.post('/notes/categories', data);
-  return response.data;
-};
-
-const deleteCategory = async (categoryId: string): Promise<void> => {
-  await api.delete(`/notes/categories/${categoryId}`);
-};
-
-const createNote = async (data: { categoryId: string; title: string; content?: string; icon?: string; iconColor?: string; isPublic?: boolean }): Promise<Note> => {
-  const response = await api.post('/notes/notes', data);
-  return response.data;
-};
-
-const updateNote = async (data: { id: string; isPublic?: boolean; title?: string; content?: string }): Promise<Note> => {
-  const response = await api.put(`/notes/notes/${data.id}`, data);
-  return response.data;
-};
-
-const deleteNote = async (noteId: string): Promise<void> => {
-  await api.delete(`/notes/notes/${noteId}`);
-};
+import { fetchCategories, createCategory, deleteCategory, createNote, updateNote, deleteNote } from "@/apis/notes";
 
 const NotePage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -218,6 +154,7 @@ const NotePage = () => {
   const updateNoteMutation = useMutation({
     mutationFn: updateNote,
     onSuccess: (updatedNote) => {
+      // Update the specific note in cache
       queryClient.setQueryData(['categories'], (old: Category[] = []) => 
         old.map(cat => ({
           ...cat,
@@ -226,6 +163,13 @@ const NotePage = () => {
           )
         }))
       );
+      
+      // Also invalidate to ensure fresh data
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['note', updatedNote.id] });
+    },
+    onError: (error) => {
+      console.error('Error updating note:', error);
     },
   });
 
@@ -258,7 +202,7 @@ const NotePage = () => {
   
   const handleCategoryClick = (categorySlug: string) => {
     if (categorySlug === 'plan') {
-      navigate('/notes');
+      navigate('/notes/plan');
     } else {
       navigate(`/notes/${categorySlug}`);
     }
@@ -436,7 +380,7 @@ const NotePage = () => {
             return (
               <div
                 key={card.id}
-                onClick={() => navigate(`/notes/view/${card.id}`)}
+                onClick={() => navigate(`/notes/${card.id}?slug=${currentSlug}&mode=view`)}
                 onContextMenu={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -489,9 +433,12 @@ const NotePage = () => {
                 </div>
                 
                 {/* Title */}
-                <h2 className={`text-base font-semibold mb-2 line-clamp-2
+                <h2 className={`text-base font-semibold mb-2 line-clamp-2 flex items-center gap-2
                   ${isDark ? 'text-white' : 'text-zinc-900'}`}>
-                  {card.title}
+                  {card.emoji && (
+                    <span className="text-lg flex-shrink-0">{card.emoji}</span>
+                  )}
+                  <span className="truncate">{card.title}</span>
                 </h2>
                 
                 {/* Description */}

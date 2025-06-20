@@ -87,4 +87,3 @@ export const NotePage = Loadable(lazy(() => import("../pages/notes/NotePage")));
 
 export const NoteViewPage = Loadable(lazy(() => import("../pages/notes/NoteViewPage")));
 
-export const NoteEditPage = Loadable(lazy(() => import("../pages/notes/NoteEditPage")));

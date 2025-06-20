@@ -25,7 +25,6 @@ import {
   PrivacyPage,
   NotePage,
   NoteViewPage,
-  NoteEditPage,
 } from "@/routes/element";
 
 import { KanbanProvider } from "@/context/KanbanProvider";
@@ -130,12 +129,8 @@ const authenticatedRoutes = [
     element: <WithContexts Component={NotePage} />,
   },
   {
-    path: "/notes/view/:id",
+    path: "/notes/:id",
     element: <WithContexts Component={NoteViewPage} />,
-  },
-  {
-    path: "/notes/:id/edit",
-    element: <WithContexts Component={NoteEditPage} />,
   },
   {
     path: "/notes/:slug",
