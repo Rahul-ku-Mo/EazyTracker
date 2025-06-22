@@ -24,7 +24,7 @@ const MainPanel = ({
       <div className="flex items-center justify-between">
         <div className="flex gap-2 flex-col">
           <Badge className="rounded-full bg-transparent w-fit text-muted-foreground border-muted-foreground dark:text-white dark:border-white hover:bg-muted-foreground hover:text-background dark:hover:bg-white dark:hover:text-black">{columnName}</Badge>
-          <h2 className=" text-lg font-bold">{title}</h2>
+          <h2 className="text-4xl font-bold py-2">{title}</h2>
         </div>
         <Button
           variant="ghost"

@@ -109,7 +109,7 @@ const useAuthProvider = () => {
       }
     } catch (err : any) {
       console.error("Login error:", err);
-      let fieldErrors: AuthErrors = {
+      const fieldErrors: AuthErrors = {
         email: "",
         password: "",
         username: "",
@@ -181,7 +181,7 @@ const useAuthProvider = () => {
       navigate("/workspace");
     } catch (err : any) {
       console.error("Signup error:", err);
-      let fieldErrors: AuthErrors = {
+      const fieldErrors: AuthErrors = {
         email: "",
         password: "",
         username: "",

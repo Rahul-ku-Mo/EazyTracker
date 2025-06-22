@@ -23,7 +23,7 @@ import { $convertFromMarkdownString } from "@lexical/markdown";
 import { MARKDOWN_TRANSFORMERS as TRANSFORMERS } from "./MARKDOWN_TRANSFORMERS.ts";
 import { EditorRefPlugin } from "@lexical/react/LexicalEditorRefPlugin";
 import { CopyImagePlugin } from "./Plugins/CopyImagePlugin";
-import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
+import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
 import { mergeRegister } from "@lexical/utils";
 /**Lexical Nodes */
 import { CodeNode, CodeHighlightNode } from "@lexical/code";
@@ -43,6 +43,7 @@ import {
 import { useCardMutation } from "../_mutations/useCardMutations.ts";
 import { ColumnContext } from "../../../context/ColumnProvider.tsx";
 import { CardToolbarPlugin } from "./Plugins/CardToolbarPlugin.tsx";
+import { FloatingTextFormatToolbarPlugin } from "@/_components/Notes/_editor/plugins/FloatingTextFormatToolbarPlugin";
 
 import { ImageNode } from "./ImageNode";
 import { ImagesPlugin } from "./Plugins/ImagePlugin.tsx";
@@ -176,10 +177,19 @@ export const CardDetailsEditor = ({
   description,
 }: CardDetailsEditorProps): JSX.Element => {
   const [editorState, setEditorState] = useState<string>();
+  const [floatingAnchorElem, setFloatingAnchorElem] =
+    useState<HTMLDivElement | null>(null);
+
   const columnId = useContext(ColumnContext);
   const { updateCardMutation } = useCardMutation();
 
   const editorRef = useRef(null);
+
+  const onRef = (_floatingAnchorElem: HTMLDivElement) => {
+    if (_floatingAnchorElem !== null) {
+      setFloatingAnchorElem(_floatingAnchorElem);
+    }
+  };
 
   const initialConfig: InitialConfigType = {
     namespace: "CardDetailsEditor",
@@ -218,7 +228,8 @@ export const CardDetailsEditor = ({
           <div className="h-full editor-inner">
             <RichTextPlugin
               contentEditable={
-                <ContentEditable
+               <div ref={onRef} className="relative">
+                 <ContentEditable
                   className={cn(
                     "editor-root",
                     "w-full px-3 py-2 overflow-y-auto",
@@ -227,6 +238,7 @@ export const CardDetailsEditor = ({
                     "max-h-[calc(100vh-300px)]"
                   )}
                 />
+               </div>
               }
               ErrorBoundary={LexicalErrorBoundary}
             />
@@ -241,6 +253,9 @@ export const CardDetailsEditor = ({
             <ImagesPlugin />
             <EditorRefPlugin editorRef={editorRef} />
             <CopyImagePlugin ref={editorRef} />
+            <FloatingTextFormatToolbarPlugin
+              anchorElem={floatingAnchorElem ?? undefined}
+            />
           </div>
         </div>
 
@@ -266,28 +281,28 @@ const KeyboardShortcutsPlugin = () => {
           if (!isModKey) return false;
 
           switch (key.toLowerCase()) {
-            case 'b':
+            case "b":
               if (!shiftKey && !altKey) {
                 event.preventDefault();
-                editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
+                editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold");
                 return true;
               }
               break;
-            case 'i':
+            case "i":
               if (!shiftKey && !altKey) {
                 event.preventDefault();
-                editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
+                editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic");
                 return true;
               }
               break;
-            case 'u':
+            case "u":
               if (!shiftKey && !altKey) {
                 event.preventDefault();
-                editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
+                editor.dispatchCommand(FORMAT_TEXT_COMMAND, "underline");
                 return true;
               }
               break;
-            case 'z':
+            case "z":
               if (!shiftKey && !altKey) {
                 event.preventDefault();
                 editor.dispatchCommand(UNDO_COMMAND, undefined);
@@ -298,18 +313,18 @@ const KeyboardShortcutsPlugin = () => {
                 return true;
               }
               break;
-            case 'y':
+            case "y":
               if (!shiftKey && !altKey) {
                 event.preventDefault();
                 editor.dispatchCommand(REDO_COMMAND, undefined);
                 return true;
               }
               break;
-            case 's':
+            case "s":
               if (!shiftKey && !altKey) {
                 event.preventDefault();
                 // Save functionality - we'll trigger the save callback
-                const saveEvent = new CustomEvent('lexical-save');
+                const saveEvent = new CustomEvent("lexical-save");
                 document.dispatchEvent(saveEvent);
                 return true;
               }

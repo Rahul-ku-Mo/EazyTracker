@@ -4,7 +4,7 @@ export interface Note {
     id: string;
     title: string;
     content: string;
-    icon: IconName;
+    icon: string;
     iconColor: string;
     isCompleted: boolean;
     isPublic: boolean;
@@ -12,8 +12,14 @@ export interface Note {
     emoji?: string;
     createdAt: string;
     updatedAt: string;
-}
+    category?: {
+      id: string;
+      name: string;
+      slug: string;
+    };
+  }
 
+  
 export interface Category {
     id: string;
     name: string;
