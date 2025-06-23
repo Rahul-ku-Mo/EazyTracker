@@ -4,6 +4,7 @@ import {
   $getRoot,
   $getSelection,
   $isRangeSelection,
+  ElementNode,
   LexicalEditor,
 } from "lexical";
 import { $setBlocksType } from "@lexical/selection";
@@ -14,7 +15,7 @@ import {
   REMOVE_LIST_COMMAND,
 } from "@lexical/list";
 
-import { $createHeadingNode, HeadingTagType } from "@lexical/rich-text";
+import { $createHeadingNode, HeadingNode, HeadingTagType } from "@lexical/rich-text";
 import { $convertFromMarkdownString, $convertToMarkdownString } from "@lexical/markdown";
 import { MARKDOWN_TRANSFORMERS as TRANSFORMERS } from "./MARKDOWN_TRANSFORMERS.ts";
 import { $isCodeNode, $createCodeNode } from "@lexical/code";
@@ -61,7 +62,7 @@ export const formatHeading = (
 ) => {
   editor.update(() => {
     const selection = $getSelection();
-    $setBlocksType(selection, () => $createHeadingNode(headingSize));
+    $setBlocksType(selection, () => $createHeadingNode(headingSize) as unknown as ElementNode);
   });
 };
 

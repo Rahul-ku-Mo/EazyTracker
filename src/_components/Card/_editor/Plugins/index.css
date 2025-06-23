@@ -1,0 +1,58 @@
+.draggable-block-menu {
+    
+    padding: 2px 1px;
+    cursor: grab;
+    opacity: 0;
+    position: absolute;
+    left: -10px;
+    top: 0;
+    will-change: transform;
+    display: flex;
+    z-index: 9999;
+    pointer-events: auto;
+    transition: opacity 250ms ease-in-out;
+  }
+
+ 
+  
+  .draggable-block-menu .icon {
+    width: 16px;
+    height: 16px;
+    opacity: 0.3;
+    background-size: 16px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWdyaXAtdmVydGljYWwtaWNvbiBsdWNpZGUtZ3JpcC12ZXJ0aWNhbCI+PGNpcmNsZSBjeD0iOSIgY3k9IjEyIiByPSIxIi8+PGNpcmNsZSBjeD0iOSIgY3k9IjUiIHI9IjEiLz48Y2lyY2xlIGN4PSI5IiBjeT0iMTkiIHI9IjEiLz48Y2lyY2xlIGN4PSIxNSIgY3k9IjEyIiByPSIxIi8+PGNpcmNsZSBjeD0iMTUiIGN5PSI1IiByPSIxIi8+PGNpcmNsZSBjeD0iMTUiIGN5PSIxOSIgcj0iMSIvPjwvc3ZnPg==");
+  }
+  
+  .draggable-block-menu .icon-plus {
+    display: inline-block;
+    border: none;
+    cursor: pointer;
+    background-color: transparent;
+    background-size: 16px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXBsdXMtaWNvbiBsdWNpZGUtcGx1cyI+PHBhdGggZD0iTTUgMTJoMTQiLz48cGF0aCBkPSJNMTIgNXYxNCIvPjwvc3ZnPg==");
+  }
+  
+  .draggable-block-menu:active {
+    cursor: grabbing;
+  }
+  
+  .draggable-block-menu .icon:hover {
+    background-color: #efefef;
+  }
+  
+  .draggable-block-target-line {
+    pointer-events: none;
+    background: hsl(var(--primary));
+    height: 4px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    will-change: transform;
+    z-index: 9998;
+  }
+  

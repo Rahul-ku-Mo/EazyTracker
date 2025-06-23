@@ -128,47 +128,8 @@
   user-select: text;
 }
 
-/* Override list-item styling specifically for checkboxes */
-.editor-list-item.editor-list-item-checked,
-.editor-list-item.editor-list-item-unchecked {
-  list-style: none !important;
-  list-style-type: none !important;
-  list-style-image: none !important;
-  padding-left: 2rem;
-  margin: 0.5rem 0;
-  display: block !important;
-}
-
-.editor-list-item.editor-list-item-checked::marker,
-.editor-list-item.editor-list-item-unchecked::marker {
-  display: none !important;
-  content: none !important;
-}
-
-/* Bullet list bullets */
-.editor-list-ul .editor-list-item::before {
-  content: "•";
-  position: absolute;
-  left: 0.5rem;
-  top: 0;
-  color: var(--muted-foreground);
-  font-weight: bold;
-  font-size: 1.1em;
-  pointer-events: none;
-  user-select: none;
-}
-
-/* Completely remove bullet styling when checkbox classes are present */
-.editor-list-ul .editor-list-item-checked,
-.editor-list-ul .editor-list-item-unchecked,
-.editor-list-checklist .editor-list-item-checked,
-.editor-list-checklist .editor-list-item-unchecked {
-  list-style: none !important;
-  list-style-type: none !important;
-}
-
-/* Hide bullet content but show checkbox styling */
-.editor-list-ul .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked)::before {
+/* Bullet list bullets - Only for non-checkbox items */
+.editor-list-ul .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked):not(.editor-nested-list-item)::before {
   content: "•";
   position: absolute;
   left: 0.5rem;
@@ -185,7 +146,7 @@
   counter-increment: list-counter;
 }
 
-.editor-list-ol .editor-list-item::before {
+.editor-list-ol .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked)::before {
   content: counter(list-counter) ".";
   position: absolute;
   left: 0;
@@ -198,7 +159,7 @@
   user-select: none;
 }
 
-/* Enhanced checklist items with emerald styling */
+/* FIXED: Enhanced checklist items with emerald styling */
 .editor-list-item-checked,
 .editor-list-item-unchecked {
   position: relative;
@@ -216,20 +177,8 @@
 
 .editor-list-item-checked::marker,
 .editor-list-item-unchecked::marker {
-  display: none;
-}
-
-.editor-list-item-checked,
-.editor-list-item-unchecked {
-  list-style: none !important;
-  list-style-type: none !important;
-  list-style-position: outside !important;
-}
-
-.editor-list-item-checked::marker,
-.editor-list-item-unchecked::marker {
-  content: none !important;
   display: none !important;
+  content: none !important;
 }
 
 .editor-list-item-checked {
@@ -251,10 +200,8 @@
   color: #d1d5db;
 }
 
-/* Checkbox styling - CHECKED */
-.editor-list-item-checked::before,
-.editor-list-ul .editor-list-item-checked::before,
-.editor-list-checklist .editor-list-item-checked::before {
+/* FIXED: Checkbox styling - CHECKED - Allow checkboxes at any nesting level */
+.editor-list-item-checked::before {
   content: "" !important;
   position: absolute !important;
   left: 0 !important;
@@ -298,9 +245,8 @@
   line-height: 1;
 }
 
-.editor-list-item-unchecked::before,
-.editor-list-ul .editor-list-item-unchecked::before,
-.editor-list-checklist .editor-list-item-unchecked::before {
+/* FIXED: Checkbox styling - UNCHECKED - Allow checkboxes at any nesting level */
+.editor-list-item-unchecked::before {
   content: "" !important;
   position: absolute !important;
   left: 0 !important;
@@ -308,7 +254,7 @@
   width: 1rem !important;
   height: 1rem !important;
   border: 1.5px solid #d1d5db !important;
-  background-color: white !important;
+  background-color: transparent !important;
   border-radius: 2px !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
@@ -338,33 +284,52 @@
   box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
 }
 
+/* IMPORTANT: Remove the overly restrictive nested list overrides */
+/* Only prevent checkbox styling on regular nested list items that aren't checkboxes */
+.editor-nested-list .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked)::before,
+.editor-nested-list .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked)::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Ensure nested checkbox items maintain proper spacing */
+.editor-nested-list .editor-list-item-checked,
+.editor-nested-list .editor-list-item-unchecked {
+  padding-left: 2rem;
+  margin: 0.5rem 0;
+}
+
 /* Nested lists */
+.editor-nested-list-item {
+  list-style-type: none;
+}
+
+.editor-nested-list-item::before,
+.editor-nested-list-item::after {
+  display: none !important;
+  content: none !important;
+}
+
 .editor-nested-list {
-  margin: 0.25rem 0 0.25rem 1.5rem;
-  padding-left: 0;
+  margin-left: 1rem;
 }
 
 .editor-nested-list-item {
-  position: relative;
   margin: 0.25rem 0;
-  padding-left: 1.75rem;
-  list-style: none;
+  padding-left: 1.5rem;
 }
 
-.editor-nested-list-item::before {
+/* For regular bullet points in nested lists (non-checkbox) */
+.editor-nested-list .editor-list-ul .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked)::before {
   content: "◦";
   position: absolute;
   left: 0.5rem;
   top: 0;
   color: var(--muted-foreground);
-  font-size: 0.9em;
+  font-weight: bold;
+  font-size: 1.1em;
   pointer-events: none;
   user-select: none;
-}
-
-.editor-nested-list-item:before,
-.editor-nested-list-item:after {
-  display: block;
 }
 
 /* Improved placeholder */

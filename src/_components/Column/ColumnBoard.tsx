@@ -356,7 +356,7 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
             variant="outline"
             size="sm"
             onClick={openPanel}
-            className="flex items-center gap-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-md"
+            className="flex items-center gap-2 h-9 hover:bg-zinc-50 dark:hover:bg-zinc-800"
           >
             <Settings className="h-4 w-4" />
             View Options

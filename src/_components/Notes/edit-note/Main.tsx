@@ -2,8 +2,9 @@ import { useCallback, useState } from "react";
 import EmojiPicker from "../emojiPicker";
 import { Pencil, Rocket, X, Upload, Palette } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { useTheme } from "@/context/ThemeProvider";
+  
+    import { useTheme } from "@/context/ThemeProvider";
+import { NotesEditor } from "../_editor";
 
 interface Cover {
   type: "image" | "color";
@@ -256,27 +257,7 @@ const NoteMainContent = ({
                 fontWeight: "700",
               }}
             />
-          <Textarea
-            value={content}
-            name="content"
-            onChange={(e) => {
-              setContent(e.target.value);
-              onContentChange?.(e.target.value);
-            }}
-            placeholder="Write anything you want..."
-            className={`w-full min-h-[500px] border-none p-0 bg-transparent resize-none outline-none text-base leading-relaxed
-              ${
-                isDark
-                  ? "text-zinc-200 placeholder:text-zinc-600"
-                  : "text-zinc-700 placeholder:text-zinc-400"
-              }
-              focus-visible:ring-0 focus-visible:ring-offset-0`}
-            style={{
-              boxShadow: "none",
-              fontSize: "16px",
-              lineHeight: "1.5",
-            }}
-          />
+          <NotesEditor description={content} />
         </div>
 
         {/* Bottom spacing */}

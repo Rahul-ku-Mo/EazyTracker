@@ -135,6 +135,9 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
     checkList: false,
   });
 
+
+  console.log('headings', headings);
+
   const updateToolbar = useCallback(() => {
     const selection = $getSelection();
     if ($isRangeSelection(selection)) {
@@ -183,9 +186,12 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
             h6: false,
           });
         } else {
-          const type = $isHeadingNode(element)
-            ? element.getTag()
-            : element.getType();
+          const type = $isHeadingNode(element as any)
+            ? (element as any).getTag()
+            : (element as any).getType();
+
+          console.log('type', type);
+
           if (type in blockTypeToBlockName) {
             setHeadings((prev) => ({
               ...prev,
