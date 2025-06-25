@@ -3,87 +3,114 @@ import EmojiPicker from "../emojiPicker";
 import { Pencil, Rocket, X, Upload, Palette } from "lucide-react";
 import { Input } from "@/components/ui/input";
   
-    import { useTheme } from "@/context/ThemeProvider";
+import { useTheme } from "@/context/ThemeProvider";
 import { NotesEditor } from "../_editor";
-
-interface Cover {
-  type: "image" | "color";
-  value: string; // URL for image, hex code for color
-}
+import { Cover } from "@/interfaces/notes";
 
 const NoteMainContent = ({
   currentTitle,
   currentContent,
   currentEmoji,
+  currentCover,
   onTitleChange,
   onContentChange,
   onEmojiChange,
+  onCoverChange,
+  readOnly = false,
 }: {
   currentTitle: string;
   currentContent: string;
   currentEmoji: any;
+  currentCover?: Cover | null;
   onTitleChange?: (title: string) => void;
   onContentChange?: (content: string) => void;
   onEmojiChange?: (emoji: string) => void;
+  onCoverChange?: (cover: Cover | null) => void;
+  readOnly?: boolean;
 }) => {
   const { isDark } = useTheme();
   const [title, setTitle] = useState(currentTitle);
-  const [content, setContent] = useState(currentContent);
   const [emoji, setEmoji] = useState<string>(currentEmoji);
   const [isOpen, setIsOpen] = useState(false);
 
-
-  // Cover-related state
-  const [cover, setCover] = useState<Cover | null>(null);
+  // Cover-related state - initialize with current cover
+  const [cover, setCover] = useState<Cover | null>(currentCover || null);
   const [showCoverModal, setShowCoverModal] = useState(false);
+
+  // Handle content changes from the editor
+  const handleContentChange = useCallback(
+    (content: string) => {
+      if (!readOnly) {
+        onContentChange?.(content);
+      }
+    },
+    [onContentChange, readOnly]
+  );
 
   // Memoized emoji handlers to prevent unnecessary re-renders
   const handleEmojiSelect = useCallback(
     (selectedEmoji: string) => {
-      setEmoji(selectedEmoji);
-      setIsOpen(false);
-      onEmojiChange?.(selectedEmoji);
+      if (!readOnly) {
+        setEmoji(selectedEmoji);
+        setIsOpen(false);
+        onEmojiChange?.(selectedEmoji);
+      }
     },
-    [onEmojiChange]
+    [onEmojiChange, readOnly]
   );
 
   const handleEmojiRemove = useCallback(() => {
-    setEmoji("");
-    setIsOpen(false);
-    onEmojiChange?.("");
-  }, [onEmojiChange]);
+    if (!readOnly) {
+      setEmoji("");
+      setIsOpen(false);
+      onEmojiChange?.("");
+    }
+  }, [onEmojiChange, readOnly]);
 
   // Cover handlers
   const handleAddCover = useCallback(() => {
-    setShowCoverModal(true);
-  }, []);
+    if (!readOnly) {
+      setShowCoverModal(true);
+    }
+  }, [readOnly]);
 
   const handleCoverSelect = useCallback(
     (type: "image" | "color", value: string) => {
-      setCover({ type, value });
-      setShowCoverModal(false);
+      if (!readOnly) {
+        const newCover = { type, value };
+        setCover(newCover);
+        setShowCoverModal(false);
+        onCoverChange?.(newCover);
+      }
     },
-    []
+    [onCoverChange, readOnly]
   );
 
   const handleRemoveCover = useCallback(() => {
-    setCover(null);
-  }, []);
+    if (!readOnly) {
+      setCover(null);
+      onCoverChange?.(null);
+    }
+  }, [onCoverChange, readOnly]);
 
   const handleFileUpload = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result as string;
-          setCover({ type: "image", value: result });
-          setShowCoverModal(false);
-        };
-        reader.readAsDataURL(file);
+      if (!readOnly) {
+        const file = event.target.files?.[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const result = e.target?.result as string;
+            const newCover = { type: "image" as const, value: result };
+            setCover(newCover);
+            setShowCoverModal(false);
+            onCoverChange?.(newCover);
+          };
+          reader.readAsDataURL(file);
+        }
       }
     },
-    []
+    [onCoverChange, readOnly]
   );
 
   // Predefined gradient colors for cover
@@ -162,22 +189,24 @@ const NoteMainContent = ({
             )}
 
             {/* Cover image controls overlay */}
-            <div className="absolute bottom-4 right-4 opacity-0 hover:opacity-100 transition-opacity duration-200">
-              <div className="flex bg-zinc-800/90 backdrop-blur-sm rounded border border-zinc-700">
-                <button
-                  onClick={handleAddCover}
-                  className="px-2 py-1 text-xs text-zinc-300 hover:bg-zinc-700 border-r border-zinc-700"
-                >
-                  Change cover
-                </button>
-                <button
-                  onClick={handleRemoveCover}
-                  className="px-2 py-1 text-xs text-zinc-300 hover:bg-zinc-700"
-                >
-                  <X className="w-3 h-3" />
-                </button>
+            {!readOnly && (
+              <div className="absolute bottom-4 right-4 opacity-0 hover:opacity-100 transition-opacity duration-200">
+                <div className="flex bg-zinc-800/90 backdrop-blur-sm rounded border border-zinc-700">
+                  <button
+                    onClick={handleAddCover}
+                    className="px-2 py-1 text-xs text-zinc-300 hover:bg-zinc-700 border-r border-zinc-700"
+                  >
+                    Change cover
+                  </button>
+                  <button
+                    onClick={handleRemoveCover}
+                    className="px-2 py-1 text-xs text-zinc-300 hover:bg-zinc-700"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
         <div className="max-w-none col-start-2 col-end-3">
@@ -187,12 +216,18 @@ const NoteMainContent = ({
             <div className={`flex ${cover ? "h-10" : "h-40"} items-end`}>
               <div className={`relative z-20`}>
                 <span
-                  className="text-7xl leading-none cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-md inline-block p-0.5 transition-colors duration-200"
+                  className={`text-7xl leading-none ${
+                    !readOnly 
+                      ? "cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors duration-200" 
+                      : "cursor-default"
+                  } rounded-md inline-block p-0.5`}
                   onClick={(e) => {
-                    e.stopPropagation();
-                    setIsOpen(true);
+                    if (!readOnly) {
+                      e.stopPropagation();
+                      setIsOpen(true);
+                    }
                   }}
-                  title="Click to change or remove emoji"
+                  title={readOnly ? "" : "Click to change or remove emoji"}
                 >
                   {emoji}
                 </span>
@@ -201,70 +236,75 @@ const NoteMainContent = ({
           )}
 
           {/* Page controls */}
-          <div className="flex items-center gap-2 text-xs text-zinc-500 my-2 group flex-wrap relative">
-            <div className="emoji-picker-container relative">
-              <EmojiPicker
-                isOpen={isOpen}
-                setIsOpen={setIsOpen}
-                currentEmoji={emoji}
-                onEmojiSelect={handleEmojiSelect}
-                onEmojiRemove={handleEmojiRemove}
-              />
-            </div>
+          {!readOnly && (
+            <div className="flex items-center gap-2 text-xs text-zinc-500 my-2 group flex-wrap relative">
+              <div className="emoji-picker-container relative">
+                <EmojiPicker
+                  isOpen={isOpen}
+                  setIsOpen={setIsOpen}
+                  currentEmoji={emoji}
+                  onEmojiSelect={handleEmojiSelect}
+                  onEmojiRemove={handleEmojiRemove}
+                />
+              </div>
 
-            <div
-              role="button"
-              className="inline-flex items-center gap-2 cursor-pointer px-2 py-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 opacity-0 group-hover:opacity-100 dark:text-zinc-400/90 transition-all duration-200"
-            >
-              <Pencil className="w-3 h-3" />
-              Add Comment
-            </div>
-
-
-            {/* Only show Add Cover Image button when no cover exists */}
-            {!cover && (
               <div
                 role="button"
-                onClick={handleAddCover}
                 className="inline-flex items-center gap-2 cursor-pointer px-2 py-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 opacity-0 group-hover:opacity-100 dark:text-zinc-400/90 transition-all duration-200"
               >
-                <Rocket className="w-3 h-3" />
-                Add Cover Image
+                <Pencil className="w-3 h-3" />
+                Add Comment
               </div>
-            )}
 
-            {/* Title input */}
-           
-          </div>
+              {/* Only show Add Cover Image button when no cover exists */}
+              {!cover && (
+                <div
+                  role="button"
+                  onClick={handleAddCover}
+                  className="inline-flex items-center gap-2 cursor-pointer px-2 py-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 opacity-0 group-hover:opacity-100 dark:text-zinc-400/90 transition-all duration-200"
+                >
+                  <Rocket className="w-3 h-3" />
+                  Add Cover Image
+                </div>
+              )}
+            </div>
+          )}
           <Input
               value={title}
               name="title"
               onChange={(e) => {
-                setTitle(e.target.value);
-                onTitleChange?.(e.target.value);
+                if (!readOnly) {
+                  setTitle(e.target.value);
+                  onTitleChange?.(e.target.value);
+                }
               }}
               placeholder="Untitled"
+              readOnly={readOnly}
               className={`w-full mb-2 !text-4xl font-bold border-none p-0 h-auto bg-transparent resize-none outline-none
               ${
                 isDark
                   ? "text-white placeholder:text-zinc-600"
                   : "text-zinc-900 placeholder:text-zinc-400"
               }
-              focus-visible:ring-0 focus-visible:ring-offset-0`}
+              focus-visible:ring-0 focus-visible:ring-offset-0 ${readOnly ? "cursor-default" : ""}`}
               style={{
                 boxShadow: "none",
                 lineHeight: "1.2",
                 fontWeight: "700",
               }}
             />
-          <NotesEditor description={content} />
+          <NotesEditor 
+            description={currentContent} 
+            onContentChange={handleContentChange}
+            readOnly={readOnly}
+          />
         </div>
 
         {/* Bottom spacing */}
       </div>
 
       {/* Cover Selection Modal */}
-      {showCoverModal && (
+      {showCoverModal && !readOnly && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-zinc-900 rounded-lg p-6 border border-zinc-700">
             {/* Header */}
@@ -338,11 +378,11 @@ const NoteMainContent = ({
       )}
 
       {/* Click outside to close emoji picker */}
-      {isOpen && (
+      {isOpen && !readOnly && (
         <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
       )}
     </div>
   );
 };
 
-export default NoteMainContent;
+export default NoteMainContent; 

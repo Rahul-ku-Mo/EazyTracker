@@ -15,7 +15,7 @@ import {
   REMOVE_LIST_COMMAND,
 } from "@lexical/list";
 
-import { $createHeadingNode, HeadingNode, HeadingTagType } from "@lexical/rich-text";
+import { $createHeadingNode, HeadingTagType } from "@lexical/rich-text";
 import { $convertFromMarkdownString, $convertToMarkdownString } from "@lexical/markdown";
 import { MARKDOWN_TRANSFORMERS as TRANSFORMERS } from "./MARKDOWN_TRANSFORMERS.ts";
 import { $isCodeNode, $createCodeNode } from "@lexical/code";

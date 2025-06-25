@@ -1,5 +1,5 @@
 import { api } from '@/lib/api';
-import { Note, Category } from '@/interfaces/notes';
+import { Note, Category, Cover } from '@/interfaces/notes';
 
 export const getNotes = async () => {
   try {
@@ -25,7 +25,7 @@ const fetchCategories = async (): Promise<Category[]> => {
   try {
     const response = await api.get('/notes/categories');
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching categories:', error);
     throw error;
   }
@@ -35,7 +35,7 @@ const createCategory = async (data: { name: string; hoverColor?: string }): Prom
   try {
     const response = await api.post('/notes/categories', data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating category:', error);
     throw error;
   }
@@ -60,9 +60,29 @@ const createNote = async (data: { categoryId: string; title: string; content?: s
   }
 };
 
-const updateNote = async (data: { id: string; isPublic?: boolean; title?: string; content?: string }): Promise<Note> => {
+const updateNote = async (data: { 
+  id: string; 
+  isPublic?: boolean; 
+  title?: string; 
+  content?: string; 
+  emoji?: string; 
+  cover?: Cover | null 
+}): Promise<Note> => {
   try {
-    const response = await api.put(`/notes/${data.id}`, data);
+    // Transform cover object to separate fields for backend
+    const requestData: any = { ...data };
+    if (data.cover !== undefined) {
+      if (data.cover === null) {
+        requestData.coverType = null;
+        requestData.coverValue = null;
+      } else {
+        requestData.coverType = data.cover.type;
+        requestData.coverValue = data.cover.value;
+      }
+      delete requestData.cover; // Remove the cover object from request
+    }
+    
+    const response = await api.put(`/notes/${data.id}`, requestData);
     return response.data;
   } catch (error) {
     console.error(`Error updating note ${data.id}:`, error);

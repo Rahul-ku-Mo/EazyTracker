@@ -1,5 +1,10 @@
 import { ArrowRight, Plus, FileText, Calendar, Users, RotateCcw, Star } from "lucide-react";
 
+export interface Cover {
+  type: "image" | "color";
+  value: string; // URL for image, hex code for color
+}
+
 export interface Note {
     id: string;
     title: string;
@@ -10,6 +15,7 @@ export interface Note {
     isPublic: boolean;
     priority?: number;
     emoji?: string;
+    cover?: Cover;
     createdAt: string;
     updatedAt: string;
     category?: {

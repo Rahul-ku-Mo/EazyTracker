@@ -36,6 +36,7 @@ import { KeyboardShortcutsPlugin } from "@/_components/Notes/_editor/plugins/Key
 
 import { FloatingTextFormatToolbarPlugin } from "@/_components/Notes/_editor/plugins/FloatingTextFormatToolbarPlugin";
 import  { DraggableBlockPlugin} from "@/_components/Notes/_editor/plugins/CustomDraggablePlugin";
+
 import { ImageNode } from "@/_components/Card/_editor/ImageNode";
 import { ImagesPlugin } from "@/_components/Card/_editor/Plugins/ImagePlugin.tsx";
 
@@ -81,6 +82,39 @@ interface EditorTheme {
 const theme: EditorTheme = {
   root: "editor-root",
   paragraph: "editor-paragraph",
+  code: "editor-code",
+  codeHighlight: {
+    atrule: "editor-tokenAttr",
+    attr: "editor-tokenAttr",
+    boolean: "editor-tokenProperty",
+    builtin: "editor-tokenSelector",
+    cdata: "editor-tokenComment",
+    char: "editor-tokenSelector",
+    class: "editor-tokenFunction",
+    "class-name": "editor-tokenFunction",
+    comment: "editor-tokenComment",
+    constant: "editor-tokenProperty",
+    deleted: "editor-tokenProperty",
+    doctype: "editor-tokenComment",
+    entity: "editor-tokenOperator",
+    function: "editor-tokenFunction",
+    important: "editor-tokenVariable",
+    inserted: "editor-tokenSelector",
+    keyword: "editor-tokenAttr",
+    namespace: "editor-tokenVariable",
+    number: "editor-tokenProperty",
+    operator: "editor-tokenOperator",
+    prolog: "editor-tokenComment",
+    property: "editor-tokenProperty",
+    punctuation: "editor-tokenPunctuation",
+    regex: "editor-tokenVariable",
+    selector: "editor-tokenSelector",
+    string: "editor-tokenSelector",
+    symbol: "editor-tokenProperty",
+    tag: "editor-tokenProperty",
+    url: "editor-tokenOperator",
+    variable: "editor-tokenVariable",
+  },
   text: {
     bold: "editor-text-bold",
     italic: "editor-text-italic",
@@ -88,46 +122,13 @@ const theme: EditorTheme = {
     strikethrough: "editor-text-strikethrough",
     underlineStrikethrough: "editor-text-underline-strikethrough",
   },
-  code: "editor-Theme__code",
-  codeHighlight: {
-    atrule: "editor-Theme__tokenAttr",
-    attr: "editor-Theme__tokenAttr",
-    boolean: "editor-Theme__tokenProperty",
-    builtin: "editor-Theme__tokenSelector",
-    cdata: "editor-Theme__tokenComment",
-    char: "editor-Theme__tokenSelector",
-    class: "editor-Theme__tokenFunction",
-    "class-name": "editor-Theme__tokenFunction",
-    comment: "editor-Theme__tokenComment",
-    constant: "editor-Theme__tokenProperty",
-    deleted: "editor-Theme__tokenProperty",
-    doctype: "editor-Theme__tokenComment",
-    entity: "editor-Theme__tokenOperator",
-    function: "editor-Theme__tokenFunction",
-    important: "editor-Theme__tokenVariable",
-    inserted: "editor-Theme__tokenSelector",
-    keyword: "editor-Theme__tokenAttr",
-    namespace: "editor-Theme__tokenVariable",
-    number: "editor-Theme__tokenProperty",
-    operator: "editor-Theme__tokenOperator",
-    prolog: "editor-Theme__tokenComment",
-    property: "editor-Theme__tokenProperty",
-    punctuation: "editor-Theme__tokenPunctuation",
-    regex: "editor-Theme__tokenVariable",
-    selector: "editor-Theme__tokenSelector",
-    string: "editor-Theme__tokenSelector",
-    symbol: "editor-Theme__tokenProperty",
-    tag: "editor-Theme__tokenProperty",
-    url: "editor-Theme__tokenOperator",
-    variable: "editor-Theme__tokenVariable",
-  },
   heading: {
-    h1: "editor-heading-h1 editor-heading-font",
-    h2: "editor-heading-h2 editor-heading-font",
-    h3: "editor-heading-h3 editor-heading-font",
-    h4: "editor-heading-h4 editor-heading-font",
-    h5: "editor-heading-h5 editor-heading-font",
-    h6: "editor-heading-h6 editor-heading-font",
+    h1: "editor-heading-h1",
+    h2: "editor-heading-h2",
+    h3: "editor-heading-h3",
+    h4: "editor-heading-h4",
+    h5: "editor-heading-h5",
+    h6: "editor-heading-h6",
   },
   list: {
     ul: "editor-list-ul",
@@ -148,7 +149,8 @@ function onError(error: Error): void {
   console.error(error);
 }
 
-export const CodeHighlightPlugin = () => {
+// Code highlighting plugin for syntax highlighting
+function CodeHighlightPlugin(): null {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
@@ -156,16 +158,18 @@ export const CodeHighlightPlugin = () => {
   }, [editor]);
 
   return null;
-};
-
+}
 
 export const NotesEditor = ({
   description = "<div>Hello</div>",
+  onContentChange,
+  readOnly = false,
 }: {
   description?: string;
- 
+  onContentChange?: (content: string) => void;
+  readOnly?: boolean;
 }): JSX.Element => {
-  const [, setEditorState] = useState<string>();
+  const [editorState, setEditorState] = useState<string>();
   const [floatingAnchorElem, setFloatingAnchorElem] =
     useState<HTMLDivElement | null>(null);
 
@@ -177,11 +181,19 @@ export const NotesEditor = ({
     }
   };
 
+  // Call onContentChange when editorState changes
+  useEffect(() => {
+    if (editorState && onContentChange && !readOnly) {
+      onContentChange(editorState);
+    }
+  }, [editorState, onContentChange, readOnly]);
+
   const initialConfig: InitialConfigType = {
     namespace: "NotesEditor",
     editorState: () => $convertFromMarkdownString(description, TRANSFORMERS),
     theme,
     onError,
+    editable: !readOnly,
     nodes: [
       ListNode,
       ListItemNode,
@@ -196,13 +208,10 @@ export const NotesEditor = ({
     ] as any,
   };
 
-  
-
   return (
     <div className="relative h-full">
       <LexicalComposer initialConfig={initialConfig}>
         <div className="editor-container">
-          {/* <CardToolbarPlugin save={handleSave} /> */}
           <div className="h-full editor-inner">
             <RichTextPlugin
               contentEditable={
@@ -213,7 +222,8 @@ export const NotesEditor = ({
                     "w-full py-2 !px-0 overflow-y-auto",
                     "dark:text-zinc-100 focus:outline-none",
                     "min-h-[300px]",
-                    "max-h-[calc(100vh-300px)]"
+                    "max-h-[calc(100vh-300px)]",
+                    readOnly ? "cursor-default" : ""
                   )}
                 />
                </div>
@@ -221,20 +231,22 @@ export const NotesEditor = ({
               ErrorBoundary={LexicalErrorBoundary}
             />
             <HistoryPlugin />
-            <AutoFocusPlugin />
+            {!readOnly && <AutoFocusPlugin />}
             <CodeHighlightPlugin />
-            <TabIndentationPlugin />
-            <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-            <KeyboardShortcutsPlugin />
+            {!readOnly && <TabIndentationPlugin />}
+            {!readOnly && <MarkdownShortcutPlugin transformers={TRANSFORMERS} />}
+            {!readOnly && <KeyboardShortcutsPlugin />}
             <CustomTransformHTMLToLexical description={description} />
-            <CustomTransformLexicalToHTML setEditorState={setEditorState} />
-            <ImagesPlugin />
+            {!readOnly && <CustomTransformLexicalToHTML setEditorState={setEditorState} />}
+            {!readOnly && <ImagesPlugin />}
             <EditorRefPlugin editorRef={editorRef} />
-            <CopyImagePlugin ref={editorRef} />
-            <FloatingTextFormatToolbarPlugin
-              anchorElem={floatingAnchorElem ?? undefined}
-            />
-            <DraggableBlockPlugin anchorElem={floatingAnchorElem ?? undefined} />
+            {!readOnly && <CopyImagePlugin ref={editorRef} />}
+            {!readOnly && (
+              <FloatingTextFormatToolbarPlugin
+                anchorElem={floatingAnchorElem ?? undefined}
+              />
+            )}
+            {!readOnly && <DraggableBlockPlugin anchorElem={floatingAnchorElem ?? undefined} />}
           </div>
         </div>
 

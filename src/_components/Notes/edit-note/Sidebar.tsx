@@ -63,12 +63,12 @@ const NoteSidebar = ({
         }
       }
       
-      const targetUrl = `/notes/${noteId}?slug=${slug}&mode=edit`;
+      const targetUrl = `/notes/edit/${noteId}?slug=${slug}`;
       console.log('Target URL:', targetUrl);
       console.log('Current URL:', window.location.pathname + window.location.search);
       
       // Check if we're already on the target page
-      if (window.location.pathname === `/notes/${noteId}` && 
+      if (window.location.pathname === `/notes/view/${noteId}` && 
           window.location.search.includes(`slug=${slug}`) && 
           window.location.search.includes('mode=edit')) {
         console.log('Already on target page, skipping navigation');
@@ -136,8 +136,10 @@ const NoteSidebar = ({
                         <div className="truncate font-medium text-sm">
                           {relatedNote.title}
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                          {relatedNote.content || "No content"}
+                        <div
+                        dangerouslySetInnerHTML={{ __html: relatedNote.content || "No content" }}
+                        className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                         
                         </div>
                       </div>
                     </div>
