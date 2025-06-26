@@ -24,7 +24,7 @@ import { MARKDOWN_TRANSFORMERS as TRANSFORMERS } from "@/_components/Card/_edito
 import { EditorRefPlugin } from "@lexical/react/LexicalEditorRefPlugin";
 import { CopyImagePlugin } from "@/_components/Card/_editor/Plugins/CopyImagePlugin";
 import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
-
+import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 /**Lexical Nodes */
 import { CodeNode, CodeHighlightNode } from "@lexical/code";
 import { LinkNode } from "@lexical/link";
@@ -33,9 +33,9 @@ import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
 import { registerCodeHighlighting } from "@lexical/code";
 import { KeyboardShortcutsPlugin } from "@/_components/Notes/_editor/plugins/KeyboardShortcutsPlugin/index.tsx";
-
+import { FloatingLinkEditorPlugin } from "@/_components/Notes/_editor/plugins/FloatingLinkEditorPlugin/index.tsx";
 import { FloatingTextFormatToolbarPlugin } from "@/_components/Notes/_editor/plugins/FloatingTextFormatToolbarPlugin";
-import  { DraggableBlockPlugin} from "@/_components/Notes/_editor/plugins/CustomDraggablePlugin";
+//import  { DraggableBlockPlugin} from "@/_components/Notes/_editor/plugins/CustomDraggablePlugin";
 
 import { ImageNode } from "@/_components/Card/_editor/ImageNode";
 import { ImagesPlugin } from "@/_components/Card/_editor/Plugins/ImagePlugin.tsx";
@@ -77,6 +77,7 @@ interface EditorTheme {
     };
   };
   placeholder: string;
+  link: string;
 }
 
 const theme: EditorTheme = {
@@ -143,6 +144,7 @@ const theme: EditorTheme = {
     },
   },
   placeholder: "editor-placeholder",
+  link: "editor-link",
 };
 
 function onError(error: Error): void {
@@ -170,6 +172,7 @@ export const NotesEditor = ({
   readOnly?: boolean;
 }): JSX.Element => {
   const [editorState, setEditorState] = useState<string>();
+  const [isLinkEditMode, setIsLinkEditMode] = useState(false);
   const [floatingAnchorElem, setFloatingAnchorElem] =
     useState<HTMLDivElement | null>(null);
 
@@ -181,7 +184,7 @@ export const NotesEditor = ({
     }
   };
 
-  // Call onContentChange when editorState changes
+  // Save immediately when content changes
   useEffect(() => {
     if (editorState && onContentChange && !readOnly) {
       onContentChange(editorState);
@@ -236,20 +239,30 @@ export const NotesEditor = ({
             {!readOnly && <TabIndentationPlugin />}
             {!readOnly && <MarkdownShortcutPlugin transformers={TRANSFORMERS} />}
             {!readOnly && <KeyboardShortcutsPlugin />}
+            <LinkPlugin />
             <CustomTransformHTMLToLexical description={description} />
             {!readOnly && <CustomTransformLexicalToHTML setEditorState={setEditorState} />}
             {!readOnly && <ImagesPlugin />}
             <EditorRefPlugin editorRef={editorRef} />
             {!readOnly && <CopyImagePlugin ref={editorRef} />}
-            {!readOnly && (
-              <FloatingTextFormatToolbarPlugin
-                anchorElem={floatingAnchorElem ?? undefined}
-              />
+            {!readOnly && floatingAnchorElem && (
+                <FloatingTextFormatToolbarPlugin
+                  anchorElem={floatingAnchorElem ?? undefined}
+                  setIsLinkEditMode={setIsLinkEditMode}
+                />
             )}
-            {!readOnly && <DraggableBlockPlugin anchorElem={floatingAnchorElem ?? undefined} />}
+            {/* {!readOnly && <DraggableBlockPlugin anchorElem={floatingAnchorElem ?? undefined} />} */}
+            {floatingAnchorElem && (
+              <>
+                <FloatingLinkEditorPlugin
+                  anchorElem={floatingAnchorElem ?? undefined}
+                  isLinkEditMode={isLinkEditMode}
+                  setIsLinkEditMode={setIsLinkEditMode}
+                />
+              </>
+            )}
           </div>
         </div>
-
         <ListPlugin />
         <CheckListPlugin />
       </LexicalComposer>

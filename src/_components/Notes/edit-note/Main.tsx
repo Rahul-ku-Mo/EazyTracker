@@ -280,7 +280,7 @@ const NoteMainContent = ({
               }}
               placeholder="Untitled"
               readOnly={readOnly}
-              className={`w-full mb-2 !text-4xl font-bold border-none p-0 h-auto bg-transparent resize-none outline-none
+              className={`w-full mb-2 editor-readable-font !text-4xl font-bold border-none p-0 h-auto bg-transparent resize-none outline-none editor-heading-h1
               ${
                 isDark
                   ? "text-white placeholder:text-zinc-600"

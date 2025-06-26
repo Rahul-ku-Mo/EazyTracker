@@ -134,7 +134,7 @@ export const UsageDashboard: React.FC = () => {
       </Card>
 
       {/* Usage Statistics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {/* Projects */}
         <Card>
           <CardHeader className="pb-2">
@@ -209,6 +209,43 @@ export const UsageDashboard: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Tasks per Project */}
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Clock className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+                <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">Max Tasks/Project</CardTitle>
+              </div>
+              {usage.usage.tasksPerProject?.limit !== null && 
+               usage.usage.tasksPerProject?.current >= usage.usage.tasksPerProject?.limit && (
+                <AlertTriangle className="w-4 h-4 text-red-500" />
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className={cn(
+                  "text-2xl font-bold",
+                  getUsageColor(usage.usage.tasksPerProject?.current || 0, usage.usage.tasksPerProject?.limit || null)
+                )}>
+                  {usage.usage.tasksPerProject?.current || 0}
+                </span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  of {formatLimit(usage.usage.tasksPerProject?.limit || null)}
+                </span>
+              </div>
+              {usage.usage.tasksPerProject?.limit !== null && (
+                <Progress 
+                  value={getUsagePercentage(usage.usage.tasksPerProject?.current || 0, usage.usage.tasksPerProject?.limit || null)}
+                  className="h-2"
+                />
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Storage */}
         <Card>
           <CardHeader className="pb-2">
@@ -242,13 +279,13 @@ export const UsageDashboard: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Image Uploads */}
+        {/* Total Tasks */}
         <Card>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Sparkles className="w-4 h-4 text-orange-500 dark:text-orange-400" />
-                <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">Image Uploads</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">Total Tasks</CardTitle>
               </div>
               {usage.usage.imageUploads?.limit !== null && 
                usage.usage.imageUploads?.current >= usage.usage.imageUploads?.limit && (

@@ -3,10 +3,11 @@ import type { JSX } from "react";
 import "./index.css";
 
 import { $isCodeHighlightNode } from "@lexical/code";
-// import {$isLinkNode, TOGGLE_LINK_COMMAND} from '@lexical/link';
+import {$isLinkNode, TOGGLE_LINK_COMMAND} from '@lexical/link';
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { mergeRegister } from "@lexical/utils";
 import {
+  $createParagraphNode,
   $getSelection,
   $isParagraphNode,
   $isRangeSelection,
@@ -17,6 +18,8 @@ import {
   LexicalEditor,
   SELECTION_CHANGE_COMMAND,
 } from "lexical";
+import { $setBlocksType } from "@lexical/selection";
+import { $createHeadingNode, $isHeadingNode, HeadingTagType } from "@lexical/rich-text";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { createPortal } from "react-dom";
@@ -30,6 +33,7 @@ import {
   BoldIcon,
   CodeIcon,
   ItalicIcon,
+  LinkIcon,
   StrikethroughIcon,
   SubscriptIcon,
   SuperscriptIcon,
@@ -41,7 +45,7 @@ import { cn } from "@/lib/utils";
 function TextFormatFloatingToolbar({
   editor,
   anchorElem,
-  // isLink,
+   isLink,
   isBold,
   isItalic,
   isUnderline,
@@ -52,6 +56,9 @@ function TextFormatFloatingToolbar({
   isStrikethrough,
   isSubscript,
   isSuperscript,
+  isHeading,
+  isParagraph,
+  setIsLinkEditMode,
 }: // setIsLinkEditMode,
 {
   editor: LexicalEditor;
@@ -59,7 +66,7 @@ function TextFormatFloatingToolbar({
   isBold: boolean;
   isCode: boolean;
   isItalic: boolean;
-  // isLink: boolean;
+  isLink: boolean; 
   isUppercase?: boolean;
   isLowercase?: boolean;
   isCapitalize?: boolean;
@@ -67,23 +74,32 @@ function TextFormatFloatingToolbar({
   isSubscript: boolean;
   isSuperscript: boolean;
   isUnderline: boolean;
-  // setIsLinkEditMode: Dispatch<boolean>;
+  isHeading: {
+    h1: boolean;
+    h2: boolean;
+    h3: boolean;
+    h4: boolean;
+    h5: boolean;
+    h6: boolean;
+  };
+  isParagraph: boolean;
+  setIsLinkEditMode: React.Dispatch<React.SetStateAction<boolean>>;
 }): JSX.Element {
   const popupCharStylesEditorRef = useRef<HTMLDivElement | null>(null);
 
-  // const insertLink = useCallback(() => {
-  //   if (!isLink) {
-  //     setIsLinkEditMode(true);
-  //     editor.dispatchCommand(TOGGLE_LINK_COMMAND, 'https://');
-  //   } else {
-  //     setIsLinkEditMode(false);
-  //     editor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
-  //   }
-  // }, [editor, isLink, setIsLinkEditMode]);
+  const insertLink = useCallback(() => {
+    if (!isLink) {
+      setIsLinkEditMode(true);
+      editor.dispatchCommand(TOGGLE_LINK_COMMAND, 'https://');
+    } else {
+      setIsLinkEditMode(false);
+      editor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
+    }
+  }, [editor, isLink, setIsLinkEditMode]);
 
-  //   const insertComment = () => {
-  //     editor.dispatchCommand(INSERT_INLINE_COMMAND, undefined);
-  //   };
+    // const insertComment = () => {
+    //   editor.dispatchCommand(INSERT_INLINE_COMMAND, undefined);
+    // };
 
   function mouseMoveListener(e: MouseEvent) {
     if (
@@ -146,11 +162,11 @@ function TextFormatFloatingToolbar({
         rangeRect,
         popupCharStylesEditorElem,
         anchorElem,
-        // isLink,
-        false // Default to false since link feature is commented out
+         isLink,
+        0 // Default to false since link feature is commented out
       );
     }
-  }, [editor, anchorElem]);
+  }, [editor, anchorElem, isLink]);
 
   useEffect(() => {
     const scrollerElem = anchorElem.parentElement;
@@ -196,21 +212,24 @@ function TextFormatFloatingToolbar({
     );
   }, [editor, $updateTextFormatFloatingToolbar]);
 
+  const getCurrentTextStyle = () => {
+    if (isParagraph) return 'P';
+    const activeHeading = Object.keys(isHeading).find(key => isHeading[key as keyof typeof isHeading]);
+    if (activeHeading) return activeHeading.toUpperCase();
+    return 'T';
+  };
+
   return (
-    <div
-      ref={popupCharStylesEditorRef}
-      className="floating-text-format-popup dark:bg-black bg-white dark:text-white border border-zinc-200 dark:border-zinc-800 rounded-md shadow-lg"
-    >
-      {editor.isEditable() && (
+    <div ref={popupCharStylesEditorRef} className="floating-text-format-popup dark:bg-zinc-800 bg-white border">
+      {editor !== null && (
         <>
-         <div className="flex border-r border-zinc-200 dark:border-zinc-800 pr-1">
-         <button
+          <button
             type="button"
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold");
             }}
-            className={"popup-item m-0.5 " + (isBold ? "active" : "")}
-            title="Bold"
+            className={"popup-item spaced " + (isBold ? "active" : "")}
+            title="Format text as bold"
             aria-label="Format text as bold"
           >
             <BoldIcon
@@ -225,8 +244,8 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic");
             }}
-            className={"popup-item m-0.5 " + (isItalic ? "active" : "")}
-            title="Italic"
+            className={"popup-item spaced " + (isItalic ? "active" : "")}
+            title="Format text as italics"
             aria-label="Format text as italics"
           >
             <ItalicIcon
@@ -241,8 +260,8 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "underline");
             }}
-            className={"popup-item m-0.5 " + (isUnderline ? "active" : "")}
-            title="Underline"
+            className={"popup-item spaced " + (isUnderline ? "active" : "")}
+            title="Format text to underlined"
             aria-label="Format text to underlined"
           >
             <UnderlineIcon
@@ -252,15 +271,13 @@ function TextFormatFloatingToolbar({
               )}
             />
           </button>
-         </div>
-         <div className="flex border-r border-zinc-200 dark:border-zinc-800 pr-1">
-         <button
+          <button
             type="button"
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "strikethrough");
             }}
-            className={"popup-item m-0.5 " + (isStrikethrough ? "active" : "")}
-            title="Strikethrough"
+            className={"popup-item spaced " + (isStrikethrough ? "active" : "")}
+            title="Format text with a strikethrough"
             aria-label="Format text with a strikethrough"
           >
             <StrikethroughIcon
@@ -275,8 +292,8 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "subscript");
             }}
-            className={"popup-item m-0.5 " + (isSubscript ? "active" : "")}
-            title="Subscript"
+            className={"popup-item spaced " + (isSubscript ? "active" : "")}
+            title="Format Subscript"
             aria-label="Format Subscript"
           >
             <SubscriptIcon
@@ -291,8 +308,8 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "superscript");
             }}
-            className={"popup-item m-0.5 " + (isSuperscript ? "active" : "")}
-            title="Superscript"
+            className={"popup-item spaced " + (isSuperscript ? "active" : "")}
+            title="Format Superscript"
             aria-label="Format Superscript"
           >
             <SuperscriptIcon
@@ -302,37 +319,94 @@ function TextFormatFloatingToolbar({
               )}
             />
           </button>
+         <div className="flex border-r border-zinc-200 dark:border-zinc-800 pr-1">
+          {/* Text Style Dropdown */}
+          <div className="relative group">
+            <button
+              type="button"
+              className={`popup-item m-0.5 text-xs font-medium px-2 py-1 flex items-center gap-1 ${
+                Object.values(isHeading).some(Boolean) || isParagraph ? 'active' : ''
+              }`}
+              title="Text style options"
+              aria-label="Text style options"
+            >
+              {getCurrentTextStyle()}
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            
+            {/* Dropdown Menu */}
+            <div className="absolute top-full left-0 mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 min-w-[160px]">
+              {/* Paragraph Option */}
+              <button
+                type="button"
+                onClick={() => {
+                  editor.update(() => {
+                    const selection = $getSelection();
+                    if ($isRangeSelection(selection)) {
+                      $setBlocksType(selection, () => $createParagraphNode());
+                    }
+                  });
+                }}
+                className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-700 ${
+                  isParagraph
+                    ? "bg-blue-500 text-white hover:bg-blue-600"
+                    : "text-zinc-700 dark:text-zinc-300"
+                }`}
+                title="Paragraph"
+                aria-label="Format as paragraph"
+              >
+                <span className="flex items-center gap-2">
+                  <span style={{ fontSize: '14px', fontWeight: 'normal' }}>P</span>
+                  Paragraph
+                </span>
+                {isParagraph && (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </button>
+              
+              {/* Separator */}
+              <div className="border-t border-zinc-200 dark:border-zinc-700 my-1"></div>
+              
+              {/* Heading Options in Flex Layout */}
+              <div className="p-2">
+                <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-2 px-1">Headings</div>
+                <div className="grid grid-cols-3 gap-1">
+                  {['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].map((headingType) => {
+                    const isActive = isHeading[headingType as keyof typeof isHeading];
+                    const headingNum = headingType.charAt(1);
+                    return (
+                      <button
+                        key={headingType}
+                        type="button"
+                        onClick={() => {
+                          editor.update(() => {
+                            const selection = $getSelection();
+                            if ($isRangeSelection(selection)) {
+                              $setBlocksType(selection, () => $createHeadingNode(headingType as HeadingTagType));
+                            }
+                          });
+                        }}
+                        className={`px-2 py-1.5 text-xs font-bold rounded transition-colors ${
+                          isActive
+                            ? "bg-blue-500 text-white"
+                            : "bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-600"
+                        }`}
+                        title={`Heading ${headingNum}`}
+                        aria-label={`Format text as heading ${headingNum}`}
+                      >
+                        H{headingNum}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
          </div>
-          {/* <button
-            type="button"
-            onClick={() => {
-              editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'uppercase');
-            }}
-            className={'popup-item' + (isUppercase ? 'active' : '')}
-            title="Uppercase"
-            aria-label="Format text to uppercase">
-            <i className="format uppercase" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'lowercase');
-            }}
-            className={'popup-item' + (isLowercase ? 'active' : '')}
-            title="Lowercase"
-            aria-label="Format text to lowercase">
-            <i className="format lowercase" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'capitalize');
-            }}
-            className={'popup-item' + (isCapitalize ? 'active' : '')}
-            title="Capitalize"
-            aria-label="Format text to capitalize">
-            <i className="format capitalize" />
-          </button> */}
           <button
             type="button"
             onClick={() => {
@@ -349,35 +423,32 @@ function TextFormatFloatingToolbar({
               )}
             />
           </button>
-          {/* <button
+          <button
             type="button"
             onClick={insertLink}
-            className={'popup-item' + (isLink ? 'active' : '')}
+            className={`popup-item m-0.5 ${isLink ? 'active' : ''}`}
             title="Insert link"
             aria-label="Insert link">
-            <i className="format link" />
-          </button> */}
+            <LinkIcon 
+              className={cn(
+                "w-4 h-4",
+                isLink ? "text-white" : "text-black dark:text-white"
+              )} 
+            />
+          </button>
         </>
       )}
-      {/* <button
-        type="button"
-        onClick={insertComment}
-        className={'popup-iteminsert-comment'}
-        title="Insert comment"
-        aria-label="Insert comment">
-        <i className="format add-comment" />
-      </button> */}
     </div>
   );
 }
 
 function useFloatingTextFormatToolbar(
   editor: LexicalEditor,
-  anchorElem: HTMLElement
-  // setIsLinkEditMode: Dispatch<boolean>,
+  anchorElem: HTMLElement,
+   setIsLinkEditMode: React.Dispatch<React.SetStateAction<boolean>>,
 ): JSX.Element | null {
   const [isText, setIsText] = useState(false);
-  // const [isLink, setIsLink] = useState(false);
+   const [isLink, setIsLink] = useState(false);
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
   const [isUnderline, setIsUnderline] = useState(false);
@@ -388,6 +459,15 @@ function useFloatingTextFormatToolbar(
   const [isSubscript, setIsSubscript] = useState(false);
   const [isSuperscript, setIsSuperscript] = useState(false);
   const [isCode, setIsCode] = useState(false);
+  const [isHeading, setIsHeading] = useState({
+    h1: false,
+    h2: false,
+    h3: false,
+    h4: false,
+    h5: false,
+    h6: false,
+  });
+  const [isParagraph, setIsParagraph] = useState(false);
 
   const updatePopup = useCallback(() => {
     editor.getEditorState().read(() => {
@@ -427,13 +507,35 @@ function useFloatingTextFormatToolbar(
       setIsSuperscript(selection.hasFormat("superscript"));
       setIsCode(selection.hasFormat("code"));
 
+      // Update heading and paragraph state
+      const headingState = {
+        h1: false,
+        h2: false,
+        h3: false,
+        h4: false,
+        h5: false,
+        h6: false,
+      };
+      
+      let paragraphState = false;
+      
+      if ($isHeadingNode(node)) {
+        const headingTag = node.getTag();
+        headingState[headingTag as keyof typeof headingState] = true;
+      } else if ($isParagraphNode(node)) {
+        paragraphState = true;
+      }
+      
+      setIsHeading(headingState);
+      setIsParagraph(paragraphState);
+
       // Update links - COMMENTED OUT
-      // const parent = node.getParent();
-      // if ($isLinkNode(parent) || $isLinkNode(node)) {
-      //   setIsLink(true);
-      // } else {
-      //   setIsLink(false);
-      // }
+      const parent = node.getParent();
+      if ($isLinkNode(parent) || $isLinkNode(node)) {
+        setIsLink(true);
+      } else {
+        setIsLink(false);
+      }
 
       if (
         !$isCodeHighlightNode(selection.anchor.getNode()) &&
@@ -480,7 +582,7 @@ function useFloatingTextFormatToolbar(
     <TextFormatFloatingToolbar
       editor={editor}
       anchorElem={anchorElem}
-      // isLink={isLink}
+       isLink={isLink}
       isBold={isBold}
       isItalic={isItalic}
       //   isUppercase={isUppercase}
@@ -491,7 +593,9 @@ function useFloatingTextFormatToolbar(
       isSuperscript={isSuperscript}
       isUnderline={isUnderline}
       isCode={isCode}
-      // setIsLinkEditMode={setIsLinkEditMode}
+      isHeading={isHeading}
+      isParagraph={isParagraph}
+      setIsLinkEditMode={setIsLinkEditMode}
     />,
     anchorElem
   );
@@ -499,11 +603,12 @@ function useFloatingTextFormatToolbar(
 
 export function FloatingTextFormatToolbarPlugin({
   anchorElem = document.body,
-}: // setIsLinkEditMode,
+  setIsLinkEditMode,
+}: 
 {
   anchorElem?: HTMLElement;
-  // setIsLinkEditMode: Dispatch<boolean>;
+   setIsLinkEditMode: React.Dispatch<React.SetStateAction<boolean>>;
 }): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
-  return useFloatingTextFormatToolbar(editor, anchorElem);
+  return useFloatingTextFormatToolbar(editor, anchorElem, setIsLinkEditMode);
 }

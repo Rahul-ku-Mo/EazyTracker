@@ -166,42 +166,24 @@ export const BillingOverview: React.FC = () => {
                 </Badge>
               </div>
 
-              {!isFreePlan && subscription.currentPeriodEnd && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {subscription.cancelAtPeriodEnd ? 'Active Until' : 'Next Billing Date'}
-                  </span>
-                  <div className="flex items-center space-x-1">
-                    <CalendarDays className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {format(new Date(subscription.currentPeriodEnd), 'MMM dd, yyyy')}
+              <div className="space-y-2">
+                {!isFreePlan && subscription.currentPeriodEnd && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {subscription.cancelAtPeriodEnd ? 'Active Until' : 'Next Billing Date'}
                     </span>
+                    <div className="flex items-center space-x-1">
+                      <CalendarDays className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {format(new Date(subscription.currentPeriodEnd), 'MMM dd, yyyy')}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
-            <div className="space-y-2">
-              {currentPlan && (
-                <>
-                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Plan Features</div>
-                  <div className="space-y-1">
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      Projects: {currentPlan.limits.projects === -1 ? 'Unlimited' : currentPlan.limits.projects}
-                    </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      Team Members: {currentPlan.limits.members === -1 ? 'Unlimited' : currentPlan.limits.members}
-                    </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      Tasks per Project: {currentPlan.limits.tasksPerProject === -1 ? 'Unlimited' : currentPlan.limits.tasksPerProject}
-                    </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      Activity History: {currentPlan.limits.activityHistoryDays} days
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
+
           </div>
 
           {/* Actions */}
@@ -266,7 +248,7 @@ export const BillingOverview: React.FC = () => {
                   <span className="text-sm font-medium text-gray-900 dark:text-white">Team Members</span>
                 </div>
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {usageStats?.teamMembers?.current || 0} / {
+                  {usageStats?.usage?.teamMembers?.current || 0} / {
                     currentPlan?.limits.members === -1 
                       ? '∞' 
                       : currentPlan?.limits.members || '∞'
@@ -276,7 +258,7 @@ export const BillingOverview: React.FC = () => {
               {currentPlan?.limits.members !== -1 && (
                 <Progress 
                   value={calculateUsagePercentage(
-                    usageStats?.teamMembers?.current || 0, 
+                    usageStats?.usage?.teamMembers?.current || 0, 
                     currentPlan?.limits.members || 0
                   )} 
                   className="h-2"
@@ -292,7 +274,7 @@ export const BillingOverview: React.FC = () => {
                   <span className="text-sm font-medium text-gray-900 dark:text-white">Projects</span>
                 </div>
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {usageStats?.projects?.current || 0} / {
+                  {usageStats?.usage?.projects?.current || 0} / {
                     currentPlan?.limits.projects === -1 
                       ? '∞' 
                       : currentPlan?.limits.projects || '∞'
@@ -302,7 +284,7 @@ export const BillingOverview: React.FC = () => {
               {currentPlan?.limits.projects !== -1 && (
                 <Progress 
                   value={calculateUsagePercentage(
-                    usageStats?.projects?.current || 0, 
+                    usageStats?.usage?.projects?.current || 0, 
                     currentPlan?.limits.projects || 0
                   )} 
                   className="h-2"
@@ -318,7 +300,7 @@ export const BillingOverview: React.FC = () => {
                   <span className="text-sm font-medium text-gray-900 dark:text-white">Tasks per Project</span>
                 </div>
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {usageStats?.tasksPerProject?.current || 0} / {
+                  {usageStats?.usage?.tasksPerProject?.current || 0} / {
                     currentPlan?.limits.tasksPerProject === -1 
                       ? '∞' 
                       : currentPlan?.limits.tasksPerProject || '∞'
@@ -328,7 +310,7 @@ export const BillingOverview: React.FC = () => {
               {currentPlan?.limits.tasksPerProject !== -1 && (
                 <Progress 
                   value={calculateUsagePercentage(
-                    usageStats?.tasksPerProject?.current || 0, 
+                    usageStats?.usage?.tasksPerProject?.current || 0, 
                     currentPlan?.limits.tasksPerProject || 0
                   )} 
                   className="h-2"
@@ -356,8 +338,8 @@ export const BillingOverview: React.FC = () => {
           {/* Usage Warnings */}
           {currentPlan && (
             <div className="space-y-2">
-              {currentPlan.limits.members !== -1 && usageStats?.teamMembers && 
-               calculateUsagePercentage(usageStats.teamMembers.current, currentPlan.limits.members) >= 80 && (
+              {currentPlan.limits.members !== -1 && usageStats?.usage?.teamMembers && 
+               calculateUsagePercentage(usageStats.usage.teamMembers.current, currentPlan.limits.members) >= 80 && (
                 <Alert className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/50">
                   <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                   <AlertDescription className="text-orange-800 dark:text-orange-200">
@@ -366,8 +348,8 @@ export const BillingOverview: React.FC = () => {
                 </Alert>
               )}
 
-              {currentPlan.limits.projects !== -1 && usageStats?.projects &&
-               calculateUsagePercentage(usageStats.projects.current, currentPlan.limits.projects) >= 80 && (
+              {currentPlan.limits.projects !== -1 && usageStats?.usage?.projects &&
+               calculateUsagePercentage(usageStats.usage.projects.current, currentPlan.limits.projects) >= 80 && (
                 <Alert className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/50">
                   <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                   <AlertDescription className="text-orange-800 dark:text-orange-200">

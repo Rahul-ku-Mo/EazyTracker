@@ -6,6 +6,7 @@ import { Badge } from './badge';
 import { Crown, Sparkles, Zap, ArrowRight, Lock } from 'lucide-react';
 import { useFeatureGating, FeatureType, PlanType } from '@/hooks/useFeatureGating';
 import { cn } from '@/lib/utils';
+import { useAdminCheck } from '@/hooks/useAdminCheck';
 
 interface UpgradePromptProps {
   feature: FeatureType;
@@ -37,9 +38,15 @@ export const UpgradePrompt: React.FC<UpgradePromptProps> = ({
   showIcon = true,
 }) => {
   const { getUpgradeMessage, needsUpgrade } = useFeatureGating();
+  const { isAdmin } = useAdminCheck();
 
   // Don't show if user already has access
   if (!needsUpgrade(feature)) {
+    return null;
+  }
+
+  // Only show upgrade prompts to admin users
+  if (!isAdmin) {
     return null;
   }
 

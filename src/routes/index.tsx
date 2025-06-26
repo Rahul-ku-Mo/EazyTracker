@@ -35,6 +35,7 @@ import GoogleCallback from "@/pages/callback/GoogleCallback";
 import RequireAuth from "@/_components/shared/RequireAuth";
 import JoinTeamPage from "@/pages/JoinTeamPage";
 import LaunchGuard from "@/components/LaunchGuard";
+import AdminRouteGuard from "@/_components/shared/AdminRouteGuard";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -104,7 +105,11 @@ const authenticatedRoutes = [
       },
       {
         path: "billing",
-        element: <WithContexts Component={BillingPage} />,
+        element: (
+          <AdminRouteGuard>
+            <WithContexts Component={BillingPage} />
+          </AdminRouteGuard>
+        ),
       },
     ],
   },
@@ -150,7 +155,9 @@ const Router = () => {
       path: "/pricing", 
       element: (
         <AuthContextProvider>
-          <WithContexts Component={PricingPage} />
+          <AdminRouteGuard>
+            <WithContexts Component={PricingPage} />
+          </AdminRouteGuard>
         </AuthContextProvider>
       ) 
     },

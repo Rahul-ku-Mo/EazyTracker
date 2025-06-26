@@ -62,8 +62,19 @@ const NoteEditPage = () => {
       // Update the current note data
       queryClient.setQueryData(["note", id], updatedNote);
       
-      // Update categories cache to reflect the updated note without invalidating
-      queryClient.invalidateQueries({ queryKey: ["notesByCategory", slug] });
+      // Update categories cache optimistically without invalidating to prevent portal closures
+      queryClient.setQueryData(["notesByCategory", slug], (oldData: any) => {
+        if (!oldData) return oldData;
+        
+        // Update the specific note in the categories data
+        const updatedData = { ...oldData };
+        if (updatedData.notes) {
+          updatedData.notes = updatedData.notes.map((note: any) => 
+            note.id === updatedNote.id ? updatedNote : note
+          );
+        }
+        return updatedData;
+      });
       
       setHasUnsavedChanges(false);
       setIsAutoSaving(false);

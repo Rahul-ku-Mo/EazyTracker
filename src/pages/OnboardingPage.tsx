@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { AuthContext } from "@/context/AuthContext";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +17,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Users, Plus, LogIn, Sparkles, Building } from "lucide-react";
+import { Loader2, Users, Plus, LogIn, Sparkles, Building, LogOut } from "lucide-react";
 import clsx from "clsx";
 
 // Animation variants
@@ -48,8 +49,17 @@ const Onboarding = () => {
   const [joinCode, setJoinCode] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { setIsLoggedIn } = useContext(AuthContext);
 
   const token = Cookies.get("accessToken");
+
+  const handleLogout = (): void => {
+    Cookies.remove("accessToken");
+    setIsLoggedIn(false);
+    queryClient.clear();
+    navigate("/auth");
+  };
 
   const { isLoading: isCheckingOnboarding } = useQuery({
     queryKey: ["onboarding"],
@@ -144,7 +154,20 @@ const Onboarding = () => {
     joinTeamMutation.isPending;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-4 relative">
+      {/* Logout button */}
+      <div className="absolute top-4 right-4 z-10">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleLogout}
+          className="text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Use Different Account
+        </Button>
+      </div>
+
       {/* Background decoration */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />

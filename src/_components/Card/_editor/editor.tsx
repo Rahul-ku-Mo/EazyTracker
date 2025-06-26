@@ -37,7 +37,7 @@ import { useCardMutation } from "../_mutations/useCardMutations.ts";
 import { ColumnContext } from "../../../context/ColumnProvider.tsx";
 import { CardToolbarPlugin } from "./Plugins/CardToolbarPlugin.tsx";
 import { FloatingTextFormatToolbarPlugin } from "@/_components/Notes/_editor/plugins/FloatingTextFormatToolbarPlugin";
-import { DraggableBlockPlugin } from "./Plugins/CustomDraggablePlugin.tsx";
+//import { DraggableBlockPlugin } from "./Plugins/CustomDraggablePlugin.tsx";
 import { ImageNode } from "./ImageNode";
 import { ImagesPlugin } from "./Plugins/ImagePlugin.tsx";
 import { KeyboardShortcutsPlugin } from "@/_components/Notes/_editor/plugins/KeyboardShortcutsPlugin"
@@ -45,6 +45,8 @@ import { KeyboardShortcutsPlugin } from "@/_components/Notes/_editor/plugins/Key
 import "./ImageNode/styles.css";
 import "../../../styles/editor.styles.css";
 import { cn } from "@/lib/utils";
+import { FloatingLinkEditorPlugin } from "@/_components/Notes/_editor/plugins/FloatingLinkEditorPlugin/index.tsx";
+import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 
 interface EditorTheme {
   root: string;
@@ -91,38 +93,38 @@ const theme: EditorTheme = {
     strikethrough: "editor-text-strikethrough",
     underlineStrikethrough: "editor-text-underline-strikethrough",
   },
-  code: "editor-Theme__code",
+  code: "editor-code",
   codeHighlight: {
-    atrule: "editor-Theme__tokenAttr",
-    attr: "editor-Theme__tokenAttr",
-    boolean: "editor-Theme__tokenProperty",
-    builtin: "editor-Theme__tokenSelector",
-    cdata: "editor-Theme__tokenComment",
-    char: "editor-Theme__tokenSelector",
-    class: "editor-Theme__tokenFunction",
-    "class-name": "editor-Theme__tokenFunction",
-    comment: "editor-Theme__tokenComment",
-    constant: "editor-Theme__tokenProperty",
-    deleted: "editor-Theme__tokenProperty",
-    doctype: "editor-Theme__tokenComment",
-    entity: "editor-Theme__tokenOperator",
-    function: "editor-Theme__tokenFunction",
-    important: "editor-Theme__tokenVariable",
-    inserted: "editor-Theme__tokenSelector",
-    keyword: "editor-Theme__tokenAttr",
-    namespace: "editor-Theme__tokenVariable",
-    number: "editor-Theme__tokenProperty",
-    operator: "editor-Theme__tokenOperator",
-    prolog: "editor-Theme__tokenComment",
-    property: "editor-Theme__tokenProperty",
-    punctuation: "editor-Theme__tokenPunctuation",
-    regex: "editor-Theme__tokenVariable",
-    selector: "editor-Theme__tokenSelector",
-    string: "editor-Theme__tokenSelector",
-    symbol: "editor-Theme__tokenProperty",
-    tag: "editor-Theme__tokenProperty",
-    url: "editor-Theme__tokenOperator",
-    variable: "editor-Theme__tokenVariable",
+    atrule: "editor-tokenAttr",
+    attr: "editor-tokenAttr",
+    boolean: "editor-tokenProperty",
+    builtin: "editor-tokenSelector",
+    cdata: "editor-tokenComment",
+    char: "editor-tokenSelector",
+    class: "editor-tokenFunction",
+    "class-name": "editor-tokenFunction",
+    comment: "editor-tokenComment",
+    constant: "editor-tokenProperty",
+    deleted: "editor-tokenProperty",
+    doctype: "editor-tokenComment",
+    entity: "editor-tokenOperator",
+    function: "editor-tokenFunction",
+    important: "editor-tokenVariable",
+    inserted: "editor-tokenSelector",
+    keyword: "editor-tokenAttr",
+    namespace: "editor-tokenVariable",
+    number: "editor-tokenProperty",
+    operator: "editor-tokenOperator",
+    prolog: "editor-tokenComment",
+    property: "editor-tokenProperty",
+    punctuation: "editor-tokenPunctuation",
+    regex: "editor-tokenVariable",
+    selector: "editor-tokenSelector",
+    string: "editor-tokenSelector",
+    symbol: "editor-tokenProperty",
+    tag: "editor-tokenProperty",
+    url: "editor-tokenOperator",
+    variable: "editor-tokenVariable",
   },
   heading: {
     h1: "editor-heading-h1 editor-heading-font",
@@ -173,6 +175,7 @@ export const CardDetailsEditor = ({
   const [editorState, setEditorState] = useState<string>();
   const [floatingAnchorElem, setFloatingAnchorElem] =
     useState<HTMLDivElement | null>(null);
+  const [isLinkEditMode, setIsLinkEditMode] = useState(false);
 
   const columnId = useContext(ColumnContext);
   const { updateCardMutation } = useCardMutation();
@@ -238,6 +241,7 @@ export const CardDetailsEditor = ({
             />
             <HistoryPlugin />
             <AutoFocusPlugin />
+            <LinkPlugin/>
             <CodeHighlightPlugin />
             <TabIndentationPlugin />
             <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
@@ -247,10 +251,22 @@ export const CardDetailsEditor = ({
             <ImagesPlugin />
             <EditorRefPlugin editorRef={editorRef} />
             <CopyImagePlugin ref={editorRef} />
-            <FloatingTextFormatToolbarPlugin
-              anchorElem={floatingAnchorElem ?? undefined}
-            />
-            <DraggableBlockPlugin anchorElem={floatingAnchorElem ?? undefined} />
+            {floatingAnchorElem && (
+              <>
+                <FloatingTextFormatToolbarPlugin
+                  anchorElem={floatingAnchorElem ?? undefined}
+                  setIsLinkEditMode={setIsLinkEditMode}
+                />
+              </>
+            )}
+            {floatingAnchorElem && (
+              <FloatingLinkEditorPlugin
+                anchorElem={floatingAnchorElem ?? undefined}
+                isLinkEditMode={isLinkEditMode}
+                setIsLinkEditMode={setIsLinkEditMode}
+              />
+            )}
+            {/* <DraggableBlockPlugin anchorElem={floatingAnchorElem ?? undefined} /> */}
           </div>
         </div>
 

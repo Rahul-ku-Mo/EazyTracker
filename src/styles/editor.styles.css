@@ -390,48 +390,48 @@
   letter-spacing: 0.05em;
 }
 
-/* Syntax highlighting tokens */
-.editor-Theme__tokenComment {
+/* Syntax highlighting tokens - Fixed to match theme configuration */
+.editor-tokenComment {
   @apply text-slate-500 dark:text-slate-400;
   font-style: italic;
 }
 
-.editor-Theme__tokenPunctuation {
+.editor-tokenPunctuation {
   @apply text-zinc-600 dark:text-zinc-300;
 }
 
-.editor-Theme__tokenProperty {
+.editor-tokenProperty {
   @apply text-blue-600 dark:text-blue-300;
   font-weight: 500;
 }
 
-.editor-Theme__tokenSelector {
+.editor-tokenSelector {
   @apply text-green-600 dark:text-green-300;
   font-weight: 500;
 }
 
-.editor-Theme__tokenOperator {
+.editor-tokenOperator {
   @apply text-purple-600 dark:text-purple-300;
   font-weight: 500;
 }
 
-.editor-Theme__tokenAttr {
+.editor-tokenAttr {
   @apply text-orange-600 dark:text-orange-300;
   font-weight: 500;
 }
 
-.editor-Theme__tokenVariable {
+.editor-tokenVariable {
   @apply text-red-600 dark:text-red-300;
   font-weight: 500;
 }
 
-.editor-Theme__tokenFunction {
+.editor-tokenFunction {
   @apply text-indigo-600 dark:text-indigo-300;
   font-weight: 600;
 }
 
-/* Claude-style code blocks */
-.editor-Theme__code {
+/* Claude-style code blocks - Fixed to match theme configuration */
+.editor-code {
   font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Source Code Pro", monospace;
   display: block;
   margin: 1rem 0;
@@ -441,9 +441,14 @@
   line-height: 1.5;
   overflow-x: auto;
   position: relative;
-  white-space: pre;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-word;
   tab-size: 2;
   box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
   
   /* Light mode styling */
   background-color: rgb(248 250 252);
@@ -452,19 +457,19 @@
 }
 
 /* Dark mode code block styling */
-.dark .editor-Theme__code {
+.dark .editor-code {
   background-color: rgb(15 23 42);
   border-color: rgb(30 41 59);
   color: rgb(226 232 240);
 }
 
 /* Remove the gutter/line numbers for cleaner look like Claude */
-.editor-Theme__code:before {
+.editor-code:before {
   display: none;
 }
 
 /* Inline code styling - for short code snippets */
-code:not(.editor-Theme__code),
+code:not(.editor-code),
 .editor-inline-code {
   font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Source Code Pro", monospace;
   display: inline;
@@ -481,7 +486,7 @@ code:not(.editor-Theme__code),
 }
 
 /* Dark mode inline code */
-.dark code:not(.editor-Theme__code),
+.dark code:not(.editor-code),
 .dark .editor-inline-code {
   background-color: rgb(31 41 55);
   border-color: rgb(55 65 81);
@@ -565,4 +570,13 @@ code:not(.editor-Theme__code),
   .editor-list-item-unchecked {
     padding-left: 1.5rem;
   }
+}
+
+.editor-link {
+  color: hsl(157, 70%, 26%); /* emerald-500 */
+  text-decoration: none;
+}
+.editor-link:hover {
+  text-decoration: underline;
+  cursor: pointer;
 }
