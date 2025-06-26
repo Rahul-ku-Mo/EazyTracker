@@ -220,7 +220,7 @@ function TextFormatFloatingToolbar({
   };
 
   return (
-    <div ref={popupCharStylesEditorRef} className="floating-text-format-popup dark:bg-zinc-800 bg-white border">
+    <div ref={popupCharStylesEditorRef} className="floating-text-format-popup dark:bg-zinc-800 bg-white border border-border rounded-md h-fit">
       {editor !== null && (
         <>
           <button

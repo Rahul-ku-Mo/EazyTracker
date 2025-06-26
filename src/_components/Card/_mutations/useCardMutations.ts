@@ -21,6 +21,7 @@ type TIssueUpdateCard = {
   updatedAt?: Date;
   label?: string;
   order?: number;
+  storyPoints?: number;
 };
 
 export const useCardMutation = () => {
@@ -60,6 +61,7 @@ export const useCardMutation = () => {
         assigneeId,
         label,
         order,
+        storyPoints,
       } = data;
 
       data.columnId = columnId;
@@ -74,6 +76,7 @@ export const useCardMutation = () => {
         ...(assigneeId !== undefined && { assigneeId }),
         ...(label !== undefined && { label }),
         ...(order !== undefined && { order }),
+        ...(storyPoints !== undefined && { storyPoints }),
       };
 
       return await updateCard(accessToken, updatedData as TCardData, cardId);

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState, useRef } from "react";
+import { useContext, useEffect, useState, useRef, useCallback } from "react";
 
 import { ParagraphNode } from "lexical";
 /**Plugins Lexical */
@@ -176,17 +176,29 @@ export const CardDetailsEditor = ({
   const [floatingAnchorElem, setFloatingAnchorElem] =
     useState<HTMLDivElement | null>(null);
   const [isLinkEditMode, setIsLinkEditMode] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const columnId = useContext(ColumnContext);
   const { updateCardMutation } = useCardMutation();
 
   const editorRef = useRef(null);
+  const initialDescriptionRef = useRef(description);
 
   const onRef = (_floatingAnchorElem: HTMLDivElement) => {
     if (_floatingAnchorElem !== null) {
       setFloatingAnchorElem(_floatingAnchorElem);
     }
   };
+
+  // Initialize the initial description reference
+  useEffect(() => {
+    initialDescriptionRef.current = description;
+  }, [description]);
+
+  // Track content changes
+  const handleContentChange = useCallback((hasChanges: boolean) => {
+    setHasUnsavedChanges(hasChanges);
+  }, []);
 
   const initialConfig: InitialConfigType = {
     namespace: "CardDetailsEditor",
@@ -218,10 +230,15 @@ export const CardDetailsEditor = ({
   };
 
   return (
-    <div className="relative h-full">
+    <div className="relative h-full border border-[#e3e3e3b5] rounded-lg bg-[#fafafa] dark:bg-zinc-800 dark:border-zinc-700 p-2">
       <LexicalComposer initialConfig={initialConfig}>
         <div className="editor-container">
-          <CardToolbarPlugin save={handleSave} />
+          <CardToolbarPlugin 
+            save={handleSave} 
+            editorState={editorState}
+            hasUnsavedChanges={hasUnsavedChanges}
+            onContentChange={handleContentChange}
+          />
           <div className="h-full editor-inner">
             <RichTextPlugin
               contentEditable={
@@ -229,10 +246,10 @@ export const CardDetailsEditor = ({
                  <ContentEditable
                   className={cn(
                     "editor-root",
-                    "w-full !pl-12 py-2 overflow-y-auto",
+                    "w-full!p-0 overflow-y-auto",
                     "dark:text-zinc-100 focus:outline-none",
                     "min-h-[300px]",
-                    "max-h-[calc(100vh-300px)]"
+                    "max-h-[calc(100vh-280px)]"
                   )}
                 />
                </div>

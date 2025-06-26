@@ -10,11 +10,7 @@ import {
 import { useState, useContext } from "react";
 
 
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "../../../components/ui/resizable";
+
 import { CardContext } from "../../../context/CardProvider";
 import { TCardContext } from "../../../types/cardTypes";
 
@@ -45,30 +41,22 @@ const CardView = ({ columnName, isOpen, closeModal }: CardViewProps) => {
       </SheetHeader>
       <SheetContent
         side="bottom"
-        className="w-full p-0 h-[90%] bg-white dark:bg-zinc-800"
+        className="m-4 p-0 h-[90%] bg-white dark:bg-zinc-800 rounded-lg"
         isCloseButtonNotHidden={false}
       >
-        <ResizablePanelGroup direction="horizontal" className="h-full">
-          {/* <ResizablePanel defaultSize={40} minSize={30}>
-            <LeftPanel />
-          </ResizablePanel>
-          <ResizableHandle withHandle /> */}
-          <ResizablePanel
-            defaultSize={40}
-            minSize={30}
-            className="shadow-xl dark:shadow-zinc-900 dark:bg-zinc-900"
-          >
+        <div className="h-full flex">   
+          <div className="w-4/5 ">
             <MainPanel
               columnName={columnName}
               isLocked={isLocked}
               setIsLocked={setIsLocked}
             />
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel defaultSize={20} minSize={15}>
+          </div>
+       
+          <div className="w-1/5">
             <RightPanel />
-          </ResizablePanel>
-        </ResizablePanelGroup>
+          </div>
+        </div>
       </SheetContent>
     </Sheet>
   );
