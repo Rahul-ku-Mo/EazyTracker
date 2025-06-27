@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Heart, Sparkles, ArrowRight, X } from 'lucide-react';
+import { Heart, Sparkles, ArrowRight } from 'lucide-react';
 
 interface TrialExpiredModalProps {
   open: boolean;
