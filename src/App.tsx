@@ -4,6 +4,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/context/ThemeProvider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { TrialExpiredModal } from "@/components/TrialExpiredModal";
+import { useTrialStatus } from "@/hooks/useTrialStatus";
+import Cookies from "js-cookie";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -14,6 +17,23 @@ const queryClient = new QueryClient({
   },
 });
 
+const AppWithTrialModal = () => {
+  const { showTrialExpiredModal, dismissTrialModal } = useTrialStatus();
+  const isLoggedIn = !!Cookies.get('accessToken');
+
+  return (
+    <>
+      <Router />
+      {isLoggedIn && (
+        <TrialExpiredModal 
+          open={showTrialExpiredModal} 
+          onClose={dismissTrialModal} 
+        />
+      )}
+    </>
+  );
+};
+
 const App = () => {
   return (
     <>
@@ -22,7 +42,7 @@ const App = () => {
           <Toaster />
           <QueryClientProvider client={queryClient}>
             <BrowserRouter>
-              <Router />
+              <AppWithTrialModal />
             </BrowserRouter>
           </QueryClientProvider>
         </GoogleOAuthProvider>

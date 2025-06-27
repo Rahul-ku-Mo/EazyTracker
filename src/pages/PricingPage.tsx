@@ -17,34 +17,36 @@ const staticPlans = [
     "price": 0,
     "currency": "usd",
     "interval": "month",
+    "trialDays": 14,
     "features": [
-      "2 projects",
-      "3 team members",
-      "25 tasks per project",
-      "100 image uploads",
+      "5 projects",
+      "15 team members",
+      "100 tasks per project",
+      "1GB storage",
       "Basic task management",
       "7-day activity history",
-      "Community support"
+      "Community support",
+      "14-day free trial"
     ]
   },
   {
     "id": "pro",
     "name": "Professional",
-    "description": "For growing teams and small businesses",
+    "description": "For growing teams and businesses",
     "price": 9.99,
     "currency": "usd",
     "interval": "month",
     "features": [
-      "100 projects",
-      "15 team members",
-      "500 tasks per project",
-      "1,000 image uploads",
-      "Advanced analytics & reporting",
-      "90-day activity history",
-      "Time tracking",
-      "Custom fields",
-      "AI-powered insights",
-      "Email support"
+      "15 projects",
+      "100 team members",
+      "Unlimited tasks",
+      "10GB storage",
+      "Advanced task management",
+      "Team collaboration features",
+      "30-day activity history",
+      "Priority email support",
+      "Advanced analytics",
+      "Custom project templates"
     ]
   },
   {
@@ -58,14 +60,15 @@ const staticPlans = [
       "Unlimited projects",
       "Unlimited team members",
       "Unlimited tasks",
-      "Unlimited image uploads",
-      "Advanced analytics & reporting",
+      "100GB storage",
+      "Full feature access",
+      "Advanced team collaboration",
       "Unlimited activity history",
-      "Time tracking",
-      "Custom fields",
-      "AI-powered insights",
-      "Advanced team management",
-      "Priority support"
+      "24/7 phone & email support",
+      "Advanced analytics & reporting",
+      "Custom integrations",
+      "SSO & advanced security",
+      "Dedicated account manager"
     ]
   }
 ];
