@@ -4,6 +4,7 @@ import {
   $getRoot,
   $getSelection,
   $isRangeSelection,
+  ElementNode,
   LexicalEditor,
 } from "lexical";
 import { $setBlocksType } from "@lexical/selection";
@@ -61,7 +62,7 @@ export const formatHeading = (
 ) => {
   editor.update(() => {
     const selection = $getSelection();
-    $setBlocksType(selection, () => $createHeadingNode(headingSize));
+    $setBlocksType(selection, () => $createHeadingNode(headingSize) as unknown as ElementNode);
   });
 };
 

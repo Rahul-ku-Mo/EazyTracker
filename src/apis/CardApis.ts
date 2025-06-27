@@ -12,6 +12,7 @@ interface CardDetail {
   updatedAt?: string;
   labels?: any[];
   attachments?: any[];
+  storyPoints?: number;
   [key: string]: any;
 }
 

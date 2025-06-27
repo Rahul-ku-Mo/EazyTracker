@@ -8,6 +8,7 @@ type TCardData = {
   order?: number;
   priority?: string;
   assigneeId?: string;
+  storyPoints?: number;
   assignees?: Array<{
     id: string;
     name: string;
@@ -32,6 +33,7 @@ type TCardContext = {
   order?: number;
   labels?: string[];
   assigneeId?: string;
+  storyPoints?: number;
   assignees?: Array<{
     id: string;
     name: string;

@@ -48,7 +48,10 @@ export function NavUser({
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { setIsLoggedIn } = useContext(AuthContext);
+  const { setIsLoggedIn, role } = useContext(AuthContext);
+  
+  // Check if user is admin
+  const isAdmin = role === 'ADMIN';
 
   const handleLogout = (): void => {
     Cookies.remove("accessToken");
@@ -88,8 +91,17 @@ ${user?.username}`);
     }
   };
 
-  // Determine upgrade option based on current plan
+  // Determine upgrade option based on current plan and admin status
   const getUpgradeOption = () => {
+    // Only show billing/upgrade options for admin users
+    if (!isAdmin) {
+      return {
+        text: "",
+        icon: Sparkles,
+        show: false,
+      };
+    }
+
     if (!subscription) {
       return {
         text: "Upgrade to Pro",

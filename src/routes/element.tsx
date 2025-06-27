@@ -82,3 +82,10 @@ export const ComingSoonPage = Loadable(lazy(() => import("../pages/ComingSoonPag
 export const TermsPage = Loadable(lazy(() => import("../pages/TermsPage")));
 
 export const PrivacyPage = Loadable(lazy(() => import("../pages/PrivacyPage")));
+
+export const NotePage = Loadable(lazy(() => import("../pages/notes/NotePage")));
+
+export const NoteViewPage = Loadable(lazy(() => import("../pages/notes/NoteViewPage")));
+
+export const NoteEditPage = Loadable(lazy(() => import("../pages/notes/NoteEditPage")));
+

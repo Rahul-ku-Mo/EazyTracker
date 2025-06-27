@@ -93,7 +93,13 @@ const getNotificationMessage = (notification: Notification) => {
     case "CARD_OVERDUE":
       return `Card "${metadata.cardTitle}" is ${metadata.daysPastDue} days overdue`;
     case "JOIN":
-      return `${senderName} invited you to join "${metadata.boardTitle}"`;
+      if (metadata.teamName) {
+        return `${senderName} joined your team "${metadata.teamName}"`;
+      } else if (metadata.boardTitle) {
+        return `${senderName} invited you to join "${metadata.boardTitle}"`;
+      } else {
+        return `${senderName} joined your team`;
+      }
     default:
       return "New notification";
   }
@@ -260,7 +266,7 @@ const InboxPage = () => {
     <MainLayout title="Inbox" fwdClassName="flex flex-col h-full p-0">
       {/* Header */}
       <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex items-center justify-between p-6">
+        <div className="flex items-center justify-between p-2">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
               <Inbox className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
@@ -326,7 +332,7 @@ const InboxPage = () => {
         </div>
 
         {/* Search and Tabs */}
-        <div className="px-6 pb-4">
+        <div className="px-2 pb-4">
           <div className="flex items-center gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />

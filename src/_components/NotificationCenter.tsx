@@ -73,7 +73,13 @@ const getNotificationMessage = (notification: Notification) => {
     case "CARD_OVERDUE":
       return `Card "${metadata.cardTitle}" is ${metadata.daysPastDue} days overdue`;
     case "JOIN":
-      return `${senderName} invited you to join "${metadata.boardTitle}"`;
+      if (metadata.teamName) {
+        return `${senderName} joined your team "${metadata.teamName}"`;
+      } else if (metadata.boardTitle) {
+        return `${senderName} invited you to join "${metadata.boardTitle}"`;
+      } else {
+        return `${senderName} joined your team`;
+      }
     default:
       return "New notification";
   }
@@ -140,9 +146,18 @@ export const NotificationCenter = () => {
 
   const unreadCount = notifications.filter((n: Notification) => !n.isRead).length;
 
-  const handleMarkAsRead = (notificationId: number, event: React.MouseEvent) => {
-    event.stopPropagation();
+  const handleMarkAsRead = (notificationId: number, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation();
+    }
     markAsReadMutation.mutate(notificationId);
+  };
+
+  const handleNotificationClick = (notification: Notification) => {
+    // Mark as read when clicked
+    if (!notification.isRead) {
+      handleMarkAsRead(notification.id);
+    }
   };
 
   const handleMarkAllAsRead = () => {
@@ -198,8 +213,9 @@ export const NotificationCenter = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
+                    onClick={() => handleNotificationClick(notification)}
                     className={cn(
-                      "flex items-start gap-3 p-3 hover:bg-muted/50 transition-colors border-l-2 mx-2 my-1 rounded-r-md",
+                      "flex items-start gap-3 p-3 hover:bg-muted/50 transition-colors border-l-2 mx-2 my-1 rounded-r-md cursor-pointer",
                       notification.isRead
                         ? "border-l-transparent"
                         : "border-l-primary bg-muted/25"
@@ -211,14 +227,14 @@ export const NotificationCenter = () => {
                     
                     <div className="flex-1 min-w-0">
                       <p className={cn(
-                        "text-sm",
+                        "text-xs leading-relaxed",
                         notification.isRead 
                           ? "text-muted-foreground" 
                           : "text-foreground font-medium"
                       )}>
                         {getNotificationMessage(notification)}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-muted-foreground mt-1 opacity-75">
                         {formatDistanceToNow(new Date(notification.createdAt), {
                           addSuffix: true,
                         })}

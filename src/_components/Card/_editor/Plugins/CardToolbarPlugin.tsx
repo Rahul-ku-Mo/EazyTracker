@@ -18,7 +18,7 @@ import { ListNode, $isListNode } from "@lexical/list";
 import {
   $isHeadingNode,
 } from "@lexical/rich-text";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { Button } from "../../../../components/ui/button";
 import {
   DropdownMenu,
@@ -103,13 +103,28 @@ const ToolbarButton = ({
   </Button>
 );
 
-export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
+export const CardToolbarPlugin = ({ 
+  save, 
+  editorState, 
+  hasUnsavedChanges, 
+  onContentChange 
+}: { 
+  save: () => void;
+  editorState?: string;
+  hasUnsavedChanges?: boolean;
+  onContentChange?: (hasChanges: boolean) => void;
+}) => {
   const [editor] = useLexicalComposerContext();
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const [showAIPopover, setShowAIPopover] = useState(false);
   const [showHelpPopover, setShowHelpPopover] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [showSavedIndicator, setShowSavedIndicator] = useState(false);
+
+  // Refs for autosave debouncing
+  const autosaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSavedContentRef = useRef<string>("");
 
   // AI improve writing hook
   const { improvedText, isImproving, error, improveText, stopImproving } = useImproveWriting();
@@ -134,6 +149,69 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
     orderedList: false,
     checkList: false,
   });
+
+  // Autosave function with debouncing
+  const triggerAutosave = useCallback(() => {
+    if (!editorState) return;
+    
+    // Check if content has actually changed
+    if (editorState === lastSavedContentRef.current) {
+      return; // No changes to save
+    }
+    
+    setIsAutoSaving(true);
+    
+    // Trigger the save function
+    save();
+    
+    // Update last saved content reference
+    lastSavedContentRef.current = editorState;
+    
+    // Simulate async save completion
+    setTimeout(() => {
+      setIsAutoSaving(false);
+      setShowSavedIndicator(true);
+      
+      // Hide saved indicator after 2 seconds
+      setTimeout(() => setShowSavedIndicator(false), 2000);
+    }, 500);
+  }, [editorState, save]);
+
+  // Track content changes and trigger autosave
+  useEffect(() => {
+    if (editorState && lastSavedContentRef.current !== undefined) {
+      const hasChanges = editorState !== lastSavedContentRef.current;
+      
+      // Notify parent about content changes
+      onContentChange?.(hasChanges);
+      
+      // Clear existing timeout
+      if (autosaveTimeoutRef.current) {
+        clearTimeout(autosaveTimeoutRef.current);
+      }
+      
+      // Set new timeout for autosave (2 seconds after last change)
+      if (hasChanges && !isAutoSaving) {
+        autosaveTimeoutRef.current = setTimeout(() => {
+          triggerAutosave();
+        }, 2000); // 2 seconds debounce
+      }
+    }
+    
+    // Initialize last saved content reference
+    if (lastSavedContentRef.current === "" && editorState) {
+      lastSavedContentRef.current = editorState;
+    }
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (autosaveTimeoutRef.current) {
+        clearTimeout(autosaveTimeoutRef.current);
+      }
+    };
+  }, [editorState, triggerAutosave, isAutoSaving, onContentChange]);
+
+  console.log('headings', headings);
 
   const updateToolbar = useCallback(() => {
     const selection = $getSelection();
@@ -183,9 +261,12 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
             h6: false,
           });
         } else {
-          const type = $isHeadingNode(element)
-            ? element.getTag()
-            : element.getType();
+          const type = $isHeadingNode(element as any)
+            ? (element as any).getTag()
+            : (element as any).getType();
+
+          console.log('type', type);
+
           if (type in blockTypeToBlockName) {
             setHeadings((prev) => ({
               ...prev,
@@ -295,11 +376,11 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
   //   });
   // };
 
-  // Add save event listener for keyboard shortcuts
+  // Add save event listener for keyboard shortcuts (for manual save if needed)
   useEffect(() => {
     const handleSaveEvent = (event: CustomEvent) => {
       if (event.type === 'lexical-save') {
-        save();
+        triggerAutosave();
         toast.success("Document saved!");
       }
     };
@@ -309,10 +390,10 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
     return () => {
       document.removeEventListener('lexical-save', handleSaveEvent as EventListener);
     };
-  }, [save]);
+  }, [triggerAutosave]);
 
   return (
-    <div className="flex items-center gap-1 p-1 mb-2 rounded-md bg-background">
+    <div className="flex flex-wrap items-center gap-1 p-1 mb-2 rounded-md dark:bg-zinc-900 bg-white  border border-border w-fit">
       <ToolbarButton
         onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}
         disabled={!canUndo}
@@ -537,6 +618,7 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
               </div>
               <div className="mt-2 pt-2 border-t text-xs text-muted-foreground">
                 <p>Select text and use AI to improve writing with the ✨ button</p>
+                <p className="mt-1">Changes are automatically saved</p>
               </div>
             </div>
           </div>
@@ -553,24 +635,28 @@ export const CardToolbarPlugin = ({ save }: { save: () => void }) => {
           </Tooltip>
         </TooltipProvider>
       </ToolbarButton>
-      <Button
-        variant="default"
-        size="sm"
-        className={cn(
-          "ml-auto mr-0.5 h-7 flex gap-0.5",
-          !isSaving && "bg-green-500 hover:bg-green-600"
+
+      {/* Autosave Status Indicator */}
+      <div className="ml-auto mr-0.5 flex items-center gap-2">
+        {isAutoSaving && (
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+            <span className="text-xs text-muted-foreground">Auto-saving...</span>
+          </div>
         )}
-        onClick={() => {
-          setIsSaving(true);
-          save();
-          setTimeout(() => {
-            setIsSaving(false);
-          }, 1000);
-        }}
-      >
-        {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
-        {isSaving ? "Saving..." : "Save"}
-      </Button>
+        {showSavedIndicator && !isAutoSaving && (
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span className="text-xs text-muted-foreground">Saved</span>
+          </div>
+        )}
+        {!isAutoSaving && !showSavedIndicator && hasUnsavedChanges && (
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+            <span className="text-xs text-muted-foreground">Unsaved changes</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

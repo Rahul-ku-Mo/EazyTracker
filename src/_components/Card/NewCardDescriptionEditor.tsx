@@ -1,5 +1,4 @@
- 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { EditorState } from "lexical";
 
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -14,6 +13,15 @@ import { cn } from "../../lib/utils";
 import { ListItemNode, ListNode } from "@lexical/list";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
+import { EditorRefPlugin } from "@lexical/react/LexicalEditorRefPlugin";
+
+// Image-related imports
+import { ImageNode } from "./_editor/ImageNode";
+import { ImagesPlugin } from "./_editor/Plugins/ImagePlugin";
+import { CopyImagePlugin } from "./_editor/Plugins/CopyImagePlugin";
+
+// Import image styles
+import "./_editor/ImageNode/styles.css";
 
 interface EditorTheme {
   root: string;
@@ -126,11 +134,13 @@ interface CardDescriptionEditorProps {
 export const NewCardDescriptionEditor = ({
   setDescription,
 }: CardDescriptionEditorProps): JSX.Element => {
+  const editorRef = useRef(null);
+
   const initialConfig = {
     namespace: "CardDescriptionEditor",
     theme,
     onError,
-    nodes: [ListNode, ListItemNode] as any,
+    nodes: [ListNode, ListItemNode, ImageNode] as any,
   };
 
   return (
@@ -169,6 +179,9 @@ export const NewCardDescriptionEditor = ({
             <HistoryPlugin />
             <ListPlugin />
             <CheckListPlugin />
+            <ImagesPlugin />
+            <EditorRefPlugin editorRef={editorRef} />
+            <CopyImagePlugin ref={editorRef} />
             <CustomTransformLexicalToHTML setEditorState={setDescription} />
           </div>
         </div>

@@ -8,20 +8,23 @@ import { useBoards } from "@/hooks/useQueries";
 import { useFeatureGating } from "@/hooks/useFeatureGating";
 import {
   Card,
+  CardContent,
   CardFooter,
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Star } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Star, Lock, Eye, Info, Shield } from "lucide-react";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
+import { getTeamBoards } from "@/apis/TeamApis";
 
 import { BoardContextMenu } from "./BoardContextMenu";
 import { useState } from "react";
 import DeleteDialog from "../Dialog/DeleteDialog";
 import { useBoardMutation } from "./_mutations/useBoardMutation";
 import InviteBoardDialog from "./InviteBoardDialog";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
 
 interface Board {
   id: string;
@@ -30,6 +33,19 @@ interface Board {
   colorValue: string;
   colorName: string;
   isFavorite?: boolean;
+}
+
+interface TeamBoard {
+  id: number;
+  title: string;
+  colorName: string;
+  colorValue: string;
+  userId: string;
+  createdAt: string;
+  hasAccess: boolean;
+  userRole: string | null;
+  isOwner: boolean;
+  createdBy: string;
 }
 
 const BoardCard = ({ board }: { board: Board }) => {
@@ -175,17 +191,70 @@ const BoardCard = ({ board }: { board: Board }) => {
   );
 };
 
-const EmptyBoardState = ({ remainingBoards }: { remainingBoards: number }) => (
+const LockedBoardCard = ({ board }: { board: TeamBoard }) => {
+  const { toast } = useToast();
+
+  const handleLockedClick = () => {
+    toast({
+      title: "Board Access Required",
+      description: `You need permission to access "${board.title}". Contact ${board.createdBy} for access.`,
+      variant: "default",
+    });
+  };
+
+  return (
+    <div className="block" onClick={handleLockedClick}>
+      <Card className="relative overflow-hidden border-0 rounded-md group w-52 h-36 cursor-not-allowed">
+        <div
+          style={{ backgroundColor: board.colorValue }}
+          className="absolute inset-0 w-full h-full opacity-50"
+        />
+        <div
+          className={cn(
+            "absolute inset-0 flex flex-col justify-between p-3",
+            "bg-black/60 group-hover:bg-black/70",
+            "transition-colors duration-200"
+          )}
+        >
+          <div className="flex items-start justify-between">
+            <CardTitle className="text-sm font-bold text-white/70 flex-1">
+              {board.title}
+            </CardTitle>
+            <div className="flex items-center gap-1">
+              <Lock className="w-4 h-4 text-white/70" />
+            </div>
+          </div>
+          <CardFooter className="p-0 flex flex-col items-start gap-1">
+            <div className="flex items-center gap-1 text-xs text-white/60">
+              <Eye className="w-3 h-3" />
+              <span>Created by {board.createdBy}</span>
+            </div>
+            <span className="text-xs font-medium text-white/40">
+              {board.colorName} • Access Required
+            </span>
+          </CardFooter>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+const EmptyBoardState = ({ remainingBoards, isAdmin }: { remainingBoards: number; isAdmin: boolean }) => (
   <>
     <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
       <div className="border-0 bg-background/50">
-        <div className="text-2xl font-bold text-center gt-walsheim-font">Start your journey!</div>
+        <div className="text-2xl font-bold text-center gt-walsheim-font">
+          {isAdmin ? "Start your journey!" : "No boards available"}
+        </div>
         <div className="text-sm max-w-xs text-muted-foreground text-center inter-variable-font">
-          ✨ Create your first board to organize tasks. 🚀
+          {isAdmin 
+            ? "✨ Create your first board to organize tasks. 🚀"
+            : "🔒 Contact your team admin to get access to boards or create new ones."
+          }
         </div>
       </div>
     </div>
-    <BoardPopover count={remainingBoards} />
+    {isAdmin && <BoardPopover count={remainingBoards} />}
   </>
 );
 
@@ -199,7 +268,15 @@ const LoadingState = () => (
 
 const BoardSelection = () => {
   const accessToken = Cookies.get("accessToken");
-  const { data: boards, isPending } = useBoards(accessToken as string);
+  const { isAdmin } = useAdminCheck();
+  
+  // Only fetch user's own boards if user is admin
+  const { data: boards, isPending: isBoardsPending } = useBoards(accessToken as string);
+  const { data: teamBoards, isPending: isTeamBoardsPending } = useQuery({
+    queryKey: ["team-boards"],
+    queryFn: getTeamBoards,
+    enabled: !!accessToken,
+  });
   const { canCreate } = useFeatureGating();
   
   const currentBoardCount = boards?.length ?? 0;
@@ -207,18 +284,110 @@ const BoardSelection = () => {
   // For unlimited plans, remaining will be -1, otherwise show actual remaining count
   const remainingBoards = remaining === null ? 0 : remaining;
 
+  const isPending = isBoardsPending || isTeamBoardsPending;
+
+  // Separate team boards into accessible and locked
+  const accessibleTeamBoards = teamBoards?.filter((board: TeamBoard) => board.hasAccess && !board.isOwner) || [];
+  const lockedTeamBoards = teamBoards?.filter((board: TeamBoard) => !board.hasAccess && !board.isOwner) || [];
+
+  // For non-admin users, only count team boards they have access to
+  const relevantBoardCount = isAdmin 
+    ? (boards?.length || 0) + (accessibleTeamBoards?.length || 0) + (lockedTeamBoards?.length || 0)
+    : (accessibleTeamBoards?.length || 0) + (lockedTeamBoards?.length || 0);
+
+  const hasAnyBoards = relevantBoardCount > 0;
+
   return (
-    <Container fwdClassName="pl-2 bg-background" title="Manage Boards">
+    <Container fwdClassName="pl-2 bg-background" title={isAdmin ? "Manage Boards" : "Boards"}>
       {isPending ? (
         <LoadingState />
-      ) : boards?.length === 0 ? (
-        <EmptyBoardState remainingBoards={remainingBoards} />
+      ) : !hasAnyBoards ? (
+        <EmptyBoardState remainingBoards={remainingBoards} isAdmin={isAdmin} />
       ) : (
-        <div className="flex flex-wrap gap-4 pt-2 ">
-          {boards?.map((board: any) => (
-            <BoardCard key={`${board.id}${board.colorId}`} board={board} />
-          ))}
-          <BoardPopover count={remainingBoards} />
+        <div className="space-y-6 pt-2">
+          {/* User's own boards - Only show for admin users */}
+          {isAdmin && boards && boards.length > 0 && (
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">My Boards</h3>
+              <div className="flex flex-wrap gap-4">
+                {boards?.map((board: any) => (
+                  <BoardCard key={`${board.id}${board.colorId}`} board={board} />
+                ))}
+                <BoardPopover count={remainingBoards} />
+              </div>
+            </div>
+          )}
+
+          {/* Accessible team boards */}
+          {accessibleTeamBoards.length > 0 && (
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                {isAdmin ? "Team Boards" : "Boards"}
+              </h3>
+              <div className="flex flex-wrap gap-4">
+                {accessibleTeamBoards?.map((board: TeamBoard) => (
+                  <BoardCard 
+                    key={`team-${board.id}`} 
+                    board={{
+                      id: board.id.toString(),
+                      title: board.title,
+                      colorId: "", // Team boards don't have colorId
+                      colorValue: board.colorValue,
+                      colorName: board.colorName,
+                      isFavorite: false
+                    }} 
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Locked team boards */}
+          {lockedTeamBoards.length > 0 && (
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                Locked Boards ({lockedTeamBoards.length})
+              </h3>
+              <div className="flex flex-wrap gap-4">
+                {lockedTeamBoards?.map((board: TeamBoard) => (
+                  <LockedBoardCard key={`locked-${board.id}`} board={board} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Show board creation option only for admins when they have no boards */}
+          {isAdmin && (!boards || boards.length === 0) && (
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">My Boards</h3>
+              <div className="flex flex-wrap gap-4">
+                <BoardPopover count={remainingBoards} />
+              </div>
+            </div>
+          )}
+
+          {/* Info card for non-admin users */}
+          {!isAdmin && hasAnyBoards && (
+            <div className="mt-6">
+              <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10">
+                <CardContent className="flex items-start gap-3 pt-4">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                    <Info className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
+                      Board Access Information
+                    </h4>
+                    <p className="text-xs text-blue-700 dark:text-blue-300">
+                      As a team member, you can access boards that have been shared with you. 
+                      To create new boards or manage existing ones, contact your team administrator.
+                    </p>
+                  </div>
+                  <Shield className="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       )}
     </Container>

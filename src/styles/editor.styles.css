@@ -128,47 +128,8 @@
   user-select: text;
 }
 
-/* Override list-item styling specifically for checkboxes */
-.editor-list-item.editor-list-item-checked,
-.editor-list-item.editor-list-item-unchecked {
-  list-style: none !important;
-  list-style-type: none !important;
-  list-style-image: none !important;
-  padding-left: 2rem;
-  margin: 0.5rem 0;
-  display: block !important;
-}
-
-.editor-list-item.editor-list-item-checked::marker,
-.editor-list-item.editor-list-item-unchecked::marker {
-  display: none !important;
-  content: none !important;
-}
-
-/* Bullet list bullets */
-.editor-list-ul .editor-list-item::before {
-  content: "•";
-  position: absolute;
-  left: 0.5rem;
-  top: 0;
-  color: var(--muted-foreground);
-  font-weight: bold;
-  font-size: 1.1em;
-  pointer-events: none;
-  user-select: none;
-}
-
-/* Completely remove bullet styling when checkbox classes are present */
-.editor-list-ul .editor-list-item-checked,
-.editor-list-ul .editor-list-item-unchecked,
-.editor-list-checklist .editor-list-item-checked,
-.editor-list-checklist .editor-list-item-unchecked {
-  list-style: none !important;
-  list-style-type: none !important;
-}
-
-/* Hide bullet content but show checkbox styling */
-.editor-list-ul .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked)::before {
+/* Bullet list bullets - Only for non-checkbox items */
+.editor-list-ul .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked):not(.editor-nested-list-item)::before {
   content: "•";
   position: absolute;
   left: 0.5rem;
@@ -185,7 +146,7 @@
   counter-increment: list-counter;
 }
 
-.editor-list-ol .editor-list-item::before {
+.editor-list-ol .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked)::before {
   content: counter(list-counter) ".";
   position: absolute;
   left: 0;
@@ -198,7 +159,7 @@
   user-select: none;
 }
 
-/* Enhanced checklist items with emerald styling */
+/* FIXED: Enhanced checklist items with emerald styling */
 .editor-list-item-checked,
 .editor-list-item-unchecked {
   position: relative;
@@ -216,20 +177,8 @@
 
 .editor-list-item-checked::marker,
 .editor-list-item-unchecked::marker {
-  display: none;
-}
-
-.editor-list-item-checked,
-.editor-list-item-unchecked {
-  list-style: none !important;
-  list-style-type: none !important;
-  list-style-position: outside !important;
-}
-
-.editor-list-item-checked::marker,
-.editor-list-item-unchecked::marker {
-  content: none !important;
   display: none !important;
+  content: none !important;
 }
 
 .editor-list-item-checked {
@@ -251,10 +200,8 @@
   color: #d1d5db;
 }
 
-/* Checkbox styling - CHECKED */
-.editor-list-item-checked::before,
-.editor-list-ul .editor-list-item-checked::before,
-.editor-list-checklist .editor-list-item-checked::before {
+/* FIXED: Checkbox styling - CHECKED - Allow checkboxes at any nesting level */
+.editor-list-item-checked::before {
   content: "" !important;
   position: absolute !important;
   left: 0 !important;
@@ -298,9 +245,8 @@
   line-height: 1;
 }
 
-.editor-list-item-unchecked::before,
-.editor-list-ul .editor-list-item-unchecked::before,
-.editor-list-checklist .editor-list-item-unchecked::before {
+/* FIXED: Checkbox styling - UNCHECKED - Allow checkboxes at any nesting level */
+.editor-list-item-unchecked::before {
   content: "" !important;
   position: absolute !important;
   left: 0 !important;
@@ -308,7 +254,7 @@
   width: 1rem !important;
   height: 1rem !important;
   border: 1.5px solid #d1d5db !important;
-  background-color: white !important;
+  background-color: transparent !important;
   border-radius: 2px !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
@@ -338,33 +284,52 @@
   box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
 }
 
+/* IMPORTANT: Remove the overly restrictive nested list overrides */
+/* Only prevent checkbox styling on regular nested list items that aren't checkboxes */
+.editor-nested-list .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked)::before,
+.editor-nested-list .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked)::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Ensure nested checkbox items maintain proper spacing */
+.editor-nested-list .editor-list-item-checked,
+.editor-nested-list .editor-list-item-unchecked {
+  padding-left: 2rem;
+  margin: 0.5rem 0;
+}
+
 /* Nested lists */
+.editor-nested-list-item {
+  list-style-type: none;
+}
+
+.editor-nested-list-item::before,
+.editor-nested-list-item::after {
+  display: none !important;
+  content: none !important;
+}
+
 .editor-nested-list {
-  margin: 0.25rem 0 0.25rem 1.5rem;
-  padding-left: 0;
+  margin-left: 1rem;
 }
 
 .editor-nested-list-item {
-  position: relative;
   margin: 0.25rem 0;
-  padding-left: 1.75rem;
-  list-style: none;
+  padding-left: 1.5rem;
 }
 
-.editor-nested-list-item::before {
+/* For regular bullet points in nested lists (non-checkbox) */
+.editor-nested-list .editor-list-ul .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked)::before {
   content: "◦";
   position: absolute;
   left: 0.5rem;
   top: 0;
   color: var(--muted-foreground);
-  font-size: 0.9em;
+  font-weight: bold;
+  font-size: 1.1em;
   pointer-events: none;
   user-select: none;
-}
-
-.editor-nested-list-item:before,
-.editor-nested-list-item:after {
-  display: block;
 }
 
 /* Improved placeholder */
@@ -425,48 +390,48 @@
   letter-spacing: 0.05em;
 }
 
-/* Syntax highlighting tokens */
-.editor-Theme__tokenComment {
+/* Syntax highlighting tokens - Fixed to match theme configuration */
+.editor-tokenComment {
   @apply text-slate-500 dark:text-slate-400;
   font-style: italic;
 }
 
-.editor-Theme__tokenPunctuation {
+.editor-tokenPunctuation {
   @apply text-zinc-600 dark:text-zinc-300;
 }
 
-.editor-Theme__tokenProperty {
+.editor-tokenProperty {
   @apply text-blue-600 dark:text-blue-300;
   font-weight: 500;
 }
 
-.editor-Theme__tokenSelector {
+.editor-tokenSelector {
   @apply text-green-600 dark:text-green-300;
   font-weight: 500;
 }
 
-.editor-Theme__tokenOperator {
+.editor-tokenOperator {
   @apply text-purple-600 dark:text-purple-300;
   font-weight: 500;
 }
 
-.editor-Theme__tokenAttr {
+.editor-tokenAttr {
   @apply text-orange-600 dark:text-orange-300;
   font-weight: 500;
 }
 
-.editor-Theme__tokenVariable {
+.editor-tokenVariable {
   @apply text-red-600 dark:text-red-300;
   font-weight: 500;
 }
 
-.editor-Theme__tokenFunction {
+.editor-tokenFunction {
   @apply text-indigo-600 dark:text-indigo-300;
   font-weight: 600;
 }
 
-/* Claude-style code blocks */
-.editor-Theme__code {
+/* Claude-style code blocks - Fixed to match theme configuration */
+.editor-code {
   font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Source Code Pro", monospace;
   display: block;
   margin: 1rem 0;
@@ -476,9 +441,14 @@
   line-height: 1.5;
   overflow-x: auto;
   position: relative;
-  white-space: pre;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-word;
   tab-size: 2;
   box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
   
   /* Light mode styling */
   background-color: rgb(248 250 252);
@@ -487,19 +457,19 @@
 }
 
 /* Dark mode code block styling */
-.dark .editor-Theme__code {
+.dark .editor-code {
   background-color: rgb(15 23 42);
   border-color: rgb(30 41 59);
   color: rgb(226 232 240);
 }
 
 /* Remove the gutter/line numbers for cleaner look like Claude */
-.editor-Theme__code:before {
+.editor-code:before {
   display: none;
 }
 
 /* Inline code styling - for short code snippets */
-code:not(.editor-Theme__code),
+code:not(.editor-code),
 .editor-inline-code {
   font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Source Code Pro", monospace;
   display: inline;
@@ -516,7 +486,7 @@ code:not(.editor-Theme__code),
 }
 
 /* Dark mode inline code */
-.dark code:not(.editor-Theme__code),
+.dark code:not(.editor-code),
 .dark .editor-inline-code {
   background-color: rgb(31 41 55);
   border-color: rgb(55 65 81);
@@ -600,4 +570,13 @@ code:not(.editor-Theme__code),
   .editor-list-item-unchecked {
     padding-left: 1.5rem;
   }
+}
+
+.editor-link {
+  color: hsl(157, 70%, 26%); /* emerald-500 */
+  text-decoration: none;
+}
+.editor-link:hover {
+  text-decoration: underline;
+  cursor: pointer;
 }

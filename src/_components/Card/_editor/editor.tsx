@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState, useRef } from "react";
+import { useContext, useEffect, useState, useRef, useCallback } from "react";
 
 import { ParagraphNode } from "lexical";
 /**Plugins Lexical */
@@ -23,8 +23,7 @@ import { $convertFromMarkdownString } from "@lexical/markdown";
 import { MARKDOWN_TRANSFORMERS as TRANSFORMERS } from "./MARKDOWN_TRANSFORMERS.ts";
 import { EditorRefPlugin } from "@lexical/react/LexicalEditorRefPlugin";
 import { CopyImagePlugin } from "./Plugins/CopyImagePlugin";
-import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
-import { mergeRegister } from "@lexical/utils";
+import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
 /**Lexical Nodes */
 import { CodeNode, CodeHighlightNode } from "@lexical/code";
 import { LinkNode } from "@lexical/link";
@@ -32,24 +31,22 @@ import { ListNode, ListItemNode } from "@lexical/list";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
 import { registerCodeHighlighting } from "@lexical/code";
-import {
-  KEY_DOWN_COMMAND,
-  COMMAND_PRIORITY_EDITOR,
-  FORMAT_TEXT_COMMAND,
-  UNDO_COMMAND,
-  REDO_COMMAND,
-} from "lexical";
+
 
 import { useCardMutation } from "../_mutations/useCardMutations.ts";
 import { ColumnContext } from "../../../context/ColumnProvider.tsx";
 import { CardToolbarPlugin } from "./Plugins/CardToolbarPlugin.tsx";
-
+import { FloatingTextFormatToolbarPlugin } from "@/_components/Notes/_editor/plugins/FloatingTextFormatToolbarPlugin";
+//import { DraggableBlockPlugin } from "./Plugins/CustomDraggablePlugin.tsx";
 import { ImageNode } from "./ImageNode";
 import { ImagesPlugin } from "./Plugins/ImagePlugin.tsx";
+import { KeyboardShortcutsPlugin } from "@/_components/Notes/_editor/plugins/KeyboardShortcutsPlugin"
 
 import "./ImageNode/styles.css";
 import "../../../styles/editor.styles.css";
-import { cn } from "../../../lib/utils.ts";
+import { cn } from "@/lib/utils";
+import { FloatingLinkEditorPlugin } from "@/_components/Notes/_editor/plugins/FloatingLinkEditorPlugin/index.tsx";
+import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 
 interface EditorTheme {
   root: string;
@@ -96,38 +93,38 @@ const theme: EditorTheme = {
     strikethrough: "editor-text-strikethrough",
     underlineStrikethrough: "editor-text-underline-strikethrough",
   },
-  code: "editor-Theme__code",
+  code: "editor-code",
   codeHighlight: {
-    atrule: "editor-Theme__tokenAttr",
-    attr: "editor-Theme__tokenAttr",
-    boolean: "editor-Theme__tokenProperty",
-    builtin: "editor-Theme__tokenSelector",
-    cdata: "editor-Theme__tokenComment",
-    char: "editor-Theme__tokenSelector",
-    class: "editor-Theme__tokenFunction",
-    "class-name": "editor-Theme__tokenFunction",
-    comment: "editor-Theme__tokenComment",
-    constant: "editor-Theme__tokenProperty",
-    deleted: "editor-Theme__tokenProperty",
-    doctype: "editor-Theme__tokenComment",
-    entity: "editor-Theme__tokenOperator",
-    function: "editor-Theme__tokenFunction",
-    important: "editor-Theme__tokenVariable",
-    inserted: "editor-Theme__tokenSelector",
-    keyword: "editor-Theme__tokenAttr",
-    namespace: "editor-Theme__tokenVariable",
-    number: "editor-Theme__tokenProperty",
-    operator: "editor-Theme__tokenOperator",
-    prolog: "editor-Theme__tokenComment",
-    property: "editor-Theme__tokenProperty",
-    punctuation: "editor-Theme__tokenPunctuation",
-    regex: "editor-Theme__tokenVariable",
-    selector: "editor-Theme__tokenSelector",
-    string: "editor-Theme__tokenSelector",
-    symbol: "editor-Theme__tokenProperty",
-    tag: "editor-Theme__tokenProperty",
-    url: "editor-Theme__tokenOperator",
-    variable: "editor-Theme__tokenVariable",
+    atrule: "editor-tokenAttr",
+    attr: "editor-tokenAttr",
+    boolean: "editor-tokenProperty",
+    builtin: "editor-tokenSelector",
+    cdata: "editor-tokenComment",
+    char: "editor-tokenSelector",
+    class: "editor-tokenFunction",
+    "class-name": "editor-tokenFunction",
+    comment: "editor-tokenComment",
+    constant: "editor-tokenProperty",
+    deleted: "editor-tokenProperty",
+    doctype: "editor-tokenComment",
+    entity: "editor-tokenOperator",
+    function: "editor-tokenFunction",
+    important: "editor-tokenVariable",
+    inserted: "editor-tokenSelector",
+    keyword: "editor-tokenAttr",
+    namespace: "editor-tokenVariable",
+    number: "editor-tokenProperty",
+    operator: "editor-tokenOperator",
+    prolog: "editor-tokenComment",
+    property: "editor-tokenProperty",
+    punctuation: "editor-tokenPunctuation",
+    regex: "editor-tokenVariable",
+    selector: "editor-tokenSelector",
+    string: "editor-tokenSelector",
+    symbol: "editor-tokenProperty",
+    tag: "editor-tokenProperty",
+    url: "editor-tokenOperator",
+    variable: "editor-tokenVariable",
   },
   heading: {
     h1: "editor-heading-h1 editor-heading-font",
@@ -176,10 +173,32 @@ export const CardDetailsEditor = ({
   description,
 }: CardDetailsEditorProps): JSX.Element => {
   const [editorState, setEditorState] = useState<string>();
+  const [floatingAnchorElem, setFloatingAnchorElem] =
+    useState<HTMLDivElement | null>(null);
+  const [isLinkEditMode, setIsLinkEditMode] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
   const columnId = useContext(ColumnContext);
   const { updateCardMutation } = useCardMutation();
 
   const editorRef = useRef(null);
+  const initialDescriptionRef = useRef(description);
+
+  const onRef = (_floatingAnchorElem: HTMLDivElement) => {
+    if (_floatingAnchorElem !== null) {
+      setFloatingAnchorElem(_floatingAnchorElem);
+    }
+  };
+
+  // Initialize the initial description reference
+  useEffect(() => {
+    initialDescriptionRef.current = description;
+  }, [description]);
+
+  // Track content changes
+  const handleContentChange = useCallback((hasChanges: boolean) => {
+    setHasUnsavedChanges(hasChanges);
+  }, []);
 
   const initialConfig: InitialConfigType = {
     namespace: "CardDetailsEditor",
@@ -211,27 +230,35 @@ export const CardDetailsEditor = ({
   };
 
   return (
-    <div className="relative h-full">
+    <div className="relative h-full border border-[#e3e3e3b5] rounded-lg bg-[#fafafa] dark:bg-zinc-800 dark:border-zinc-700 p-2">
       <LexicalComposer initialConfig={initialConfig}>
         <div className="editor-container">
-          <CardToolbarPlugin save={handleSave} />
+          <CardToolbarPlugin 
+            save={handleSave} 
+            editorState={editorState}
+            hasUnsavedChanges={hasUnsavedChanges}
+            onContentChange={handleContentChange}
+          />
           <div className="h-full editor-inner">
             <RichTextPlugin
               contentEditable={
-                <ContentEditable
+               <div ref={onRef} className="relative">
+                 <ContentEditable
                   className={cn(
                     "editor-root",
-                    "w-full px-3 py-2 overflow-y-auto",
+                    "w-full!p-0 overflow-y-auto",
                     "dark:text-zinc-100 focus:outline-none",
                     "min-h-[300px]",
-                    "max-h-[calc(100vh-300px)]"
+                    "max-h-[calc(100vh-280px)]"
                   )}
                 />
+               </div>
               }
               ErrorBoundary={LexicalErrorBoundary}
             />
             <HistoryPlugin />
             <AutoFocusPlugin />
+            <LinkPlugin/>
             <CodeHighlightPlugin />
             <TabIndentationPlugin />
             <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
@@ -241,6 +268,22 @@ export const CardDetailsEditor = ({
             <ImagesPlugin />
             <EditorRefPlugin editorRef={editorRef} />
             <CopyImagePlugin ref={editorRef} />
+            {floatingAnchorElem && (
+              <>
+                <FloatingTextFormatToolbarPlugin
+                  anchorElem={floatingAnchorElem ?? undefined}
+                  setIsLinkEditMode={setIsLinkEditMode}
+                />
+              </>
+            )}
+            {floatingAnchorElem && (
+              <FloatingLinkEditorPlugin
+                anchorElem={floatingAnchorElem ?? undefined}
+                isLinkEditMode={isLinkEditMode}
+                setIsLinkEditMode={setIsLinkEditMode}
+              />
+            )}
+            {/* <DraggableBlockPlugin anchorElem={floatingAnchorElem ?? undefined} /> */}
           </div>
         </div>
 
@@ -251,77 +294,3 @@ export const CardDetailsEditor = ({
   );
 };
 
-// KeyboardShortcuts plugin component
-const KeyboardShortcutsPlugin = () => {
-  const [editor] = useLexicalComposerContext();
-
-  useEffect(() => {
-    return mergeRegister(
-      editor.registerCommand(
-        KEY_DOWN_COMMAND,
-        (event: KeyboardEvent) => {
-          const { ctrlKey, metaKey, key, shiftKey, altKey } = event;
-          const isModKey = ctrlKey || metaKey;
-
-          if (!isModKey) return false;
-
-          switch (key.toLowerCase()) {
-            case 'b':
-              if (!shiftKey && !altKey) {
-                event.preventDefault();
-                editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
-                return true;
-              }
-              break;
-            case 'i':
-              if (!shiftKey && !altKey) {
-                event.preventDefault();
-                editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
-                return true;
-              }
-              break;
-            case 'u':
-              if (!shiftKey && !altKey) {
-                event.preventDefault();
-                editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
-                return true;
-              }
-              break;
-            case 'z':
-              if (!shiftKey && !altKey) {
-                event.preventDefault();
-                editor.dispatchCommand(UNDO_COMMAND, undefined);
-                return true;
-              } else if (shiftKey && !altKey) {
-                event.preventDefault();
-                editor.dispatchCommand(REDO_COMMAND, undefined);
-                return true;
-              }
-              break;
-            case 'y':
-              if (!shiftKey && !altKey) {
-                event.preventDefault();
-                editor.dispatchCommand(REDO_COMMAND, undefined);
-                return true;
-              }
-              break;
-            case 's':
-              if (!shiftKey && !altKey) {
-                event.preventDefault();
-                // Save functionality - we'll trigger the save callback
-                const saveEvent = new CustomEvent('lexical-save');
-                document.dispatchEvent(saveEvent);
-                return true;
-              }
-              break;
-          }
-
-          return false;
-        },
-        COMMAND_PRIORITY_EDITOR
-      )
-    );
-  }, [editor]);
-
-  return null;
-};

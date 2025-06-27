@@ -317,7 +317,7 @@ const PricingPage: React.FC = () => {
                               ? "bg-purple-600 hover:bg-purple-700 text-white"
                               : "bg-gray-900 hover:bg-gray-800 text-white"
                           )}>
-                            Start Free Trial
+                            Get Started
                             <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
                           </Button>
                         </Link>

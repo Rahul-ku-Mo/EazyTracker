@@ -50,20 +50,53 @@ const AuthPage = () => {
               </div>
 
               <div className="flex flex-col gap-4">
+                {errors.general && (
+                  <div className="p-3 rounded-md bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 shadow-sm">
+                    <div className="flex items-start gap-2">
+                      <div className="mt-0.5">
+                        <div className="w-1.5 h-1.5 bg-red-500 dark:bg-red-400 rounded-full"></div>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-xs font-medium text-red-800 dark:text-red-300">
+                          Something went wrong
+                        </p>
+                        <p className="text-xs text-red-700 dark:text-red-400 mt-0.5">
+                          {errors.general}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {signupStatus && (
                   <div className="grid gap-2">
-                    <Label htmlFor="username">Username</Label>
-                    <Input
-                      id="username"
-                      type="text"
-                      value={username}
-                      onChange={handleUserNameChange}
-                      placeholder="johndoe"
-                      className={cn(errors.username && "border-destructive")}
-                    />
+                    <Label htmlFor="username">
+                      Username{" "}
+                      <span className="text-xs font-normal text-muted-foreground">
+                        (optional)
+                      </span>
+                    </Label>
+                                          <Input
+                        id="username"
+                        type="text"
+                        value={username}
+                        onChange={handleUserNameChange}
+                        placeholder="Enter a unique username or leave empty"
+                        className={cn(
+                          errors.username && "border-destructive focus-visible:ring-destructive"
+                        )}
+                      />
                     {errors.username && (
-                      <p className="text-xs text-destructive">
-                        {errors.username}
+                      <div className="p-2 rounded-md bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50">
+                        <p className="text-xs text-red-700 dark:text-red-400 flex items-center gap-1.5">
+                          <span className="inline-block w-1 h-1 bg-red-500 dark:bg-red-400 rounded-full"></span>
+                          {errors.username}
+                        </p>
+                      </div>
+                    )}
+                    {!errors.username && (
+                      <p className="text-xs text-muted-foreground">
+                        If left empty, we'll create one from your email
                       </p>
                     )}
                   </div>
@@ -71,16 +104,23 @@ const AuthPage = () => {
 
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={values.email}
-                    onChange={(e) => handleChange("email")(e)}
-                    placeholder="m@example.com"
-                    className={cn(errors.email && "border-destructive")}
-                  />
-                  {errors.email && (
-                    <p className="text-xs text-destructive">{errors.email}</p>
+                                      <Input
+                      id="email"
+                      type="email"
+                      value={values.email}
+                      onChange={(e) => handleChange("email")(e)}
+                      placeholder="m@example.com"
+                      className={cn(
+                        errors.email && "border-destructive focus-visible:ring-destructive"
+                      )}
+                    />
+                                      {errors.email && (
+                    <div className="p-2 rounded-md bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50">
+                      <p className="text-xs text-red-700 dark:text-red-400 flex items-center gap-1.5">
+                        <span className="inline-block w-1 h-1 bg-red-500 dark:bg-red-400 rounded-full"></span>
+                        {errors.email}
+                      </p>
+                    </div>
                   )}
                 </div>
 
@@ -101,7 +141,9 @@ const AuthPage = () => {
                       value={values.password}
                       onChange={(e) => handleChange("password")(e)}
                       placeholder="••••••••"
-                      className={cn(errors.password && "border-destructive")}
+                      className={cn(
+                        errors.password && "border-destructive focus-visible:ring-destructive"
+                      )}
                     />
                     <Button
                       type="button"
@@ -118,9 +160,12 @@ const AuthPage = () => {
                     </Button>
                   </div>
                   {errors.password && (
-                    <p className="text-xs text-destructive">
-                      {errors.password}
-                    </p>
+                    <div className="p-2 rounded-md bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50">
+                      <p className="text-xs text-red-700 dark:text-red-400 flex items-center gap-1.5">
+                        <span className="inline-block w-1 h-1 bg-red-500 dark:bg-red-400 rounded-full"></span>
+                        {errors.password}
+                      </p>
+                    </div>
                   )}
                 </div>
 

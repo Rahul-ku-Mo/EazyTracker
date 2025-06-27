@@ -40,7 +40,7 @@ function CustomTransformLexicalToHTML({
     const [editor] = useLexicalComposerContext();
 
     useEffect(() => {
-        return editor.registerUpdateListener(
+        const unregister = editor.registerUpdateListener(
             ({editorState}: { editorState: EditorState }) => {
                 editorState.read(() => {
                     let htmlString = $generateHtmlFromNodes(editor, null);
@@ -50,6 +50,8 @@ function CustomTransformLexicalToHTML({
                 });
             }
         );
+        
+        return unregister;
     }, [editor, setEditorState]);
 
     return null;

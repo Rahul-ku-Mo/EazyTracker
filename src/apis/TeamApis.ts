@@ -139,6 +139,26 @@ export const toggleUserStatus = async (userId: string, isActive: boolean) => {
   }
 };
 
+// Get team boards (both accessible and locked)
+export const getTeamBoards = async () => {
+  try {
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}/teams/boards`,
+      {
+        headers: getAuthHeaders(),
+      }
+    );
+
+    if (response.status === 200) {
+      return response.data.data;
+    }
+    return [];
+  } catch (error) {
+    console.error("Error fetching team boards:", error);
+    return [];
+  }
+};
+
 // Send board invitation
 export const sendBoardInvitation = async (
   boardId: number,

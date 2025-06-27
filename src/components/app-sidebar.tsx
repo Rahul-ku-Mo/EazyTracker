@@ -36,6 +36,8 @@ import Cookies from "js-cookie";
 import { Badge } from "./ui/badge";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "@/context/AuthContext";
 
 // Favorites navigation component
 const NavFavorites = ({ favoriteBoards }: { favoriteBoards: any[] }) => {
@@ -81,14 +83,8 @@ const NavFavorites = ({ favoriteBoards }: { favoriteBoards: any[] }) => {
   );
 };
 
-// This is sample data.
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: [
+const getNavigationData = (isAdmin: boolean) => {
+  const baseNavigation = [
     {
       title: "Dashboard",
       url: "#",
@@ -99,6 +95,10 @@ const data = {
           title: "Workspaces",
           url: "/workspace",
         },
+        {
+          title: "Notes",
+          url: "/notes",
+        }
       ],
     },
     {
@@ -112,7 +112,11 @@ const data = {
         },
       ],
     },
-    {
+  ];
+
+  // Only add billing section for admin users
+  if (isAdmin) {
+    baseNavigation.push({
       title: "Billing & Plans",
       url: "#",
       icon: CreditCard,
@@ -122,26 +126,36 @@ const data = {
           url: "/workspace/billing",
         },
       ],
-    },
-    {
-      title: "Manage Team",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "Team Management",
-          url: "/team/management",
-        },
-      ],
-    },
-  ],
+    });
+  }
+
+  baseNavigation.push({
+    title: "Manage Team",
+    url: "#",
+    icon: Settings2,
+    items: [
+      {
+        title: "Team Management",
+        url: "/team/management",
+      },
+    ],
+  });
+
+  return {
+    navMain: baseNavigation,
+  };
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const accessToken = Cookies.get("accessToken") || "";
   const { data: userData } = useUser(accessToken);
+  const { role } = useContext(AuthContext);
 
   const { state } = useSidebar();
+  
+  // Check if user is admin
+  const isAdmin = role === 'ADMIN';
+  const navigationData = getNavigationData(isAdmin);
 
   const [showJoinCode, setShowJoinCode] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
@@ -190,7 +204,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {teamData && <TeamSwitcher teams={teamData} />}
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navigationData.navMain} />
         <NavFavorites favoriteBoards={favoriteBoards || []} />
       </SidebarContent>
       

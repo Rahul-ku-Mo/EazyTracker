@@ -23,6 +23,9 @@ import {
   ComingSoonPage,
   TermsPage,
   PrivacyPage,
+  NotePage,
+  NoteViewPage,
+  NoteEditPage,
 } from "@/routes/element";
 
 import { KanbanProvider } from "@/context/KanbanProvider";
@@ -32,6 +35,7 @@ import GoogleCallback from "@/pages/callback/GoogleCallback";
 import RequireAuth from "@/_components/shared/RequireAuth";
 import JoinTeamPage from "@/pages/JoinTeamPage";
 import LaunchGuard from "@/components/LaunchGuard";
+import AdminRouteGuard from "@/_components/shared/AdminRouteGuard";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -101,7 +105,11 @@ const authenticatedRoutes = [
       },
       {
         path: "billing",
-        element: <WithContexts Component={BillingPage} />,
+        element: (
+          <AdminRouteGuard>
+            <WithContexts Component={BillingPage} />
+          </AdminRouteGuard>
+        ),
       },
     ],
   },
@@ -122,6 +130,22 @@ const authenticatedRoutes = [
     path: "/team/management",
     element: <WithContexts Component={TeamManagementPage} />,
   },
+  {
+    path: "/notes",
+    element: <WithContexts Component={NotePage} />,
+  },
+  {
+    path: "/notes/view/:id",
+    element: <WithContexts Component={NoteViewPage} />,
+  },
+  {
+    path: "/notes/edit/:id",
+    element: <WithContexts Component={NoteEditPage} />,
+  },
+  {
+    path: "/notes/:slug",
+    element: <WithContexts Component={NotePage} />,
+  },
 ];
 
 const Router = () => {
@@ -131,7 +155,9 @@ const Router = () => {
       path: "/pricing", 
       element: (
         <AuthContextProvider>
-          <WithContexts Component={PricingPage} />
+          <AdminRouteGuard>
+            <WithContexts Component={PricingPage} />
+          </AdminRouteGuard>
         </AuthContextProvider>
       ) 
     },

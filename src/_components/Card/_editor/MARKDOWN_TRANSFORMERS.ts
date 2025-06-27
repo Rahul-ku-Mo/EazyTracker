@@ -1,4 +1,3 @@
-
 import {
   CHECK_LIST,
   ELEMENT_TRANSFORMERS,
@@ -8,6 +7,7 @@ import {
   TEXT_MATCH_TRANSFORMERS,
   TextMatchTransformer,
   Transformer,
+  TextFormatTransformer,
 } from "@lexical/markdown";
 import {
   $createHorizontalRuleNode,
@@ -16,6 +16,7 @@ import {
 } from "@lexical/react/LexicalHorizontalRuleNode";
 import { LexicalNode } from "lexical";
 import { $createImageNode, $isImageNode, ImageNode } from "./ImageNode";
+import { $createCodeNode, $isCodeNode, CodeNode } from "@lexical/code";
 
 export const IMAGE: TextMatchTransformer = {
   dependencies: [ImageNode],  
@@ -40,7 +41,6 @@ export const IMAGE: TextMatchTransformer = {
   type: 'text-match',
 };
 
-
 export const HR: ElementTransformer = {
   dependencies: [HorizontalRuleNode],
   export: (node: LexicalNode) => {
@@ -62,21 +62,66 @@ export const HR: ElementTransformer = {
   type: "element",
 };
 
+// Custom Code Block Transformer - Only handles triple backticks for code blocks
+export const CODE_BLOCK: ElementTransformer = {
+  dependencies: [CodeNode],
+  export: (node: LexicalNode) => {
+    if (!$isCodeNode(node)) {
+      return null;
+    }
+    const textContent = node.getTextContent();
+    const language = node.getLanguage();
+    return `\`\`\`${language || ''}\n${textContent}\n\`\`\``;
+  },
+  regExp: /^```(\w{1,10})?\s?$/,
+  replace: (parentNode, children, match) => {
+    const language = match[1] || '';
+    const codeNode = $createCodeNode(language);
+    codeNode.append(...children);
+    parentNode.replace(codeNode);
+  },
+  type: "element",
+};
+
+// Custom Inline Code Transformer - Only handles single backticks for inline code
+export const INLINE_CODE: TextFormatTransformer = {
+  format: ['code'],
+  tag: '`',
+  intraword: true,
+  type: 'text-format',
+};
+
+// Filter out the default CODE transformer from TEXT_FORMAT_TRANSFORMERS
+const FILTERED_TEXT_FORMAT_TRANSFORMERS = TEXT_FORMAT_TRANSFORMERS.filter(
+  transformer => {
+    // Remove the default code transformer that uses backticks
+    if (transformer.type === 'text-format' && 
+        (transformer as TextFormatTransformer).format?.includes('code')) {
+      return false;
+    }
+    return true;
+  }
+);
+
 export const MARKDOWN_TRANSFORMERS: Array<Transformer> = [
   IMAGE,
   HR,
+  CODE_BLOCK, // Our custom code block transformer
+  INLINE_CODE, // Our custom inline code transformer
   CHECK_LIST,
   ...ELEMENT_TRANSFORMERS,
   ...MULTILINE_ELEMENT_TRANSFORMERS,
-  ...TEXT_FORMAT_TRANSFORMERS,
+  ...FILTERED_TEXT_FORMAT_TRANSFORMERS, // Use filtered transformers
   ...TEXT_MATCH_TRANSFORMERS,
 ];
 
 export const AI_ONLY_TEXT_MARKDOWN_TRANSFORMERS: Array<Transformer> = [
   HR,
+  CODE_BLOCK, // Our custom code block transformer
+  INLINE_CODE, // Our custom inline code transformer
   CHECK_LIST,
   ...ELEMENT_TRANSFORMERS,
   ...MULTILINE_ELEMENT_TRANSFORMERS,
-  ...TEXT_FORMAT_TRANSFORMERS,
+  ...FILTERED_TEXT_FORMAT_TRANSFORMERS, // Use filtered transformers
   ...TEXT_MATCH_TRANSFORMERS,
 ];
