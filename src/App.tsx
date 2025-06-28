@@ -17,19 +17,24 @@ const queryClient = new QueryClient({
   },
 });
 
-const AppWithTrialModal = () => {
+const TrialModalWrapper = () => {
   const { showTrialExpiredModal, dismissTrialModal } = useTrialStatus();
+  
+  return (
+    <TrialExpiredModal 
+      open={showTrialExpiredModal} 
+      onClose={dismissTrialModal} 
+    />
+  );
+};
+
+const AppWithTrialModal = () => {
   const isLoggedIn = !!Cookies.get('accessToken');
 
   return (
     <>
       <Router />
-      {isLoggedIn && (
-        <TrialExpiredModal 
-          open={showTrialExpiredModal} 
-          onClose={dismissTrialModal} 
-        />
-      )}
+      {isLoggedIn && <TrialModalWrapper />}
     </>
   );
 };

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@/apis/config';
+import Cookies from 'js-cookie';
 
 interface TrialStatus {
   onTrial: boolean;
@@ -12,6 +13,9 @@ interface TrialStatus {
 
 export const useTrialStatus = () => {
   const [showTrialExpiredModal, setShowTrialExpiredModal] = useState(false);
+  
+  // Only run if user is authenticated (has accessToken)
+  const isAuthenticated = !!Cookies.get('accessToken');
 
   const { data: trialStatus, isLoading, error } = useQuery<TrialStatus>({
     queryKey: ['trialStatus'],
@@ -19,7 +23,8 @@ export const useTrialStatus = () => {
       const response = await apiClient.get('/auth/trial-status');
       return response.data;
     },
-    refetchInterval: 5 * 60 * 1000, // Check every 5 minutes
+    enabled: isAuthenticated, // Only run when authenticated
+    refetchInterval: isAuthenticated ? 5 * 60 * 1000 : false, // Check every 5 minutes only if authenticated
     retry: false,
   });
 
