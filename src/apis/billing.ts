@@ -64,6 +64,77 @@ export const reactivateSubscription = async (): Promise<{ message: string; statu
   return response.data;
 };
 
+
+export const subscribeToPlan = async (data: {
+  priceId: string;
+  customerId: string;
+  email: string;
+  billingCycle: string;
+  status: string;
+}) => {
+
+  const { priceId, customerId, email, billingCycle, status } = data;
+
+  if (status === "completed") {
+
+    try {
+      const response = await apiClient.post("/billing/subscription", {
+        priceId,
+        customerId,
+        email,
+        billingCycle,
+        status,
+      })
+
+      if (response.status === 201) {
+        return response.data;
+      }
+
+      return null;
+
+    } catch (error) {
+      console.error("Error subscribing to plan:", error);
+    }
+  }
+}
+
+// Update subscription (upgrade/downgrade)
+export const updateSubscription = async (data: {
+  newPriceId: string;
+  prorationBillingMode?: string;
+}): Promise<{ message: string; subscription: any } | null> => {
+  try {
+    const response = await apiClient.patch("/billing/subscription", data);
+    
+    if (response.status === 200) {
+      return response.data;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error updating subscription:", error);
+    throw error;
+  }
+};
+
+// Create billing portal session
+export const createBillingPortalSession = async (returnUrl?: string): Promise<{ url: string } | null> => {
+  try {
+    const response = await apiClient.post('/billing/billing-portal', {
+      returnUrl: returnUrl || `${window.location.origin}/billing`
+    });
+    
+    if (response.status === 200) {
+      return response.data;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error creating billing portal session:", error);
+    throw error;
+  }
+};
+
 export const getUsageStatistics = async (): Promise<any> => {
   try {
     const accessToken = Cookies.get('accessToken');

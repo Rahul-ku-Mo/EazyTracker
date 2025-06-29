@@ -1,13 +1,12 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { CalendarDays, CreditCard, AlertTriangle, CheckCircle, Users, FolderKanban, ListTodo, TrendingUp } from 'lucide-react';
 import {
   useGetSubscriptionStatus,
-    // useCancelSubscription,
-    // useReactivateSubscription,
   useGetPlans,
   useGetUsageStatistics,
 } from '@/hooks/useBilling';
@@ -21,20 +20,8 @@ export const BillingOverview: React.FC = () => {
   const { data: subscription, isLoading } = useGetSubscriptionStatus();
   const { data: plans } = useGetPlans();
   const { data: usageStats, isLoading: isLoadingUsage } = useGetUsageStatistics();
-  // const cancelSubscription = useCancelSubscription();
-  // const reactivateSubscription = useReactivateSubscription();
-
+ 
   
-
-  // const handleCancelSubscription = () => {
-  //   if (window.confirm('Are you sure you want to cancel your subscription? Your access will continue until the end of the current billing period.')) {
-  //     cancelSubscription.mutate();
-  //   }
-  // };
-
-  // const handleReactivateSubscription = () => {
-  //   reactivateSubscription.mutate();
-  // };
 
   const getStatusColor = (status: string, cancelAtPeriodEnd: boolean) => {
     if (cancelAtPeriodEnd) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300';
@@ -180,43 +167,22 @@ export const BillingOverview: React.FC = () => {
           </div>
 
           {/* Actions */}
-          {/* <div className="flex flex-wrap gap-2 pt-4 border-t">
-            {!isFreePlan && (
+          <div className="flex flex-wrap gap-2 pt-4 border-t">
+            {!isFreePlan && subscription?.subscriptionId && (
               <Button
                 variant="outline"
-                onClick={handleManageBilling}
-                disabled={createBillingPortalSession.isPending}
+                onClick={() => {
+                  // Open Paddle customer portal - use the URL from the provided example
+                  const portalUrl = `https://sandbox-customer-portal.paddle.com/cpl_01jxhs0pn5tz885zakfmqm49zs`;
+                  window.open(portalUrl, '_blank');
+                }}
                 className="flex items-center space-x-2"
               >
                 <CreditCard className="w-4 h-4" />
-                <span>Manage Billing</span>
+                <span>Manage Plan</span>
               </Button>
             )}
-
-            {subscription.status === 'active' && !subscription.cancelAtPeriodEnd && !isFreePlan && (
-              <Button
-                variant="outline"
-                onClick={handleCancelSubscription}
-                disabled={cancelSubscription.isPending}
-                className="flex items-center space-x-2 text-red-600 hover:text-red-700"
-              >
-                <AlertTriangle className="w-4 h-4" />
-                <span>Cancel Subscription</span>
-              </Button>
-            )}
-
-            {subscription.cancelAtPeriodEnd && (
-              <Button
-                variant="outline"
-                onClick={handleReactivateSubscription}
-                disabled={reactivateSubscription.isPending}
-                className="flex items-center space-x-2 text-green-600 hover:text-green-700"
-              >
-                <CheckCircle className="w-4 h-4" />
-                <span>Reactivate Subscription</span>
-              </Button>
-            )}
-          </div> */}
+          </div>
         </CardContent>
       </Card>
 
@@ -232,7 +198,7 @@ export const BillingOverview: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Team Members */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -242,17 +208,17 @@ export const BillingOverview: React.FC = () => {
                 </div>
                 <span className="text-sm text-gray-600 dark:text-gray-400">
                   {usageStats?.usage?.teamMembers?.current || 0} / {
-                    currentPlan?.limits.members === -1 
+                    usageStats?.usage?.teamMembers?.limit === null 
                       ? '∞' 
-                      : currentPlan?.limits.members || '∞'
+                      : usageStats?.usage?.teamMembers?.limit || '∞'
                   }
                 </span>
               </div>
-              {currentPlan?.limits.members !== -1 && (
+              {usageStats?.usage?.teamMembers?.limit !== null && (
                 <Progress 
                   value={calculateUsagePercentage(
                     usageStats?.usage?.teamMembers?.current || 0, 
-                    currentPlan?.limits.members || 0
+                    usageStats?.usage?.teamMembers?.limit || 0
                   )} 
                   className="h-2"
                 />
@@ -268,17 +234,17 @@ export const BillingOverview: React.FC = () => {
                 </div>
                 <span className="text-sm text-gray-600 dark:text-gray-400">
                   {usageStats?.usage?.projects?.current || 0} / {
-                    currentPlan?.limits.projects === -1 
+                    usageStats?.usage?.projects?.limit === null 
                       ? '∞' 
-                      : currentPlan?.limits.projects || '∞'
+                      : usageStats?.usage?.projects?.limit || '∞'
                   }
                 </span>
               </div>
-              {currentPlan?.limits.projects !== -1 && (
+              {usageStats?.usage?.projects?.limit !== null && (
                 <Progress 
                   value={calculateUsagePercentage(
                     usageStats?.usage?.projects?.current || 0, 
-                    currentPlan?.limits.projects || 0
+                    usageStats?.usage?.projects?.limit || 0
                   )} 
                   className="h-2"
                 />
@@ -294,17 +260,63 @@ export const BillingOverview: React.FC = () => {
                 </div>
                 <span className="text-sm text-gray-600 dark:text-gray-400">
                   {usageStats?.usage?.tasksPerProject?.current || 0} / {
-                    currentPlan?.limits.tasksPerProject === -1 
+                    usageStats?.usage?.tasksPerProject?.limit === null 
                       ? '∞' 
-                      : currentPlan?.limits.tasksPerProject || '∞'
+                      : usageStats?.usage?.tasksPerProject?.limit || '∞'
                   }
                 </span>
               </div>
-              {currentPlan?.limits.tasksPerProject !== -1 && (
+              {usageStats?.usage?.tasksPerProject?.limit !== null && (
                 <Progress 
                   value={calculateUsagePercentage(
                     usageStats?.usage?.tasksPerProject?.current || 0, 
-                    currentPlan?.limits.tasksPerProject || 0
+                    usageStats?.usage?.tasksPerProject?.limit || 0
+                  )} 
+                  className="h-2"
+                />
+              )}
+            </div>
+
+            {/* Total Tasks */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <svg className="w-4 h-4 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">Total Tasks</span>
+                </div>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {usageStats?.usage?.totalTasks?.current || 0} / Unlimited
+                </span>
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                Total tasks created across all projects
+              </div>
+            </div>
+
+            {/* Storage */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <svg className="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                  </svg>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">Storage</span>
+                </div>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {usageStats?.usage?.storageGB?.current || 0}GB / {
+                    usageStats?.usage?.storageGB?.limit === null 
+                      ? '∞' 
+                      : `${usageStats?.usage?.storageGB?.limit || 1}GB`
+                  }
+                </span>
+              </div>
+              {usageStats?.usage?.storageGB?.limit !== null && (
+                <Progress 
+                  value={calculateUsagePercentage(
+                    usageStats?.usage?.storageGB?.current || 0, 
+                    usageStats?.usage?.storageGB?.limit || 1
                   )} 
                   className="h-2"
                 />
@@ -319,7 +331,9 @@ export const BillingOverview: React.FC = () => {
                   <span className="text-sm font-medium text-gray-900 dark:text-white">Activity History</span>
                 </div>
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {currentPlan?.limits.activityHistoryDays || 30} days
+                  {/* Get activity history days from the plan based on current subscription */}
+                  {subscription?.plan === 'enterprise' ? '∞' : 
+                   subscription?.plan === 'pro' ? '30' : '7'} days
                 </span>
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -329,10 +343,10 @@ export const BillingOverview: React.FC = () => {
           </div>
 
           {/* Usage Warnings */}
-          {currentPlan && (
+          {usageStats && (
             <div className="space-y-2">
-              {currentPlan.limits.members !== -1 && usageStats?.usage?.teamMembers && 
-               calculateUsagePercentage(usageStats.usage.teamMembers.current, currentPlan.limits.members) >= 80 && (
+              {usageStats?.usage?.teamMembers?.limit !== null && usageStats?.usage?.teamMembers && 
+               calculateUsagePercentage(usageStats.usage.teamMembers.current, usageStats.usage.teamMembers.limit) >= 80 && (
                 <Alert className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/50">
                   <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                   <AlertDescription className="text-orange-800 dark:text-orange-200">
@@ -341,8 +355,8 @@ export const BillingOverview: React.FC = () => {
                 </Alert>
               )}
 
-              {currentPlan.limits.projects !== -1 && usageStats?.usage?.projects &&
-               calculateUsagePercentage(usageStats.usage.projects.current, currentPlan.limits.projects) >= 80 && (
+              {usageStats?.usage?.projects?.limit !== null && usageStats?.usage?.projects &&
+               calculateUsagePercentage(usageStats.usage.projects.current, usageStats.usage.projects.limit) >= 80 && (
                 <Alert className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/50">
                   <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                   <AlertDescription className="text-orange-800 dark:text-orange-200">

@@ -3,10 +3,11 @@ import { toast } from 'sonner';
 import {
   getPlans,
   getSubscriptionStatus,
-  
+  updateSubscription,
   cancelSubscription,
   reactivateSubscription,
   getUsageStatistics,
+  createBillingPortalSession,
   type Plan,
   type SubscriptionStatus,
 } from '../apis/billing';
@@ -80,6 +81,42 @@ export const useReactivateSubscription = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.error || 'Failed to reactivate subscription');
+    },
+  });
+};
+
+// Hook to update subscription (upgrade/downgrade)
+export const useUpdateSubscription = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: updateSubscription,
+    onSuccess: () => {
+      // Invalidate and refetch subscription and usage data
+      queryClient.invalidateQueries({ queryKey: BILLING_QUERY_KEYS.SUBSCRIPTION });
+      queryClient.invalidateQueries({ queryKey: BILLING_QUERY_KEYS.USAGE_STATS });
+      toast.success('Subscription updated successfully!');
+    },
+    onError: (error: any) => {
+      console.error('Subscription update failed:', error);
+      toast.error(error?.response?.data?.error || 'Failed to update subscription');
+    },
+  });
+};
+
+// Hook to create billing portal session
+export const useCreateBillingPortalSession = () => {
+  return useMutation({
+    mutationFn: createBillingPortalSession,
+    onSuccess: (data) => {
+      if (data?.url) {
+        // Open billing portal in same window
+        window.location.href = data.url;
+      }
+    },
+    onError: (error: any) => {
+      console.error('Failed to create billing portal session:', error);
+      toast.error(error?.response?.data?.error || 'Failed to open billing portal');
     },
   });
 };
