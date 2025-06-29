@@ -51,23 +51,6 @@ export const getSubscriptionStatus = async (): Promise<SubscriptionStatus> => {
   return response.data;
 };
 
-// Create checkout session for subscription
-export const createCheckoutSession = async (data: {
-  priceId: string;
-  successUrl: string;
-  cancelUrl: string;
-}): Promise<CheckoutSessionResponse> => {
-  const response = await apiClient.post('/billing/create-checkout-session', data);
-  return response.data;
-};
-
-// Create billing portal session
-export const createBillingPortalSession = async (data: {
-  returnUrl: string;
-}): Promise<BillingPortalResponse> => {
-  const response = await apiClient.post('/billing/create-portal-session', data);
-  return response.data;
-};
 
 // Cancel subscription
 export const cancelSubscription = async (): Promise<{ message: string; currentPeriodEnd: string }> => {

@@ -123,7 +123,7 @@ export const UsageDashboard: React.FC = () => {
                 </CardDescription>
               </div>
             </div>
-            <Link to="/billing">
+            <Link to="/workspace/billing">
               <Button variant="outline" size="sm">
                 Manage Plan
                 <ArrowRight className="w-4 h-4 ml-2" />

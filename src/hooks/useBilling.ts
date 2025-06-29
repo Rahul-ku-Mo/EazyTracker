@@ -3,8 +3,7 @@ import { toast } from 'sonner';
 import {
   getPlans,
   getSubscriptionStatus,
-  createCheckoutSession,
-  createBillingPortalSession,
+  
   cancelSubscription,
   reactivateSubscription,
   getUsageStatistics,
@@ -50,33 +49,6 @@ export const useGetUsageStatistics = () => {
   });
 };
 
-// Hook to create checkout session
-export const useCreateCheckoutSession = () => {
-  return useMutation({
-    mutationFn: createCheckoutSession,
-    onSuccess: (data) => {
-      // Redirect to payment checkout
-      window.location.href = data.url;
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'Failed to create checkout session');
-    },
-  });
-};
-
-// Hook to create billing portal session
-export const useCreateBillingPortalSession = () => {
-  return useMutation({
-    mutationFn: createBillingPortalSession,
-    onSuccess: (data) => {
-      // Redirect to billing portal
-      window.location.href = data.url;
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'Failed to access billing portal');
-    },
-  });
-};
 
 // Hook to cancel subscription
 export const useCancelSubscription = () => {

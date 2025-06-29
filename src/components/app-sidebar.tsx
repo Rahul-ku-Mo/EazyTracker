@@ -18,6 +18,7 @@ import axios from "axios";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 import { TeamSwitcher } from "./team-switcher";
+import { TrialStatusIndicator } from "./TrialStatusIndicator";
 import {
   Sidebar,
   SidebarContent,
@@ -206,6 +207,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={navigationData.navMain} />
         <NavFavorites favoriteBoards={favoriteBoards || []} />
+        <div className="px-3 py-2">
+          <TrialStatusIndicator />
+        </div>
       </SidebarContent>
       
       {/* Enhanced Team Code Section */}

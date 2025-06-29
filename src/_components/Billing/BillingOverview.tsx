@@ -1,5 +1,4 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -7,9 +6,8 @@ import { Progress } from '@/components/ui/progress';
 import { CalendarDays, CreditCard, AlertTriangle, CheckCircle, Users, FolderKanban, ListTodo, TrendingUp } from 'lucide-react';
 import {
   useGetSubscriptionStatus,
-  useCreateBillingPortalSession,
-  useCancelSubscription,
-  useReactivateSubscription,
+    // useCancelSubscription,
+    // useReactivateSubscription,
   useGetPlans,
   useGetUsageStatistics,
 } from '@/hooks/useBilling';
@@ -23,25 +21,20 @@ export const BillingOverview: React.FC = () => {
   const { data: subscription, isLoading } = useGetSubscriptionStatus();
   const { data: plans } = useGetPlans();
   const { data: usageStats, isLoading: isLoadingUsage } = useGetUsageStatistics();
-  const createBillingPortalSession = useCreateBillingPortalSession();
-  const cancelSubscription = useCancelSubscription();
-  const reactivateSubscription = useReactivateSubscription();
+  // const cancelSubscription = useCancelSubscription();
+  // const reactivateSubscription = useReactivateSubscription();
 
-  const handleManageBilling = () => {
-    createBillingPortalSession.mutate({
-      returnUrl: `${window.location.origin}/billing`,
-    });
-  };
+  
 
-  const handleCancelSubscription = () => {
-    if (window.confirm('Are you sure you want to cancel your subscription? Your access will continue until the end of the current billing period.')) {
-      cancelSubscription.mutate();
-    }
-  };
+  // const handleCancelSubscription = () => {
+  //   if (window.confirm('Are you sure you want to cancel your subscription? Your access will continue until the end of the current billing period.')) {
+  //     cancelSubscription.mutate();
+  //   }
+  // };
 
-  const handleReactivateSubscription = () => {
-    reactivateSubscription.mutate();
-  };
+  // const handleReactivateSubscription = () => {
+  //   reactivateSubscription.mutate();
+  // };
 
   const getStatusColor = (status: string, cancelAtPeriodEnd: boolean) => {
     if (cancelAtPeriodEnd) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300';
@@ -187,7 +180,7 @@ export const BillingOverview: React.FC = () => {
           </div>
 
           {/* Actions */}
-          <div className="flex flex-wrap gap-2 pt-4 border-t">
+          {/* <div className="flex flex-wrap gap-2 pt-4 border-t">
             {!isFreePlan && (
               <Button
                 variant="outline"
@@ -223,7 +216,7 @@ export const BillingOverview: React.FC = () => {
                 <span>Reactivate Subscription</span>
               </Button>
             )}
-          </div>
+          </div> */}
         </CardContent>
       </Card>
 

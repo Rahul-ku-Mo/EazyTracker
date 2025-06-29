@@ -4,6 +4,7 @@ import { AppSidebar } from "../components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "../components/ui/sidebar";
 
 import AppHeader from "../components/app-header";
+import { TrialStatusBanner } from "../components/TrialStatusBanner";
 import { cn } from "../lib/utils";
 
 type ContainerProps = {
@@ -26,6 +27,7 @@ const MainLayout = ({
         <AppSidebar />
         <SidebarInset>
           <AppHeader>{headerChildren}</AppHeader>
+          <TrialStatusBanner />
           <main
             className={cn(
               background,

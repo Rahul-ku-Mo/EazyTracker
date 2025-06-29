@@ -1,10 +1,14 @@
 import MainLayout from "@/layouts/Container";
 import { Link, useLocation } from "react-router-dom";
 import clsx from "clsx";
-import { UserRoundCogIcon, MapPinHouseIcon, Plug } from "lucide-react";
+import { UserRoundCogIcon, MapPinHouseIcon, Plug, Clock, Crown, Calendar } from "lucide-react";
+import { useTrialStatus } from "@/hooks/useTrialStatus";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const Account = ({ children }: { children: React.ReactNode }) => {
   const pathname = useLocation().pathname;
+  const { trialStatus } = useTrialStatus();
 
   const navigationItems = [
     {
@@ -80,6 +84,57 @@ const Account = ({ children }: { children: React.ReactNode }) => {
               })}
             </nav>
           </div>
+
+          {/* Trial Status Card */}
+          {trialStatus && !trialStatus.hasActiveSubscription && (
+            <div className="p-4 bg-card border border-border/50 rounded-lg shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                {trialStatus.trialExpired ? (
+                  <Clock className="w-4 h-4 text-red-500" />
+                ) : (
+                  <Crown className="w-4 h-4 text-blue-500" />
+                )}
+                <h3 className="font-semibold text-foreground">
+                  {trialStatus.trialExpired ? 'Trial Expired' : 'Free Trial'}
+                </h3>
+                {!trialStatus.trialExpired && (
+                  <Badge variant="secondary" className="text-xs">
+                    {trialStatus.daysRemaining} day{trialStatus.daysRemaining !== 1 ? 's' : ''} left
+                  </Badge>
+                )}
+              </div>
+              
+              <div className="space-y-2 text-sm text-muted-foreground mb-3">
+                {trialStatus.trialExpired ? (
+                  <div className="space-y-1">
+                    <p className="flex items-center gap-2">
+                      <Calendar className="w-3 h-3" />
+                      Your free trial has ended
+                    </p>
+                    <p className="text-xs">
+                      Upgrade to continue using all features
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <p className="flex items-center gap-2">
+                      <Calendar className="w-3 h-3" />
+                      {trialStatus.daysRemaining} day{trialStatus.daysRemaining !== 1 ? 's' : ''} remaining
+                    </p>
+                    <p className="text-xs">
+                      Access to all features until trial expires
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <Link to="/billing">
+                <Button size="sm" className="w-full">
+                  {trialStatus.trialExpired ? 'Upgrade Now' : 'View Plans'}
+                </Button>
+              </Link>
+            </div>
+          )}
         </aside>
 
         {/* Main Content */}

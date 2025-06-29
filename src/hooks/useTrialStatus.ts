@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { apiClient } from '@/apis/config';
 import Cookies from 'js-cookie';
 
@@ -13,6 +13,10 @@ interface TrialStatus {
 
 export const useTrialStatus = () => {
   const [showTrialExpiredModal, setShowTrialExpiredModal] = useState(false);
+  const [isTrialBannerDismissed, setIsTrialBannerDismissed] = useState(() => {
+    // Check localStorage for dismissed banner
+    return localStorage.getItem('trial-banner-dismissed') === 'true';
+  });
   
   // Only run if user is authenticated (has accessToken)
   const isAuthenticated = !!Cookies.get('accessToken');
@@ -40,11 +44,24 @@ export const useTrialStatus = () => {
     }
   }, [trialStatus]);
 
+  // Reset banner dismissal when trial status changes significantly
+  useEffect(() => {
+    if (trialStatus?.hasActiveSubscription || trialStatus?.trialExpired) {
+      localStorage.removeItem('trial-banner-dismissed');
+      setIsTrialBannerDismissed(false);
+    }
+  }, [trialStatus?.hasActiveSubscription, trialStatus?.trialExpired]);
+
   const dismissTrialModal = () => {
     setShowTrialExpiredModal(false);
     // Set a flag in localStorage to not show again for this session
     localStorage.setItem('trialModalDismissed', 'true');
   };
+
+  const dismissTrialBanner = useCallback(() => {
+    localStorage.setItem('trial-banner-dismissed', 'true');
+    setIsTrialBannerDismissed(true);
+  }, []);
 
   const shouldShowTrialModal = () => {
     const dismissed = localStorage.getItem('trialModalDismissed');
@@ -57,6 +74,8 @@ export const useTrialStatus = () => {
     error,
     showTrialExpiredModal: shouldShowTrialModal(),
     dismissTrialModal,
+    isTrialBannerDismissed,
+    dismissTrialBanner,
     isTrialExpired: trialStatus?.trialExpired && !trialStatus?.hasActiveSubscription,
     daysRemaining: trialStatus?.daysRemaining || 0,
     onTrial: trialStatus?.onTrial || false,

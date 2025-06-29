@@ -6,6 +6,8 @@ import { ThemeProvider } from "@/context/ThemeProvider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { TrialExpiredModal } from "@/components/TrialExpiredModal";
 import { useTrialStatus } from "@/hooks/useTrialStatus";
+import { PaddleProvider } from "@/context/PaddleProvider";
+
 import Cookies from "js-cookie";
 
 const queryClient = new QueryClient({
@@ -19,17 +21,17 @@ const queryClient = new QueryClient({
 
 const TrialModalWrapper = () => {
   const { showTrialExpiredModal, dismissTrialModal } = useTrialStatus();
-  
+
   return (
-    <TrialExpiredModal 
-      open={showTrialExpiredModal} 
-      onClose={dismissTrialModal} 
+    <TrialExpiredModal
+      open={showTrialExpiredModal}
+      onClose={dismissTrialModal}
     />
   );
 };
 
 const AppWithTrialModal = () => {
-  const isLoggedIn = !!Cookies.get('accessToken');
+  const isLoggedIn = !!Cookies.get("accessToken");
 
   return (
     <>
@@ -42,16 +44,18 @@ const AppWithTrialModal = () => {
 const App = () => {
   return (
     <>
-     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-          <Toaster />
-          <QueryClientProvider client={queryClient}>
-            <BrowserRouter>
-              <AppWithTrialModal />
-            </BrowserRouter>
-          </QueryClientProvider>
-        </GoogleOAuthProvider>
-        </ThemeProvider>
+      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+        <PaddleProvider>
+          <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+            <Toaster />
+            <QueryClientProvider client={queryClient}>
+              <BrowserRouter>
+                <AppWithTrialModal />
+              </BrowserRouter>
+            </QueryClientProvider>
+          </GoogleOAuthProvider>
+        </PaddleProvider>
+      </ThemeProvider>
     </>
   );
 };
