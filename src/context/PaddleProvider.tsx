@@ -8,8 +8,8 @@ export const PaddleProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     initializePaddle({
-      token: import.meta.env.VITE_PADDLE_TOKEN || '',
-      environment: import.meta.env.VITE_PADDLE_ENVIRONMENT || 'sandbox',
+      token: import.meta.env.VITE_PADDLE_TOKEN_SB || '',
+      environment: import.meta.env.VITE_PADDLE_ENVIRONMENT_SB || 'sandbox',
     }).then((paddleInstance: Paddle | undefined) => {
         if(paddleInstance) {
             setPaddle(paddleInstance);
