@@ -40,7 +40,7 @@ export const useFeatureGating = () => {
   };
 
   // Get upgrade message for a feature or resource
-  const getUpgradeMessage = (feature: FeatureType | 'projects' | 'members' | 'imageUploads'): string => {
+  const getUpgradeMessage = (feature: FeatureType | 'projects' | 'members' | 'storage'): string => {
     const currentPlan = subscription?.plan?.toLowerCase();
     
     if (feature === 'projects') {
@@ -57,11 +57,11 @@ export const useFeatureGating = () => {
       return `You've reached your team member limit. Upgrade to Professional for more team members.`;
     }
     
-    if (feature === 'imageUploads') {
+    if (feature === 'storage') {
       if (currentPlan === 'pro') {
-        return `You've reached your image upload limit. Upgrade to Enterprise for unlimited uploads and advanced storage.`;
+        return `You've reached your storage limit. Upgrade to Enterprise for 100GB storage and advanced features.`;
       }
-      return `You've reached your image upload limit. Upgrade to Professional for more uploads.`;
+      return `You've reached your storage limit. Upgrade to Professional for 10GB storage.`;
     }
     
     const requiredPlan = FEATURE_REQUIREMENTS[feature as FeatureType];

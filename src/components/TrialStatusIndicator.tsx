@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Badge } from '@/components/ui/badge';
+
 
 import { Clock, Sparkles, Crown } from 'lucide-react';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
@@ -62,15 +62,12 @@ export const TrialStatusIndicator: React.FC = () => {
   const colors = getStatusColor();
 
   return (
-    <Link to="/billing" className="block">
+    <Link to="/workspace/billing" className="block">
       <div className={`flex items-center space-x-2 p-2 rounded-lg ${colors.bg} border ${colors.border} hover:opacity-80 transition-opacity`}>
         <Sparkles className={`w-4 h-4 ${colors.icon}`} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center space-x-1">
             <p className={`text-xs font-medium ${colors.text}`}>Free Trial</p>
-            <Badge variant="secondary" className="text-xs py-0 px-1 h-4">
-              {days}d
-            </Badge>
           </div>
           <p className={`text-xs ${colors.subtext} truncate`}>
             {days} day{days !== 1 ? 's' : ''} left

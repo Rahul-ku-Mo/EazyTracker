@@ -89,8 +89,6 @@ export const PricingPlans: React.FC<PricingPlansProps> = ({
     const actionType = determineActionType(currentPlan, plan.id);
     const hasActiveSubscription = subscription && subscription.status && subscription.status !== "canceled" && currentPlan !== "free";
 
-
-
     // Prevent downgrade to free - users must cancel subscription instead
     if (hasActiveSubscription && plan.id === "free") {
       setConfirmDialog({
@@ -108,7 +106,11 @@ export const PricingPlans: React.FC<PricingPlansProps> = ({
         settings: {
           displayMode: "overlay",
           variant: "one-page",
+          theme: localStorage.getItem("vite-ui-theme") as "light" | "dark",
         },
+        customer: {
+          email: localStorage.getItem("email") as string,
+        }
       };
 
       try {
@@ -157,16 +159,35 @@ export const PricingPlans: React.FC<PricingPlansProps> = ({
     const currentPlan = plans?.find(p => p.id === subscription.plan);
     const targetPlan = confirmDialog.plan;
     
-    if (!currentPlan) return '';
+    if (!currentPlan || !subscription.currentPeriodStart || !subscription.currentPeriodEnd) return '';
+    
+    const now = new Date();
+    const periodStart = new Date(subscription.currentPeriodStart);
+    const periodEnd = new Date(subscription.currentPeriodEnd);
+    
+    // Calculate total billing period in milliseconds
+    const totalPeriodMs = periodEnd.getTime() - periodStart.getTime();
+    
+    // Calculate remaining time in the current billing period
+    const remainingTimeMs = Math.max(0, periodEnd.getTime() - now.getTime());
+    
+    // Calculate prorated percentage (how much of the billing period is left)
+    const proratedPercentage = remainingTimeMs / totalPeriodMs;
     
     const currentPrice = currentPlan.price;
     const newPrice = targetPlan.price;
     const priceDiff = newPrice - currentPrice;
     
+    // Calculate the prorated amount
+    const proratedAmount = Math.abs(priceDiff) * proratedPercentage;
+    
+    // Calculate remaining days for better user understanding
+    const remainingDays = Math.ceil(remainingTimeMs / (1000 * 60 * 60 * 24));
+    
     if (confirmDialog.actionType === 'upgrade') {
-      return `You'll be charged an additional $${priceDiff.toFixed(2)} prorated for the remainder of your billing cycle.`;
+      return `You'll be charged $${proratedAmount.toFixed(2)} prorated for the remaining ${remainingDays} days of your current billing cycle (${(proratedPercentage * 100).toFixed(1)}% of the $${priceDiff.toFixed(2)} price difference).`;
     } else {
-      return `You'll receive a credit of $${Math.abs(priceDiff).toFixed(2)} applied to your next billing cycle.`;
+      return `You'll receive a credit of $${proratedAmount.toFixed(2)} applied to your next billing cycle, calculated for the remaining ${remainingDays} days (${(proratedPercentage * 100).toFixed(1)}% of the $${Math.abs(priceDiff).toFixed(2)} price difference).`;
     }
   };
 
@@ -344,7 +365,7 @@ export const PricingPlans: React.FC<PricingPlansProps> = ({
                       onClick={() => handlePlanChange(plan)}
                       disabled={updateSubscription.isPending}
                     >
-                      {updateSubscription.isPending ? "Processing..." : "Downgrade to Free"}
+                      {updateSubscription.isPending ? "Processing..." : "Cancel Subscription"}
                     </Button>
                   ) : (
                     <Button variant="outline" className="w-full" disabled>

@@ -6,7 +6,6 @@ import { ThemeProvider } from "@/context/ThemeProvider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { TrialExpiredModal } from "@/components/TrialExpiredModal";
 import { useTrialStatus } from "@/hooks/useTrialStatus";
-import { PaddleProvider } from "@/context/PaddleProvider";
 
 import Cookies from "js-cookie";
 
@@ -45,7 +44,7 @@ const App = () => {
   return (
     <>
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-        <PaddleProvider>
+
           <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
             <Toaster />
             <QueryClientProvider client={queryClient}>
@@ -54,7 +53,6 @@ const App = () => {
               </BrowserRouter>
             </QueryClientProvider>
           </GoogleOAuthProvider>
-        </PaddleProvider>
       </ThemeProvider>
     </>
   );

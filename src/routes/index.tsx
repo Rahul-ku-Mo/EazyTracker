@@ -31,11 +31,14 @@ import {
 import { KanbanProvider } from "@/context/KanbanProvider";
 import { UserContextProvider } from "@/context/UserContext";
 import { AuthContext, AuthContextProvider } from "@/context/AuthContext";
+import { SubscriptionContextProvider } from "@/context/SubscriptionContext";
 import GoogleCallback from "@/pages/callback/GoogleCallback";
 import RequireAuth from "@/_components/shared/RequireAuth";
 import JoinTeamPage from "@/pages/JoinTeamPage";
 import LaunchGuard from "@/components/LaunchGuard";
 import AdminRouteGuard from "@/_components/shared/AdminRouteGuard";
+import { PaddleProvider } from "@/context/PaddleProvider";
+import AccessControlGuard from "@/components/AccessControlGuard";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -53,15 +56,21 @@ const WithContexts = ({
   props = {},
 }: WithContextsProps) => {
   return (
-    <UserContextProvider>
-      {includeKanban ? (
-        <KanbanProvider>
-          <Component {...props} />
-        </KanbanProvider>
-      ) : (
-        <Component {...props} />
-      )}
-    </UserContextProvider>
+    <SubscriptionContextProvider>
+      <UserContextProvider>
+        {includeKanban ? (
+          <KanbanProvider>
+            <AccessControlGuard>
+              <Component {...props} />
+            </AccessControlGuard>
+          </KanbanProvider>
+        ) : (
+          <AccessControlGuard>
+            <Component {...props} />
+          </AccessControlGuard>
+        )}
+      </UserContextProvider>
+    </SubscriptionContextProvider>
   );
 };
 
@@ -107,7 +116,13 @@ const authenticatedRoutes = [
         path: "billing",
         element: (
           <AdminRouteGuard>
-            <WithContexts Component={BillingPage} />
+            <PaddleProvider>
+              <SubscriptionContextProvider>
+                <UserContextProvider>
+                  <BillingPage />
+                </UserContextProvider>
+              </SubscriptionContextProvider>
+            </PaddleProvider>
           </AdminRouteGuard>
         ),
       },

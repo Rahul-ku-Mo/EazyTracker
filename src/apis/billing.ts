@@ -24,10 +24,13 @@ export interface Plan {
 export interface SubscriptionStatus {
   plan: string;
   status: string;
+  currentPeriodStart: string | null;
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
   subscriptionId?: string;
   trialEnd?: string | null;
+  accessRestricted: boolean;
+  trialExpired: boolean;
 }
 
 export interface CheckoutSessionResponse {
@@ -65,39 +68,6 @@ export const reactivateSubscription = async (): Promise<{ message: string; statu
 };
 
 
-export const subscribeToPlan = async (data: {
-  priceId: string;
-  customerId: string;
-  email: string;
-  billingCycle: string;
-  status: string;
-}) => {
-
-  const { priceId, customerId, email, billingCycle, status } = data;
-
-  if (status === "completed") {
-
-    try {
-      const response = await apiClient.post("/billing/subscription", {
-        priceId,
-        customerId,
-        email,
-        billingCycle,
-        status,
-      })
-
-      if (response.status === 201) {
-        return response.data;
-      }
-
-      return null;
-
-    } catch (error) {
-      console.error("Error subscribing to plan:", error);
-    }
-  }
-}
-
 // Update subscription (upgrade/downgrade)
 export const updateSubscription = async (data: {
   newPriceId: string;
@@ -131,6 +101,22 @@ export const createBillingPortalSession = async (returnUrl?: string): Promise<{ 
     return null;
   } catch (error) {
     console.error("Error creating billing portal session:", error);
+    throw error;
+  }
+};
+
+// Ensure user has a Paddle customer ID (for existing users)
+export const ensurePaddleCustomer = async (): Promise<{ paddleCustomerId: string } | null> => {
+  try {
+    const response = await apiClient.post('/billing/create-customer');
+    
+    if (response.status === 200) {
+      return response.data;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error ensuring Paddle customer:", error);
     throw error;
   }
 };

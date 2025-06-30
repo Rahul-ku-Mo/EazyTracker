@@ -163,11 +163,7 @@ export const BillingOverview: React.FC = () => {
               </div>
             </div>
 
-
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-wrap gap-2 pt-4 border-t">
+            <div className="flex gap-2 items-end">
             {!isFreePlan && subscription?.subscriptionId && (
               <Button
                 variant="outline"
@@ -176,13 +172,18 @@ export const BillingOverview: React.FC = () => {
                   const portalUrl = `https://sandbox-customer-portal.paddle.com/cpl_01jxhs0pn5tz885zakfmqm49zs`;
                   window.open(portalUrl, '_blank');
                 }}
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-2 w-full"
               >
                 <CreditCard className="w-4 h-4" />
                 <span>Manage Plan</span>
               </Button>
             )}
+          
           </div>
+          </div>
+
+          {/* Actions */}
+        
         </CardContent>
       </Card>
 

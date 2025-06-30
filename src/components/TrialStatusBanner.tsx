@@ -53,7 +53,7 @@ export const TrialStatusBanner: React.FC = () => {
   const { color, icon: Icon, title, message } = getVariantAndMessage();
 
   return (
-    <div className={`${color} border rounded-lg p-4 mx-4 mt-4 relative`}>
+    <div className={`${color} border rounded-lg p-4 mx-4 my-4 relative`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="flex-shrink-0">
@@ -73,7 +73,7 @@ export const TrialStatusBanner: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-2">
-          <Link to="/billing">
+          <Link to="/workspace/billing">
             <Button size="sm" className="bg-white text-gray-900 hover:bg-gray-100 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700">
               Upgrade Now
               <ArrowRight className="w-4 h-4 ml-1" />

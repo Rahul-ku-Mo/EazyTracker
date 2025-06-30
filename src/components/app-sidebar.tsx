@@ -207,7 +207,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={navigationData.navMain} />
         <NavFavorites favoriteBoards={favoriteBoards || []} />
-        <div className="px-3 py-2">
+        <div className="px-3">
           <TrialStatusIndicator />
         </div>
       </SidebarContent>

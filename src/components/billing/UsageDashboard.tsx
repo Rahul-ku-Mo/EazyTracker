@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+
 import { 
   Users, 
   FolderOpen, 
@@ -11,12 +11,12 @@ import {
   Zap, 
   Crown, 
   Sparkles,
-  ArrowRight,
+
   AlertTriangle
 } from 'lucide-react';
 import { useGetUsageStatistics } from '@/hooks/useBilling';
 import { useFeatureGating } from '@/hooks/useFeatureGating';
-import { Link } from 'react-router-dom';
+
 import { cn } from '@/lib/utils';
 
 const planIcons = {
@@ -123,12 +123,6 @@ export const UsageDashboard: React.FC = () => {
                 </CardDescription>
               </div>
             </div>
-            <Link to="/workspace/billing">
-              <Button variant="outline" size="sm">
-                Manage Plan
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
           </div>
         </CardHeader>
       </Card>
@@ -287,31 +281,18 @@ export const UsageDashboard: React.FC = () => {
                 <Sparkles className="w-4 h-4 text-orange-500 dark:text-orange-400" />
                 <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">Total Tasks</CardTitle>
               </div>
-              {usage.usage.imageUploads?.limit !== null && 
-               usage.usage.imageUploads?.current >= usage.usage.imageUploads?.limit && (
-                <AlertTriangle className="w-4 h-4 text-red-500" />
-              )}
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className={cn(
-                  "text-2xl font-bold",
-                  getUsageColor(usage.usage.imageUploads?.current || 0, usage.usage.imageUploads?.limit || null)
-                )}>
-                  {usage.usage.imageUploads?.current || 0}
+                <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {usage.usage.totalTasks?.current || 0}
                 </span>
                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                  of {formatLimit(usage.usage.imageUploads?.limit || null)}
+                  tasks created
                 </span>
               </div>
-              {usage.usage.imageUploads?.limit !== null && (
-                <Progress 
-                  value={getUsagePercentage(usage.usage.imageUploads?.current || 0, usage.usage.imageUploads?.limit || null)}
-                  className="h-2"
-                />
-              )}
             </div>
           </CardContent>
         </Card>
