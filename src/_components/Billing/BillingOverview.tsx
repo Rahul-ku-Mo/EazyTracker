@@ -169,7 +169,7 @@ export const BillingOverview: React.FC = () => {
                 variant="outline"
                 onClick={() => {
                   // Open Paddle customer portal - use the URL from the provided example
-                  const portalUrl = `https://sandbox-customer-portal.paddle.com/cpl_01jxhs0pn5tz885zakfmqm49zs`;
+                  const portalUrl = `https://customer-portal.paddle.com/cpl_01jxaz0q9y721z5gf8xpgnxazy`;
                   window.open(portalUrl, '_blank');
                 }}
                 className="flex items-center space-x-2 w-full"
