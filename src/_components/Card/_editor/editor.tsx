@@ -230,7 +230,7 @@ export const CardDetailsEditor = ({
   };
 
   return (
-    <div className="relative h-full border border-[#e3e3e3b5] rounded-lg bg-[#fafafa] dark:bg-zinc-800 dark:border-zinc-700 p-2">
+    <div className="relative h-full border border-[#e3e3e3b5] rounded-lg bg-[#fafafa] dark:bg-[#181818] dark:border-zinc-700 p-2">
       <LexicalComposer initialConfig={initialConfig}>
         <div className="editor-container">
           <CardToolbarPlugin 
@@ -249,7 +249,7 @@ export const CardDetailsEditor = ({
                     "w-full!p-0 overflow-y-auto",
                     "dark:text-zinc-100 focus:outline-none",
                     "min-h-[300px]",
-                    "max-h-[calc(100vh-280px)]"
+                    "h-[calc(100vh-280px)]"
                   )}
                 />
                </div>

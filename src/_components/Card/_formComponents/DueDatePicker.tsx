@@ -25,7 +25,7 @@ export function DueDatePicker({
           type="button"
           variant={"outline"}
           className={cn(
-            "w-fit justify-start text-left font-normal text-xs h-8",
+            "w-fit justify-start text-left font-normal text-xs h-7 rounded-sm",
             !dueDate && "text-muted-foreground"
           )}
         >

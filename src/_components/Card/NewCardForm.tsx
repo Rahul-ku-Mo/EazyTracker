@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { X } from "lucide-react";
+import { Maximize2, X } from "lucide-react";
 import {
   Dialog,
   DialogTitle,
@@ -11,8 +11,9 @@ import { Input } from "../../components/ui/input";
 
 import NewCardActions from "./_formComponents/NewCardActions";
 import { useCardMutation } from "./_mutations/useCardMutations";
-
+import { Badge } from "../../components/ui/badge";
 import { NewCardDescriptionEditor } from "./NewCardDescriptionEditor";
+import { cn } from "@/lib/utils";
 
 interface NewCardFormProps {
   columnName: string;
@@ -62,37 +63,55 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
     onClose();
   };
 
+  const [dimensions, setDimensions] = useState<"small" | "large">("small");
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="sm:max-w-[700px] gap-0"
+        className={cn(
+          "transition-all duration-300 ease-in-out gap-0 p-0 flex flex-col justify-between overflow-hidden",
+          dimensions === "small" ? "max-w-[800px]" : "max-w-[900px]"
+        )}
+        style={{
+          maxHeight: dimensions === "small" ? "350px" : "650px",
+          height: dimensions === "small" ? "350px" : "650px",
+        }}
         isCloseButtonRequired={false}
       >
-        <DialogHeader className="flex-row items-center justify-between space-y-0">
-          <DialogTitle className="sr-only">New Issue</DialogTitle>
+        <DialogHeader className="flex flex-row items-center justify-between px-4 pt-2">
+          <DialogTitle className="sr-only">New Card</DialogTitle>
+          <Badge className="text-xs bg-[#f1f1f1] text-[#101010] dark:bg-[#f1f1f1] dark:text-[#101010] shadow-none border transition-all ease-linear border-[#e3e3e3b5] hover:bg-[#e3e3e3] hover:text-[#101010] px-2 py-1 rounded-sm">
+            {columnName}
+          </Badge>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-foreground">{columnName}</span>
-          </div>
-          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                setDimensions(dimensions === "small" ? "large" : "small");
+              }}
+            >
+              <Maximize2 className="w-4 h-4" />
+            </Button>
             <Button variant="ghost" size="icon" onClick={onClose}>
               <X className="w-4 h-4" />
             </Button>
           </div>
         </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-2">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-0.5 flex-1 min-h-0">
           <Input
             ref={titleRef}
             name="title"
             placeholder="What's on your mind?"
-            className="px-0 text-base border-0 shadow-none placeholder:text-muted-foreground/60 md:text-base focus-visible:ring-0"
+            className="px-4 text-base border-0 shadow-none placeholder:text-muted-foreground/60 md:text-base focus-visible:ring-0"
           />
           <NewCardDescriptionEditor
             description={description}
+            dimensions={dimensions}
             setDescription={setDescription}
           />
-          <NewCardActions 
-            dueDate={dueDate} 
+          <NewCardActions
+            dueDate={dueDate}
             setDueDate={setDueDate}
             priority={priority}
             setPriority={setPriority}
@@ -102,14 +121,14 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
             setAssignee={setAssignee}
           />
 
-          <div className="flex items-center justify-end pt-4">
+          <div className="flex items-center justify-end p-2 border-t border-[#e3e3e3b5] dark:border-border">
             <div className="flex items-center gap-2">
               <Button
                 type="submit"
                 disabled={createCardMutation.isPending}
-                className="h-8 text-xs"
+                className="h-7 text-xs rounded-sm"
               >
-                {createCardMutation.isPending ? "Creating..." : "Create card"}
+                {createCardMutation.isPending ? "Creating..." : "Create"}
               </Button>
             </div>
           </div>

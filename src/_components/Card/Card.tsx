@@ -1,4 +1,4 @@
-import { useContext, useRef, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import {
   Calendar,
   Copy,
@@ -46,8 +46,6 @@ import {
 } from "../../components/ui/popover";
 import { Calendar as CalendarComponent } from "../../components/ui/calendar";
 import { Button } from "../../components/ui/button";
-import { useMembers } from "../../hooks/useMembers";
-import { useParams } from "react-router-dom";
 import { formatDistanceToNow, format } from "date-fns";
 import { TUser } from "../../types";
 import { Input } from "../../components/ui/input";
@@ -55,6 +53,7 @@ import { Input } from "../../components/ui/input";
 interface CardProps {
   columnName: string;
   viewOptions?: ViewOptions;
+  members?: any[]; // Add members prop to avoid API call
 }
 
 const CardTitle = ({ title, isCompleted, cardId, showCardId }: { 
@@ -63,8 +62,8 @@ const CardTitle = ({ title, isCompleted, cardId, showCardId }: {
   cardId?: number;
   showCardId?: boolean;
 }) => (
-  <h3 className={cn(
-    "pb-2 text-base font-bold truncate line-clamp-1 text-foreground",
+  <div className={cn(
+    "text-base font-bold truncate line-clamp-1 text-foreground editor-readable-font",
     isCompleted && "line-through text-zinc-500 dark:text-zinc-400"
   )}>
     {showCardId && cardId && (
@@ -73,7 +72,7 @@ const CardTitle = ({ title, isCompleted, cardId, showCardId }: {
       </span>
     )}
     {title}
-  </h3>
+  </div>
 );
 
 const CardDescription = ({ description, isCompleted }: { description?: string; isCompleted?: boolean }) => {
@@ -144,8 +143,6 @@ const getPriorityIcon = (priority?: string) => {
   }
 };
 
-
-
 const CardFooter = ({
   dueDate,
   attachmentsCount = 0,
@@ -156,6 +153,7 @@ const CardFooter = ({
   status,
   cardId,
   dateFormat = 'readable',
+  members,
 }: {
   dueDate?: Date;
   attachmentsCount?: number;
@@ -177,10 +175,9 @@ const CardFooter = ({
   };
   cardId: number;
   dateFormat?: 'readable' | 'calendar';
+  members?: any[]; // Add members prop
 }) => {
   const priorityStyles = getPriorityStyles(priority);
-  const { id } = useParams();
-  const { members } = useMembers(id as string);
   const { updateCardMutation } = useCardMutation();
 
   const updatePriority = (newPriority: string) => {
@@ -566,7 +563,7 @@ const CardFooter = ({
   );
 };
 
-const Card = ({ columnName, viewOptions }: CardProps) => {
+const Card = ({ columnName, viewOptions, members }: CardProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const [isDueDateOpen, setIsDueDateOpen] = useState(false);
@@ -619,7 +616,25 @@ const Card = ({ columnName, viewOptions }: CardProps) => {
     handleToggleCompletion();
   };
 
-  const items = [
+  const handleEllipsisClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation(); // IMPORTANT: Prevent the card's main onClick (openModal)
+
+    if (cardWrapperRef.current) {
+      // Create a synthetic contextmenu event
+      const contextMenuEvent = new MouseEvent("contextmenu", {
+        bubbles: true,
+        cancelable: false, // Usually false for contextmenu? Check library behavior. True might be safer.
+        clientX: e.clientX, // Use coords from the click event
+        clientY: e.clientY,
+        button: 2, // Simulate right button
+      });
+
+      // Dispatch the event on the element wrapped by CardContextMenu
+      cardWrapperRef.current.dispatchEvent(contextMenuEvent);
+    }
+  };
+
+  const contextMenuItems = [
     {
       icon: <ExternalLink className="w-3 h-3 mr-2" />,
       label: "Open card",
@@ -679,27 +694,9 @@ const Card = ({ columnName, viewOptions }: CardProps) => {
     },
   ];
 
-  const handleEllipsisClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    e.stopPropagation(); // IMPORTANT: Prevent the card's main onClick (openModal)
-
-    if (cardWrapperRef.current) {
-      // Create a synthetic contextmenu event
-      const contextMenuEvent = new MouseEvent("contextmenu", {
-        bubbles: true,
-        cancelable: false, // Usually false for contextmenu? Check library behavior. True might be safer.
-        clientX: e.clientX, // Use coords from the click event
-        clientY: e.clientY,
-        button: 2, // Simulate right button
-      });
-
-      // Dispatch the event on the element wrapped by CardContextMenu
-      cardWrapperRef.current.dispatchEvent(contextMenuEvent);
-    }
-  };
-
   return (
     <>
-      <CardContextMenu items={items} cardId={id.toString()}>
+      <CardContextMenu items={contextMenuItems} cardId={id.toString()}>
         <div
          ref={cardWrapperRef}
           onClick={openModal}
@@ -721,7 +718,7 @@ const Card = ({ columnName, viewOptions }: CardProps) => {
           )}
         >
           {/* Completion checkbox - Linear style */}
-          <div className="absolute top-3 left-3 z-10">
+          <div className="absolute top-2.5 left-3 z-10">
             <button
               onClick={handleCompletionClick}
               className={cn(
@@ -759,6 +756,7 @@ const Card = ({ columnName, viewOptions }: CardProps) => {
             assignees={viewOptions?.displayProperties.assignee !== false ? assignees : undefined}
             cardId={id}
             dateFormat={viewOptions?.dateFormat || 'readable'}
+            members={members}
           />
           <div 
               className="absolute top-2 right-2 bg-zinc-100 dark:bg-zinc-900/50 rounded-lg p-1.5 opacity-0 group-hover:opacity-100 transition-all ease-linear cursor-pointer"

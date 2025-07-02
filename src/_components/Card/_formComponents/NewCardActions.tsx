@@ -10,16 +10,24 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "../../../components/ui/popover";
-import { 
-  Users, 
-  Tags, 
-  ChevronDown, 
-  AlertCircle, 
-  AlertTriangle, 
-  Circle, 
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "../../../components/ui/command";
+import {
+  Users,
+  Tags,
+  ChevronDown,
+  AlertCircle,
+  AlertTriangle,
+  Circle,
   Minus,
   Check,
-  X
+  X,
 } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { DueDatePicker } from "./DueDatePicker";
@@ -27,9 +35,12 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { Avatar, AvatarFallback, AvatarImage } from "../../../components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "../../../components/ui/avatar";
 import { Badge } from "../../../components/ui/badge";
-import { Input } from "../../../components/ui/input";
 
 type TNewCardActionsProps = {
   dueDate: Date | undefined;
@@ -82,21 +93,30 @@ const getPriorityLabel = (priority: string) => {
 
 // Predefined labels
 const AVAILABLE_LABELS = [
-  "Frontend", "Backend", "UI/UX", "Bug", "Feature", "Documentation", 
-  "Testing", "Urgent", "Low Priority", "Review", "In Progress", "Blocked"
+  "Frontend",
+  "Backend",
+  "UI/UX",
+  "Bug",
+  "Feature",
+  "Documentation",
+  "Testing",
+  "Urgent",
+  "Low Priority",
+  "Review",
+  "In Progress",
+  "Blocked",
 ];
 
-const NewCardActions = ({ 
-  dueDate, 
-  setDueDate, 
-  priority, 
+const NewCardActions = ({
+  dueDate,
+  setDueDate,
+  priority,
   setPriority,
   labels,
   setLabels,
   assignee,
-  setAssignee 
+  setAssignee,
 }: TNewCardActionsProps) => {
-  
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
   const [showLabelsDropdown, setShowLabelsDropdown] = useState(false);
   const [newLabel, setNewLabel] = useState("");
@@ -135,7 +155,7 @@ const NewCardActions = ({
 
   const handleLabelSelect = (label: string) => {
     if (labels.includes(label)) {
-      setLabels(labels.filter(l => l !== label));
+      setLabels(labels.filter((l) => l !== label));
     } else {
       setLabels([...labels, label]);
     }
@@ -149,16 +169,16 @@ const NewCardActions = ({
   };
 
   const handleRemoveLabel = (label: string) => {
-    setLabels(labels.filter(l => l !== label));
+    setLabels(labels.filter((l) => l !== label));
   };
 
   return (
-    <div className="flex gap-2 flex-wrap">
+    <div className="flex gap-2 flex-wrap px-4 py-2.5">
       {/* Priority Select */}
       <Select value={priority} onValueChange={setPriority}>
         <SelectTrigger
           className={cn(
-            "w-[110px] h-8 text-xs",
+            "w-[110px] h-7 text-xs rounded-sm",
             "opacity-60 hover:opacity-100 transition-opacity",
             "focus:opacity-100",
             "data-[state=open]:opacity-100"
@@ -205,31 +225,37 @@ const NewCardActions = ({
       </Select>
 
       {/* Assignee Dropdown */}
-      <Popover open={showAssigneeDropdown} onOpenChange={setShowAssigneeDropdown}>
+      <Popover
+        open={showAssigneeDropdown}
+        onOpenChange={setShowAssigneeDropdown}
+      >
         <PopoverTrigger asChild>
           <Button
             type="button"
             variant="outline"
             size="sm"
             className={cn(
-              "h-8 text-xs",
+              "h-7 text-xs rounded-sm",
               "opacity-60 hover:opacity-100 transition-opacity",
               "focus-visible:opacity-100"
             )}
           >
-            <Users className="w-4 h-4 mr-2" />
-            Assignee{assignee && ` (${teamMembers.find(m => m.id === assignee)?.name || teamMembers.find(m => m.id === assignee)?.email || 'Unknown'})`}
-            <ChevronDown className="w-4 h-4 ml-2" />
+            <Users className="w-3 h-3 mr-1" />
+            <span className="text-xs">
+              Assignee
+              {assignee &&
+                ` (${
+                  teamMembers.find((m) => m.id === assignee)?.name ||
+                  teamMembers.find((m) => m.id === assignee)?.email ||
+                  "Unknown"
+                })`}
+            </span>
+            <ChevronDown className="w-3 h-3 ml-1" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-3" align="start">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 pb-2 border-b">
-              <Users className="w-4 h-4 text-muted-foreground" />
-              <h4 className="text-sm font-medium">Assign to team members</h4>
-            </div>
-            
-            <div className="space-y-2 max-h-60 overflow-y-auto">
+        <PopoverContent className="w-56 p-1.5" align="start">
+          <div className="space-y-1">
+            <div className="space-y-1 max-h-60 overflow-y-auto">
               {teamMembers.map((member) => {
                 const isSelected = assignee === member.id;
                 return (
@@ -237,29 +263,24 @@ const NewCardActions = ({
                     key={member.id}
                     onClick={() => handleAssigneeSelect(member.id)}
                     className={cn(
-                      "flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors",
+                      "flex items-center gap-2 p-2 rounded-sm cursor-pointer transition-colors",
                       isSelected
                         ? "bg-primary/10 border border-primary/20"
                         : "hover:bg-accent"
                     )}
                   >
-                    <Avatar className="w-6 h-6">
+                    <Avatar className="size-4">
                       <AvatarImage src={member.imageUrl} />
                       <AvatarFallback className="text-xs">
                         {(member.name || member.email)?.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-medium truncate">
                         {member.name || member.username || member.email}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {member.email}
-                      </div>
                     </div>
-                    {isSelected && (
-                      <Check className="w-4 h-4 text-primary" />
-                    )}
+                    {isSelected && <Check className="w-3 h-3 text-primary" />}
                   </div>
                 );
               })}
@@ -269,79 +290,70 @@ const NewCardActions = ({
       </Popover>
 
       {/* Labels Dropdown */}
-      <Popover open={showLabelsDropdown} onOpenChange={setShowLabelsDropdown}>
+      <Popover
+        open={showLabelsDropdown}
+        onOpenChange={setShowLabelsDropdown}
+      >
         <PopoverTrigger asChild>
           <Button
             type="button"
             variant="outline"
             size="sm"
             className={cn(
-              "h-8 text-xs",
+              "h-7 text-xs rounded-sm",
               "opacity-60 hover:opacity-100 transition-opacity",
               "focus-visible:opacity-100"
             )}
           >
-            <Tags className="w-4 h-4 mr-2" />
-            Labels{labels.length > 0 && ` (${labels.length})`}
-            <ChevronDown className="w-4 h-4 ml-2" />
+            <Tags className="w-3 h-3 mr-1" />
+            <span className="text-xs">
+              Labels{labels.length > 0 && ` (${labels.length})`}
+            </span>
+            <ChevronDown className="w-3 h-3 ml-1" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-3" align="start">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 pb-2 border-b">
-              <Tags className="w-4 h-4 text-muted-foreground" />
-              <h4 className="text-sm font-medium">Add labels</h4>
-            </div>
-            
-            {/* Add new label */}
-            <div className="flex gap-2">
-              <Input
-                placeholder="Create new label..."
-                value={newLabel}
-                onChange={(e) => setNewLabel(e.target.value)}
-                className="text-xs h-8"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddNewLabel();
-                  }
-                }}
-              />
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleAddNewLabel}
-                disabled={!newLabel.trim()}
-                className="h-8"
-              >
-                Add
-              </Button>
-            </div>
-
-            {/* Available labels */}
-            <div className="space-y-1 max-h-48 overflow-y-auto">
-              {AVAILABLE_LABELS.map((label) => {
-                const isSelected = labels.includes(label);
-                return (
-                  <div
-                    key={label}
-                    onClick={() => handleLabelSelect(label)}
-                    className={cn(
-                      "flex items-center justify-between p-2 rounded cursor-pointer transition-colors text-xs",
-                      isSelected
-                        ? "bg-primary/10 border border-primary/20"
-                        : "hover:bg-accent"
-                    )}
+        <PopoverContent className="w-56 p-0" align="start">
+          <Command>
+            <CommandInput 
+              placeholder="Search labels..." 
+              value={newLabel}
+              onValueChange={setNewLabel}
+              className="h-8 text-xs"
+            />
+            <CommandList className="max-h-48">
+              <CommandEmpty>
+                <div className="p-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleAddNewLabel}
+                    disabled={!newLabel.trim()}
+                    className="w-full h-6 text-xs"
                   >
-                    <span>{label}</span>
-                    {isSelected && (
-                      <Check className="w-3 h-3 text-primary" />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+                    Create "{newLabel}"
+                  </Button>
+                </div>
+              </CommandEmpty>
+              <CommandGroup>
+                {AVAILABLE_LABELS.map((label) => {
+                  const isSelected = labels.includes(label);
+                  return (
+                    <CommandItem
+                      key={label}
+                      value={label}
+                      onSelect={() => handleLabelSelect(label)}
+                      className="text-xs"
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <span>{label}</span>
+                        {isSelected && <Check className="w-3 h-3 text-primary" />}
+                      </div>
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            </CommandList>
+          </Command>
         </PopoverContent>
       </Popover>
 
@@ -351,15 +363,25 @@ const NewCardActions = ({
       {assignee && (
         <Badge
           variant="secondary"
-          className="text-xs h-8 pl-1 pr-2 flex items-center gap-1"
+          className="text-xs h-7 pl-1 pr-2 flex items-center gap-1"
         >
-          <Avatar className="w-4 h-4">
-            <AvatarImage src={teamMembers.find(m => m.id === assignee)?.imageUrl} />
+          <Avatar className="w-3 h-3">
+            <AvatarImage
+              src={teamMembers.find((m) => m.id === assignee)?.imageUrl}
+            />
             <AvatarFallback className="text-[8px]">
-              {(teamMembers.find(m => m.id === assignee)?.name || teamMembers.find(m => m.id === assignee)?.email)?.charAt(0).toUpperCase()}
+              {(
+                teamMembers.find((m) => m.id === assignee)?.name ||
+                teamMembers.find((m) => m.id === assignee)?.email
+              )
+                ?.charAt(0)
+                .toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <span>{teamMembers.find(m => m.id === assignee)?.name || teamMembers.find(m => m.id === assignee)?.email}</span>
+          <span className="text-xs">
+            {teamMembers.find((m) => m.id === assignee)?.name ||
+              teamMembers.find((m) => m.id === assignee)?.email}
+          </span>
           <X
             className="w-3 h-3 cursor-pointer hover:text-destructive"
             onClick={(e) => {
@@ -377,20 +399,20 @@ const NewCardActions = ({
           {labels.map((label, index) => {
             const colorVariants = [
               "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700",
-              "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700", 
+              "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700",
               "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700",
               "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700",
-              "bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-700"
+              "bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-700",
             ];
             const colorClass = colorVariants[index % colorVariants.length];
-            
+
             return (
               <Badge
                 key={label}
                 variant="secondary"
-                className={`text-xs h-8 pr-2 flex items-center gap-1 ${colorClass} hover:opacity-80 transition-opacity`}
+                className={`text-xs h-7 pr-2 flex items-center gap-1 ${colorClass} hover:opacity-80 transition-opacity`}
               >
-                <span>{label}</span>
+                <span className="text-xs">{label}</span>
                 <X
                   className="w-3 h-3 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
                   onClick={(e) => {

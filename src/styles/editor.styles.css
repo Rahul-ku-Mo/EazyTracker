@@ -1,51 +1,9 @@
-@font-face {
-  font-family: "Helvetica Neue";
-  src: url("/fonts/HelveticaNeueLight.otf") format("opentype");
-  font-weight: 300;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "Helvetica Neue";
-  src: url("/fonts/HelveticaNeueMedium.otf") format("opentype");
-  font-weight: 500;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "Helvetica Neue";
-  src: url("/fonts/HelveticaNeueBold.otf") format("opentype");
-  font-weight: 700;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "Helvetica Neue";
-  src: url("/fonts/HelveticaNeueLightItalic.otf") format("opentype");
-  font-weight: 300;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: "Helvetica Neue";
-  src: url("/fonts/HelveticaNeueMediumItalic.otf")
-    format("opentype");
-  font-weight: 500;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: "Helvetica Neue";
-  src: url("/fonts/HelveticaNeueBoldItalic.otf") format("opentype");
-  font-weight: 700;
-  font-style: italic;
-}
 
 .editor-root {
   padding: 0.75rem;
   position: relative;
   outline: none;
-  font-family: "Source Serif 4", serif;
+  font-family: "Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
   font-size: 15px;
   line-height: 1.6;
   color: var(--foreground);
@@ -345,7 +303,7 @@
 
 /* Enhanced headings */
 .editor-heading-font {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: "Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
 }
 
 .editor-heading-h1 {

@@ -8,7 +8,13 @@ import { useCardMutation } from "../../../_mutations/useCardMutations.ts";
 import { cn } from "@/lib/utils";
 
 // Simple Inline Title Editor
-const InlineEditableTitle = ({ title, cardId }: { title: string; cardId: number }) => {
+const InlineEditableTitle = ({
+  title,
+  cardId,
+}: {
+  title: string;
+  cardId: number;
+}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(title);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -36,10 +42,10 @@ const InlineEditableTitle = ({ title, cardId }: { title: string; cardId: number 
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       handleSave();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       e.preventDefault();
       setEditValue(title);
       setIsEditing(false);
@@ -58,45 +64,42 @@ const InlineEditableTitle = ({ title, cardId }: { title: string; cardId: number 
           className="text-4xl font-bold py-2 bg-transparent border-none outline-none focus:bg-white dark:focus:bg-zinc-800 focus:px-2 focus:rounded-md transition-all"
           style={{ width: `${Math.max(editValue.length * 0.6, 10)}ch` }}
         />
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-8 w-8 p-0 text-green-600"
+
+        <Check
           onClick={handleSave}
-        >
-          <Check className="w-4 h-4" />
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-8 w-8 p-0 text-red-600"
+          className="size-5 p-0.5 cursor-pointer hover:text-primary/80 transition-colors"
+          strokeWidth={3}
+        />
+
+        <X
           onClick={() => {
             setEditValue(title);
             setIsEditing(false);
           }}
-        >
-          <X className="w-4 h-4" />
-        </Button>
+          className="size-5 p-0.5 cursor-pointer hover:text-primary/80 transition-colors"
+          strokeWidth={3}
+        />
       </div>
     );
   }
 
   return (
-    <div className="group flex items-center gap-2">
-      <h2 
-        className="text-4xl font-bold py-2 cursor-pointer hover:text-primary/80 transition-colors"
+    <div className="group flex items-center gap-2 editor-readable-font">
+      <div
+        title={title}
+        className="text-3xl font-bold py-1.5 cursor-pointer hover:text-primary/80 transition-colors truncate max-w-2xl"
         onClick={() => setIsEditing(true)}
       >
         {title}
-      </h2>
-      <Button
-        size="sm"
-        variant="ghost"
-        className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+      </div>
+
+      <Edit2
+        className="size-5 p-0.5 cursor-pointer hover:text-primary/80 transition-colors"
+        strokeWidth={3}
         onClick={() => setIsEditing(true)}
-      >
-        <Edit2 className="w-4 h-4" />
-      </Button>
+        aria-label="Edit title"
+        aria-role="button"
+      />
     </div>
   );
 };
@@ -106,19 +109,19 @@ const ColumnStatusIndicator = ({ columnName }: { columnName: string }) => {
   // Get a color based on column name
   const getColumnColor = (name: string) => {
     const colors = {
-      'backlog': 'from-slate-500 to-slate-600',
-      'todo': 'from-blue-500 to-blue-600', 
-      'in progress': 'from-yellow-500 to-orange-500',
-      'in review': 'from-purple-500 to-purple-600',
-      'done': 'from-green-500 to-green-600',
-      'completed': 'from-emerald-500 to-emerald-600',
+      backlog: "from-slate-500 to-slate-600",
+      todo: "from-blue-500 to-blue-600",
+      "in progress": "from-yellow-500 to-orange-500",
+      "in review": "from-purple-500 to-purple-600",
+      done: "from-green-500 to-green-600",
+      completed: "from-emerald-500 to-emerald-600",
     };
-    
+
     const normalizedName = name.toLowerCase();
     for (const [key, color] of Object.entries(colors)) {
       if (normalizedName.includes(key)) return color;
     }
-    return 'from-gray-500 to-gray-600'; // default
+    return "from-gray-500 to-gray-600"; // default
   };
 
   const gradientColor = getColumnColor(columnName);
@@ -127,37 +130,41 @@ const ColumnStatusIndicator = ({ columnName }: { columnName: string }) => {
     <div className="flex items-center gap-3">
       {/* Animated dot indicator */}
       <div className="relative">
-        <div className={cn(
-          "w-3 h-3 rounded-full bg-gradient-to-r",
-          gradientColor,
-          "shadow-lg animate-pulse"
-        )} />
-        <div className={cn(
-          "absolute inset-0 w-3 h-3 rounded-full bg-gradient-to-r",
-          gradientColor,
-          "animate-ping opacity-20"
-        )} />
+        <div
+          className={cn(
+            "w-3 h-3 rounded-full bg-gradient-to-r",
+            gradientColor,
+            "shadow-lg animate-pulse"
+          )}
+        />
+        <div
+          className={cn(
+            "absolute inset-0 w-3 h-3 rounded-full bg-gradient-to-r",
+            gradientColor,
+            "animate-ping opacity-20"
+          )}
+        />
       </div>
-      
+
       {/* Column name with beautiful typography */}
       <div className="flex flex-col">
         <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
           Current Status
         </span>
-        <span className={cn(
-          "text-sm font-semibold bg-gradient-to-r bg-clip-text text-transparent",
-          gradientColor
-        )}>
+        <span
+          className={cn(
+            "text-sm font-semibold bg-gradient-to-r bg-clip-text text-transparent",
+            gradientColor
+          )}
+        >
           {columnName}
         </span>
       </div>
-      
+
       {/* Decorative line */}
-      <div className={cn(
-        "h-px w-8 bg-gradient-to-r",
-        gradientColor,
-        "opacity-30"
-      )} />
+      <div
+        className={cn("h-px w-8 bg-gradient-to-r", gradientColor, "opacity-30")}
+      />
     </div>
   );
 };

@@ -181,7 +181,6 @@ export const BillingOverview: React.FC = () => {
           
           </div>
           </div>
-
           {/* Actions */}
         
         </CardContent>

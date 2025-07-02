@@ -21,6 +21,7 @@ import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { updateCardColumn, updateCardOrder } from "../../apis/CardApis";
 import ViewOptionsPanel from "@/_components/ViewOptions/ViewOptionsPanel";
 import { groupCards, filterCards, orderCards } from "@/utils/viewOptionsUtils";
+import { useMembers } from "../../hooks/useMembers";
 
 interface Column {
   id: number;
@@ -85,8 +86,7 @@ const ExpandAddColumnButton = ({ onClick }: ExpandAddColumnButtonProps) => {
 
 const ColumnBoard = ({ title }: ColumnBoardProps) => {
   const { id: boardId } = useParams();
-  const { columns: contextColumns } = useContext(KanbanContext);
-
+  const { columns } = useContext(KanbanContext);
   const { view, toggleView } = useStore(useToggleViewStore);
   const { 
     viewOptions, 
@@ -97,13 +97,16 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
   } = useViewOptionsStore();
 
   // Use context columns data
-  const columns = contextColumns || [];
+  const columnsData = columns || [];
 
   const inputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   const accessToken = Cookies.get("accessToken") as string;
   const [columnName, setColumnName] = useState("");
   const [showListInput, setShowListInput] = useState(false);
+
+  // OPTIMIZATION: Fetch members once at board level
+  const { members } = useMembers(boardId as string);
 
   const createColumnMutation = useMutation({
     mutationFn: (title: string) => createColumn(accessToken, title, boardId as string),
@@ -114,7 +117,7 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
       toast.success("Column created successfully!");
     },
     onError: () => {
-      toast.error("Something went wrong while creating the column ��");
+      toast.error("Something went wrong while creating the column");
     },
   });
 
@@ -193,9 +196,9 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
 
   // Apply view options to columns for Kanban view - Enhanced logic
   const processedColumns = useMemo(() => {
-    if (!columns) return [];
+    if (!columnsData) return [];
     
-    let filteredColumns = [...columns].sort((a: Column, b: Column) => a.order - b.order);
+    let filteredColumns = [...columnsData].sort((a: Column, b: Column) => a.order - b.order);
     
     // Apply comprehensive view options to each column's cards
     filteredColumns = filteredColumns.map(column => {
@@ -237,7 +240,7 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
     });
     
     return filteredColumns;
-  }, [columns, viewOptions]);
+  }, [columnsData, viewOptions]);
 
   const sortedColumns = processedColumns;
 
@@ -249,19 +252,19 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
   };
 
   const listViewData = useMemo(() => {
-    if (!columns) return {};
+    if (!columnsData) return {};
     
     // Get all cards from all columns
-    const allCards = columns.flatMap((col: any) => col.cards || []);
+    const allCards = columnsData.flatMap((col: any) => col.cards || []);
     
     // Apply view options (grouping, filtering, ordering)
-    const groupedData = groupCards(allCards, columns, viewOptions);
+    const groupedData = groupCards(allCards, columnsData, viewOptions);
     
     console.log('Applied view options:', viewOptions);
     console.log('Grouped data:', groupedData);
     
     return groupedData;
-  }, [columns, viewOptions]);
+  }, [columnsData, viewOptions]);
 
   // Handle drag end with improved error handling and order calculation
   const handleDragEnd = (result: DropResult) => {
@@ -292,8 +295,8 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
     }
 
     // Find source and destination columns
-    const sourceColumn = columns?.find((col: any) => col.id === sourceColumnId);
-    const destinationColumn = columns?.find((col: any) => col.id === destinationColumnId);
+    const sourceColumn = columnsData?.find((col: any) => col.id === sourceColumnId);
+    const destinationColumn = columnsData?.find((col: any) => col.id === destinationColumnId);
 
     if (!sourceColumn || !destinationColumn) {
       console.error('Source or destination column not found');
@@ -375,6 +378,7 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
                       cards={column.cards} 
                       columnId={column.id}
                       viewOptions={viewOptions}
+                      members={members}
                     />
                   </ColumnProvider>
                 ))}

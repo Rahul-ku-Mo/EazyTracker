@@ -393,7 +393,7 @@ export const CardToolbarPlugin = ({
   }, [triggerAutosave]);
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-1 mb-2 rounded-md dark:bg-zinc-900 bg-white  border border-border w-fit">
+    <div className="flex flex-wrap items-center gap-1 p-1 mb-2 rounded-md bg-white border border-[#e3e3e3b5] dark:border-zinc-700 dark:bg-[#101010] w-fit">
       <ToolbarButton
         onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}
         disabled={!canUndo}

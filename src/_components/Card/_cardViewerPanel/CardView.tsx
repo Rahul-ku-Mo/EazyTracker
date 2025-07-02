@@ -44,16 +44,15 @@ const CardView = ({ columnName, isOpen, closeModal }: CardViewProps) => {
         className="m-4 p-0 h-[90%] bg-white dark:bg-zinc-800 rounded-lg"
         isCloseButtonNotHidden={false}
       >
-        <div className="h-full flex">   
-          <div className="w-4/5 ">
+        <div className="h-full flex flex-wrap">   
+          <div className="w-full md:w-4/5 ">
             <MainPanel
               columnName={columnName}
               isLocked={isLocked}
               setIsLocked={setIsLocked}
             />
           </div>
-       
-          <div className="w-1/5">
+          <div className="w-full md:w-1/5">
             <RightPanel />
           </div>
         </div>

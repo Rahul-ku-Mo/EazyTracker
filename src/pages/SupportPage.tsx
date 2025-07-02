@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -52,19 +53,29 @@ const SupportPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      toast.success('Your message has been sent! We\'ll get back to you within 24 hours.');
-      
-      // Reset form
-      setFormData({
-        name: '',
-        email: '',
-        description: '',
-      });
-    } catch (error : any) {
-      toast.error('Failed to send message. Please try again.');
-      console.log(error);
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/support`,
+        {
+          name: formData.name,
+          email: formData.email,
+          description: formData.description
+        }
+      );
+
+      if (response.status === 200) {
+        toast.success(response.data.message || 'Your message has been sent! We\'ll get back to you within 24 hours.');
+        
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          description: '',
+        });
+      }
+    } catch (error: any) {
+      console.error('Support request submission error:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to send message. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -291,9 +302,9 @@ const SupportPage: React.FC = () => {
                           />
                         </div>
 
-                        <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20">
-                          <Clock className="h-4 w-4 text-blue-600" />
-                          <AlertDescription className="text-blue-800 dark:text-blue-400">
+                        <Alert className="border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20">
+                          <Clock className="h-4 w-4 text-emerald-600" />
+                          <AlertDescription className="text-emerald-800 dark:text-emerald-400">
                             <strong>Response Times:</strong> Urgent issues (within 2 hours) • High priority (within 6 hours) • 
                             Medium priority (within 12 hours) • Low priority (within 24 hours)
                           </AlertDescription>

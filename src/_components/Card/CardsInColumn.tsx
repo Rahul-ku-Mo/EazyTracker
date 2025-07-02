@@ -8,9 +8,10 @@ interface CardColumnsProps {
   columnName: string;
   cards: any[];
   viewOptions?: ViewOptions;
+  members?: any[];
 }
 
-const CardsInColumn = ({ columnName, cards = [], viewOptions }: CardColumnsProps) => {
+const CardsInColumn = ({ columnName, cards = [], viewOptions, members }: CardColumnsProps) => {
   // Ensure cards array is stable and sorted
   const sortedCards = Array.isArray(cards) ? [...cards] : [];
   
@@ -64,6 +65,7 @@ const CardsInColumn = ({ columnName, cards = [], viewOptions }: CardColumnsProps
                       <Card
                         columnName={columnName}
                         viewOptions={viewOptions}
+                        members={members}
                       />
                     </CardProvider>
                   </li>

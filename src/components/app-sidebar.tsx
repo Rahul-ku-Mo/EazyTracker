@@ -43,6 +43,8 @@ import { AuthContext } from "@/context/AuthContext";
 // Favorites navigation component
 const NavFavorites = ({ favoriteBoards }: { favoriteBoards: any[] }) => {
   const navigate = useNavigate();
+
+  const { state } = useSidebar();
   
   if (!favoriteBoards || favoriteBoards.length === 0) {
     return (
@@ -51,7 +53,7 @@ const NavFavorites = ({ favoriteBoards }: { favoriteBoards: any[] }) => {
           <Star className="h-4 w-4" />
           Favorites
         </SidebarGroupLabel>
-        <div className="px-2 py-1 text-xs text-muted-foreground">
+        <div className={cn(state === "collapsed" ? "hidden" : "block px-2 py-1 text-xs text-muted-foreground")}>
           No favorite boards yet
         </div>
       </SidebarGroup>
@@ -207,7 +209,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={navigationData.navMain} />
         <NavFavorites favoriteBoards={favoriteBoards || []} />
-        <div className="px-3">
+        <div className={cn(state === "collapsed" ? "hidden" : "block px-3")}>
           <TrialStatusIndicator />
         </div>
       </SidebarContent>

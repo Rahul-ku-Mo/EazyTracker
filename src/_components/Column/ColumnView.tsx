@@ -32,6 +32,7 @@ interface ColumnViewProps {
   title: string;
   columnId: number;
   viewOptions?: ViewOptions;
+  members?: any[];
   cards: Array<{
     id: number;
     title: string;
@@ -45,7 +46,7 @@ interface ColumnViewProps {
   }>;
 }
 
-const ColumnView = ({ title, cards, columnId, viewOptions }: ColumnViewProps) => {
+const ColumnView = ({ title, cards, columnId, viewOptions, members }: ColumnViewProps) => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isNewCardOpen, setIsNewCardOpen] = useState(false);
   const [currentSort, setCurrentSort] = useState<string>("manual");
@@ -319,7 +320,12 @@ const ColumnView = ({ title, cards, columnId, viewOptions }: ColumnViewProps) =>
                   "bg-emerald-50 dark:bg-emerald-900/20 border-2 border-dashed border-emerald-300 dark:border-emerald-500 rounded-xl mx-1 my-2 max-h-[85vh] shadow-inner"
               )}
             >
-              <CardsInColumn columnName={title} cards={sortedCards} viewOptions={viewOptions} />
+              <CardsInColumn 
+                columnName={title} 
+                cards={sortedCards} 
+                viewOptions={viewOptions} 
+                members={members}
+              />
               {provided.placeholder}
             </div>
           )}

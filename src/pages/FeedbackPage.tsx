@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -49,20 +50,33 @@ const FeedbackPage: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      toast.success('Thank you for your feedback! We\'ll review it and get back to you soon.');
-      
-      // Reset form
-      setFormData({
-        type: activeTab,
-        description: '',
-        email: '',
-        allowContact: true,
-      });
-    } catch {
-      toast.error('Failed to submit feedback. Please try again.');
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/feedback`,
+        {
+          type: formData.type,
+          description: formData.description,
+          email: formData.email || null,
+          allowContact: formData.allowContact,
+          rating: formData.rating
+        }
+      );
+
+      if (response.status === 200) {
+        toast.success(response.data.message || 'Thank you for your feedback! We\'ll review it and get back to you soon.');
+        
+        // Reset form
+        setFormData({
+          type: activeTab,
+          description: '',
+          email: '',
+          allowContact: true,
+        });
+      }
+    } catch (error: any) {
+      console.error('Feedback submission error:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to submit feedback. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -85,13 +99,18 @@ const FeedbackPage: React.FC = () => {
           <button
             key={star}
             type="button"
-            onClick={() => setRating(star)}
             className={cn(
               "transition-colors",
-              star <= rating ? "text-yellow-400" : "text-gray-300"
+              star <= rating 
+                ? "text-emerald-500 hover:text-emerald-600" 
+                : "text-gray-300 hover:text-emerald-400 dark:text-zinc-600 dark:hover:text-emerald-400"
             )}
+            onClick={() => setRating(star)}
           >
-            <Star className="w-6 h-6 fill-current" />
+            <Star className={cn(
+              "w-6 h-6",
+              star <= rating ? "fill-current" : ""
+            )} />
           </button>
         ))}
       </div>
@@ -175,9 +194,9 @@ const FeedbackPage: React.FC = () => {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <TabsContent value="feature" className="space-y-4">
-                    <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20">
-                      <AlertDescription className="text-blue-800 dark:text-blue-400 flex items-center">
-                      <Lightbulb className="h-4 w-4 text-blue-600 mr-2" />
+                    <Alert className="border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20">
+                      <AlertDescription className="text-emerald-800 dark:text-emerald-400 flex items-center">
+                      <Lightbulb className="h-4 w-4 text-emerald-600 mr-2" />
                         Have an idea for a new feature? We'd love to hear it! Describe what you'd like to see and how it would help you.
                       </AlertDescription>
                     </Alert>
@@ -186,9 +205,9 @@ const FeedbackPage: React.FC = () => {
                   </TabsContent>
 
                   <TabsContent value="bug" className="space-y-4">
-                    <Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
-                      <AlertDescription className="text-red-800 dark:text-red-400 flex items-center">
-                      <Bug className="h-4 w-4 text-red-600 mr-2" />
+                    <Alert className="border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20">
+                      <AlertDescription className="text-emerald-800 dark:text-emerald-400 flex items-center">
+                      <Bug className="h-4 w-4 text-emerald-600 mr-2" />
                         Found a bug? Help us fix it! Provide as much detail as possible about what happened and how to reproduce it.
                       </AlertDescription>
                     </Alert>
@@ -197,9 +216,9 @@ const FeedbackPage: React.FC = () => {
                   </TabsContent>
 
                   <TabsContent value="improvement" className="space-y-4">
-                    <Alert className="border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-900/20">
-                      <AlertDescription className="text-purple-800 dark:text-purple-400 flex items-center">
-                      <Sparkles className="h-4 w-4 text-purple-600 mr-2" />
+                    <Alert className="border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20">
+                      <AlertDescription className="text-emerald-800 dark:text-emerald-400 flex items-center">
+                      <Sparkles className="h-4 w-4 text-emerald-600 mr-2" />
                         See something that could be better? Share your suggestions for improving existing features.
                       </AlertDescription>
                     </Alert>
@@ -208,9 +227,9 @@ const FeedbackPage: React.FC = () => {
                   </TabsContent>
 
                   <TabsContent value="testimonial" className="space-y-4">
-                    <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20">
-                      <AlertDescription className="text-green-800 dark:text-green-400 flex items-center">
-                      <Heart className="h-4 w-4 text-green-600 mr-2" />
+                    <Alert className="border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20">
+                      <AlertDescription className="text-emerald-800 dark:text-emerald-400 flex items-center">
+                      <Heart className="h-4 w-4 text-emerald-600 mr-2" />
                         Love using PulseBoard? Share your experience and help others discover what makes our platform special.
                       </AlertDescription>
                     </Alert>
@@ -297,10 +316,7 @@ const FeedbackPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          <Card className={cn(
-            "shadow-lg border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20",
-            isDark ? "border-zinc-800" : "border-gray-200"
-          )}>
+          <Card className="shadow-lg border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2 text-emerald-700 dark:text-emerald-400">
                 <Heart className="w-5 h-5" />

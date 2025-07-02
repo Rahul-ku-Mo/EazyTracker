@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EditorState } from "lexical";
 
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -14,6 +14,13 @@ import { ListItemNode, ListNode } from "@lexical/list";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
 import { EditorRefPlugin } from "@lexical/react/LexicalEditorRefPlugin";
+import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
+import { LinkNode, AutoLinkNode } from "@lexical/link";
+import { HeadingNode } from "@lexical/rich-text";
+
+// Floating toolbar imports
+import { FloatingTextFormatToolbarPlugin } from "@/_components/Notes/_editor/plugins/FloatingTextFormatToolbarPlugin";
+import { FloatingLinkEditorPlugin } from "@/_components/Notes/_editor/plugins/FloatingLinkEditorPlugin";
 
 // Image-related imports
 import { ImageNode } from "./_editor/ImageNode";
@@ -45,6 +52,7 @@ interface EditorTheme {
       listitem: string;
     };
   };
+  link: string;
 }
 const theme: EditorTheme = {
   root: cn(
@@ -70,6 +78,7 @@ const theme: EditorTheme = {
       listitem: "editor-nested-list-item",
     },
   },
+  link: "editor-link",
 };
 
 function onError(error: Error): void {
@@ -128,32 +137,37 @@ function CustomTransformLexicalToHTML({
 
 interface CardDescriptionEditorProps {
   description?: string;
+  dimensions: "small" | "large";
   setDescription: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export const NewCardDescriptionEditor = ({
   setDescription,
+  dimensions,
 }: CardDescriptionEditorProps): JSX.Element => {
   const editorRef = useRef(null);
+  const [isLinkEditMode, setIsLinkEditMode] = useState(false);
+  const anchorElemRef = useRef<HTMLDivElement>(null);
 
   const initialConfig = {
     namespace: "CardDescriptionEditor",
     theme,
     onError,
-    nodes: [ListNode, ListItemNode, ImageNode] as any,
+    nodes: [ListNode, ListItemNode, ImageNode, LinkNode, AutoLinkNode, HeadingNode] as any,
   };
 
   return (
-    <div className="relative">
+    <div className="relative px-4 flex-1">
       <LexicalComposer initialConfig={initialConfig}>
-        <div className="editor-container">
+        <div className="editor-container" ref={anchorElemRef}>
           <div className="relative editor-inner">
             <RichTextPlugin
               contentEditable={
                 <ContentEditable
                   id="card-description-editor"
                   className={cn(
-                    "min-h-[150px] w-full",
+                    "min-h-[150px] w-full overflow-y-auto",
+                    dimensions === "small" ? "max-h-[160px]" : "max-h-[456px]",
                     "text-sm text-foreground",
                     "focus:outline-none border-none",
                     "relative",
@@ -179,9 +193,23 @@ export const NewCardDescriptionEditor = ({
             <HistoryPlugin />
             <ListPlugin />
             <CheckListPlugin />
+            <LinkPlugin />
             <ImagesPlugin />
             <EditorRefPlugin editorRef={editorRef} />
             <CopyImagePlugin ref={editorRef} />
+            {anchorElemRef.current && (
+              <>
+                <FloatingTextFormatToolbarPlugin 
+                  anchorElem={anchorElemRef.current}
+                  setIsLinkEditMode={setIsLinkEditMode}
+                />
+                <FloatingLinkEditorPlugin
+                  anchorElem={anchorElemRef.current}
+                  isLinkEditMode={isLinkEditMode}
+                  setIsLinkEditMode={setIsLinkEditMode}
+                />
+              </>
+            )}
             <CustomTransformLexicalToHTML setEditorState={setDescription} />
           </div>
         </div>
