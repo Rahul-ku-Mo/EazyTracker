@@ -63,7 +63,7 @@ const CardTitle = ({ title, isCompleted, cardId, showCardId }: {
   showCardId?: boolean;
 }) => (
   <div className={cn(
-    "text-base font-bold truncate line-clamp-1 text-foreground editor-readable-font",
+    "text-base font-bold truncate line-clamp-1 text-foreground editor-readable-font absolute bottom-10 left-2 z-20 max-w-[calc(100%-2rem)]",
     isCompleted && "line-through text-zinc-500 dark:text-zinc-400"
   )}>
     {showCardId && cardId && (
@@ -81,11 +81,13 @@ const CardDescription = ({ description, isCompleted }: { description?: string; i
   }
 
   return (
+    <div className="relative flex-1">
+      <div className="absolute inset-0 bg-gradient-to-b from-zinc-100/50 to-white dark:bg-gradient-to-b dark:from-zinc-800/10 dark:to-zinc-900"/>
     <div
       dangerouslySetInnerHTML={{ __html: description }}
       className={cn(
-        "dark:text-muted-foreground w-full h-[112px]",
-        "break-all ",
+        "dark:text-muted-foreground w-full max-h-[153px] indent-6",
+        "text-pretty",
         "truncate",
         "grow basis-full",
         "px-2 pb-2",
@@ -94,6 +96,7 @@ const CardDescription = ({ description, isCompleted }: { description?: string; i
         isCompleted && "line-through text-zinc-500 dark:text-zinc-400"
       )}
     />
+    </div>
   );
 };
 
@@ -704,9 +707,9 @@ const Card = ({ columnName, viewOptions, members }: CardProps) => {
             "bg-white dark:bg-zinc-800 hover:bg-zinc-50 hover:dark:bg-zinc-700/70",
             "text-zinc-900 dark:text-zinc-100",
             "border border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600",
-            "rounded-lg pt-2 relative",
+            "rounded-lg  relative",
             "transition-all duration-300 ease-out",
-            "flex flex-col justify-between",
+            "flex flex-col ",
             "text-xs",
             "h-[200px]",
             "shadow-md hover:shadow-lg dark:shadow-none dark:hover:shadow-zinc-900/20",
@@ -718,12 +721,12 @@ const Card = ({ columnName, viewOptions, members }: CardProps) => {
           )}
         >
           {/* Completion checkbox - Linear style */}
-          <div className="absolute top-2.5 left-3 z-10">
+          <div className="absolute top-2.5 left-3 z-20 cursor-pointer ">
             <button
               onClick={handleCompletionClick}
               className={cn(
                 "size-4 rounded-full border-2 flex items-center justify-center transition-all duration-200",
-                "hover:scale-110 active:scale-95",
+                "hover:scale-110 active:scale-95 ",
                 status.isCompleted
                   ? "bg-green-500 border-green-500 text-white"
                   : "border-zinc-300 dark:border-zinc-600 hover:border-green-500 dark:hover:border-green-400"
@@ -735,14 +738,12 @@ const Card = ({ columnName, viewOptions, members }: CardProps) => {
             </button>
           </div>
 
-          <div className="px-2 pl-10">
-            <CardTitle 
+          <CardTitle 
               title={title} 
               isCompleted={status.isCompleted}
               cardId={id}
               showCardId={viewOptions?.showCardIds || false}
             />
-          </div>
 
           {viewOptions?.displayProperties.description !== false && (
             <CardDescription description={description} isCompleted={status.isCompleted} />

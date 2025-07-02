@@ -62,7 +62,7 @@ export const TrialStatusIndicator: React.FC = () => {
   const colors = getStatusColor();
 
   return (
-    <Link to="/workspace/billing" className="block">
+    <Link to="/billing" className="block">
       <div className={`flex items-center space-x-2 p-2 rounded-lg ${colors.bg} border ${colors.border} hover:opacity-80 transition-opacity`}>
         <Sparkles className={`w-4 h-4 ${colors.icon}`} />
         <div className="flex-1 min-w-0">

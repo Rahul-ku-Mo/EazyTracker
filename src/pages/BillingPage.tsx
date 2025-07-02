@@ -1,11 +1,9 @@
 import React, { useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PricingPlans, BillingOverview } from '@/_components/Billing';
-import { UsageDashboard } from '@/components/billing/UsageDashboard';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { CreditCard, Package, BarChart3 } from 'lucide-react';
+import { CreditCard, Package } from 'lucide-react';
 import MainLayout from '@/layouts/Container';
 
 const BillingPage: React.FC = () => {
@@ -36,16 +34,12 @@ const BillingPage: React.FC = () => {
       <div className="">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Billing & Subscription</h1>
           <p className="text-gray-600 dark:text-gray-300">
-            Manage your subscription, view billing information, and upgrade your plan.
+            Upgrade to enable unlimited tracking, enhanced security controls, and additional features.
           </p>
         </div>
 
-        <Tabs defaultValue="usage" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
-            <TabsTrigger value="usage" className="flex items-center space-x-2">
-              <BarChart3 className="w-4 h-4" />
-              <span>Usage</span>
-            </TabsTrigger>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
             <TabsTrigger value="overview" className="flex items-center space-x-2">
               <CreditCard className="w-4 h-4" />
               <span>Billing</span>
@@ -56,36 +50,12 @@ const BillingPage: React.FC = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="usage" className="space-y-6">
-            <UsageDashboard />
-          </TabsContent>
-
           <TabsContent value="overview" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Subscription Management</CardTitle>
-                <CardDescription>
-                  View your current subscription status and manage billing preferences.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <BillingOverview />
-              </CardContent>
-            </Card>
+            <BillingOverview />
           </TabsContent>
 
           <TabsContent value="plans" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Choose Your Plan</CardTitle>
-                <CardDescription>
-                  Select the perfect plan for your team's needs. You can upgrade or downgrade at any time.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <PricingPlans />
-              </CardContent>
-            </Card>
+            <PricingPlans />
           </TabsContent>
         </Tabs>
     </MainLayout>

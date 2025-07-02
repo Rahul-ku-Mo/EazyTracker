@@ -42,7 +42,7 @@ const BoardPopover = ({ count }: BoardPopoverProps) => {
           <CardDescription className="text-xs mb-3">
             {getUpgradeMessage('projects')}
           </CardDescription>
-          <Link to="/workspace/billing">
+          <Link to="/billing">
             <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-xs h-7">
               Upgrade
               <ArrowRight className="w-3 h-3 ml-1" />

@@ -112,21 +112,24 @@ const authenticatedRoutes = [
         path: "analytics",
         element: <WithContexts Component={AnalyticsPage} />,
       },
-      {
-        path: "billing",
-        element: (
-          <AdminRouteGuard>
-            <PaddleProvider>
-              <SubscriptionContextProvider>
-                <UserContextProvider>
-                  <BillingPage />
-                </UserContextProvider>
-              </SubscriptionContextProvider>
-            </PaddleProvider>
-          </AdminRouteGuard>
-        ),
-      },
     ],
+  },
+
+  {
+    path: "billing",
+    element: (
+      <>
+        <AdminRouteGuard>
+          <PaddleProvider>
+            <SubscriptionContextProvider>
+              <UserContextProvider>
+                <BillingPage />
+              </UserContextProvider>
+            </SubscriptionContextProvider>
+          </PaddleProvider>
+        </AdminRouteGuard>
+      </>
+    ),
   },
   {
     path: "/setting",
@@ -166,47 +169,47 @@ const authenticatedRoutes = [
 const Router = () => {
   const routes = [
     { path: "/", element: <LandingPage /> },
-    { 
-      path: "/pricing", 
+    {
+      path: "/pricing",
       element: (
         <AuthContextProvider>
           <AdminRouteGuard>
             <WithContexts Component={PricingPage} />
           </AdminRouteGuard>
         </AuthContextProvider>
-      ) 
+      ),
     },
-    { 
-      path: "/coming-soon", 
-      element: <ComingSoonPage />
+    {
+      path: "/coming-soon",
+      element: <ComingSoonPage />,
     },
-    { 
-      path: "/terms", 
-      element: <TermsPage />
+    {
+      path: "/terms",
+      element: <TermsPage />,
     },
-    { 
-      path: "/privacy", 
-      element: <PrivacyPage />
+    {
+      path: "/privacy",
+      element: <PrivacyPage />,
     },
-    { 
-      path: "/feedback", 
+    {
+      path: "/feedback",
       element: (
         <LaunchGuard>
           <AuthContextProvider>
             <WithContexts Component={FeedbackPage} />
           </AuthContextProvider>
         </LaunchGuard>
-      ) 
+      ),
     },
-    { 
-      path: "/support", 
+    {
+      path: "/support",
       element: (
         <LaunchGuard>
           <AuthContextProvider>
             <WithContexts Component={SupportPage} />
           </AuthContextProvider>
         </LaunchGuard>
-      ) 
+      ),
     },
     {
       path: "/auth",
@@ -248,7 +251,14 @@ const Router = () => {
         </LaunchGuard>
       ),
     },
-    { path: "*", element: <LaunchGuard><NotFoundPage /></LaunchGuard> },
+    {
+      path: "*",
+      element: (
+        <LaunchGuard>
+          <NotFoundPage />
+        </LaunchGuard>
+      ),
+    },
   ];
 
   return useRoutes(routes);

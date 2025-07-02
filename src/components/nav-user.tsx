@@ -87,7 +87,7 @@ ${user?.username}`);
       );
     } else {
       // For free and pro users, navigate to billing page
-      navigate("/workspace/billing");
+      navigate("/billing");
     }
   };
 

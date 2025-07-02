@@ -17,7 +17,6 @@ const SubscriptionContext = createContext<SubscriptionContextType>({} as Subscri
 
 // Define pages that are allowed even when access is restricted
 const ALLOWED_PAGES_WHEN_RESTRICTED = [
-  "/workspace/billing",
   "/billing",
   "/account",
   "/auth",
@@ -77,7 +76,7 @@ const SubscriptionContextProvider = ({ children }: { children: React.ReactNode }
       
       // You can replace this with your notification system
       if (window.confirm(`${message}\n\nRedirect to billing page?`)) {
-        navigate("/workspace/billing", { 
+        navigate("/billing", { 
           replace: true,
           state: { accessRestricted: true, reason: message }
         });

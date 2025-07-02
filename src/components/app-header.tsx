@@ -2,7 +2,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
+
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
@@ -30,13 +30,8 @@ const AppHeader = ({ children }: AppHeaderProps) => {
         
         <Breadcrumb>
           <BreadcrumbList className="flex items-center">
-            <BreadcrumbItem className="hidden md:inline-flex items-center">
-              <BreadcrumbLink>Dashboard</BreadcrumbLink>
-            </BreadcrumbItem>
 
-            {pathArray.length > 0 && (
-              <BreadcrumbSeparator className="hidden md:inline-flex" />
-            )}
+          
 
             {pathArray.map((path, index) => (
               <BreadcrumbItem key={index} className="inline-flex items-center">

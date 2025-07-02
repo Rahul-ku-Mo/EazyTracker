@@ -36,7 +36,7 @@ import { useUser } from "../hooks/useQueries";
 import Cookies from "js-cookie";
 import { Badge } from "./ui/badge";
 import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
 
@@ -86,34 +86,19 @@ const NavFavorites = ({ favoriteBoards }: { favoriteBoards: any[] }) => {
   );
 };
 
-const getNavigationData = (isAdmin: boolean) => {
+const getNavigationData = (isAdmin: boolean, pathname: string) => {
   const baseNavigation = [
     {
-      title: "Dashboard",
-      url: "#",
+      title: "Workspaces",
+      url: "/workspace",
       icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "Workspaces",
-          url: "/workspace",
-        },
-        {
-          title: "Notes",
-          url: "/notes",
-        }
-      ],
+      isActive: pathname.includes("/workspace"),
     },
     {
-      title: "Inbox",
-      url: "#",
+      title: "Notifications",
+      url: "/inbox",
       icon: Inbox,
-      items: [
-        {
-          title: "Notifications",
-          url: "/inbox",
-        },
-      ],
+      isActive: pathname.includes("/inbox"),
     },
   ];
 
@@ -121,27 +106,17 @@ const getNavigationData = (isAdmin: boolean) => {
   if (isAdmin) {
     baseNavigation.push({
       title: "Billing & Plans",
-      url: "#",
+      url: "/billing",
       icon: CreditCard,
-      items: [
-        {
-          title: "Subscription",
-          url: "/workspace/billing",
-        },
-      ],
+      isActive: pathname.includes("/billing"),
     });
   }
 
   baseNavigation.push({
     title: "Manage Team",
-    url: "#",
+    url: "/team/management",
     icon: Settings2,
-    items: [
-      {
-        title: "Team Management",
-        url: "/team/management",
-      },
-    ],
+    isActive: pathname.includes("/team/management"),
   });
 
   return {
@@ -158,7 +133,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   
   // Check if user is admin
   const isAdmin = role === 'ADMIN';
-  const navigationData = getNavigationData(isAdmin);
+  const pathname = useLocation().pathname;
+  const navigationData = getNavigationData(isAdmin, pathname);
 
   const [showJoinCode, setShowJoinCode] = React.useState(false);
   const [copied, setCopied] = React.useState(false);

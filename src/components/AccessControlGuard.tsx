@@ -42,7 +42,7 @@ const AccessControlGuard: React.FC<AccessControlGuardProps> = ({
           <Button 
             variant="link" 
             className="p-0 h-auto text-orange-600 underline ml-1"
-            onClick={() => navigate("/workspace/billing")}
+            onClick={() => navigate("/billing")}
           >
             Upgrade now
           </Button>
@@ -70,7 +70,7 @@ const AccessControlGuard: React.FC<AccessControlGuardProps> = ({
             <div className="font-semibold mb-1">{title}</div>
             <div className="text-sm mb-3">{description}</div>
             <Button 
-              onClick={() => navigate("/workspace/billing")}
+              onClick={() => navigate("/billing")}
               className="bg-red-600 hover:bg-red-700 text-white"
               size="sm"
             >

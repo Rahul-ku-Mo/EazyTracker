@@ -73,7 +73,7 @@ export const TrialStatusBanner: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-2">
-          <Link to="/workspace/billing">
+          <Link to="/billing">
             <Button size="sm" className="bg-white text-gray-900 hover:bg-gray-100 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700">
               Upgrade Now
               <ArrowRight className="w-4 h-4 ml-1" />
