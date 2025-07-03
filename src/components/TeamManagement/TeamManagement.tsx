@@ -443,20 +443,26 @@ const TeamManagement: React.FC = () => {
 
   return (
     <MainLayout title="Team Management">
-      <div className="space-y-6">
+      <div className="space-y-6 py-2">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Team Management</h1>
-            <p className="text-muted-foreground text-sm">
-              Manage team members, permissions, and board access
-            </p>
+        <div className="flex items-center gap-3">
+            <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+              <Users className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold">Team Management</h1>
+              <p className="text-sm text-muted-foreground">
+                Manage team members, permissions, and board access
+              </p>
+            </div>
           </div>
+
           
           <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
             <DialogTrigger asChild>
-              <Button>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Invite Member
+              <Button className="flex items-center gap-2 rounded-md">
+                <UserPlus className="h-4 w-4" />
+                Invite 
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -488,8 +494,8 @@ const TeamManagement: React.FC = () => {
           </Dialog>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="members" className="space-y-6">
+          <TabsList className="grid grid-cols-3 w-fit">
             <TabsTrigger value="members" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Team Members
@@ -500,11 +506,11 @@ const TeamManagement: React.FC = () => {
             </TabsTrigger>
             <TabsTrigger value="performance" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
-              Performance
+              Team Performance 
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="members" className="space-y-4">
+          <TabsContent value="members" className="space-y-6 ">
             {/* Search and Filter Controls */}
             <Card>
               <CardHeader>
@@ -729,7 +735,7 @@ const TeamManagement: React.FC = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="permissions" className="space-y-4">
+          <TabsContent value="permissions" className="space-y-6">
             <div className="grid gap-4">
               {boards.map((board: Board) => (
                 <Card key={board.id}>
@@ -908,7 +914,7 @@ const TeamManagement: React.FC = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="performance" className="space-y-4">
+          <TabsContent value="performance" className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
               <div>
                 <h2 className="text-lg font-semibold">Team Performance Analytics</h2>

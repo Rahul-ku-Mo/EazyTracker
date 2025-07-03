@@ -1,4 +1,4 @@
-import {  useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Trash2, Users, AlertTriangle, Save } from "lucide-react";
 import { useBoardMutation } from "@/_components/BoardSelection/_mutations/useBoardMutation";
@@ -34,11 +34,10 @@ const BoardSettings = () => {
   const { id } = useParams();
 
   const accessToken = Cookies.get("accessToken") || "";
- 
+
   const { deleteBoardMutation, updateBoardMutation } = useBoardMutation();
 
   const { data, isPending } = useBoard(accessToken, id as string);
-
 
   const [inviteEmail, setInviteEmail] = useState("");
   const [boardName, setBoardName] = useState("");
@@ -73,12 +72,12 @@ const BoardSettings = () => {
 
   if (isPending) return <LoadingScreen />;
 
-  console.log(data, isPending)
+  console.log(data, isPending);
 
   return (
-    <MainLayout title="Settings" fwdClassName="mx-auto w-full">
+    <MainLayout title="Settings" fwdClassName="mx-auto w-full mt-4">
       {/* General Settings */}
-      <Card className="px-6">
+      <Card className="px-6 rounded-md">
         <CardHeader className="px-0">
           <CardTitle>General Settings</CardTitle>
           <CardDescription>
@@ -105,11 +104,15 @@ const BoardSettings = () => {
           </div>
         </CardContent>
         <CardFooter className="px-0 flex justify-end ">
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             className="items-center"
             onClick={handleSaveBoard}
-            disabled={!boardName.trim() || boardName === data?.title || updateBoardMutation.isPending}
+            disabled={
+              !boardName.trim() ||
+              boardName === data?.title ||
+              updateBoardMutation.isPending
+            }
           >
             <Save className="w-4 h-4" />
             {updateBoardMutation.isPending ? "Saving..." : "Save Changes"}
@@ -118,7 +121,7 @@ const BoardSettings = () => {
       </Card>
 
       {/* Team Members */}
-      <Card className="px-6">
+      <Card className="px-6 rounded-md">
         <CardHeader className="px-0">
           <CardTitle>Team Members</CardTitle>
           <CardDescription>
@@ -131,6 +134,7 @@ const BoardSettings = () => {
               <div className="flex-1">
                 <Label htmlFor="email">Email address</Label>
                 <Input
+                  required
                   id="email"
                   type="email"
                   placeholder="colleague@company.com"
@@ -139,8 +143,8 @@ const BoardSettings = () => {
                 />
               </div>
               <Button type="submit" className="">
-                <Users className="w-4 h-4 mr-2" />
-                Invite Member
+                <Users className="w-4 h-4" />
+                Invite
               </Button>
             </div>
           </form>
@@ -157,7 +161,7 @@ const BoardSettings = () => {
       </Card>
 
       {/* Danger Zone */}
-      <Card className="border rounded-lg shadow-none border-destructive/50">
+      <Card className="border rounded-md shadow-none border-destructive/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="w-5 h-5" />

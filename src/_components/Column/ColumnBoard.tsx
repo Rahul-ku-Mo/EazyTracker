@@ -96,8 +96,6 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
     closePanel 
   } = useViewOptionsStore();
 
-  // Use context columns data
-  const columnsData = columns || [];
 
   const inputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
@@ -196,6 +194,7 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
 
   // Apply view options to columns for Kanban view - Enhanced logic
   const processedColumns = useMemo(() => {
+    const columnsData = columns || [];
     if (!columnsData) return [];
     
     let filteredColumns = [...columnsData].sort((a: Column, b: Column) => a.order - b.order);
@@ -240,7 +239,7 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
     });
     
     return filteredColumns;
-  }, [columnsData, viewOptions]);
+  }, [columns, viewOptions]);
 
   const sortedColumns = processedColumns;
 
@@ -252,19 +251,19 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
   };
 
   const listViewData = useMemo(() => {
-    if (!columnsData) return {};
+    if (!columns) return {};
     
     // Get all cards from all columns
-    const allCards = columnsData.flatMap((col: any) => col.cards || []);
+    const allCards = columns.flatMap((col: any) => col.cards || []);
     
     // Apply view options (grouping, filtering, ordering)
-    const groupedData = groupCards(allCards, columnsData, viewOptions);
+    const groupedData = groupCards(allCards, columns, viewOptions);
     
     console.log('Applied view options:', viewOptions);
     console.log('Grouped data:', groupedData);
     
     return groupedData;
-  }, [columnsData, viewOptions]);
+  }, [columns, viewOptions]);
 
   // Handle drag end with improved error handling and order calculation
   const handleDragEnd = (result: DropResult) => {
@@ -295,8 +294,8 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
     }
 
     // Find source and destination columns
-    const sourceColumn = columnsData?.find((col: any) => col.id === sourceColumnId);
-    const destinationColumn = columnsData?.find((col: any) => col.id === destinationColumnId);
+    const sourceColumn = columns?.find((col: any) => col.id === sourceColumnId);
+    const destinationColumn = columns?.find((col: any) => col.id === destinationColumnId);
 
     if (!sourceColumn || !destinationColumn) {
       console.error('Source or destination column not found');
@@ -367,10 +366,10 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
         }
       >
 
-        <div className="relative w-full h-full">
+        <div className="relative w-full h-full ">
           {view === "kanban" ? (
             <DragDropContext onDragEnd={handleDragEnd}>
-              <ol className="absolute inset-0 flex items-start h-full">
+              <ol className="absolute inset-0 flex items-start h-full py-4">
                 {sortedColumns?.map((column: Column) => (
                   <ColumnProvider columnId={column.id.toString()} key={column.id}>
                     <ColumnView 

@@ -22,7 +22,7 @@ export const OnlineStatus = () => {
   return (
     <motion.div
       className={cn(
-        "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border",
+        "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium border",
         isOnline
           ? "bg-green-50 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300"
           : "bg-red-50 border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300"

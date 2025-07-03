@@ -53,14 +53,7 @@ const KanbanPage = () => {
       exit={{ opacity: 0 }}
       className="relative w-full h-full"
     >
-      {/* Optional: Background image */}
-      {/* <img
-        className="fixed inset-0 object-cover h-full w-full bg-gradient-to-t from-black to-transparent z-[-1]"
-        src={boardDetail?.imageFullUrl}
-        alt="Dashboard"
-      /> */}
-
-      {/* Back button */}
+   
       <button
         onClick={handleGoBack}
         className="absolute top-4 left-4 px-4 py-2 flex items-center gap-2 text-sm font-medium text-foreground bg-background rounded-md hover:bg-accent transition-colors"
@@ -69,7 +62,7 @@ const KanbanPage = () => {
         Back to Boards
       </button>
 
-      {/* Column Board */}
+     
       <ColumnBoard title={boardDetail?.title} />
     </motion.div>
   );

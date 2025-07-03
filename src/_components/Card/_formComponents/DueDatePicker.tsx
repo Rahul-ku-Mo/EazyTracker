@@ -25,22 +25,25 @@ export function DueDatePicker({
           type="button"
           variant={"outline"}
           className={cn(
-            "w-fit justify-start text-left font-normal text-xs h-7 rounded-sm",
+            "w-fit px-2 justify-start text-left font-normal text-xs h-7 rounded-sm",
             !dueDate && "text-muted-foreground"
           )}
         >
           <CalendarIcon />
-          {dueDate ? format(dueDate, "PPP") : <span>Due Date</span>}
+          {dueDate && format(dueDate, "PPP") }
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto p-1" align="start" side="bottom">
         <Calendar
           mode="single"
           selected={dueDate}
           onSelect={(date) => date && setDueDate(date)}
           initialFocus
         />
+        <Button variant="default" size="sm" className="mx-auto w-full" onClick={() => setDueDate(undefined)}>
+          Clear
+        </Button>
       </PopoverContent>
-    </Popover>
+    </Popover>  
   );
 }

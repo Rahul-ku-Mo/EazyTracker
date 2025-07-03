@@ -103,7 +103,7 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
             ref={titleRef}
             name="title"
             placeholder="What's on your mind?"
-            className="px-4 text-base border-0 shadow-none placeholder:text-muted-foreground/60 md:text-base focus-visible:ring-0"
+            className="px-4 placeholder:font-semibold font-semibold text-base border-0 shadow-none placeholder:text-muted-foreground/60 md:text-base focus-visible:ring-0"
           />
           <NewCardDescriptionEditor
             description={description}

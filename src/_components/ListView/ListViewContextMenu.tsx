@@ -10,11 +10,13 @@ import {
   ContextMenuSubContent,
 } from "@/components/ui/context-menu";
 import { cn } from "@/lib/utils";
-import { Flag, Tag, Plus, User, ArrowRight, Calendar, Edit, Trash2 } from "lucide-react";
+import {  Tag, Plus, User, ArrowRight, Calendar, Edit, Trash2 } from "lucide-react";
 import { useCardMutation } from "../Card/_mutations/useCardMutations";
 import { useMembers } from "@/hooks/useMembers";
 import { useParams } from "react-router-dom";
 import { TUser } from "@/types";
+import { HighPriority, LowPriority, MediumPriority, Priority, UrgentPriority } from "../shared/svg/Priority";
+import { useTheme } from "@/context/ThemeProvider";
 
 interface ContextMenuItem {
   icon: React.ReactNode;
@@ -44,7 +46,7 @@ const ListViewContextMenu = ({
   const { id } = useParams();
   const { members, isPending } = useMembers(id as string);
   const { updateCardMutation } = useCardMutation();
-
+  const { theme } = useTheme();
   const updatePriorityForATicket = (priority: string) => {
     updateCardMutation.mutate({
       priority,
@@ -75,7 +77,7 @@ const ListViewContextMenu = ({
       shortcut: "⌘E",
     },
     {
-      icon: <Flag className="w-3 h-3 mr-2" />,
+      icon: <UrgentPriority className="w-3 h-3 mr-2" />,
       label: "Set priority",
     },
     {
@@ -116,7 +118,7 @@ const ListViewContextMenu = ({
             {item.label === "Set priority" ? (
               <ContextMenuSub>
                 <ContextMenuSubTrigger className="gap-2 text-xs">
-                  <Flag className="w-3 h-3 mr-2" />
+                  <UrgentPriority className="size-3 mr-2" isDark={theme === "dark"} />
                   Set priority
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-48">
@@ -124,7 +126,7 @@ const ListViewContextMenu = ({
                     className="gap-2 text-xs"
                     onClick={() => updatePriorityForATicket("urgent")}
                   >
-                    <Flag className="w-3 h-3 text-red-500" />
+                    <UrgentPriority className="size-3" isDark={theme === "dark"} />
                     Urgent
                     <ContextMenuShortcut>⌘1</ContextMenuShortcut>
                   </ContextMenuItem>
@@ -132,7 +134,7 @@ const ListViewContextMenu = ({
                     className="gap-2 text-xs"
                     onClick={() => updatePriorityForATicket("high")}
                   >
-                    <Flag className="w-3 h-3 text-amber-500" />
+                    <HighPriority className="size-3" isDark={theme === "dark"} />
                     High
                     <ContextMenuShortcut>⌘2</ContextMenuShortcut>
                   </ContextMenuItem>
@@ -140,7 +142,7 @@ const ListViewContextMenu = ({
                     className="gap-2 text-xs"
                     onClick={() => updatePriorityForATicket("medium")}
                   >
-                    <Flag className="w-3 h-3 text-blue-500" />
+                    <MediumPriority className="size-3" isDark={theme === "dark"} />
                     Medium
                     <ContextMenuShortcut>⌘3</ContextMenuShortcut>
                   </ContextMenuItem>
@@ -148,7 +150,7 @@ const ListViewContextMenu = ({
                     className="gap-2 text-xs"
                     onClick={() => updatePriorityForATicket("low")}
                   >
-                    <Flag className="w-3 h-3 text-green-500" />
+                    <LowPriority className="size-3" isDark={theme === "dark"} />
                     Low
                     <ContextMenuShortcut>⌘4</ContextMenuShortcut>
                   </ContextMenuItem>
@@ -157,7 +159,7 @@ const ListViewContextMenu = ({
                     className="gap-2 text-xs text-muted-foreground"
                     onClick={() => updatePriorityForATicket("")}
                   >
-                    <Flag className="w-3 h-3" />
+                    <Priority className="size-3" isDark={theme === "dark"} />
                     No priority
                     <ContextMenuShortcut>⌘0</ContextMenuShortcut>
                   </ContextMenuItem>

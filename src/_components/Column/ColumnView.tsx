@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
-import { Plus, ArrowUpDown, Trash, ChevronDown, Calendar, Flag, Clock, SortAsc } from "lucide-react";
+import { Plus, ArrowUpDown, Trash, Calendar, Flag, Clock, SortAsc, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
 import { cn } from "../../lib/utils";
@@ -16,7 +16,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-  DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from "../../components/ui/dropdown-menu";
 import { Droppable } from "react-beautiful-dnd";
 import { ViewOptions } from "@/store/useViewOptionsStore";
@@ -263,49 +265,55 @@ const ColumnView = ({ title, cards, columnId, viewOptions, members }: ColumnView
                   className={cn(
                     "p-1 transition-all duration-200 rounded-full cursor-pointer",
                     "hover:opacity-70 hover:bg-zinc-200 dark:hover:bg-zinc-700",
-                    "flex items-center gap-1"
+                    "flex items-center justify-center"
                   )}
                 >
-                  <ArrowUpDown className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
-                  <ChevronDown className="w-3 h-3 text-zinc-700 dark:text-zinc-300" />
+                  <MoreHorizontal className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuLabel className="flex items-center gap-2 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                  <ArrowUpDown className="w-3 h-3" />
-                  Sort Cards
-                </DropdownMenuLabel>
+              <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="flex items-center gap-2 cursor-pointer text-xs py-2 px-2">
+                    <ArrowUpDown className="w-3.5 h-3.5" />
+                    <span>Sort Cards</span>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="w-48">
+                    {sortOptions.map((option) => {
+                      const Icon = option.icon;
+                      return (
+                        <DropdownMenuItem
+                          key={option.value}
+                          onClick={() => handleSortChange(option.value)}
+                          className={cn(
+                            "flex items-center gap-2 cursor-pointer text-xs py-2 px-2.5",
+                            "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                            "transition-colors duration-150",
+                            "focus:bg-zinc-100 dark:focus:bg-zinc-800",
+                            currentSort === option.value && "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300"
+                          )}
+                        >
+                          <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                          <span className="flex-1">{option.label}</span>
+                          {currentSort === option.value && (
+                            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full flex-shrink-0" />
+                          )}
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                
                 <DropdownMenuSeparator />
-                {sortOptions.map((option) => {
-                  const Icon = option.icon;
-                  return (
-                    <DropdownMenuItem
-                      key={option.value}
-                      onClick={() => handleSortChange(option.value)}
-                      className={cn(
-                        "flex items-center gap-2 cursor-pointer text-xs py-2 px-2",
-                        "hover:bg-zinc-100 dark:hover:bg-zinc-800",
-                        "transition-colors duration-150",
-                        currentSort === option.value && "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300"
-                      )}
-                    >
-                      <Icon className="w-3 h-3 flex-shrink-0" />
-                      <span className="flex-1 font-medium">{option.label}</span>
-                      {currentSort === option.value && (
-                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-                      )}
-                    </DropdownMenuItem>
-                  );
-                })}
+                
+                <DropdownMenuItem
+                  onClick={openDeleteModal}
+                  className="flex items-center gap-2 cursor-pointer text-xs py-2 px-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 focus:bg-red-50 dark:focus:bg-red-900/20"
+                >
+                  <Trash className="w-3.5 h-3.5" />
+                  <span>Delete Column</span>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            
-            <ColumnActionTooltipWrapper
-              actionName="Delete Column"
-              handleClick={openDeleteModal}
-            >
-              <Trash className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
-            </ColumnActionTooltipWrapper>
           </div>
         </div>
 
@@ -339,7 +347,7 @@ const ColumnView = ({ title, cards, columnId, viewOptions, members }: ColumnView
       <DeleteDialog
         closeModal={closeDeleteModal}
         isOpen={isDeleteModalOpen}
-        title="column"
+        title={title}
         id={columnId.toString()}
         deleteItem={deleteColumnMutation}
       />

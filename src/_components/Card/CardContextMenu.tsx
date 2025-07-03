@@ -10,11 +10,13 @@ import {
   ContextMenuSubContent,
 } from "../../components/ui/context-menu";
 import { cn } from "../../lib/utils";
-import { Flag, Tag, CheckSquare, Plus, User } from "lucide-react";
+import {  Tag, CheckSquare, Plus, User } from "lucide-react";
 import { useCardMutation } from "./_mutations/useCardMutations";
 import { useMembers } from "../../hooks/useMembers";
 import { useParams } from "react-router-dom";
 import { TUser } from "../../types";
+import { UrgentPriority, HighPriority, LowPriority, Priority, MediumPriority } from "../shared/svg/Priority";
+import { useTheme } from "@/context/ThemeProvider";
 
 interface ContextMenuItem {
   icon: React.ReactNode;
@@ -31,7 +33,7 @@ interface CardContextMenuProps {
 }
 
 const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
- 
+  const { theme } = useTheme();
   const { id } = useParams();
 
   // TODO: get members from the database who are in the same board
@@ -70,7 +72,7 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
             {item.label === "Set priority" ? (
               <ContextMenuSub>
                 <ContextMenuSubTrigger className="gap-2 text-xs">
-                  <Flag className="w-3 h-3 mr-2" />
+                  <UrgentPriority className="size-3 mr-2" isDark={theme === "dark"} />
                   Set priority
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-48">
@@ -78,7 +80,7 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
                     className="gap-2 text-xs"
                     onClick={() => updatePriorityForATicket("urgent")}
                   >
-                    <Flag className="w-3 h-3 text-red-500" />
+                    <UrgentPriority className="size-3" isDark={theme === "dark"} />
                     Urgent
                     <ContextMenuShortcut>⌘1</ContextMenuShortcut>
                   </ContextMenuItem>
@@ -86,7 +88,7 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
                     className="gap-2 text-xs"
                     onClick={() => updatePriorityForATicket("high")}
                   >
-                    <Flag className="w-3 h-3 text-amber-500" />
+                    <HighPriority className="size-3" isDark={theme === "dark"} />
                     High
                     <ContextMenuShortcut>⌘2</ContextMenuShortcut>
                   </ContextMenuItem>
@@ -94,7 +96,7 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
                     className="gap-2 text-xs"
                     onClick={() => updatePriorityForATicket("medium")}
                   >
-                    <Flag className="w-3 h-3 text-blue-500" />
+                    <MediumPriority className="size-3" isDark={theme === "dark"} />
                     Medium
                     <ContextMenuShortcut>⌘3</ContextMenuShortcut>
                   </ContextMenuItem>
@@ -102,7 +104,7 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
                     className="gap-2 text-xs"
                     onClick={() => updatePriorityForATicket("low")}
                   >
-                    <Flag className="w-3 h-3 text-green-500" />
+                    <LowPriority className="size-3" isDark={theme === "dark"} />
                     Low
                     <ContextMenuShortcut>⌘4</ContextMenuShortcut>
                   </ContextMenuItem>
@@ -111,7 +113,7 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
                     className="gap-2 text-xs text-muted-foreground"
                     onClick={() => updatePriorityForATicket("")}
                   >
-                    <Flag className="w-3 h-3" />
+                    <Priority className="size-3" isDark={theme === "dark"} />
                     No priority
                     <ContextMenuShortcut>⌘0</ContextMenuShortcut>
                   </ContextMenuItem>

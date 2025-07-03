@@ -5,7 +5,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { FileEdit, Settings, Trash, UserPlus } from "lucide-react";
+import { FileEdit, Settings, Trash, UserPlus, Star } from "lucide-react";
 
 interface BoardContextMenuProps {
   children: React.ReactNode;
@@ -13,6 +13,9 @@ interface BoardContextMenuProps {
   onDelete: () => void;
   onInvite: () => void;
   onSettings: () => void;
+  onToggleFavorite: () => void;
+  isFavorite: boolean;
+  isToggling?: boolean;
 }
 
 export const BoardContextMenu = ({
@@ -21,6 +24,9 @@ export const BoardContextMenu = ({
   onDelete,
   onInvite,
   onSettings,
+  onToggleFavorite,
+  isFavorite,
+  isToggling = false,
 }: BoardContextMenuProps) => {
   return (
     <ContextMenu>
@@ -33,6 +39,14 @@ export const BoardContextMenu = ({
         <ContextMenuItem onClick={onInvite} className="text-xs">
           <UserPlus className="w-4 h-4 mr-2" />
           Invite
+        </ContextMenuItem>
+        <ContextMenuItem 
+          onClick={onToggleFavorite} 
+          className="text-xs"
+          disabled={isToggling}
+        >
+          <Star className={`w-4 h-4 mr-2 ${isFavorite ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+          {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
         </ContextMenuItem>
         <ContextMenuItem onClick={onDelete} className="text-xs text-red-600">
           <Trash className="w-4 h-4 mr-2" />

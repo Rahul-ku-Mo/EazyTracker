@@ -22,10 +22,6 @@ import {
   Users,
   Tags,
   ChevronDown,
-  AlertCircle,
-  AlertTriangle,
-  Circle,
-  Minus,
   Check,
   X,
 } from "lucide-react";
@@ -41,6 +37,8 @@ import {
   AvatarImage,
 } from "../../../components/ui/avatar";
 import { Badge } from "../../../components/ui/badge";
+import { Priority, LowPriority, MediumPriority, HighPriority, UrgentPriority } from "../../shared/svg/Priority";
+import { useTheme } from "@/context/ThemeProvider";
 
 type TNewCardActionsProps = {
   dueDate: Date | undefined;
@@ -61,18 +59,18 @@ interface TeamMember {
   imageUrl?: string;
 }
 
-const getPriorityIcon = (priority: string) => {
+const getPriorityIcon = (priority: string, theme: string) => {
   switch (priority) {
     case "urgent":
-      return <AlertCircle className="w-3 h-3 text-red-500" />;
+      return <UrgentPriority className="size-3" isDark={theme === "dark"} />;
     case "high":
-      return <AlertTriangle className="w-3 h-3 text-orange-500" />;
+      return <HighPriority className="size-3" isDark={theme === "dark"} />;
     case "medium":
-      return <Circle className="w-3 h-3 text-blue-500" />;
+      return <MediumPriority className="size-3" isDark={theme === "dark"} />;
     case "low":
-      return <Circle className="w-3 h-3 text-green-500" />;
+      return <LowPriority className="size-3" isDark={theme === "dark"} />;
     default:
-      return <Minus className="w-3 h-3 text-gray-400" />;
+      return <Priority className="size-3" isDark={theme === "dark"} />;
   }
 };
 
@@ -101,7 +99,6 @@ const AVAILABLE_LABELS = [
   "Documentation",
   "Testing",
   "Urgent",
-  "Low Priority",
   "Review",
   "In Progress",
   "Blocked",
@@ -120,7 +117,7 @@ const NewCardActions = ({
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
   const [showLabelsDropdown, setShowLabelsDropdown] = useState(false);
   const [newLabel, setNewLabel] = useState("");
-
+  const { theme } = useTheme();
   // Fetch team members
   const { data: teamData } = useQuery({
     queryKey: ["team-members"],
@@ -186,38 +183,38 @@ const NewCardActions = ({
           onClick={handlePriorityClick}
         >
           <div className="flex items-center gap-1">
-            {getPriorityIcon(priority)}
+            {getPriorityIcon(priority, theme)}
             <span className="text-xs">{getPriorityLabel(priority)}</span>
           </div>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="none" className="text-xs">
             <div className="flex items-center gap-2">
-              <Minus className="w-3 h-3 text-gray-400" />
+              <Priority className="size-3" isDark={theme === "dark"} />
               <span className="text-xs">None</span>
             </div>
           </SelectItem>
           <SelectItem value="low" className="text-xs">
             <div className="flex items-center gap-2">
-              <Circle className="w-3 h-3 text-green-500" />
+              <LowPriority className="size-3" isDark={theme === "dark"} />
               <span className="text-xs">Low</span>
             </div>
           </SelectItem>
           <SelectItem value="medium" className="text-xs">
             <div className="flex items-center gap-2">
-              <Circle className="w-3 h-3 text-blue-500" />
+              <MediumPriority className="size-3" isDark={theme === "dark"} />
               <span className="text-xs">Medium</span>
             </div>
           </SelectItem>
           <SelectItem value="high" className="text-xs">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="w-3 h-3 text-orange-500" />
+              <HighPriority className="size-3" isDark={theme === "dark"} />
               <span className="text-xs">High</span>
             </div>
           </SelectItem>
           <SelectItem value="urgent" className="text-xs">
             <div className="flex items-center gap-2">
-              <AlertCircle className="w-3 h-3 text-red-500" />
+              <UrgentPriority className="size-3" isDark={theme === "dark"} />
               <span className="text-xs">Urgent</span>
             </div>
           </SelectItem>
@@ -398,21 +395,20 @@ const NewCardActions = ({
         <div className="flex items-center gap-1 flex-wrap">
           {labels.map((label, index) => {
             const colorVariants = [
-              "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700",
-              "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700",
-              "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700",
-              "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700",
-              "bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-700",
+              "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700",
+              "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700",
+              "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700",
+              "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-700",
+              "bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-pink-700",
             ];
             const colorClass = colorVariants[index % colorVariants.length];
 
             return (
-              <Badge
+              <div
                 key={label}
-                variant="secondary"
-                className={`text-xs h-7 pr-2 flex items-center gap-1 ${colorClass} hover:opacity-80 transition-opacity`}
+                className={`text-xs h-7 pr-2 flex items-center gap-1 ${colorClass} hover:opacity-80 transition-opacity rounded-sm px-2`}
               >
-                <span className="text-xs">{label}</span>
+                <span className="text-xs font-semibold">{label}</span>
                 <X
                   className="w-3 h-3 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
                   onClick={(e) => {
@@ -421,7 +417,7 @@ const NewCardActions = ({
                     handleRemoveLabel(label);
                   }}
                 />
-              </Badge>
+              </div>
             );
           })}
         </div>

@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Check, Crown, Sparkles, Zap } from "lucide-react";
 import { useGetSubscriptionStatus } from "@/hooks/useBilling";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,152 +21,149 @@ const planIcons = {
   business: Crown,
 };
 
-const planColors = {
-  free: "bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-700",
-  pro: "bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-300 dark:from-blue-900/20 dark:to-indigo-900/20 dark:border-blue-600",
-  business: "bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-700",
-};
+
 
 // Your actual PulseBoard pricing plans
 const plans = [
   {
-    id: 'free',
-    name: 'Free Trial',
-    description: 'Perfect for trying out PulseBoard',
+    id: "free",
+    name: "Free Trial",
+    description: "Perfect for trying out PulseBoard",
     price: 0,
-    period: 'month',
+    period: "month",
     features: [
-      '5 projects',
-      '15 team members',
-      '100 tasks per project',
-      '1GB storage',
-      'Basic task management',
-      '7-day activity history',
-      'Community support',
-      '14-day free trial'
+      "5 projects",
+      "15 team members",
+      "100 tasks per project",
+      "1GB storage",
+      "Basic task management",
+      "7-day activity history",
+      "Community support",
+      "14-day free trial",
     ],
     paddlePrice: null,
-    isCurrentPlan: true
+    isCurrentPlan: true,
   },
   {
-    id: 'pro',
-    name: 'Professional',
-    description: 'For growing teams and businesses',
+    id: "pro",
+    name: "Professional",
+    description: "For growing teams and businesses",
     price: 9.99,
-    period: 'month',
+    period: "month",
     features: [
-      '15 projects',
-      '100 team members',
-      'Unlimited tasks',
-      '10GB storage',
-      'Advanced task management',
-      'Team collaboration features',
-      '30-day activity history',
-      'Priority email support',
-      'Advanced analytics',
-      'Custom project templates'
+      "15 projects",
+      "100 team members",
+      "Unlimited tasks",
+      "10GB storage",
+      "Advanced task management",
+      "Team collaboration features",
+      "30-day activity history",
+      "Priority email support",
+      // "Advanced analytics",
+      // "Custom project templates",
     ],
-    paddlePrice: import.meta.env.VITE_PADDLE_PRICE_ID_PRO || 'price_pro',
-    isPopular: true
+    paddlePrice: import.meta.env.VITE_PADDLE_PRICE_ID_PRO || "price_pro",
+    isPopular: true,
   },
   {
-    id: 'business',
-    name: 'Business',
-    description: 'For larger teams with advanced needs',
+    id: "business",
+    name: "Business",
+    description: "For larger teams with advanced needs",
     price: 29.99,
-    period: 'month',
+    period: "month",
     features: [
-      'Unlimited projects',
-      'Unlimited team members',
-      'Unlimited tasks',
-      '100GB storage',
-      'Full feature access',
-      'Advanced team collaboration',
-      'Unlimited activity history',
-      '24/7 phone & email support',
-      'Advanced analytics & reporting',
-      'Custom integrations',
-      'SSO & advanced security',
-      'Dedicated account manager'
+      "Unlimited projects",
+      "Unlimited team members",
+      "Unlimited tasks",
+      "100GB storage",
+      "Full feature access",
+      "Advanced team collaboration",
+      "Unlimited activity history",
+      "24/7 phone & email support",
+      // "Advanced analytics & reporting",
+      // "Custom integrations",
+      // "SSO & advanced security",
+      // "Dedicated account manager",
     ],
-    paddlePrice: import.meta.env.VITE_PADDLE_PRICE_ID_BUSINESS || 'price_business'
-  }
+    paddlePrice:
+      import.meta.env.VITE_PADDLE_PRICE_ID_BUSINESS || "price_business",
+  },
 ];
 
 // Feature comparison data for PulseBoard
 const featureComparisonData = [
   {
-    feature: 'Projects',
-    free: '5 projects',
-    pro: '15 projects',
-    business: 'Unlimited'
+    feature: "Projects",
+    free: "5 projects",
+    pro: "15 projects",
+    business: "Unlimited",
   },
   {
-    feature: 'Team Members',
-    free: '15 members',
-    pro: '100 members',
-    business: 'Unlimited'
+    feature: "Team Members",
+    free: "15 members",
+    pro: "100 members",
+    business: "Unlimited",
   },
   {
-    feature: 'Tasks per Project',
-    free: '100 tasks',
-    pro: 'Unlimited',
-    business: 'Unlimited'
+    feature: "Tasks per Project",
+    free: "100 tasks",
+    pro: "Unlimited",
+    business: "Unlimited",
   },
   {
-    feature: 'Storage',
-    free: '1GB',
-    pro: '10GB',
-    business: '100GB'
+    feature: "Storage",
+    free: "1GB",
+    pro: "10GB",
+    business: "100GB",
   },
   {
-    feature: 'Activity History',
-    free: '7 days',
-    pro: '30 days',
-    business: 'Unlimited'
+    feature: "Activity History",
+    free: "7 days",
+    pro: "30 days",
+    business: "Unlimited",
   },
   {
-    feature: 'Advanced Analytics',
-    free: '-',
-    pro: 'Yes',
-    business: 'Yes'
+    feature: "Advanced Analytics",
+    free: "-",
+    pro: "Yes",
+    business: "Yes",
   },
   {
-    feature: 'Time Tracking',
-    free: '-',
-    pro: 'Yes',
-    business: 'Yes'
+    feature: "Time Tracking",
+    free: "-",
+    pro: "Yes",
+    business: "Yes",
   },
   {
-    feature: 'AI Features',
-    free: '-',
-    pro: 'Yes',
-    business: 'Yes'
+    feature: "AI Features",
+    free: "-",
+    pro: "Yes",
+    business: "Yes",
   },
   {
-    feature: 'Custom Fields',
-    free: '-',
-    pro: 'Yes',
-    business: 'Yes'
+    feature: "Custom Fields (Coming Soon)",
+    free: "-",
+    pro: "Yes",
+    business: "Yes",
   },
   {
-    feature: 'Priority Support',
-    free: '-',
-    pro: 'Email only',
-    business: '24/7 Phone & Email'
+    feature: "Priority Support",
+    free: "-",
+    pro: "Email only",
+    business: "24/7 Phone & Email",
   },
   {
-    feature: 'SSO & Security',
-    free: '-',
-    pro: '-',
-    business: 'Yes'
+    feature: "SSO & Security (Coming Soon)",
+    free: "-",
+    pro: "-",
+    business: "Yes",
   },
   {
-    feature: 'Custom Integrations',
-    free: '-',
-    pro: '-',
-    business: 'Yes'
-  }
+    feature: "Custom Integrations (Coming Soon)",
+    free: "-",
+    pro: "-",
+    business: "Yes",
+  },
 ];
 
 export const PricingPlans: React.FC = () => {
@@ -188,7 +185,7 @@ export const PricingPlans: React.FC = () => {
       },
       customer: {
         email: localStorage.getItem("email") as string,
-      }
+      },
     };
 
     try {
@@ -234,25 +231,16 @@ export const PricingPlans: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {plans.map((plan) => {
           const PlanIcon = planIcons[plan.id as keyof typeof planIcons];
-          const isCurrentPlan = subscription?.plan === plan.id || plan.isCurrentPlan;
-          
+          const isCurrentPlan =
+            subscription?.plan === plan.id || plan.isCurrentPlan;
+
           return (
-            <Card 
-              key={plan.id} 
+            <Card
+              key={plan.id}
               className={cn(
-                "relative transition-all duration-200 hover:shadow-lg",
-                planColors[plan.id as keyof typeof planColors],
-                plan.isPopular && "ring-2 ring-blue-500 scale-105"
+                "relative transition-all duration-200 hover:shadow-lg max-h-[500px]"
               )}
             >
-              {plan.isPopular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-blue-500 text-white text-xs px-3 py-1">
-                    Most popular
-                  </Badge>
-                </div>
-              )}
-              
               <CardHeader className="text-center pb-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
@@ -260,51 +248,58 @@ export const PricingPlans: React.FC = () => {
                     <CardTitle className="text-lg">{plan.name}</CardTitle>
                   </div>
                 </div>
-                
+
                 <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
                   {plan.description}
                 </CardDescription>
-                
+
                 <div className="py-4">
                   <div className="text-3xl font-bold">
-                    {plan.price === 0 ? 'Free' : formatPrice(plan.price)}
+                    {plan.price === 0 ? "Free" : formatPrice(plan.price)}
                   </div>
                   <div className="text-sm text-gray-500">
-                    {plan.price === 0 ? '14-day trial included' : `per user per ${plan.period}`}
+                    {plan.price === 0
+                      ? "14-day trial included"
+                      : `per user per ${plan.period}`}
                   </div>
                 </div>
               </CardHeader>
-              
+
               <CardContent className="space-y-4">
                 <ul className="space-y-2">
                   {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center space-x-2 text-sm">
+                    <li
+                      key={index}
+                      className="flex items-center space-x-2 text-sm"
+                    >
                       <Check className="w-4 h-4 text-green-500" />
                       <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
-                
+
                 <div className="pt-4">
                   {isCurrentPlan ? (
                     <Button variant="outline" className="w-full" disabled>
                       Current plan
                     </Button>
-                  ) : plan.id === 'free' ? (
+                  ) : plan.id === "free" ? (
                     <Button variant="outline" className="w-full" disabled>
                       Free Trial
                     </Button>
                   ) : (
-                    <Button 
+                    <Button
                       className={cn(
                         "w-full",
-                        plan.isPopular 
-                          ? "bg-blue-600 hover:bg-blue-700 text-white" 
+                        plan.isPopular
+                          ? "bg-blue-600 hover:bg-blue-700 text-white"
                           : "bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
                       )}
                       onClick={() => handlePlanPurchase(plan)}
                     >
-                      {plan.id === 'pro' ? 'Upgrade to Pro' : 'Upgrade to Business'}
+                      {plan.id === "pro"
+                        ? "Upgrade to Pro"
+                        : "Upgrade to Business"}
                     </Button>
                   )}
                 </div>
@@ -328,40 +323,55 @@ export const PricingPlans: React.FC = () => {
               <thead>
                 <tr className="border-b">
                   <th className="text-left py-3 px-4 font-medium">Feature</th>
-                  <th className="text-center py-3 px-4 font-medium">Free Trial</th>
-                  <th className="text-center py-3 px-4 font-medium">Professional</th>
-                  <th className="text-center py-3 px-4 font-medium">Business</th>
+                  <th className="text-center py-3 px-4 font-medium">
+                    Free Trial
+                  </th>
+                  <th className="text-center py-3 px-4 font-medium">
+                    Professional
+                  </th>
+                  <th className="text-center py-3 px-4 font-medium">
+                    Business
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {featureComparisonData.map((row, index) => (
-                  <tr key={index} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                  <tr
+                    key={index}
+                    className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                  >
                     <td className="py-3 px-4 font-medium">{row.feature}</td>
                     <td className="py-3 px-4 text-center">
-                      {row.free === '-' ? (
+                      {row.free === "-" ? (
                         <span className="text-gray-400">—</span>
-                      ) : row.free === 'Yes' ? (
+                      ) : row.free === "Yes" ? (
                         <Check className="w-4 h-4 text-green-500 mx-auto" />
                       ) : (
-                        <span className="text-sm text-gray-600 dark:text-gray-400">{row.free}</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          {row.free}
+                        </span>
                       )}
                     </td>
                     <td className="py-3 px-4 text-center">
-                      {row.pro === '-' ? (
+                      {row.pro === "-" ? (
                         <span className="text-gray-400">—</span>
-                      ) : row.pro === 'Yes' ? (
+                      ) : row.pro === "Yes" ? (
                         <Check className="w-4 h-4 text-green-500 mx-auto" />
                       ) : (
-                        <span className="text-sm text-gray-600 dark:text-gray-400">{row.pro}</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          {row.pro}
+                        </span>
                       )}
                     </td>
                     <td className="py-3 px-4 text-center">
-                      {row.business === '-' ? (
+                      {row.business === "-" ? (
                         <span className="text-gray-400">—</span>
-                      ) : row.business === 'Yes' ? (
+                      ) : row.business === "Yes" ? (
                         <Check className="w-4 h-4 text-green-500 mx-auto" />
                       ) : (
-                        <span className="text-sm text-gray-600 dark:text-gray-400">{row.business}</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          {row.business}
+                        </span>
                       )}
                     </td>
                   </tr>

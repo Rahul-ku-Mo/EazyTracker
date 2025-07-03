@@ -197,8 +197,8 @@ const Onboarding = () => {
             </h1>
             <p className="text-muted-foreground">
               {isAdmin
-                ? "As an admin, you can create your own workspace to get started"
-                : "Create a new workspace or join an existing team"}
+                ? "As an admin, you can create your own team to get started"
+                : "Create a new team or join an existing team"}
             </p>
           </div>
 
@@ -206,11 +206,11 @@ const Onboarding = () => {
             <CardHeader className="space-y-1 pb-6">
               <CardTitle className="text-xl font-semibold flex items-center gap-2 text-foreground">
                 <Building className="h-5 w-5 text-primary" />
-                {isAdmin ? "Create Your Workspace" : "Join or Create Workspace"}
+                {isAdmin ? "Create Your Team" : "Join or Create Team"}
               </CardTitle>
               <CardDescription>
                 {isAdmin
-                  ? "Set up your team workspace to start collaborating"
+                  ? "Set up your team to start collaborating"
                   : "Choose how you'd like to get started with PulseBoard"}
               </CardDescription>
             </CardHeader>
@@ -229,14 +229,14 @@ const Onboarding = () => {
                       className="text-sm font-medium text-foreground flex items-center gap-2"
                     >
                       <Users className="h-3 w-3 text-muted-foreground" />
-                      Workspace Name
+                      Team Name
                     </Label>
                     <Input
                       id="team-name"
                       value={teamName}
                       onChange={(e) => setTeamName(e.target.value)}
                       disabled={isLoading}
-                      placeholder="Enter your workspace name"
+                      placeholder="Enter your team name"
                       className={clsx(
                         "transition-all duration-200",
                         "border-input bg-background text-foreground",
@@ -320,14 +320,14 @@ const Onboarding = () => {
                         className="text-sm font-medium text-foreground flex items-center gap-2"
                       >
                         <Users className="h-3 w-3 text-muted-foreground" />
-                        Workspace Name
+                        Team Name
                       </Label>
                       <Input
                         id="create-team-name"
                         value={teamName}
                         onChange={(e) => setTeamName(e.target.value)}
                         disabled={isLoading}
-                        placeholder="Enter your workspace name"
+                        placeholder="Enter your team name"
                         className={clsx(
                           "transition-all duration-200",
                           "border-input bg-background text-foreground",
@@ -378,14 +378,14 @@ const Onboarding = () => {
                   {isLoading ? (
                     <div className="flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      {isAdmin || activeTab === "create" ? "Creating workspace..." : "Joining team..."}
+                      {isAdmin || activeTab === "create" ? "Creating team..." : "Joining team..."}
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
                       {isAdmin || activeTab === "create" ? (
                         <>
                           <Plus className="h-4 w-4" />
-                          Create Workspace
+                          Create Team
                         </>
                       ) : (
                         <>

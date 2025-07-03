@@ -28,10 +28,11 @@ const DeleteDialog = ({
     <Dialog open={isOpen} onOpenChange={closeModal}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete Column</DialogTitle>
+          <DialogTitle className="font-bold">Delete {title}</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete "{title}"? This action cannot be
-            undone.
+              Are you sure you want to delete <strong>{title}</strong>?
+
+             
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

@@ -7,6 +7,10 @@ module.exports = {
 	  ],
   theme: {
   	extend: {
+  		fontFamily: {
+  			sans: ['Geist Variable', 'system-ui', 'sans-serif'],
+  			mono: ['Geist Mono Variable', 'monospace'],
+  		},
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',

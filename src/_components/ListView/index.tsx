@@ -6,7 +6,7 @@ import {
   TagIcon, 
   DatabaseZap, 
   Library, 
-  Flag, 
+ 
   User
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -33,6 +33,9 @@ import { updateCardColumn, updateCardOrder } from '@/apis/CardApis';
 import Cookies from 'js-cookie';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { HighPriority, MediumPriority, Priority } from '../shared/svg/Priority';
+import { useTheme } from '@/context/ThemeProvider';
+import { LowPriority, UrgentPriority } from '../shared/svg/Priority';
 
 interface CardItem {
   id: number;
@@ -96,7 +99,7 @@ const ListView = ({
   const { updateCardMutation } = useCardMutation();
   const queryClient = useQueryClient();
   const accessToken = Cookies.get("accessToken") as string;
-
+  const { theme } = useTheme();
   // Drag and drop mutation for updating card column/order
   const moveCardMutation = useMutation({
     mutationFn: async ({ cardId, columnId, order }: { cardId: number; columnId: number; order: number }) => {
@@ -269,7 +272,7 @@ const ListView = ({
     <>
       <DragDropContext onDragEnd={handleDragEnd}>
         <motion.div 
-          className="flex flex-1 flex-col"
+          className="flex flex-1 flex-col pt-4"
           initial="hidden"
           animate="visible"
           variants={listVariants}
@@ -334,7 +337,7 @@ const ListView = ({
                                 {/* Title - Clickable area for opening card */}
                                 <DatabaseZap className="size-4 text-zinc-500 dark:text-zinc-400" />
 
-                                <span className="text-sm text-zinc-500 dark:text-zinc-200 font-bold font-gt-walsheim">
+                                <span className="text-sm text-zinc-500 dark:text-zinc-200 font-bold geist-font">
                                     {`${columnTitle.substring(0, 2).toUpperCase()} - ${item.id}`}
                                 </span>
 
@@ -351,12 +354,12 @@ const ListView = ({
                                     >
                                       {item.priority && (item.priority === 'urgent' || item.priority === 'high') ? (
                                         <Badge className={`text-xs px-1.5 py-0.5 cursor-pointer ${priorityConfig[item.priority]?.color}`}>
-                                          <Flag className="h-3 w-3 mr-1" />
+                                          <Priority className="size-3 mr-1" isDark={theme === "dark"} />
                                           {priorityConfig[item.priority]?.label}
                                         </Badge>
                                       ) : (
                                         <div className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer">
-                                          <Flag className="h-3 w-3" />
+                                          <Priority className="size-3" isDark={theme === "dark"} />
                                           <span>Priority</span>
                                         </div>
                                       )}
@@ -367,39 +370,49 @@ const ListView = ({
                                     className="w-32"
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    <DropdownMenuItem onClick={(e) => {
+                                    <DropdownMenuItem
+                                    className="gap-2 text-xs"
+                                    onClick={(e) => {
                                       e.stopPropagation();
                                       updatePriority(item.id, "urgent");
                                     }}>
-                                      <Flag className="w-3 h-3 text-red-500 mr-2" />
+                                      <UrgentPriority className="size-3" isDark={theme === "dark"} />
                                       Urgent
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={(e) => {
+                                    <DropdownMenuItem
+                                    className="gap-2 text-xs"
+                                    onClick={(e) => {
                                       e.stopPropagation();
                                       updatePriority(item.id, "high");
                                     }}>
-                                      <Flag className="w-3 h-3 text-amber-500 mr-2" />
+                                      <HighPriority className="size-3" isDark={theme === "dark"} />
                                       High
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={(e) => {
+                                    <DropdownMenuItem
+                                    className="gap-2 text-xs"
+                                    onClick={(e) => {
                                       e.stopPropagation();
                                       updatePriority(item.id, "medium");
                                     }}>
-                                      <Flag className="w-3 h-3 text-blue-500 mr-2" />
+                                      <MediumPriority className="size-3" isDark={theme === "dark"} />
                                       Medium
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={(e) => {
+                                    <DropdownMenuItem
+                                    className="gap-2 text-xs"
+                                    onClick={(e) => {
                                       e.stopPropagation();
                                       updatePriority(item.id, "low");
                                     }}>
-                                      <Flag className="w-3 h-3 text-green-500 mr-2" />
+                                      <LowPriority className="size-3" isDark={theme === "dark"} />
                                       Low
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={(e) => {
+                                    <DropdownMenuItem
+                                    className="gap-2 text-xs"
+                                    onClick={(e) => {
                                       e.stopPropagation();
                                       updatePriority(item.id, "");
                                     }}>
-                                      <Flag className="w-3 h-3 mr-2" />
+                                      <Priority className="size-3" isDark={theme === "dark"} />
                                       No priority
                                     </DropdownMenuItem>
                                   </DropdownMenuContent>
@@ -424,6 +437,7 @@ const ListView = ({
                                     {members?.map((member: TUser) => (
                                       <DropdownMenuItem
                                         key={member.id}
+                                        className="gap-2 text-xs"
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           updateAssignee(item.id, member.id);
@@ -493,7 +507,7 @@ const ListView = ({
                                       className="flex items-center gap-1 hover:bg-muted rounded px-2 py-1 transition-colors cursor-pointer"
                                       onClick={(e) => e.stopPropagation()}
                                     >
-                                      <CalendarIcon className="h-3 w-3 text-zinc-500 dark:text-zinc-400" />
+                                      <CalendarIcon className="size-3 text-zinc-500 dark:text-zinc-400" />
                                       {item.dueDate ? (
                                         <span className="text-xs text-zinc-500 dark:text-zinc-400">
                                           {formatDistanceToNow(new Date(item.dueDate), { addSuffix: true })}
