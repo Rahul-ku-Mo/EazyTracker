@@ -49,9 +49,9 @@ export function NavUser({
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { setIsLoggedIn, role } = useContext(AuthContext);
-  
+
   // Check if user is admin
-  const isAdmin = role === 'ADMIN';
+  const isAdmin = role === "ADMIN";
 
   const handleLogout = (): void => {
     Cookies.remove("accessToken");
@@ -161,7 +161,7 @@ ${user?.username}`);
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="w-8 h-8 rounded-lg">
-                <AvatarImage src={user?.imageUrl || ""} alt={user?.username} />
+                <AvatarImage src={user?.imageUrl || ""} alt={user?.username} className="object-cover bg-top" />
                 <AvatarFallback className="rounded-lg">
                   {user?.username.charAt(0)}
                 </AvatarFallback>
