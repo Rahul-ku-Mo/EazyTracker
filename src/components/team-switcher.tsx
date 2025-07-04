@@ -6,7 +6,6 @@ import {
   EllipsisVerticalIcon,
   X,
   ZoomIn,
-  Download,
   Settings2,
 } from "lucide-react";
 import Cookies from "js-cookie";
@@ -14,7 +13,6 @@ import Cookies from "js-cookie";
 import {
   Dialog,
   DialogContent,
-  DialogOverlay,
   DialogTrigger,
 } from "../components/ui/dialog";
 import {
