@@ -13,7 +13,7 @@ type S3ResponseT = {
 }
 
 // Helper function to upload image to S3 using pre-signed URL
-async function uploadImageToS3(file: File): Promise<string> {
+export async function uploadImageToS3(file: File): Promise<string> {
   try {
     // Generate a unique filename with extension
     const fileName = `image-${Date.now()}.${file.type.split('/')[1] || 'png'}`;

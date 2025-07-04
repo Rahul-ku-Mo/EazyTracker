@@ -17,7 +17,8 @@ import {
   CheckSquare,
   Square,
   Link,
-  UserMinus
+  UserMinus,
+  SquareKanban
 } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -742,10 +743,7 @@ const TeamManagement: React.FC = () => {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
-                        <div 
-                          className="w-4 h-4 rounded-full" 
-                          style={{ backgroundColor: board.colorValue }} 
-                        />
+                        <SquareKanban className="w-4 h-4" style={{ color: board.colorValue }} />
                         {board.title}
                       </CardTitle>
                       
@@ -753,8 +751,8 @@ const TeamManagement: React.FC = () => {
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="outline">
-                            <UserPlus className="w-4 h-4 mr-2" />
-                            Add Users
+                            <UserPlus className="w-4 h-4" />
+                            New User
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-md">

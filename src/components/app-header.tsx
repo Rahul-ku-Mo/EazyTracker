@@ -10,7 +10,6 @@ import { Separator } from "@/components/ui/separator";
 import { useLocation } from "react-router-dom";
 import { ModeToggle } from "./mode-toggle";
 import { NotificationCenter } from "../_components/NotificationCenter";
-import { OnlineStatus } from "../_components/OnlineStatus";
 import { ReactNode } from "react";
 
 interface AppHeaderProps {
@@ -41,12 +40,11 @@ const AppHeader = ({ children }: AppHeaderProps) => {
         </Breadcrumb>
       </div>
       
-      <div className="flex items-center gap-3 pr-2">
+      <div className="flex items-center pr-2">
         {/* Custom children elements (like settings button) */}
       
         
         {/* Default header elements */}
-        <OnlineStatus />
         <NotificationCenter />
         <ModeToggle />
         {children}
