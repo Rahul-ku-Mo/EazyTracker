@@ -20,7 +20,7 @@ import {
 } from "../../../components/ui/command";
 import {
   Users,
-  Tags,
+  Tag,
   ChevronDown,
   Check,
   X,
@@ -302,7 +302,7 @@ const NewCardActions = ({
               "focus-visible:opacity-100"
             )}
           >
-            <Tags className="w-3 h-3 mr-1" />
+            <Tag className="w-3 h-3 mr-1 -rotate-45" />
             <span className="text-xs">
               Labels{labels.length > 0 && ` (${labels.length})`}
             </span>

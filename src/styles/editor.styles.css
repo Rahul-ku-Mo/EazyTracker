@@ -121,8 +121,6 @@
 .editor-list-item-checked,
 .editor-list-item-unchecked {
   position: relative;
-  padding-left: 2rem;
-  margin: 0.5rem 0;
   list-style: none !important;
   list-style-type: none !important;
   list-style-image: none !important;
@@ -163,7 +161,7 @@
   content: "" !important;
   position: absolute !important;
   left: 0 !important;
-  top: 0.125rem !important;
+  top: 5px !important;
   width: 1rem !important;
   height: 1rem !important;
   border: 1.5px solid #10b981 !important;
@@ -186,21 +184,18 @@
 }
 
 .editor-list-item-checked::after {
-  content: "✓";
+  content: "";
+  cursor: pointer;
+  border-color: #fcfcfc;
+  border-style: solid;
   position: absolute;
-  left: 0.125rem;
-  top: 0.225rem;
-  width: 0.75rem;
-  height: 0.75rem;
-  color: white;
-  font-size: 0.75rem;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  user-select: none;
-  line-height: 1;
+  display: block;
+  top: 50%;
+  width: .25em;
+  left: .40em;
+  height: .5em;
+  transform: translateY(-50%) rotate(45deg);
+  border-width: 0 .1em .1em 0;
 }
 
 /* FIXED: Checkbox styling - UNCHECKED - Allow checkboxes at any nesting level */
@@ -208,7 +203,7 @@
   content: "" !important;
   position: absolute !important;
   left: 0 !important;
-  top: 0.125rem !important;
+  top: 5px !important;
   width: 1rem !important;
   height: 1rem !important;
   border: 1.5px solid #d1d5db !important;
@@ -253,7 +248,7 @@
 /* Ensure nested checkbox items maintain proper spacing */
 .editor-nested-list .editor-list-item-checked,
 .editor-nested-list .editor-list-item-unchecked {
-  padding-left: 2rem;
+  padding-left: 1.45rem !important;
   margin: 0.5rem 0;
 }
 

@@ -105,8 +105,8 @@ const CardDescription = ({
       <div
         dangerouslySetInnerHTML={{ __html: description }}
         className={cn(
-          "dark:text-muted-foreground w-full max-h-[153px] indent-6",
-          "text-pretty",
+          "dark:text-muted-foreground w-full max-h-[153px] first-line:indent-6",
+         
           "truncate",
           "grow basis-full",
           "px-2 py-2",
@@ -414,7 +414,6 @@ const CardFooter = ({
                   ))}
                   {labels.length > 1 && (
                     <div
-                   
                       className="text-[9px] px-1 rounded-[2px] h-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-300 border-zinc-300 dark:border-zinc-600 shrink-0"
                     >
                       +{labels.length - 1}
@@ -422,8 +421,8 @@ const CardFooter = ({
                   )}
                 </div>
               ) : (
-                <div className="flex items-center gap-1 cursor-pointer dark:text-[#c3c3c3] text-[#3a3a3a]">
-                  <Tag className="size-4" strokeWidth={2} />
+                <div className="flex items-center gap-1 cursor-pointer dark:text-[#c3c3c3] text-[#3a3a3a] py-0.5">
+                  <Tag className="size-3 -rotate-45" strokeWidth={2} />
                 </div>
               )}
             </div>
