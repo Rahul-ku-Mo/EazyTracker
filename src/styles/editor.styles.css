@@ -141,6 +141,7 @@
   color: #6b7280;
   text-decoration: line-through;
   text-decoration-color: #6b7280;
+  padding-left: 1.5rem;
 }
 
 .dark .editor-list-item-checked {
@@ -150,6 +151,7 @@
 
 .editor-list-item-unchecked {
   color: #374151;
+  padding-left: 1.5rem;
 }
 
 .dark .editor-list-item-unchecked {
@@ -183,21 +185,35 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
-.editor-list-item-checked::after {
+.editor-list-item-checked::before {
+  /* Your existing checkbox styles */
   content: "";
-  cursor: pointer;
-  border-color: #fcfcfc;
-  border-style: solid;
   position: absolute;
-  display: block;
-  top: 50%;
-  width: .25em;
-  left: .40em;
-  height: .5em;
-  transform: translateY(-50%) rotate(45deg);
-  border-width: 0 .1em .1em 0;
+  left: 0;
+  top: 5px;
+  width: 1rem;
+  height: 1rem;
+  border: 1.5px solid #10b981;
+  background-color: #10b981;
+  border-radius: 2px;
+  cursor: pointer;
+  
+  /* Add flexbox centering */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Put the SVG directly in the background */
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><polygon points="5.5 11.9993304 14 3.49933039 12.5 2 5.5 8.99933039 1.5 4.9968652 0 6.49933039" fill="white"/></svg>');
+  background-repeat: no-repeat;
+  background-size: 60%; /* Scale the checkmark to 60% of checkbox size */
+  background-position: center;
 }
 
+/* Remove the ::after pseudo-element entirely */
+.editor-list-item-checked::after {
+  display: none;
+}
 /* FIXED: Checkbox styling - UNCHECKED - Allow checkboxes at any nesting level */
 .editor-list-item-unchecked::before {
   content: "" !important;

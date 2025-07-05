@@ -75,7 +75,7 @@ const CardTitle = ({
 }) => (
   <div
     className={cn(
-      "text-base font-bold truncate line-clamp-1 text-foreground editor-readable-font absolute bottom-10 left-2 z-20 max-w-[calc(100%-2rem)]",
+      "text-base opacity-0 group-hover:opacity-100 transition-all duration-300 font-bold truncate line-clamp-1 text-foreground editor-readable-font absolute bottom-10 left-2 z-30 max-w-[calc(100%-2rem)] pb-1",
       isCompleted && "line-through text-zinc-500 dark:text-zinc-400"
     )}
   >
@@ -100,21 +100,23 @@ const CardDescription = ({
   }
 
   return (
-    <div className="relative flex-1">
-      <div className="absolute inset-0 bg-gradient-to-b from-zinc-100/50 to-white dark:bg-gradient-to-b dark:from-zinc-800/10 dark:to-zinc-900" />
+    <div className="relative flex-1 overflow-hidden">
+      {/* Content container */}
       <div
         dangerouslySetInnerHTML={{ __html: description }}
         className={cn(
-          "dark:text-muted-foreground w-full max-h-[153px] first-line:indent-6",
-         
-          "truncate",
-          "grow basis-full",
+          "relative z-10 dark:text-muted-foreground w-full max-h-[153px]",
           "px-2 py-2",
           "card-editor-view",
           "editor-readable-font text-xs",
+          "overflow-hidden",
+          "line-clamp-6",
           isCompleted && "line-through text-zinc-500 dark:text-zinc-400"
         )}
       />
+      
+      {/* Gradient overlay - positioned after content to ensure it's on top */}
+      <div className="absolute top-0 bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-zinc-900 from-10% dark:to-transparent pointer-events-none z-20" />
     </div>
   );
 };
@@ -145,6 +147,7 @@ const CardFooter = ({
   cardId,
   dateFormat = "readable",
   members,
+  onToggleCompletion,
 }: {
   dueDate?: Date;
   attachmentsCount?: number;
@@ -166,7 +169,8 @@ const CardFooter = ({
   };
   cardId: number;
   dateFormat?: "readable" | "calendar";
-  members?: any[]; // Add members prop
+  members?: any[];
+  onToggleCompletion?: () => void;
 }) => {
   const { updateCardMutation } = useCardMutation();
 
@@ -225,9 +229,43 @@ const CardFooter = ({
   const statusInfo = getStatusInfo();
   const { theme } = useTheme();
 
+  const handleCompletionClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleCompletion?.();
+  };
+
   return (
     <div className="flex items-center justify-between h-10 gap-3 p-2 border-t rounded-b-lg border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900">
-      <div className="flex items-center gap-2 text-xs">
+      <div className="flex items-center text-xs">
+        {/* Completion checkbox - moved from absolute position */}
+        <div
+          className="flex items-center gap-1 px-1 py-0.5 transition-colors cursor-pointer"
+          onClick={handleCompletionClick}
+        >
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className={cn(
+                  "size-4 rounded-sm border-2 flex items-center justify-center transition-all duration-200",
+                  "hover:scale-110 active:scale-95",
+                  status?.isCompleted
+                    ? "bg-green-500 border-green-500 text-white"
+                    : "border-zinc-300 dark:border-zinc-600 hover:border-green-500 dark:hover:border-green-400"
+                )}
+              >
+                {status?.isCompleted && (
+                  <CheckCircle2 className="w-3 h-3" strokeWidth={2.5} />
+                )}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="rounded-sm bg-[#606060] dark:bg-black text-white dark:text-white">
+              <p className="text-xs">
+                {status?.isCompleted ? "Mark incomplete" : "Mark complete"}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
         {/* Status indicator */}
         {statusInfo && (
           <div
@@ -505,10 +543,10 @@ const CardFooter = ({
                   {assignees.slice(0, 3).map((assignee, index) => (
                     <Avatar
                       key={assignee.id}
-                      className="w-4 h-4 border border-white dark:border-zinc-800 relative"
+                      className="w-4 h-4 border border-white dark:border-zinc-800 relative "
                       style={{ zIndex: assignees.length - index }}
                     >
-                      <AvatarImage src={assignee.imageUrl} />
+                      <AvatarImage src={assignee.imageUrl} className="object-cover object-top" />
                       <AvatarFallback className="text-[8px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
                         {(assignee.name || assignee.username || assignee.email)
                           ?.slice(0, 2)
@@ -641,11 +679,6 @@ const Card = ({ columnName, viewOptions, members }: CardProps) => {
     }
   };
 
-  const handleCompletionClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    handleToggleCompletion();
-  };
-
   const handleEllipsisClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation(); // IMPORTANT: Prevent the card's main onClick (openModal)
 
@@ -752,24 +785,6 @@ const Card = ({ columnName, viewOptions, members }: CardProps) => {
               "border-red-200 dark:border-red-800/50 hover:border-red-300 dark:hover:border-red-700"
           )}
         >
-          {/* Completion checkbox - Linear style */}
-          <div className="absolute top-2.5 left-3 z-20 cursor-pointer ">
-            <button
-              onClick={handleCompletionClick}
-              className={cn(
-                "size-4 rounded-full border-2 flex items-center justify-center transition-all duration-200",
-                "hover:scale-110 active:scale-95 ",
-                status.isCompleted
-                  ? "bg-green-500 border-green-500 text-white"
-                  : "border-zinc-300 dark:border-zinc-600 hover:border-green-500 dark:hover:border-green-400"
-              )}
-            >
-              {status.isCompleted && (
-                <CheckCircle2 className="w-3 h-3" strokeWidth={2.5} />
-              )}
-            </button>
-          </div>
-
           <CardTitle
             title={title}
             isCompleted={status.isCompleted}
@@ -809,6 +824,7 @@ const Card = ({ columnName, viewOptions, members }: CardProps) => {
             cardId={id}
             dateFormat={viewOptions?.dateFormat || "readable"}
             members={members}
+            onToggleCompletion={handleToggleCompletion}
           />
           <div
             className="absolute top-2 right-2 bg-zinc-100 dark:bg-zinc-900/50 rounded-lg p-1.5 opacity-0 group-hover:opacity-100 transition-all ease-linear cursor-pointer"
