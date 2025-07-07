@@ -4,7 +4,7 @@ import axios from "axios";
 interface Column {
   id: string;
   title: string;
-  boardId: string;
+  workspaceId: string;
   order?: number;
   createdAt?: string;
   updatedAt?: string;
@@ -15,11 +15,11 @@ interface Column {
 export const createColumn = async (
   accessToken: string, 
   title: string, 
-  boardId: string
+  workspaceId: string
 ): Promise<Column | undefined> => {
   try {
     const response = await axios.post(
-      `${import.meta.env.VITE_API_URL}/columns?boardId=${boardId}`,
+      `${import.meta.env.VITE_API_URL}/columns?workspaceId=${workspaceId}`,
       {
         title: title,
       },
@@ -44,11 +44,11 @@ export const createColumn = async (
 
 export const fetchColumns = async (
   accessToken: string, 
-  boardId: string
+  workspaceId: string
 ): Promise<Column[] | undefined> => {
   try {
     const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/columns?boardId=${boardId}`,
+      `${import.meta.env.VITE_API_URL}/columns?workspaceId=${workspaceId}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

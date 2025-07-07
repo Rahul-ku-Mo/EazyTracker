@@ -1,6 +1,6 @@
 import { Check, Palette } from "lucide-react";
 import clsx from "clsx";
-import useBoardForm from "@/hooks/useBoardForm";
+import useWorkspaceForm from "@/hooks/useWorkspaceForm";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -8,40 +8,40 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Macintosh-inspired colors with better contrast
 const macColors = [
-  { id: "board-blue", color: "#3B82F6", name: "Ocean Blue", lightColor: "#60A5FA" },
-  { id: "board-emerald", color: "#10B981", name: "Emerald", lightColor: "#34D399" },
-  { id: "board-purple", color: "#8B5CF6", name: "Royal Purple", lightColor: "#A78BFA" },
-  { id: "board-pink", color: "#EC4899", name: "Rose Pink", lightColor: "#F472B6" },
-  { id: "board-orange", color: "#F59E0B", name: "Sunset Orange", lightColor: "#FBBF24" },
-  { id: "board-red", color: "#EF4444", name: "Cherry Red", lightColor: "#F87171" },
-  { id: "board-teal", color: "#14B8A6", name: "Teal", lightColor: "#2DD4BF" },
-  { id: "board-indigo", color: "#6366F1", name: "Indigo", lightColor: "#818CF8" },
-  { id: "board-slate", color: "#64748B", name: "Slate Gray", lightColor: "#94A3B8" },
+  { id: "workspace-blue", color: "#3B82F6", name: "Ocean Blue", lightColor: "#60A5FA" },
+  { id: "workspace-emerald", color: "#10B981", name: "Emerald", lightColor: "#34D399" },
+  { id: "workspace-purple", color: "#8B5CF6", name: "Royal Purple", lightColor: "#A78BFA" },
+  { id: "workspace-pink", color: "#EC4899", name: "Rose Pink", lightColor: "#F472B6" },
+  { id: "workspace-orange", color: "#F59E0B", name: "Sunset Orange", lightColor: "#FBBF24" },
+  { id: "workspace-red", color: "#EF4444", name: "Cherry Red", lightColor: "#F87171" },
+  { id: "workspace-teal", color: "#14B8A6", name: "Teal", lightColor: "#2DD4BF" },
+  { id: "workspace-indigo", color: "#6366F1", name: "Indigo", lightColor: "#818CF8" },
+  { id: "workspace-slate", color: "#64748B", name: "Slate Gray", lightColor: "#94A3B8" },
 ];
 
-interface BoardFormProps {
+interface WorkspaceFormProps {
   count: number;
 }
 
-const BoardForm = ({ count }: BoardFormProps) => {
+const WorkspaceForm = ({ count }: WorkspaceFormProps) => {
   const {
     isPending,
     selectedImageId,
-    setCurrentBoardInput,
-    currentBoardInput,
+    setCurrentWorkspaceInput,
+    currentWorkspaceInput,
     setSelectedImageId,
     handleSubmit,
-  } = useBoardForm(count);
+  } = useWorkspaceForm(count);
 
   return (
     <Card className="w-full max-w-md mx-auto border-border/50 shadow-lg">
       <CardHeader className="space-y-1 pb-4">
         <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
           <Palette className="h-5 w-5 text-primary" />
-          Create New Board
+          Create New Workspace
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Choose a color theme and give your board a name
+          Choose a color theme and give your workspace a name
         </p>
       </CardHeader>
       
@@ -110,22 +110,22 @@ const BoardForm = ({ count }: BoardFormProps) => {
             </div>
           </div>
 
-          {/* Board Title Section */}
+          {/* Workspace Title Section */}
           <div className="space-y-3">
             <Label 
-              htmlFor="board-title" 
+              htmlFor="workspace-title" 
               className="text-sm font-medium text-foreground flex items-center gap-2"
             >
               <div className="w-2 h-2 rounded-full bg-primary"></div>
-              Board Title
+              Workspace Title
             </Label>
             
             <Input
-              id="board-title"
+              id="workspace-title"
               name="title"
-              placeholder="Enter board name..."
-              value={currentBoardInput}
-              onChange={(e) => setCurrentBoardInput(e.target.value)}
+              placeholder="Enter workspace name..."
+              value={currentWorkspaceInput}
+              onChange={(e) => setCurrentWorkspaceInput(e.target.value)}
               className={clsx(
                 "transition-all duration-200",
                 "border-input bg-background text-foreground",
@@ -140,15 +140,15 @@ const BoardForm = ({ count }: BoardFormProps) => {
             
             {/* Character counter */}
             <div className="flex justify-between items-center text-xs text-muted-foreground">
-              <span>Choose a descriptive name for your board</span>
-              <span>{currentBoardInput.length}/50</span>
+              <span>Choose a descriptive name for your workspace</span>
+              <span>{currentWorkspaceInput.length}/50</span>
             </div>
           </div>
 
           {/* Submit Button */}
           <Button
             type="submit"
-            disabled={isPending || (!selectedImageId && !currentBoardInput.trim())}
+            disabled={isPending || (!selectedImageId && !currentWorkspaceInput.trim())}
             className={clsx(
               "w-full h-11 font-medium transition-all duration-200",
               "bg-primary hover:bg-primary/90 text-primary-foreground",
@@ -159,17 +159,17 @@ const BoardForm = ({ count }: BoardFormProps) => {
             {isPending ? (
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                Creating Board...
+                Creating Workspace...
               </div>
             ) : (
-              "Create Board"
+              "Create Workspace"
             )}
           </Button>
           
           {/* Validation message */}
-          {!selectedImageId && !currentBoardInput.trim() && (
+          {!selectedImageId && !currentWorkspaceInput.trim() && (
             <p className="text-xs text-muted-foreground text-center">
-              Please select a color and enter a board title
+              Please select a color and enter a workspace title
             </p>
           )}
         </form>
@@ -178,4 +178,4 @@ const BoardForm = ({ count }: BoardFormProps) => {
   );
 };
 
-export default BoardForm;
+export default WorkspaceForm; 

@@ -10,11 +10,7 @@ import {
 } from "lucide-react";
 import Cookies from "js-cookie";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "../components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "../components/ui/dialog";
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -151,11 +147,17 @@ export function TeamSwitcher({ teams }: { teams: Team | Team[] }) {
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
                 <div className="flex items-center justify-center rounded-lg aspect-square size-8 bg-sidebar-primary text-sidebar-primary-foreground">
-                  <img
-                    src={teamPhoto}
-                    alt="Team photo"
-                    className="size-full object-cover rounded-lg"
-                  />
+                  {teamPhoto ? (
+                    <img
+                      src={teamPhoto}
+                      alt="Team photo"
+                      className="size-full object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="size-full text-white bg-emerald-600 text-lg font-bold rounded-md flex items-center justify-center">
+                      {activeTeam?.name?.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                 </div>
                 <div className="grid flex-1 text-sm leading-tight text-left">
                   <span className="font-semibold truncate">
@@ -312,8 +314,10 @@ export function TeamSwitcher({ teams }: { teams: Team | Team[] }) {
         </SidebarMenuItem>
       </SidebarMenu>
       <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
-       
-        <DialogContent isOverlayRequired={false} className="max-w-4xl max-h-[90vh] p-0 border-none bg-transparent shadow-none overflow-hidden bg-white">
+        <DialogContent
+          isOverlayRequired={false}
+          className="max-w-4xl max-h-[90vh] p-0 border-none bg-transparent shadow-none overflow-hidden bg-white"
+        >
           <div className="relative flex items-center justify-center min-h-[400px]">
             {/* Close button */}
             <Button
@@ -346,7 +350,12 @@ export function TeamSwitcher({ teams }: { teams: Team | Team[] }) {
               </div>
               <div className="flex gap-2">
                 <Button variant="default" size="sm" className="relative">
-                  <input type="file" accept="image/*" className="opacity-0 size-5 absolute inset-0 w-full h-full appearance-none cursor-pointer" onChange={handleTeamPhotoUpload} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="opacity-0 size-5 absolute inset-0 w-full h-full appearance-none cursor-pointer"
+                    onChange={handleTeamPhotoUpload}
+                  />
                   <Settings2 className="size-4" />
                   <span className="text-xs font-semibold">Change Photo</span>
                 </Button>

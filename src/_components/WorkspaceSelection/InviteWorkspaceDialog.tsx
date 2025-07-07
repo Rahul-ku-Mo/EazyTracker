@@ -12,13 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-interface InviteBoardDialogProps {
+interface InviteWorkspaceDialogProps {
   isOpen: boolean;
   onClose: () => void;
   id: string;
 }
 
-const InviteBoardDialog = ({ isOpen, onClose, id }: InviteBoardDialogProps) => {
+const InviteWorkspaceDialog = ({ isOpen, onClose, id }: InviteWorkspaceDialogProps) => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -39,7 +39,7 @@ const InviteBoardDialog = ({ isOpen, onClose, id }: InviteBoardDialogProps) => {
       // Replace this with your actual API call
 
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/boards/${id}/members`,
+        `${import.meta.env.VITE_API_URL}/workspaces/${id}/members`,
         {
           email,
         },
@@ -72,9 +72,9 @@ const InviteBoardDialog = ({ isOpen, onClose, id }: InviteBoardDialogProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Invite to Board</DialogTitle>
+          <DialogTitle>Invite to Workspace</DialogTitle>
           <DialogDescription>
-            Enter an email address to invite someone to the board
+            Enter an email address to invite someone to the workspace
           </DialogDescription>
         </DialogHeader>
         <div className="flex items-center space-x-2">
@@ -96,4 +96,4 @@ const InviteBoardDialog = ({ isOpen, onClose, id }: InviteBoardDialogProps) => {
   );
 };
 
-export default InviteBoardDialog;
+export default InviteWorkspaceDialog; 

@@ -45,9 +45,9 @@ export const useFeatureGating = () => {
     
     if (feature === 'projects') {
       if (currentPlan === 'pro') {
-        return `You've reached your project limit. Upgrade to Enterprise for unlimited projects and advanced features.`;
+        return `You've reached your workspace limit. Upgrade to Enterprise for unlimited workspaces and advanced features.`;
       }
-      return `You've reached your project limit. Upgrade to Professional for unlimited projects.`;
+      return `You've reached your workspace limit. Upgrade to Professional for unlimited workspaces.`;
     }
     
     if (feature === 'members') {

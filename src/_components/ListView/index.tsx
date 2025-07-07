@@ -1,41 +1,53 @@
-import { motion } from 'framer-motion';
-import { Badge } from '@/components/ui/badge';
-import { 
-  CalendarIcon, 
-  ArrowRightIcon, 
-  TagIcon, 
-  DatabaseZap, 
-  Library, 
- 
-  User
-} from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
+import {
+  CalendarIcon,
+  TagIcon,
+  DatabaseZap,
+  Library,
+  User,
+} from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { useState } from 'react';
-import ListViewContextMenu from './ListViewContextMenu';
+import { useState } from "react";
+import ListViewContextMenu from "./ListViewContextMenu";
 
-import CardModal from './CardModal';
-import { useCardMutation } from '../Card/_mutations/useCardMutations';
-import { useMembers } from '@/hooks/useMembers';
-import { useParams } from 'react-router-dom';
+import CardModal from "./CardModal";
+import { useCardMutation } from "../Card/_mutations/useCardMutations";
+import { useMembers } from "@/hooks/useMembers";
+import { useParams } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TUser } from '@/types';
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { updateCardColumn, updateCardOrder } from '@/apis/CardApis';
-import Cookies from 'js-cookie';
-import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
-import { HighPriority, MediumPriority, Priority } from '../shared/svg/Priority';
-import { useTheme } from '@/context/ThemeProvider';
-import { LowPriority, UrgentPriority } from '../shared/svg/Priority';
+import { TUser } from "@/types";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "react-beautiful-dnd";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateCardColumn, updateCardOrder } from "@/apis/CardApis";
+import Cookies from "js-cookie";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { useTheme } from "@/context/ThemeProvider";
+import {
+  LowPriority,
+  UrgentPriority,
+  HighPriority,
+  MediumPriority,
+  Priority,
+} from "../shared/svg/Priority";
 
 interface CardItem {
   id: number;
@@ -45,7 +57,7 @@ interface CardItem {
   columnId: number;
   labels: string[];
   attachments: any[];
-  priority: 'low' | 'medium' | 'high' | 'urgent' | null;
+  priority: "low" | "medium" | "high" | "urgent" | null;
   createdAt: string;
   dueDate: string | null;
   updatedAt: string;
@@ -65,32 +77,37 @@ interface ListViewProps {
   onScheduleItem?: (itemId: number) => void;
 }
 
-// Priority color mapping
-const priorityConfig = {
-  'low': { label: 'Low', color: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400' },
-  'medium': { label: 'Medium', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' },
-  'high': { label: 'High', color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' }, 
-  'urgent': { label: 'Urgent', color: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' },
-};
-
 const listVariants = {
   hidden: { opacity: 0 },
-  visible: { 
+  visible: {
     opacity: 1,
-    transition: { 
-      staggerChildren: 0.05
-    }
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const getPriorityIcon = (priority: string, theme: string) => {
+  switch (priority) {
+    case "urgent":
+      return <UrgentPriority className="size-3" isDark={theme === "dark"} />;
+    case "high":
+      return <HighPriority className="size-3" isDark={theme === "dark"} />;
+    case "medium":
+      return <MediumPriority className="size-3" isDark={theme === "dark"} />;
+    case "low":
+      return <LowPriority className="size-3" isDark={theme === "dark"} />;
+    default:
+      return <Priority className="size-3" isDark={theme === "dark"} />;
   }
 };
 
-
-
-const ListView = ({ 
+const ListView = ({
   data,
   onEditItem,
   onDeleteItem,
   onMoveItem,
-  onScheduleItem 
+  onScheduleItem,
 }: ListViewProps) => {
   const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -102,7 +119,15 @@ const ListView = ({
   const { theme } = useTheme();
   // Drag and drop mutation for updating card column/order
   const moveCardMutation = useMutation({
-    mutationFn: async ({ cardId, columnId, order }: { cardId: number; columnId: number; order: number }) => {
+    mutationFn: async ({
+      cardId,
+      columnId,
+      order,
+    }: {
+      cardId: number;
+      columnId: number;
+      order: number;
+    }) => {
       await updateCardColumn(accessToken, cardId, columnId);
       await updateCardOrder(accessToken, cardId, order);
     },
@@ -111,7 +136,11 @@ const ListView = ({
       await queryClient.cancelQueries({ queryKey: ["columns", "boards", id] });
 
       // Snapshot the previous value
-      const previousColumns = queryClient.getQueryData(["columns", "boards", id]);
+      const previousColumns = queryClient.getQueryData([
+        "columns",
+        "boards",
+        id,
+      ]);
 
       // Optimistically update the cache
       queryClient.setQueryData(["columns", "boards", id], (old: any) => {
@@ -122,27 +151,29 @@ const ListView = ({
           if (column.cards.some((card: any) => card.id === cardId)) {
             return {
               ...column,
-              cards: column.cards.filter((card: any) => card.id !== cardId)
+              cards: column.cards.filter((card: any) => card.id !== cardId),
             };
           }
-          
+
           // Add card to destination column
           if (column.id === columnId) {
             const cardToMove = old
               .flatMap((col: any) => col.cards)
               .find((card: any) => card.id === cardId);
-            
+
             if (cardToMove) {
               const updatedCard = { ...cardToMove, columnId, order };
-              const newCards = [...column.cards, updatedCard].sort((a, b) => a.order - b.order);
-              
+              const newCards = [...column.cards, updatedCard].sort(
+                (a, b) => a.order - b.order
+              );
+
               return {
                 ...column,
-                cards: newCards
+                cards: newCards,
               };
             }
           }
-          
+
           return column;
         });
       });
@@ -152,10 +183,13 @@ const ListView = ({
     onError: (error, _, context) => {
       console.error("Error moving card:", error);
       toast.error("Failed to move card");
-      
+
       // Rollback to previous state
       if (context?.previousColumns) {
-        queryClient.setQueryData(["columns", "boards", id], context.previousColumns);
+        queryClient.setQueryData(
+          ["columns", "boards", id],
+          context.previousColumns
+        );
       }
     },
     onSettled: () => {
@@ -188,25 +222,27 @@ const ListView = ({
 
     // Validate parsed cardId
     if (isNaN(cardId)) {
-      console.error('Invalid card ID in drag operation');
+      console.error("Invalid card ID in drag operation");
       return;
     }
 
     // Find column IDs from titles
     const sourceColumnData = data[sourceColumnTitle];
     const destinationColumnData = data[destinationColumnTitle];
-    
+
     if (!sourceColumnData || !destinationColumnData) {
-      console.error('Source or destination column data not found');
+      console.error("Source or destination column data not found");
       return;
     }
-    
+
     const sourceColumnId = sourceColumnData.id;
     const destinationColumnId = destinationColumnData.id;
-    const destinationCards = [...(destinationColumnData.cards || [])].sort((a, b) => a.order - b.order);
+    const destinationCards = [...(destinationColumnData.cards || [])].sort(
+      (a, b) => a.order - b.order
+    );
 
     if (!sourceColumnId || !destinationColumnId) {
-      console.error('Source or destination column ID not found');
+      console.error("Source or destination column ID not found");
       return;
     }
 
@@ -233,7 +269,7 @@ const ListView = ({
       const previousCard = destinationCards[destination.index - 1];
       const nextCard = destinationCards[destination.index];
       newOrder = (previousCard.order + nextCard.order) / 2;
-      
+
       // If the difference is too small, recalculate with larger gaps
       if (nextCard.order - previousCard.order < 2) {
         newOrder = previousCard.order + 500;
@@ -271,7 +307,7 @@ const ListView = ({
   return (
     <>
       <DragDropContext onDragEnd={handleDragEnd}>
-        <motion.div 
+        <motion.div
           className="flex flex-1 flex-col pt-4"
           initial="hidden"
           animate="visible"
@@ -280,309 +316,367 @@ const ListView = ({
           {Object.entries(data).map(([columnTitle, columnData]) => {
             const items = columnData.cards || [];
             return (
-            <div key={columnTitle} className="mb-6">
-              <h2 className="text-sm flex items-center gap-2 font-bold px-4 py-2 text-zinc-900 dark:text-zinc-100 w-full border dark:bg-zinc-800 bg-zinc-100 border-zinc-200 dark:border-zinc-800">
-                <Library strokeWidth={2} className="size-4 " />
-                {columnTitle}
-              </h2>
-              
-              <Droppable droppableId={columnTitle}>
-                {(provided, snapshot) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    className={cn(
-                      "min-h-[100px] transition-all duration-300 ease-in-out",
-                      snapshot.isDraggingOver && "bg-emerald-50 dark:bg-emerald-900/20 border-2 border-dashed border-emerald-300 dark:border-emerald-500 rounded-lg p-3 shadow-inner",
-                      items.length === 0 && "border-2 border-dashed border-emerald-300/50 dark:border-emerald-500/50 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/10"
-                    )}
-                  >
-                    {items.map((item, index) => {
-                      // Ensure item has required properties for drag and drop
-                      if (!item || !item.id) {
-                        console.warn('Item missing required properties:', item);
-                        return null;
-                      }
+              <div key={columnTitle} className="mb-6">
+                <h2 className="text-sm flex items-center gap-2 font-bold px-4 py-2 text-zinc-900 dark:text-zinc-100 w-full border dark:bg-zinc-800 bg-zinc-100 border-zinc-200 dark:border-zinc-800">
+                  <Library strokeWidth={2} className="size-4 " />
+                  {columnTitle}
+                </h2>
 
-                      return (
-                        <Draggable 
-                          key={`item-${item.id}`} 
-                          draggableId={item.id.toString()} 
-                          index={index}
-                          isDragDisabled={false}
-                        >
-                          {(provided, snapshot) => (
-                          <ListViewContextMenu
-                            key={item.id}
-                            cardId={item.id}
-                            onEdit={() => onEditItem?.(item.id)}
-                            onDelete={() => onDeleteItem?.(item.id)}
-                            onMove={() => onMoveItem?.(item.id)}
-                            onSchedule={() => onScheduleItem?.(item.id)}
+                <Droppable droppableId={columnTitle}>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className={cn(
+                        "min-h-[100px] transition-all duration-300 ease-in-out",
+                        snapshot.isDraggingOver &&
+                          "bg-emerald-50 dark:bg-emerald-900/20 border-2 border-dashed border-emerald-300 dark:border-emerald-500 rounded-lg p-3 shadow-inner",
+                        items.length === 0 &&
+                          "border-2 border-dashed border-emerald-300/50 dark:border-emerald-500/50 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/10"
+                      )}
+                    >
+                      {items.map((item, index) => {
+                        // Ensure item has required properties for drag and drop
+                        if (!item || !item.id) {
+                          console.warn(
+                            "Item missing required properties:",
+                            item
+                          );
+                          return null;
+                        }
+
+                        return (
+                          <Draggable
+                            key={`item-${item.id}`}
+                            draggableId={item.id.toString()}
+                            index={index}
+                            isDragDisabled={false}
                           >
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              className={cn(
-                                "group relative flex items-center justify-between p-3 border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-all duration-300 ease-out",
-                                snapshot.isDragging && "shadow-2xl z-50 rounded-lg scale-105 rotate-1 transform-gpu bg-white dark:bg-zinc-800 border-2 border-emerald-200 dark:border-emerald-700"
-                              )}
-                              onClick={() => {
-                                setSelectedCard(item);
-                                setIsModalOpen(true);
-                              }}
-                            >
-                              <div className="flex items-center gap-3 flex-grow min-w-0">
-                                {/* Title - Clickable area for opening card */}
-                                <DatabaseZap className="size-4 text-zinc-500 dark:text-zinc-400" />
+                            {(provided, snapshot) => (
+                              <ListViewContextMenu
+                                key={item.id}
+                                cardId={item.id}
+                                onEdit={() => onEditItem?.(item.id)}
+                                onDelete={() => onDeleteItem?.(item.id)}
+                                onMove={() => onMoveItem?.(item.id)}
+                                onSchedule={() => onScheduleItem?.(item.id)}
+                              >
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className={cn(
+                                    "group relative flex items-center justify-between p-3 border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-all duration-300 ease-out",
+                                    snapshot.isDragging &&
+                                      "shadow-2xl z-50 rounded-lg scale-105 rotate-1 transform-gpu bg-white dark:bg-zinc-800 border-2 border-emerald-200 dark:border-emerald-700"
+                                  )}
+                                  onClick={() => {
+                                    setSelectedCard(item);
+                                    setIsModalOpen(true);
+                                  }}
+                                >
+                                  <div className="flex items-center gap-3 flex-grow min-w-0">
+                                    {/* Title - Clickable area for opening card */}
+                                    <DatabaseZap className="size-4 text-zinc-500 dark:text-zinc-400" />
 
-                                <span className="text-sm text-zinc-500 dark:text-zinc-200 font-bold geist-font">
-                                    {`${columnTitle.substring(0, 2).toUpperCase()} - ${item.id}`}
-                                </span>
+                                    <span className="text-sm text-zinc-500 dark:text-zinc-200 font-bold geist-font">
+                                      {`${columnTitle
+                                        .substring(0, 2)
+                                        .toUpperCase()} - ${item.id}`}
+                                    </span>
 
-                                <div className="flex-grow truncate font-medium text-xs text-zinc-900 dark:text-zinc-100">
-                                  {item.title}
-                                </div>
-                                
-                                {/* Priority - Inline editable */}
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <div 
-                                      className="flex items-center gap-1 hover:bg-muted rounded px-2 py-1 transition-colors"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      {item.priority && (item.priority === 'urgent' || item.priority === 'high') ? (
-                                        <Badge className={`text-xs px-1.5 py-0.5 cursor-pointer ${priorityConfig[item.priority]?.color}`}>
-                                          <Priority className="size-3 mr-1" isDark={theme === "dark"} />
-                                          {priorityConfig[item.priority]?.label}
-                                        </Badge>
-                                      ) : (
-                                        <div className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer">
-                                          <Priority className="size-3" isDark={theme === "dark"} />
-                                          <span>Priority</span>
-                                        </div>
-                                      )}
+                                    <div className="flex-grow truncate font-medium text-xs text-zinc-900 dark:text-zinc-100">
+                                      {item.title}
                                     </div>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent 
-                                    align="start" 
-                                    className="w-32"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <DropdownMenuItem
-                                    className="gap-2 text-xs"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      updatePriority(item.id, "urgent");
-                                    }}>
-                                      <UrgentPriority className="size-3" isDark={theme === "dark"} />
-                                      Urgent
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                    className="gap-2 text-xs"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      updatePriority(item.id, "high");
-                                    }}>
-                                      <HighPriority className="size-3" isDark={theme === "dark"} />
-                                      High
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                    className="gap-2 text-xs"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      updatePriority(item.id, "medium");
-                                    }}>
-                                      <MediumPriority className="size-3" isDark={theme === "dark"} />
-                                      Medium
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                    className="gap-2 text-xs"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      updatePriority(item.id, "low");
-                                    }}>
-                                      <LowPriority className="size-3" isDark={theme === "dark"} />
-                                      Low
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                    className="gap-2 text-xs"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      updatePriority(item.id, "");
-                                    }}>
-                                      <Priority className="size-3" isDark={theme === "dark"} />
-                                      No priority
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
 
-                                {/* Assignee - Inline editable */}
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <div 
-                                      className="flex items-center gap-1 hover:bg-muted rounded px-2 py-1 transition-colors"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      <User className="h-3 w-3 text-muted-foreground" />
-                                      <span className="text-xs text-muted-foreground">Assign</span>
-                                    </div>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent 
-                                    align="start" 
-                                    className="w-40"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    {members?.map((member: TUser) => (
-                                      <DropdownMenuItem
-                                        key={member.id}
-                                        className="gap-2 text-xs"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          updateAssignee(item.id, member.id);
-                                        }}
-                                      >
-                                        <div className="flex items-center gap-2">
-                                          <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center">
-                                            {member.imageUrl ? (
-                                              <img
-                                                src={member.imageUrl}
-                                                alt={member.username}
-                                                className="w-full h-full rounded-full"
+                                    {/* Priority - Inline editable */}
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <div
+                                          className="flex items-center gap-1 hover:bg-muted rounded px-2 py-1 transition-colors"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          {item.priority ? (
+                                            <div className="flex items-center gap-1">
+                                              {getPriorityIcon(
+                                                item.priority,
+                                                theme
+                                              )}
+                                              <span className="text-xs capitalize">
+                                                {item.priority}
+                                              </span>
+                                            </div>
+                                          ) : (
+                                            <div className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer">
+                                              <Priority
+                                                className="size-3"
+                                                isDark={theme === "dark"}
                                               />
-                                            ) : (
-                                              <span className="text-xs">{member.username.charAt(0)}</span>
-                                            )}
-                                          </div>
-                                          <span className="text-xs">{member.username}</span>
+                                              <span>Priority</span>
+                                            </div>
+                                          )}
                                         </div>
-                                      </DropdownMenuItem>
-                                    ))}
-                                    <DropdownMenuItem onClick={(e) => {
-                                      e.stopPropagation();
-                                      updateAssignee(item.id, "");
-                                    }}>
-                                      <User className="w-3 h-3 mr-2" />
-                                      Unassigned
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                                
-                                {/* Labels/Tags */}
-                                {item.labels && item.labels.length > 0 && (
-                                  <div 
-                                    className="flex items-center gap-1.5 flex-shrink-0"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <TagIcon className="h-3 w-3 text-zinc-400" />
-                                    <div className="flex gap-1">
-                                      {item.labels.slice(0, 1).map((tag, index) => (
-                                        <Badge 
-                                          key={index} 
-                                          variant="secondary" 
-                                          className="text-xs px-1.5 py-0.5 font-medium border transition-colors hover:opacity-80 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700"
-                                        >
-                                          {tag}
-                                        </Badge>
-                                      ))}
-                                      {item.labels.length > 1 && (
-                                        <Badge 
-                                          variant="outline"
-                                          className="text-xs px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-600"
-                                        >
-                                          +{item.labels.length - 1}
-                                        </Badge>
-                                      )}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                              
-                              <div className="flex items-center gap-3 ml-4 flex-shrink-0">
-                                {/* Due date - Inline editable */}
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <div 
-                                      className="flex items-center gap-1 hover:bg-muted rounded px-2 py-1 transition-colors cursor-pointer"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      <CalendarIcon className="size-3 text-zinc-500 dark:text-zinc-400" />
-                                      {item.dueDate ? (
-                                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                                          {formatDistanceToNow(new Date(item.dueDate), { addSuffix: true })}
-                                        </span>
-                                      ) : (
-                                        <span className="text-xs text-muted-foreground">Set date</span>
-                                      )}
-                                    </div>
-                                  </PopoverTrigger>
-                                  <PopoverContent 
-                                    className="w-auto p-0" 
-                                    align="start"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <CalendarComponent
-                                      mode="single"
-                                      selected={item.dueDate ? new Date(item.dueDate) : undefined}
-                                      onSelect={(date) => {
-                                        if (date) {
-                                          updateDueDate(item.id, date.toISOString());
-                                        }
-                                      }}
-                                      initialFocus
-                                      className="p-3"
-                                    />
-                                    <div className="p-3 border-t">
-                                      {item.dueDate && (
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          className="w-full"
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent
+                                        align="start"
+                                        className="w-32"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <DropdownMenuItem
+                                          className="gap-2 text-xs"
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            updateDueDate(item.id, "");
+                                            updatePriority(item.id, "urgent");
                                           }}
                                         >
-                                          Clear due date
-                                        </Button>
-                                      )}
-                                    </div>
-                                  </PopoverContent>
-                                </Popover>
-                                
-                                {/* Arrow icon (visible on hover) */}
-                                <ArrowRightIcon className="h-4 w-4 text-zinc-400 dark:text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </div>
-                            </div>
-                          </ListViewContextMenu>
-                        )}
-                      </Draggable>
-                      );
-                    })}
-                    {provided.placeholder}
-                    
-                    {/* Empty state for each column */}
-                    {items.length === 0 && (
-                      <motion.div 
-                        initial={{ opacity: 0 }} 
-                        animate={{ opacity: 1 }}
-                        className="flex flex-col items-center justify-center h-16 text-zinc-500 dark:text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-md"
-                      >
-                        <p className="text-sm">No items in {columnTitle}</p>
-                      </motion.div>
-                    )}
-                  </div>
-                )}
-              </Droppable>
-            </div>
+                                          <UrgentPriority
+                                            className="size-3"
+                                            isDark={theme === "dark"}
+                                          />
+                                          Urgent
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                          className="gap-2 text-xs"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            updatePriority(item.id, "high");
+                                          }}
+                                        >
+                                          <HighPriority
+                                            className="size-3"
+                                            isDark={theme === "dark"}
+                                          />
+                                          High
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                          className="gap-2 text-xs"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            updatePriority(item.id, "medium");
+                                          }}
+                                        >
+                                          <MediumPriority
+                                            className="size-3"
+                                            isDark={theme === "dark"}
+                                          />
+                                          Medium
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                          className="gap-2 text-xs"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            updatePriority(item.id, "low");
+                                          }}
+                                        >
+                                          <LowPriority
+                                            className="size-3"
+                                            isDark={theme === "dark"}
+                                          />
+                                          Low
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                          className="gap-2 text-xs"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            updatePriority(item.id, "");
+                                          }}
+                                        >
+                                          <Priority
+                                            className="size-3"
+                                            isDark={theme === "dark"}
+                                          />
+                                          No priority
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+
+                                    {/* Assignee - Inline editable */}
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <div
+                                          className="flex items-center gap-1 hover:bg-muted rounded px-2 py-1 transition-colors"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          <User className="h-3 w-3 text-muted-foreground" />
+                                          <span className="text-xs text-muted-foreground">
+                                            Assign
+                                          </span>
+                                        </div>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent
+                                        align="start"
+                                        className="w-40"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        {members?.map((member: TUser) => (
+                                          <DropdownMenuItem
+                                            key={member.id}
+                                            className="gap-2 text-xs"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              updateAssignee(
+                                                item.id,
+                                                member.id
+                                              );
+                                            }}
+                                          >
+                                            <div className="flex items-center gap-2">
+                                              <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center">
+                                                {member.imageUrl ? (
+                                                  <img
+                                                    src={member.imageUrl}
+                                                    alt={member.username}
+                                                    className="w-full h-full rounded-full"
+                                                  />
+                                                ) : (
+                                                  <span className="text-xs">
+                                                    {member.username ? member.username.charAt(0) : ''}
+                                                  </span>
+                                                )}
+                                              </div>
+                                              <span className="text-xs">
+                                                {member.username}
+                                              </span>
+                                            </div>
+                                          </DropdownMenuItem>
+                                        ))}
+                                        <DropdownMenuItem
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            updateAssignee(item.id, "");
+                                          }}
+                                        >
+                                          <User className="w-3 h-3 mr-2" />
+                                          Unassigned
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+
+                                    {/* Labels/Tags */}
+                                    {item.labels && item.labels.length > 0 && (
+                                      <div
+                                        className="flex items-center justify-end gap-1.5 flex-shrink-0 min-w-[90px]"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <TagIcon className="h-3 w-3 text-zinc-400" />
+                                        <div className="flex gap-1">
+                                          {item.labels
+                                            .slice(0, 1)
+                                            .map((tag, index) => (
+                                              <Badge
+                                                key={index}
+                                                variant="secondary"
+                                                className="text-xs px-1.5 py-0.5 font-medium border transition-colors hover:opacity-80 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700"
+                                              >
+                                                {tag}
+                                              </Badge>
+                                            ))}
+                                          {item.labels.length > 1 && (
+                                            <Badge
+                                              variant="outline"
+                                              className="text-xs px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-600"
+                                            >
+                                              +{item.labels.length - 1}
+                                            </Badge>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  <div className="flex items-center gap-3 ml-4 flex-shrink-0 ">
+                                    {/* Due date - Inline editable */}
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <div
+                                          className="flex items-center gap-1 hover:bg-muted rounded px-2 py-1 transition-colors cursor-pointer min-w-[90px]"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          <CalendarIcon className="size-3 text-zinc-500 dark:text-zinc-400" />
+                                          {item.dueDate ? (
+                                            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                                              {formatDistanceToNow(
+                                                new Date(item.dueDate),
+                                                { addSuffix: true }
+                                              )}
+                                            </span>
+                                          ) : (
+                                            <span className="text-xs text-muted-foreground">
+                                              Set date
+                                            </span>
+                                          )}
+                                        </div>
+                                      </PopoverTrigger>
+                                      <PopoverContent
+                                        className="w-auto p-0"
+                                        align="start"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <CalendarComponent
+                                          mode="single"
+                                          selected={
+                                            item.dueDate
+                                              ? new Date(item.dueDate)
+                                              : undefined
+                                          }
+                                          onSelect={(date) => {
+                                            if (date) {
+                                              updateDueDate(
+                                                item.id,
+                                                date.toISOString()
+                                              );
+                                            }
+                                          }}
+                                          initialFocus
+                                          className="p-3"
+                                        />
+                                        <div className="p-3 border-t">
+                                          {item.dueDate && (
+                                            <Button
+                                              variant="outline"
+                                              size="sm"
+                                              className="w-full"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                updateDueDate(item.id, "");
+                                              }}
+                                            >
+                                              Clear due date
+                                            </Button>
+                                          )}
+                                        </div>
+                                      </PopoverContent>
+                                    </Popover>
+                                  </div>
+                                </div>
+                              </ListViewContextMenu>
+                            )}
+                          </Draggable>
+                        );
+                      })}
+                      {provided.placeholder}
+
+                      {/* Empty state for each column */}
+                      {items.length === 0 && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="flex flex-col items-center justify-center h-16 text-zinc-500 dark:text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-md"
+                        >
+                          <p className="text-sm">No items in {columnTitle}</p>
+                        </motion.div>
+                      )}
+                    </div>
+                  )}
+                </Droppable>
+              </div>
             );
           })}
-          
+
           {/* Empty state when no data at all */}
           {Object.keys(data).length === 0 && (
-            <motion.div 
-              initial={{ opacity: 0 }} 
+            <motion.div
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="flex flex-col items-center justify-center h-32 text-zinc-500 dark:text-zinc-400"
             >
@@ -591,7 +685,7 @@ const ListView = ({
           )}
         </motion.div>
       </DragDropContext>
-      
+
       {/* Card Modal */}
       {selectedCard && (
         <CardModal

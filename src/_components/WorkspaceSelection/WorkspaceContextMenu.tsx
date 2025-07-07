@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/context-menu";
 import { FileEdit, Settings, Trash, UserPlus, Star } from "lucide-react";
 
-interface BoardContextMenuProps {
+interface WorkspaceContextMenuProps {
   children: React.ReactNode;
   onOpen: () => void;
   onDelete: () => void;
@@ -18,7 +18,7 @@ interface BoardContextMenuProps {
   isToggling?: boolean;
 }
 
-export const BoardContextMenu = ({
+export const WorkspaceContextMenu = ({
   children,
   onOpen,
   onDelete,
@@ -27,7 +27,7 @@ export const BoardContextMenu = ({
   onToggleFavorite,
   isFavorite,
   isToggling = false,
-}: BoardContextMenuProps) => {
+}: WorkspaceContextMenuProps) => {
   return (
     <ContextMenu>
       <ContextMenuTrigger>{children}</ContextMenuTrigger>
@@ -60,4 +60,4 @@ export const BoardContextMenu = ({
       </ContextMenuContent>
     </ContextMenu>
   );
-};
+}; 

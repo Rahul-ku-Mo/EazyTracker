@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { cn } from "@/lib/utils";
 import Container from "@/layouts/Container";
-import BoardPopover from "./BoardPopover";
-import { useBoards } from "@/hooks/useQueries";
+import WorkspacePopover from "./WorkspacePopover";
+import { useWorkspaces } from "@/hooks/useQueries";
 import { useFeatureGating } from "@/hooks/useFeatureGating";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,16 +12,16 @@ import { Lock, Eye, Info, Shield, SquareTerminal, MoreHorizontal } from "lucide-
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
-import { getTeamBoards } from "@/apis/TeamApis";
+import { getTeamWorkspaces } from "@/apis/TeamApis";
 
-import { BoardContextMenu } from "./BoardContextMenu";
+import { WorkspaceContextMenu } from "./WorkspaceContextMenu";
 import { useState } from "react";
 import DeleteDialog from "../Dialog/DeleteDialog";
-import { useBoardMutation } from "./_mutations/useBoardMutation";
-import InviteBoardDialog from "./InviteBoardDialog";
+import { useWorkspaceMutation } from "./_mutations/useWorkspaceMutation";
+import InviteWorkspaceDialog from "./InviteWorkspaceDialog";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 
-interface Board {
+interface Workspace {
   id: string;
   title: string;
   colorId: string;
@@ -30,7 +30,7 @@ interface Board {
   isFavorite?: boolean;
 }
 
-interface TeamBoard {
+interface TeamWorkspace {
   id: number;
   title: string;
   colorName: string;
@@ -43,30 +43,30 @@ interface TeamBoard {
   createdBy: string;
 }
 
-const BoardCard = ({ board }: { board: Board }) => {
+const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const accessToken = Cookies.get("accessToken");
 
-  const [isOpenDeleteBoardDialog, setIsOpenDeleteBoardDialog] = useState(false);
-  const [isOpenInviteBoardDialog, setIsOpenInviteBoardDialog] = useState(false);
+  const [isOpenDeleteWorkspaceDialog, setIsOpenDeleteWorkspaceDialog] = useState(false);
+  const [isOpenInviteWorkspaceDialog, setIsOpenInviteWorkspaceDialog] = useState(false);
 
-  const openInviteBoardDialog = () => {
-    setIsOpenInviteBoardDialog(true);
+  const openInviteWorkspaceDialog = () => {
+    setIsOpenInviteWorkspaceDialog(true);
   };
 
-  const closeInviteBoardDialog = () => {
-    setIsOpenInviteBoardDialog(false);
+  const closeInviteWorkspaceDialog = () => {
+    setIsOpenInviteWorkspaceDialog(false);
   };
 
-  const { deleteBoardMutation } = useBoardMutation();
+  const { deleteWorkspaceMutation } = useWorkspaceMutation();
 
   // Favorite mutation with optimistic updates
   const favoriteMutation = useMutation({
-    mutationFn: async (boardId: string) => {
+    mutationFn: async (workspaceId: string) => {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/boards/${boardId}/favorite`,
+        `${import.meta.env.VITE_API_URL}/workspaces/${workspaceId}/favorite`,
         {},
         {
           headers: {
@@ -76,25 +76,25 @@ const BoardCard = ({ board }: { board: Board }) => {
       );
       return response.data;
     },
-    onMutate: async (boardId: string) => {
+    onMutate: async (workspaceId: string) => {
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["boards"] });
-      await queryClient.cancelQueries({ queryKey: ["favoriteBoards"] });
+      await queryClient.cancelQueries({ queryKey: ["workspaces"] });
+      await queryClient.cancelQueries({ queryKey: ["favoriteWorkspaces"] });
 
       // Snapshot the previous value
-      const previousBoards = queryClient.getQueryData(["boards"]);
-      const previousFavoriteBoards = queryClient.getQueryData(["favoriteBoards"]);
+      const previousWorkspaces = queryClient.getQueryData(["workspaces"]);
+      const previousFavoriteWorkspaces = queryClient.getQueryData(["favoriteWorkspaces"]);
 
-      // Optimistically update the boards cache
-      queryClient.setQueryData(["boards"], (old: any) => {
+      // Optimistically update the workspaces cache
+      queryClient.setQueryData(["workspaces"], (old: any) => {
         if (!old) return old;
-        return old.map((b: any) => 
-          b.id === boardId ? { ...b, isFavorite: !b.isFavorite } : b
+        return old.map((w: any) => 
+          w.id === workspaceId ? { ...w, isFavorite: !w.isFavorite } : w
         );
       });
 
       // Return a context object with the snapshotted value
-      return { previousBoards, previousFavoriteBoards };
+      return { previousWorkspaces, previousFavoriteWorkspaces };
     },
     onSuccess: (data) => {
       toast({
@@ -102,13 +102,13 @@ const BoardCard = ({ board }: { board: Board }) => {
         variant: "default",
       });
       // Invalidate to ensure fresh data from server
-      queryClient.invalidateQueries({ queryKey: ["boards"] });
-      queryClient.invalidateQueries({ queryKey: ["favoriteBoards"] });
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      queryClient.invalidateQueries({ queryKey: ["favoriteWorkspaces"] });
     },
-    onError: (error: any, _boardId: string, context: any) => {
+    onError: (error: any, _workspaceId: string, context: any) => {
       // If the mutation fails, use the context returned from onMutate to roll back
-      queryClient.setQueryData(["boards"], context?.previousBoards);
-      queryClient.setQueryData(["favoriteBoards"], context?.previousFavoriteBoards);
+      queryClient.setQueryData(["workspaces"], context?.previousWorkspaces);
+      queryClient.setQueryData(["favoriteWorkspaces"], context?.previousFavoriteWorkspaces);
       
       toast({
         title: "Error",
@@ -119,47 +119,47 @@ const BoardCard = ({ board }: { board: Board }) => {
     },
     onSettled: () => {
       // Always refetch after error or success to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ["boards"] });
-      queryClient.invalidateQueries({ queryKey: ["favoriteBoards"] });
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      queryClient.invalidateQueries({ queryKey: ["favoriteWorkspaces"] });
     },
   });
 
-  const handleDeleteBoard = () => {
-    setIsOpenDeleteBoardDialog(true);
+  const handleDeleteWorkspace = () => {
+    setIsOpenDeleteWorkspaceDialog(true);
   };
 
-  const closeDeleteBoardDialog = () => {
-    setIsOpenDeleteBoardDialog(false);
+  const closeDeleteWorkspaceDialog = () => {
+    setIsOpenDeleteWorkspaceDialog(false);
   };
 
-  const handleOpenBoard = () => {
-    navigate(`/workspace/board/${board.id}`);
+  const handleOpenWorkspace = () => {
+    navigate(`/workspace/${workspace.id}`);
   };
 
-  const handleOpenBoardSettings = () => {
-    navigate(`/workspace/settings/${board.id}`);
+  const handleOpenWorkspaceSettings = () => {
+    navigate(`/workspace/settings/${workspace.id}`);
   };
 
   const handleToggleFavorite = (e?: React.MouseEvent) => {
-    e?.stopPropagation(); // Prevent opening the board
-    favoriteMutation.mutate(board.id);
+    e?.stopPropagation(); // Prevent opening the workspace
+    favoriteMutation.mutate(workspace.id);
   };
 
   return (
     <>
-      <BoardContextMenu
-        onOpen={handleOpenBoard}
-        onDelete={handleDeleteBoard}
-        onSettings={handleOpenBoardSettings}
-        onInvite={openInviteBoardDialog}
+      <WorkspaceContextMenu
+        onOpen={handleOpenWorkspace}
+        onDelete={handleDeleteWorkspace}
+        onSettings={handleOpenWorkspaceSettings}
+        onInvite={openInviteWorkspaceDialog}
         onToggleFavorite={handleToggleFavorite}
-        isFavorite={board.isFavorite || false}
+        isFavorite={workspace.isFavorite || false}
         isToggling={favoriteMutation.isPending}
       >
-        <div className="block" onClick={handleOpenBoard}>
+        <div className="block" onClick={handleOpenWorkspace}>
           <Card className="relative overflow-hidden border-0 rounded-md group w-52 h-36">
             <div
-              style={{ backgroundColor: board.colorValue }}
+              style={{ backgroundColor: workspace.colorValue }}
               className="absolute inset-0 w-full h-full"
             />
             <div
@@ -171,7 +171,7 @@ const BoardCard = ({ board }: { board: Board }) => {
             >
               <div className="flex items-start justify-between">
                 <CardTitle className="text-sm font-bold text-white flex-1">
-                  {board.title}
+                  {workspace.title}
                 </CardTitle>
                 <button
                   onContextMenu={(e) => {
@@ -199,38 +199,38 @@ const BoardCard = ({ board }: { board: Board }) => {
               </div>
               <CardFooter className="p-0">
                 <span className="text-xs font-medium text-white/20">
-                  {board.colorName}
+                  {workspace.colorName}
                 </span>
               </CardFooter>
             </div>
           </Card>
         </div>
-      </BoardContextMenu>
+      </WorkspaceContextMenu>
 
-      <InviteBoardDialog
-        isOpen={isOpenInviteBoardDialog}
-        onClose={closeInviteBoardDialog}
-        id={board.id}
+      <InviteWorkspaceDialog
+        isOpen={isOpenInviteWorkspaceDialog}
+        onClose={closeInviteWorkspaceDialog}
+        id={workspace.id}
       />
 
       <DeleteDialog
-        closeModal={closeDeleteBoardDialog}
-        isOpen={isOpenDeleteBoardDialog}
-        deleteItem={deleteBoardMutation}
-        title={board.title}
-        id={board.id}
+        closeModal={closeDeleteWorkspaceDialog}
+        isOpen={isOpenDeleteWorkspaceDialog}
+        deleteItem={deleteWorkspaceMutation}
+        title={workspace.title}
+        id={workspace.id}
       />
     </>
   );
 };
 
-const LockedBoardCard = ({ board }: { board: TeamBoard }) => {
+const LockedWorkspaceCard = ({ workspace }: { workspace: TeamWorkspace }) => {
   const { toast } = useToast();
 
   const handleLockedClick = () => {
     toast({
-      title: "Board Access Required",
-      description: `You need permission to access "${board.title}". Contact ${board.createdBy} for access.`,
+      title: "Workspace Access Required",
+      description: `You need permission to access "${workspace.title}". Contact ${workspace.createdBy} for access.`,
       variant: "default",
     });
   };
@@ -239,7 +239,7 @@ const LockedBoardCard = ({ board }: { board: TeamBoard }) => {
     <div className="block" onClick={handleLockedClick}>
       <Card className="relative overflow-hidden border-0 rounded-md group w-52 h-36 cursor-not-allowed">
         <div
-          style={{ backgroundColor: board.colorValue }}
+          style={{ backgroundColor: workspace.colorValue }}
           className="absolute inset-0 w-full h-full opacity-50"
         />
         <div
@@ -251,7 +251,7 @@ const LockedBoardCard = ({ board }: { board: TeamBoard }) => {
         >
           <div className="flex items-start justify-between">
             <CardTitle className="text-sm font-bold text-white/70 flex-1">
-              {board.title}
+              {workspace.title}
             </CardTitle>
             <div className="flex items-center gap-1">
               <Lock className="w-4 h-4 text-white/70" />
@@ -260,10 +260,10 @@ const LockedBoardCard = ({ board }: { board: TeamBoard }) => {
           <CardFooter className="p-0 flex flex-col items-start gap-1">
             <div className="flex items-center gap-1 text-xs text-white/60">
               <Eye className="w-3 h-3" />
-              <span>Created by {board.createdBy}</span>
+              <span>Created by {workspace.createdBy}</span>
             </div>
             <span className="text-xs font-medium text-white/40">
-              {board.colorName} • Access Required
+              {workspace.colorName} • Access Required
             </span>
           </CardFooter>
         </div>
@@ -272,27 +272,27 @@ const LockedBoardCard = ({ board }: { board: TeamBoard }) => {
   );
 };
 
-const EmptyBoardState = ({
-  remainingBoards,
+const EmptyWorkspaceState = ({
+  remainingWorkspaces,
   isAdmin,
 }: {
-  remainingBoards: number;
+  remainingWorkspaces: number;
   isAdmin: boolean;
 }) => (
   <>
     <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
       <div className="border-0 bg-background/50">
         <div className="text-2xl font-bold text-center geist-font">
-          {isAdmin ? "Start your journey!" : "No boards available"}
+          {isAdmin ? "Start your journey!" : "No workspaces available"}
         </div>
         <div className="text-sm max-w-xs text-muted-foreground text-center">
           {isAdmin
-            ? "✨ Create your first board to organize tasks. 🚀"
-            : "🔒 Contact your team admin to get access to boards or create new ones."}
+            ? "✨ Create your first workspace to organize tasks. 🚀"
+            : "🔒 Contact your team admin to get access to workspaces or create new ones."}
         </div>
       </div>
     </div>
-    {isAdmin && <BoardPopover count={remainingBoards} />}
+    {isAdmin && <WorkspacePopover count={remainingWorkspaces} />}
   </>
 );
 
@@ -304,100 +304,98 @@ const LoadingState = () => (
   </div>
 );
 
-const BoardSelection = () => {
+const WorkspaceSelection = () => {
   const accessToken = Cookies.get("accessToken");
   const { isAdmin } = useAdminCheck();
 
-  // Only fetch user's own boards if user is admin
-  const { data: boards, isPending: isBoardsPending } = useBoards(
-    accessToken as string
-  );
-  const { data: teamBoards, isPending: isTeamBoardsPending } = useQuery({
-    queryKey: ["team-boards"],
-    queryFn: getTeamBoards,
+  // Only fetch user's own workspaces if user is admin
+  const { data: workspaces, isPending: isWorkspacesPending } = useWorkspaces();
+  const { data: teamWorkspaces, isPending: isTeamWorkspacesPending } = useQuery({
+    queryKey: ["team-workspaces"],
+    queryFn: getTeamWorkspaces,
     enabled: !!accessToken,
   });
   const { canCreate } = useFeatureGating();
 
-  const currentBoardCount = boards?.length ?? 0;
-  const { remaining } = canCreate("projects", currentBoardCount);
+  const currentWorkspaceCount = workspaces?.length ?? 0;
+  const { remaining } = canCreate("projects", currentWorkspaceCount);
   // For unlimited plans, remaining will be -1, otherwise show actual remaining count
-  const remainingBoards = remaining === null ? 0 : remaining;
+  const remainingWorkspaces = remaining === null ? 0 : remaining;
 
-  const isPending = isBoardsPending || isTeamBoardsPending;
+  const isPending = isWorkspacesPending || isTeamWorkspacesPending;
 
-  // Separate team boards into accessible and locked
-  const accessibleTeamBoards =
-    teamBoards?.filter(
-      (board: TeamBoard) => board.hasAccess && !board.isOwner
+  // Separate team workspaces into accessible and locked
+  const accessibleTeamWorkspaces =
+    teamWorkspaces?.filter(
+      (workspace: TeamWorkspace) => workspace.hasAccess && !workspace.isOwner
     ) || [];
-  const lockedTeamBoards =
-    teamBoards?.filter(
-      (board: TeamBoard) => !board.hasAccess && !board.isOwner
+  const lockedTeamWorkspaces =
+    teamWorkspaces?.filter(
+      (workspace: TeamWorkspace) => !workspace.hasAccess && !workspace.isOwner
     ) || [];
 
-  // For non-admin users, only count team boards they have access to
-  const relevantBoardCount = isAdmin
-    ? (boards?.length || 0) +
-      (accessibleTeamBoards?.length || 0) +
-      (lockedTeamBoards?.length || 0)
-    : (accessibleTeamBoards?.length || 0) + (lockedTeamBoards?.length || 0);
+  // For non-admin users, only count team workspaces they have access to
+  const relevantWorkspaceCount = isAdmin
+    ? (workspaces?.length || 0) +
+      (accessibleTeamWorkspaces?.length || 0) +
+      (lockedTeamWorkspaces?.length || 0)
+    : (accessibleTeamWorkspaces?.length || 0) + (lockedTeamWorkspaces?.length || 0);
 
-  const hasAnyBoards = relevantBoardCount > 0;
+  const hasAnyWorkspaces = relevantWorkspaceCount > 0;
 
   return (
     <Container
       fwdClassName="pl-2 bg-background"
-      title={isAdmin ? "Manage Boards" : "Boards"}
+      title={isAdmin ? "Manage Workspaces" : "Workspaces"}
     >
       {isPending ? (
         <LoadingState />
-      ) : !hasAnyBoards ? (
-        <EmptyBoardState remainingBoards={remainingBoards} isAdmin={isAdmin} />
+      ) : !hasAnyWorkspaces ? (
+        <EmptyWorkspaceState remainingWorkspaces={remainingWorkspaces} isAdmin={isAdmin} />
       ) : (
         <div className="space-y-6">
-          {/* User's own boards - Only show for admin users */}
-          {isAdmin && boards && boards.length > 0 && (
+          {/* User's own workspaces - Only show for admin users */}
+          {isAdmin && workspaces && workspaces.length > 0 && (
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-3 py-2">
                 <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
                   <SquareTerminal className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold">My Boards</h1>
+                  <h1 className="text-2xl font-bold">My Workspaces</h1>
                   <p className="text-sm text-muted-foreground">
-                    Manage your boards and create new ones
+                    Manage your workspaces and create new ones
                   </p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-4">
-                {boards?.map((board: any) => (
-                  <BoardCard
-                    key={`${board.id}${board.colorId}`}
-                    board={board}
+                {workspaces?.map((workspace: any) => (
+                  <WorkspaceCard
+                    key={`${workspace.id}${workspace.colorId}`}
+                    workspace={workspace}
                   />
                 ))}
-                <BoardPopover count={remainingBoards} />
+                <WorkspacePopover count={remainingWorkspaces} />
               </div>
             </div>
           )}
 
-          {/* Accessible team boards */}
-          {accessibleTeamBoards.length > 0 && (
+          {/* Accessible team workspaces */}
+          {accessibleTeamWorkspaces.length > 0 && (
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                {isAdmin ? "Team Boards" : "Boards"}
+                {isAdmin ? "Team Workspaces" : "Workspaces"}
               </h3>
               <div className="flex flex-wrap gap-4">
-                {accessibleTeamBoards?.map((board: TeamBoard) => (
-                  <BoardCard
-                    key={`team-${board.id}`}
-                    board={{
-                      id: board.id.toString(),
-                      title: board.title,
-                      colorId: "", // Team boards don't have colorId
-                      colorValue: board.colorValue,
-                      colorName: board.colorName,
+                {accessibleTeamWorkspaces?.map((workspace: TeamWorkspace) => (
+                  <WorkspaceCard
+                    key={`team-${workspace.id}`}
+                    workspace={{
+                      id: workspace.id.toString(),
+                      title: workspace.title,
+                      colorId: "", // Team workspaces don't have colorId
+                      colorValue: workspace.colorValue,
+                      colorName: workspace.colorName,
                       isFavorite: false,
                     }}
                   />
@@ -406,34 +404,34 @@ const BoardSelection = () => {
             </div>
           )}
 
-          {/* Locked team boards */}
-          {lockedTeamBoards.length > 0 && (
+          {/* Locked team workspaces */}
+          {lockedTeamWorkspaces.length > 0 && (
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                Locked Boards ({lockedTeamBoards.length})
+                Locked Workspaces ({lockedTeamWorkspaces.length})
               </h3>
               <div className="flex flex-wrap gap-4">
-                {lockedTeamBoards?.map((board: TeamBoard) => (
-                  <LockedBoardCard key={`locked-${board.id}`} board={board} />
+                {lockedTeamWorkspaces?.map((workspace: TeamWorkspace) => (
+                  <LockedWorkspaceCard key={`locked-${workspace.id}`} workspace={workspace} />
                 ))}
               </div>
             </div>
           )}
 
-          {/* Show board creation option only for admins when they have no boards */}
-          {isAdmin && (!boards || boards.length === 0) && (
+          {/* Show workspace creation option only for admins when they have no workspaces */}
+          {isAdmin && (!workspaces || workspaces.length === 0) && (
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                My Boards
+                My Workspaces
               </h3>
               <div className="flex flex-wrap gap-4">
-                <BoardPopover count={remainingBoards} />
+                <WorkspacePopover count={remainingWorkspaces} />
               </div>
             </div>
           )}
 
           {/* Info card for non-admin users */}
-          {!isAdmin && hasAnyBoards && (
+          {!isAdmin && hasAnyWorkspaces && (
             <div className="mt-6">
               <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10">
                 <CardContent className="flex items-start gap-3 pt-4">
@@ -442,11 +440,11 @@ const BoardSelection = () => {
                   </div>
                   <div className="flex-1">
                     <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
-                      Board Access Information
+                      Workspace Access Information
                     </h4>
                     <p className="text-xs text-blue-700 dark:text-blue-300">
-                      As a team member, you can access boards that have been
-                      shared with you. To create new boards or manage existing
+                      As a team member, you can access workspaces that have been
+                      shared with you. To create new workspaces or manage existing
                       ones, contact your team administrator.
                     </p>
                   </div>
@@ -461,4 +459,4 @@ const BoardSelection = () => {
   );
 };
 
-export default BoardSelection;
+export default WorkspaceSelection; 

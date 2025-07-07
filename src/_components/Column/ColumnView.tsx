@@ -53,7 +53,7 @@ const ColumnView = ({ title, cards, columnId, viewOptions, members }: ColumnView
   const [isNewCardOpen, setIsNewCardOpen] = useState(false);
   const [currentSort, setCurrentSort] = useState<string>("manual");
 
-  const { id: boardId } = useParams();
+  const { id: workspaceId } = useParams();
   const queryClient = useQueryClient();
   const accessToken = Cookies.get("accessToken") as string;
 
@@ -222,7 +222,7 @@ const ColumnView = ({ title, cards, columnId, viewOptions, members }: ColumnView
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["columns", "boards", boardId],
+        queryKey: ["columns", "workspaces", workspaceId],
       });
     },
     onError: () => {

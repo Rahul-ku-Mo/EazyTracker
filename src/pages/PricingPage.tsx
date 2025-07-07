@@ -19,9 +19,9 @@ const staticPlans = [
     "interval": "month",
     "trialDays": 14,
     "features": [
-      "5 projects",
+      "5 workspaces",
       "15 team members",
-      "100 tasks per project",
+      "100 tasks per workspace",
       "1GB storage",
       "Basic task management",
       "7-day activity history",
@@ -37,7 +37,7 @@ const staticPlans = [
     "currency": "usd",
     "interval": "month",
     "features": [
-      "15 projects",
+      "15 workspaces",
       "100 team members",
       "Unlimited tasks",
       "10GB storage",
@@ -46,7 +46,7 @@ const staticPlans = [
       "30-day activity history",
       "Priority email support",
       "Advanced analytics",
-      "Custom project templates"
+      "Custom workspace templates"
     ]
   },
   {
@@ -57,7 +57,7 @@ const staticPlans = [
     "currency": "usd",
     "interval": "month",
     "features": [
-      "Unlimited projects",
+      "Unlimited workspaces",
       "Unlimited team members",
       "Unlimited tasks",
       "100GB storage",

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useContext, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { Plus, Settings } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
@@ -8,6 +8,7 @@ import { cn } from "../../lib/utils";
 import Container from "../../layouts/Container";
 import NewColumnForm from "./NewColumnForm";
 import { Button } from "../../components/ui/button";
+import BoardViewBar from "../../components/BoardViewBar";
 
 import ColumnView from "./ColumnView";
 import { createColumn } from "../../apis/ColumnApis";
@@ -32,6 +33,7 @@ interface Column {
 
 interface ColumnBoardProps {
   title: string;
+  headerChildren?: React.ReactNode;
 }
 
 interface ExpandAddColumnButtonProps {
@@ -84,8 +86,8 @@ const ExpandAddColumnButton = ({ onClick }: ExpandAddColumnButtonProps) => {
   );
 };
 
-const ColumnBoard = ({ title }: ColumnBoardProps) => {
-  const { id: boardId } = useParams();
+const ColumnBoard = ({ title, headerChildren }: ColumnBoardProps) => {
+  const { id: workspaceId } = useParams();
   const { columns } = useContext(KanbanContext);
   const { view, toggleView } = useStore(useToggleViewStore);
   const { 
@@ -102,15 +104,16 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
   const accessToken = Cookies.get("accessToken") as string;
   const [columnName, setColumnName] = useState("");
   const [showListInput, setShowListInput] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // OPTIMIZATION: Fetch members once at board level
-  const { members } = useMembers(boardId as string);
+  const { members } = useMembers(workspaceId as string);
 
   const createColumnMutation = useMutation({
-    mutationFn: (title: string) => createColumn(accessToken, title, boardId as string),
+    mutationFn: (title: string) => createColumn(accessToken, title, workspaceId as string),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["columns", "boards", boardId],
+        queryKey: ["columns", "workspaces", workspaceId],
       });
       toast.success("Column created successfully!");
     },
@@ -127,13 +130,13 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
     },
     onMutate: async ({ cardId, columnId, order }) => {
       // Cancel any outgoing refetches to prevent race conditions
-      await queryClient.cancelQueries({ queryKey: ["columns", "boards", boardId] });
+      await queryClient.cancelQueries({ queryKey: ["columns", "workspaces", workspaceId] });
 
       // Snapshot the previous value for rollback
-      const previousColumns = queryClient.getQueryData(["columns", "boards", boardId]);
+      const previousColumns = queryClient.getQueryData(["columns", "workspaces", workspaceId]);
 
       // Optimistically update the cache for immediate UI feedback
-      queryClient.setQueryData(["columns", "boards", boardId], (old: any) => {
+      queryClient.setQueryData(["columns", "workspaces", workspaceId], (old: any) => {
         if (!old || !Array.isArray(old)) return old;
 
         const columnsCopy = [...old];
@@ -179,14 +182,14 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
       
       // Rollback to previous state on error
       if (context?.previousColumns) {
-        queryClient.setQueryData(["columns", "boards", boardId], context.previousColumns);
+        queryClient.setQueryData(["columns", "workspaces", workspaceId], context.previousColumns);
       }
     },
     onSettled: () => {
       // Refetch after a short delay to ensure server state is synced
       setTimeout(() => {
         queryClient.invalidateQueries({
-          queryKey: ["columns", "boards", boardId],
+          queryKey: ["columns", "workspaces", workspaceId],
         });
       }, 500);
     },
@@ -203,15 +206,23 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
     filteredColumns = filteredColumns.map(column => {
       let columnCards = column.cards || [];
       
-      // 1. Filter cards based on active filters
+      // 1. Apply search filtering
+      if (searchQuery.trim()) {
+        columnCards = columnCards.filter((card: any) => 
+          card.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          card.description?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+      
+      // 2. Filter cards based on active filters
       columnCards = filterCards(columnCards, viewOptions);
       
-             // 2. Hide completed cards if option is disabled
-       if (!viewOptions.showCompletedCards) {
-         columnCards = columnCards.filter((card: any) => card.status !== 'completed' && card.status !== 'done');
-       }
+      // 3. Hide completed cards if option is disabled
+      if (!viewOptions.showCompletedCards) {
+        columnCards = columnCards.filter((card: any) => card.status !== 'completed' && card.status !== 'done');
+      }
       
-      // 3. Order cards within the column
+      // 4. Order cards within the column
       columnCards = orderCards(columnCards, viewOptions);
       
       console.log(`Column "${column.title}" after processing:`, {
@@ -239,7 +250,7 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
     });
     
     return filteredColumns;
-  }, [columns, viewOptions]);
+  }, [columns, viewOptions, searchQuery]);
 
   const sortedColumns = processedColumns;
 
@@ -254,7 +265,15 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
     if (!columns) return {};
     
     // Get all cards from all columns
-    const allCards = columns.flatMap((col: any) => col.cards || []);
+    let allCards = columns.flatMap((col: any) => col.cards || []);
+    
+    // Apply search filtering
+    if (searchQuery.trim()) {
+      allCards = allCards.filter((card: any) => 
+        card.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        card.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
     
     // Apply view options (grouping, filtering, ordering)
     const groupedData = groupCards(allCards, columns, viewOptions);
@@ -263,7 +282,7 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
     console.log('Grouped data:', groupedData);
     
     return groupedData;
-  }, [columns, viewOptions]);
+  }, [columns, viewOptions, searchQuery]);
 
   // Handle drag end with improved error handling and order calculation
   const handleDragEnd = (result: DropResult) => {
@@ -353,24 +372,26 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
       <Container 
         fwdClassName="bg-transparent" 
         title={title}
-        headerChildren={
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={openPanel}
-            className="flex items-center gap-2 h-9 hover:bg-zinc-50 dark:hover:bg-zinc-800"
-          >
-            <Settings className="h-4 w-4" />
-            View Options
-          </Button>
+        headerChildren={headerChildren}
+        viewBar={
+          <BoardViewBar
+            currentView={view}
+            viewOptions={viewOptions}
+            onOptionsChange={updateViewOptions}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            members={members}
+            onOpenViewOptions={openPanel}
+          />
         }
       >
 
         <div className="relative w-full h-full ">
           {view === "kanban" ? (
-            <DragDropContext onDragEnd={handleDragEnd}>
+            sortedColumns ? (
+              <DragDropContext onDragEnd={handleDragEnd}>
               <ol className="absolute inset-0 flex items-start h-full py-4">
-                {sortedColumns?.map((column: Column) => (
+                {sortedColumns && sortedColumns.length > 0 ? sortedColumns.map((column: Column) => (
                   <ColumnProvider columnId={column.id.toString()} key={column.id}>
                     <ColumnView 
                       title={column.title} 
@@ -380,7 +401,11 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
                       members={members}
                     />
                   </ColumnProvider>
-                ))}
+                )) : (
+                  <div className="flex items-center justify-center w-full h-32 text-muted-foreground">
+                    No columns available
+                  </div>
+                )}
                 <div className="p-1 rounded-md">
                   {showListInput ? (
                     <NewColumnForm
@@ -396,6 +421,11 @@ const ColumnBoard = ({ title }: ColumnBoardProps) => {
                 </div>
               </ol>
             </DragDropContext>
+            ) : (
+              <div className="flex items-center justify-center w-full h-32 text-muted-foreground">
+                Loading columns...
+              </div>
+            )
           ) : (
             <ListView data={listViewData} />
           )}

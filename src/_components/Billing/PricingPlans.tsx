@@ -32,9 +32,9 @@ const plans = [
     price: 0,
     period: "month",
     features: [
-      "5 projects",
+      "5 workspaces",
       "15 team members",
-      "100 tasks per project",
+      "100 tasks per workspace",
       "1GB storage",
       "Basic task management",
       "7-day activity history",
@@ -51,7 +51,7 @@ const plans = [
     price: 9.99,
     period: "month",
     features: [
-      "15 projects",
+      "15 workspaces",
       "100 team members",
       "Unlimited tasks",
       "10GB storage",
@@ -60,7 +60,7 @@ const plans = [
       "30-day activity history",
       "Priority email support",
       // "Advanced analytics",
-      // "Custom project templates",
+      // "Custom workspace templates",
     ],
     paddlePrice: import.meta.env.VITE_PADDLE_PRICE_ID_PRO || "price_pro",
     isPopular: true,
@@ -72,7 +72,7 @@ const plans = [
     price: 29.99,
     period: "month",
     features: [
-      "Unlimited projects",
+      "Unlimited workspaces",
       "Unlimited team members",
       "Unlimited tasks",
       "100GB storage",
@@ -93,9 +93,9 @@ const plans = [
 // Feature comparison data for PulseBoard
 const featureComparisonData = [
   {
-    feature: "Projects",
-    free: "5 projects",
-    pro: "15 projects",
+    feature: "Workspaces",
+    free: "5 workspaces",
+    pro: "15 workspaces",
     business: "Unlimited",
   },
   {
@@ -105,7 +105,7 @@ const featureComparisonData = [
     business: "Unlimited",
   },
   {
-    feature: "Tasks per Project",
+    feature: "Tasks per Workspace",
     free: "100 tasks",
     pro: "Unlimited",
     business: "Unlimited",

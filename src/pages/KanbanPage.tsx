@@ -4,15 +4,15 @@ import { ChevronLeft } from "lucide-react";
 import ColumnBoard from "../_components/Column/ColumnBoard";
 import { useBoard } from "../hooks/useQueries";
 import { useParams } from "react-router-dom";
-import Cookies from "js-cookie";
+
 import LoadingScreen from "../_components/LoadingScreen";
 
 const KanbanPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const accessToken: string = Cookies.get("accessToken") || "";
 
-  const { data: boardDetail, isPending, isError } = useBoard(accessToken, id || "");
+
+  const { data: boardDetail, isPending, isError } = useBoard(id || "");
 
   // Function to handle going back to the boards section
   const handleGoBack = () => {
@@ -40,7 +40,7 @@ const KanbanPage = () => {
           className="mt-4 px-6 py-2 flex items-center gap-2 text-sm font-medium text-white bg-destructive rounded-md hover:bg-destructive/90 transition-colors"
         >
           <ChevronLeft className="w-5 h-5" />
-          Go Back to Boards
+          Go Back to Workspaces
         </button>
       </motion.div>
     );
@@ -53,17 +53,9 @@ const KanbanPage = () => {
       exit={{ opacity: 0 }}
       className="relative w-full h-full"
     >
-   
-      <button
-        onClick={handleGoBack}
-        className="absolute top-4 left-4 px-4 py-2 flex items-center gap-2 text-sm font-medium text-foreground bg-background rounded-md hover:bg-accent transition-colors"
-      >
-        <ChevronLeft className="w-5 h-5" />
-        Back to Boards
-      </button>
-
-     
-      <ColumnBoard title={boardDetail?.title} />
+      <ColumnBoard 
+        title={boardDetail?.title}
+      />
     </motion.div>
   );
 };

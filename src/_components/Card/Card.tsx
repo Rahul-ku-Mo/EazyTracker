@@ -235,115 +235,7 @@ const CardFooter = ({
   };
 
   return (
-    <div className="flex items-center justify-between h-10 gap-3 p-2 border-t rounded-b-lg border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900">
-      <div className="flex items-center text-xs">
-        {/* Completion checkbox - moved from absolute position */}
-        <div
-          className="flex items-center gap-1 px-1 py-0.5 transition-colors cursor-pointer"
-          onClick={handleCompletionClick}
-        >
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div
-                className={cn(
-                  "size-4 rounded-sm border-2 flex items-center justify-center transition-all duration-200",
-                  "hover:scale-110 active:scale-95",
-                  status?.isCompleted
-                    ? "bg-green-500 border-green-500 text-white"
-                    : "border-zinc-300 dark:border-zinc-600 hover:border-green-500 dark:hover:border-green-400"
-                )}
-              >
-                {status?.isCompleted && (
-                  <CheckCircle2 className="w-3 h-3" strokeWidth={2.5} />
-                )}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent className="rounded-sm bg-[#606060] dark:bg-black text-white dark:text-white">
-              <p className="text-xs">
-                {status?.isCompleted ? "Mark incomplete" : "Mark complete"}
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
-        {/* Status indicator */}
-        {statusInfo && (
-          <div
-            className={cn(
-              "flex items-center gap-1 p-1 rounded-[2px] text-xs leading-3 font-medium",
-              statusInfo.bg
-            )}
-          >
-            <statusInfo.icon
-              className={cn("size-4 p-0.5", statusInfo.color)}
-              strokeWidth={2}
-            />
-            <div className={statusInfo.color}>{statusInfo.text}</div>
-          </div>
-        )}
-
-        {/* Due date - Inline editable */}
-        {!statusInfo && (
-          <Popover>
-            <PopoverTrigger asChild>
-              <div
-                className="flex items-center gap-0.5 hover:bg-muted border border-border rounded-[2px] px-1 py-0.5 transition-colors cursor-pointer"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {dueDate ? (
-                  <>
-                    <Calendar
-                      className="size-4 text-zinc-700 dark:text-zinc-300"
-                    />
-                    <div className="font-bold relative top-0.5 text-[10px]">
-                      {dateFormat === "readable"
-                        ? formatDistanceToNow(new Date(dueDate), {
-                            addSuffix: true,
-                          })
-                        : format(new Date(dueDate), "MMM dd, yyyy")}
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex items-center gap-1 cursor-pointer">
-                    <Calendar className="size-4" />
-                  </div>
-                )}
-              </div>
-            </PopoverTrigger>
-            <PopoverContent
-              className="w-auto p-0"
-              align="start"
-              side="top"
-              sideOffset={8}
-              onClick={(e) => e.stopPropagation()}
-              style={{ zIndex: 9999 }}
-            >
-              <CalendarComponent
-                mode="single"
-                selected={dueDate ? new Date(dueDate) : undefined}
-                onSelect={(date) => {
-                  updateDueDate(date || null);
-                }}
-                initialFocus
-                className="p-3"
-              />
-              <div className="p-3 border-t">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    updateDueDate(null);
-                  }}
-                >
-                  Clear due date
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-        )}
-      </div>
+    <div className="flex items-center justify-between h-10 p-2 border-t rounded-b-lg border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900">
       <div className="flex items-center gap-0.5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -540,7 +432,7 @@ const CardFooter = ({
             >
               {assignees && assignees.length > 0 ? (
                 <div className="flex items-center -space-x-1">
-                  {assignees.slice(0, 3).map((assignee, index) => (
+                  {assignees.filter(assignee => assignee && assignee.id).slice(0, 3).map((assignee, index) => (
                     <Avatar
                       key={assignee.id}
                       className="w-4 h-4 border border-white dark:border-zinc-800 relative "
@@ -572,7 +464,7 @@ const CardFooter = ({
             className="w-40"
             onClick={(e) => e.stopPropagation()}
           >
-            {members?.map((member: TUser) => (
+            {members?.filter((member: TUser) => member && member.id)?.map((member: TUser) => (
               <DropdownMenuItem
                 key={member.id}
                 onClick={(e) => {
@@ -585,16 +477,16 @@ const CardFooter = ({
                     {member.imageUrl ? (
                       <img
                         src={member.imageUrl}
-                        alt={member.username}
+                        alt={member.username || 'User'}
                         className="w-full h-full rounded-full"
                       />
                     ) : (
                       <span className="text-xs">
-                        {member.username.charAt(0)}
+                        {member.username?.charAt(0) || '?'}
                       </span>
                     )}
                   </div>
-                  <span className="text-xs">{member.username}</span>
+                  <span className="text-xs">{member.username || 'Unknown User'}</span>
                 </div>
               </DropdownMenuItem>
             ))}
@@ -610,6 +502,115 @@ const CardFooter = ({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      <div className="flex items-center text-xs">
+        {/* Completion checkbox - moved from absolute position */}
+      
+
+        {/* Status indicator */}
+        {statusInfo && (
+          <div
+            className={cn(
+              "flex items-center gap-1 p-1 rounded-[2px] text-xs leading-3 font-medium",
+              statusInfo.bg
+            )}
+          >
+            <statusInfo.icon
+              className={cn("size-4 p-0.5", statusInfo.color)}
+              strokeWidth={2}
+            />
+            <div className={statusInfo.color}>{statusInfo.text}</div>
+          </div>
+        )}
+
+        {/* Due date - Inline editable */}
+        {!statusInfo && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <div
+                className="flex items-center gap-0.5 hover:bg-muted border border-border rounded-[2px] px-1 py-0.5 transition-colors cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {dueDate ? (
+                  <>
+                    <Calendar
+                      className="size-4 text-zinc-700 dark:text-zinc-300"
+                    />
+                    <div className="font-bold relative top-0.5 text-[10px]">
+                      {dateFormat === "readable"
+                        ? formatDistanceToNow(new Date(dueDate), {
+                            addSuffix: true,
+                          })
+                        : format(new Date(dueDate), "MMM dd, yyyy")}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-1 cursor-pointer">
+                    <Calendar className="size-4" />
+                  </div>
+                )}
+              </div>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-auto p-0"
+              align="start"
+              side="top"
+              sideOffset={8}
+              onClick={(e) => e.stopPropagation()}
+              style={{ zIndex: 9999 }}
+            >
+              <CalendarComponent
+                mode="single"
+                selected={dueDate ? new Date(dueDate) : undefined}
+                onSelect={(date) => {
+                  updateDueDate(date || null);
+                }}
+                initialFocus
+                className="p-3"
+              />
+              <div className="p-3 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateDueDate(null);
+                  }}
+                >
+                  Clear due date
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+          <div
+          className="flex items-center gap-1 px-1 py-0.5 transition-colors cursor-pointer"
+          onClick={handleCompletionClick}
+        >
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className={cn(
+                  "size-4 rounded-sm border-2 flex items-center justify-center transition-all duration-200",
+                  "hover:scale-110 active:scale-95",
+                  status?.isCompleted
+                    ? "bg-green-500 border-green-500 text-white"
+                    : "border-zinc-300 dark:border-zinc-600 hover:border-green-500 dark:hover:border-green-400"
+                )}
+              >
+                {status?.isCompleted && (
+                  <CheckCircle2 className="w-3 h-3" strokeWidth={2.5} />
+                )}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="rounded-sm bg-[#606060] dark:bg-black text-white dark:text-white">
+              <p className="text-xs">
+                {status?.isCompleted ? "Mark incomplete" : "Mark complete"}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </div> 
     </div>
   );
 };

@@ -1,30 +1,30 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteBoard, updateBoard } from "@/apis/BoardApis";
+import { deleteWorkspace, updateWorkspace } from "@/apis/WorkspaceApis";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
-export const useBoardMutation = () => {
+export const useWorkspaceMutation = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const accessToken = Cookies.get("accessToken") as string;
 
-  const deleteBoardMutation = useMutation({
-    mutationFn: async (boardId: string) => {
-      await deleteBoard(accessToken, boardId);
+
+  const deleteWorkspaceMutation = useMutation({
+    mutationFn: async (workspaceId: string) => {
+      await deleteWorkspace(workspaceId);
     },
     onSuccess: () => {
       toast({
-        title: "Board deleted",
+        title: "Workspace deleted",
         description:
-          "Board has been successfully deleted by " + Cookies.get("username") ||
+          "Workspace has been successfully deleted by " + Cookies.get("username") ||
           "Unknown user",
         variant: "default",
       });
       navigate("/workspace", { replace: true });
-      queryClient.invalidateQueries({ queryKey: ["boards"] });
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
     },
     onError: () => {
       toast({
@@ -35,24 +35,24 @@ export const useBoardMutation = () => {
     },
   });
 
-  const updateBoardMutation = useMutation({
+  const updateWorkspaceMutation = useMutation({
     mutationFn: async ({
-      boardId,
-      updatedBoardData,
+      workspaceId,
+      updatedWorkspaceData,
     }: {
-      boardId: string;
-      updatedBoardData: any;
+      workspaceId: string;
+      updatedWorkspaceData: any;
     }) => {
-      await updateBoard(accessToken, boardId, updatedBoardData);
+      await updateWorkspace(workspaceId, updatedWorkspaceData);
     },
     onSuccess: () => {
       toast({
-        title: "Board updated",
-        description: "Board has been successfully updated",
+        title: "Workspace updated",
+        description: "Workspace has been successfully updated",
         variant: "default",
       });
-      queryClient.invalidateQueries({ queryKey: ["boards"] });
-      queryClient.invalidateQueries({ queryKey: ["board"] });
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      queryClient.invalidateQueries({ queryKey: ["workspace"] });
     },
     onError: () => {
       toast({
@@ -63,5 +63,5 @@ export const useBoardMutation = () => {
     },
   });
 
-  return { deleteBoardMutation, updateBoardMutation };
-};
+  return { deleteWorkspaceMutation, updateWorkspaceMutation };
+}; 

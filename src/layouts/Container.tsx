@@ -13,6 +13,7 @@ type ContainerProps = {
   fwdClassName?: string;
   title?: string;
   headerChildren?: React.ReactNode;
+  viewBar?: React.ReactNode; // New prop for the view bar
 };
 
 const MainLayout = ({
@@ -20,6 +21,7 @@ const MainLayout = ({
   children,
   fwdClassName,
   headerChildren,
+  viewBar,
 }: ContainerProps) => {
   return (
     <>
@@ -28,6 +30,12 @@ const MainLayout = ({
         <SidebarInset>
           <AppHeader>{headerChildren}</AppHeader>
           <TrialStatusBanner />
+          {/* View Bar - positioned below header and banner */}
+          {viewBar && (
+            <div className="border-b border-zinc-200 dark:border-zinc-800">
+              {viewBar}
+            </div>
+          )}
           <main
             className={cn(
               background,

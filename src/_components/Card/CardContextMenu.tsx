@@ -127,7 +127,7 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-48">
                   {!isPending &&
-                    members?.map((member: TUser) => (
+                    members?.filter((member: TUser) => member && member.username)?.map((member: TUser) => (
                       <ContextMenuItem
                         key={member.id}
                         className="gap-2 text-xs"
@@ -137,14 +137,14 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
                           {member.imageUrl ? (
                             <img
                               src={member.imageUrl}
-                              alt={member.username}
+                              alt={member.username || 'User'}
                               className="w-full h-full rounded-full"
                             />
                           ) : (
-                            member.username.charAt(0)
+                            member.username?.charAt(0) || '?'
                           )}
                         </div>
-                        {member.username}
+                        {member.username || 'Unknown User'}
                       </ContextMenuItem>
                     ))}
                   <ContextMenuSeparator />

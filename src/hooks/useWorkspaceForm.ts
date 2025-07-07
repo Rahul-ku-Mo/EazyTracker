@@ -2,64 +2,64 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createBoard } from "../apis/BoardApis";
+import { createWorkspace } from "../apis/WorkspaceApis";
 import { useToast } from "../hooks/use-toast";
 import { useFeatureGating } from "./useFeatureGating";
 
-interface IBoardForm {
-  boardTitle: string;
+interface IWorkspaceForm {
+  workspaceTitle: string;
   selectedColor: string;
 }
 
-const useBoardForm = (count: number) => {
+const useWorkspaceForm = (count: number) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const accessToken = Cookies.get("accessToken");
   const { toast } = useToast();
   const { getUpgradeMessage } = useFeatureGating();
 
-  const [currentBoardInput, setCurrentBoardInput] = useState("");
+  const [currentWorkspaceInput, setCurrentWorkspaceInput] = useState("");
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
 
-  const createBoardMutation = useMutation({
-    mutationFn: async (data: IBoardForm) => {
+  const createWorkspaceMutation = useMutation({
+    mutationFn: async (data: IWorkspaceForm) => {
       if (!accessToken) {
         throw new Error("No access token found");
       }
 
       const [colorId, colorValue, colorName] = data.selectedColor.split("|");
 
-      const kanbanBoardData = {
-        title: data.boardTitle,
+      const kanbanWorkspaceData = {
+        title: data.workspaceTitle,
         colorId,
         colorValue,
         colorName
       };
 
-      const response = await createBoard(kanbanBoardData);
+      const response = await createWorkspace(kanbanWorkspaceData);
       return response;
     },
     onSuccess: (data) => {
       if (data && data.id) {
         toast({
-          title: "Board created successfully",
+          title: "Workspace created successfully",
           variant: "default",
         });
-        navigate(`/workspace/board/${data.id}`);
-        setCurrentBoardInput("");
+        navigate(`/workspace/${data.id}`);
+        setCurrentWorkspaceInput("");
         setSelectedImageId(null);
       }
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to create board",
+        title: "Failed to create workspace",
         description: error.message,
         variant: "destructive",
       });
     },
     onSettled: () => {
       return queryClient.invalidateQueries({
-        queryKey: ["boards"],
+        queryKey: ["workspaces"],
       });
     },
   });
@@ -68,13 +68,13 @@ const useBoardForm = (count: number) => {
     event.preventDefault();
     
     const form = event.target as HTMLFormElement;
-    const boardTitle = (form.elements.namedItem('title') as HTMLInputElement).value;
+    const workspaceTitle = (form.elements.namedItem('title') as HTMLInputElement).value;
     const selectedColor = (form.elements.namedItem('color') as HTMLInputElement).value;
 
-    if (boardTitle === "") {
+    if (workspaceTitle === "") {
       toast({
-        title: "Board title shouldn't be empty!",
-        description: "Please enter a board title",
+        title: "Workspace title shouldn't be empty!",
+        description: "Please enter a workspace title",
         variant: "destructive",
       });
       return;
@@ -82,23 +82,23 @@ const useBoardForm = (count: number) => {
 
     if (selectedColor === "") {
       toast({
-        title: "Board color shouldn't be empty!",
-        description: "Please select a board color",
+        title: "Workspace color shouldn't be empty!",
+        description: "Please select a workspace color",
         variant: "destructive",
       });
       return;
     }
 
-    if (boardTitle.length < 6) {
+    if (workspaceTitle.length < 6) {
       toast({
-        title: "Board title must be at least 6 characters long",
+        title: "Workspace title must be at least 6 characters long",
         description: "Please enter a longer title",
         variant: "destructive",
       });
       return;
     }
 
-    // Check if user can create more boards (count -1 means unlimited)
+    // Check if user can create more workspaces (count -1 means unlimited)
     if (count === 0) {
       toast({
         title: "Project limit reached",
@@ -108,20 +108,20 @@ const useBoardForm = (count: number) => {
       return;
     }
 
-    createBoardMutation.mutate({
-      boardTitle,
+    createWorkspaceMutation.mutate({
+      workspaceTitle,
       selectedColor,
     });
   };
 
   return {
-    isPending: createBoardMutation.isPending,
+    isPending: createWorkspaceMutation.isPending,
     selectedImageId,
-    setCurrentBoardInput,
-    currentBoardInput,
+    setCurrentWorkspaceInput,
+    currentWorkspaceInput,
     setSelectedImageId,
     handleSubmit,
   };
 };
 
-export default useBoardForm;
+export default useWorkspaceForm; 

@@ -5,6 +5,7 @@ import {
   Settings2,
   CreditCard,
   Star,
+  Box,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -35,20 +36,20 @@ import { useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
 
 // Favorites navigation component
-const NavFavorites = ({ favoriteBoards }: { favoriteBoards: any[] }) => {
+const NavFavorites = ({ favoriteWorkspaces }: { favoriteWorkspaces: any[] }) => {
   const navigate = useNavigate();
 
   const { state } = useSidebar();
   
-  if (!favoriteBoards || favoriteBoards.length === 0) {
+  if (!favoriteWorkspaces || favoriteWorkspaces.length === 0) {
     return (
       <SidebarGroup>
-        <SidebarGroupLabel className="flex items-center gap-2">
+        <SidebarGroupLabel className="flex items-center gap-2 text-[13px] leading-[1.2]">
           <Star className="h-4 w-4" />
           Favorites
         </SidebarGroupLabel>
-        <div className={cn(state === "collapsed" ? "hidden" : "block px-2 py-1 text-xs text-muted-foreground")}>
-          No favorite boards yet
+        <div className={cn(state === "collapsed" ? "hidden" : "block px-2 py-1 text-[13px] leading-[1.2] text-muted-foreground")}>
+          No favorite workspaces yet
         </div>
       </SidebarGroup>
     );
@@ -61,17 +62,17 @@ const NavFavorites = ({ favoriteBoards }: { favoriteBoards: any[] }) => {
         Favorites
       </SidebarGroupLabel>
       <SidebarMenu>
-        {favoriteBoards.map((board) => (
-          <SidebarMenuItem key={board.id}>
+        {favoriteWorkspaces.map((workspace) => (
+          <SidebarMenuItem key={workspace.id}>
             <SidebarMenuButton
-              onClick={() => navigate(`/workspace/board/${board.id}`)}
-              className="flex items-center gap-2"
+              onClick={() => navigate(`/workspace/board/${workspace.id}`)}
+              className="flex items-center gap-2 text-[13px] leading-[1.2]"
             >
               <div 
-                className="w-3 h-3 rounded-sm" 
-                style={{ backgroundColor: board.colorValue }}
+                className="w-4 h-4 rounded-sm" 
+                style={{ backgroundColor: workspace.colorValue }}
               />
-              <span className="truncate">{board.title}</span>
+              <span className="truncate">{workspace.title}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
@@ -87,6 +88,12 @@ const getNavigationData = (isAdmin: boolean, pathname: string) => {
       url: "/workspace",
       icon: SquareTerminal,
       isActive: pathname.includes("/workspace"),
+    },
+    {
+      title: "Projects",
+      url: "/projects",
+      icon: Box,
+      isActive: pathname.includes("/projects"),
     },
     {
       title: "Notifications",
@@ -145,11 +152,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     enabled: !!accessToken
   });
 
-  // Fetch favorite boards
-  const { data: favoriteBoards } = useQuery({
-    queryKey: ['favoriteBoards'],
+  // Fetch favorite workspaces
+  const { data: favoriteWorkspaces } = useQuery({
+    queryKey: ['favoriteWorkspaces'],
     queryFn: async () => {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/boards/favorites`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/workspaces/favorites`, {
         headers: {
           Authorization: `Bearer ${accessToken}`
         }
@@ -167,7 +174,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navigationData.navMain} />
-        <NavFavorites favoriteBoards={favoriteBoards || []} />
+        <NavFavorites favoriteWorkspaces={favoriteWorkspaces || []} />
         <div className={cn(state === "collapsed" ? "hidden" : "block px-3")}>
           <TrialStatusIndicator />
         </div>

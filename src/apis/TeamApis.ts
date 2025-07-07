@@ -28,11 +28,11 @@ export const getTeamMembers = async (teamId: string) => {
   }
 };
 
-// Get board members with permissions
-export const getBoardMembers = async (boardId: number) => {
+// Get workspace members with permissions
+export const getWorkspaceMembers = async (workspaceId: number) => {
   try {
     const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/teams/boards/${boardId}/members`,
+      `${import.meta.env.VITE_API_URL}/teams/workspaces/${workspaceId}/members`,
       {
         headers: getAuthHeaders(),
       }
@@ -43,20 +43,20 @@ export const getBoardMembers = async (boardId: number) => {
     }
     return null;
   } catch (error) {
-    console.error("Error fetching board members:", error);
+    console.error("Error fetching workspace members:", error);
     return null;
   }
 };
 
-// Add user to board
-export const addUserToBoard = async (
-  boardId: number,
+// Add user to workspace
+export const addUserToWorkspace = async (
+  workspaceId: number,
   userId: string,
   role: 'ADMIN' | 'MEMBER' = 'MEMBER'
 ) => {
   try {
     const response = await axios.post(
-      `${import.meta.env.VITE_API_URL}/teams/boards/${boardId}/members/${userId}`,
+      `${import.meta.env.VITE_API_URL}/teams/workspaces/${workspaceId}/members/${userId}`,
       { role },
       {
         headers: getAuthHeaders(),
@@ -68,16 +68,16 @@ export const addUserToBoard = async (
     }
     return null;
   } catch (error) {
-    console.error("Error adding user to board:", error);
+    console.error("Error adding user to workspace:", error);
     throw error;
   }
 };
 
-// Remove user from board
-export const removeUserFromBoard = async (boardId: number, userId: string) => {
+// Remove user from workspace
+export const removeUserFromWorkspace = async (workspaceId: number, userId: string) => {
   try {
     const response = await axios.delete(
-      `${import.meta.env.VITE_API_URL}/teams/boards/${boardId}/members/${userId}`,
+      `${import.meta.env.VITE_API_URL}/teams/workspaces/${workspaceId}/members/${userId}`,
       {
         headers: getAuthHeaders(),
       }
@@ -88,20 +88,20 @@ export const removeUserFromBoard = async (boardId: number, userId: string) => {
     }
     return false;
   } catch (error) {
-    console.error("Error removing user from board:", error);
+    console.error("Error removing user from workspace:", error);
     throw error;
   }
 };
 
-// Update user permissions on board
+// Update user permissions on workspace
 export const updateUserPermissions = async (
-  boardId: number,
+  workspaceId: number,
   userId: string,
   role: 'ADMIN' | 'MEMBER'
 ) => {
   try {
     const response = await axios.patch(
-      `${import.meta.env.VITE_API_URL}/teams/boards/${boardId}/members/${userId}/permissions`,
+      `${import.meta.env.VITE_API_URL}/teams/workspaces/${workspaceId}/members/${userId}/permissions`,
       { role },
       {
         headers: getAuthHeaders(),
@@ -113,7 +113,7 @@ export const updateUserPermissions = async (
     }
     return null;
   } catch (error) {
-    console.error("Error updating user permissions:", error);
+    console.error("Error updating workspace user permissions:", error);
     throw error;
   }
 };
@@ -139,11 +139,11 @@ export const toggleUserStatus = async (userId: string, isActive: boolean) => {
   }
 };
 
-// Get team boards (both accessible and locked)
-export const getTeamBoards = async () => {
+// Get team workspaces (both accessible and locked)
+export const getTeamWorkspaces = async () => {
   try {
     const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/teams/boards`,
+      `${import.meta.env.VITE_API_URL}/teams/workspaces`,
       {
         headers: getAuthHeaders(),
       }
@@ -154,20 +154,20 @@ export const getTeamBoards = async () => {
     }
     return [];
   } catch (error) {
-    console.error("Error fetching team boards:", error);
+    console.error("Error fetching team workspaces:", error);
     return [];
   }
 };
 
-// Send board invitation
-export const sendBoardInvitation = async (
-  boardId: number,
+// Send workspace invitation
+export const sendWorkspaceInvitation = async (
+  workspaceId: number,
   email: string,
   role: 'ADMIN' | 'MEMBER' = 'MEMBER'
 ) => {
   try {
     const response = await axios.post(
-      `${import.meta.env.VITE_API_URL}/teams/boards/${boardId}/invite`,
+      `${import.meta.env.VITE_API_URL}/teams/workspaces/${workspaceId}/invite`,
       { email, role },
       {
         headers: getAuthHeaders(),
@@ -179,7 +179,7 @@ export const sendBoardInvitation = async (
     }
     return null;
   } catch (error) {
-    console.error("Error sending board invitation:", error);
+    console.error("Error sending workspace invitation:", error);
     throw error;
   }
 };

@@ -187,7 +187,7 @@ const ListViewContextMenu = ({
                               className="w-full h-full rounded-full"
                             />
                           ) : (
-                            member.username.charAt(0)
+                            member.username ? member.username.charAt(0) : ''
                           )}
                         </div>
                         {member.username}

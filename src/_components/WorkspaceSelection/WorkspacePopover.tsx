@@ -3,7 +3,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import BoardForm from "./BoardForm";
+import WorkspaceForm from "./WorkspaceForm";
 import { useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { useFeatureGating } from "@/hooks/useFeatureGating";
@@ -14,19 +14,19 @@ import { Link } from "react-router-dom";
 import clsx from "clsx";
 import { LockIcon, PlusIcon, Crown, ArrowRight } from "lucide-react";
 
-interface BoardPopoverProps {
+interface WorkspacePopoverProps {
   count: number;
 }
 
-const BoardPopover = ({ count }: BoardPopoverProps) => {
+const WorkspacePopover = ({ count }: WorkspacePopoverProps) => {
   const { role } = useContext(AuthContext);
   const { getUpgradeMessage } = useFeatureGating();
   
-  const canCreateBoards = count > 0;
+  const canCreateWorkspaces = count > 0;
   const isUnlimited = count === -1; // -1 indicates unlimited for Pro/Enterprise plans
   
-  // If user can't create more boards, show upgrade prompt instead of popover
-  if (!canCreateBoards && !isUnlimited) {
+  // If user can't create more workspaces, show upgrade prompt instead of popover
+  if (!canCreateWorkspaces && !isUnlimited) {
     return (
       <Card className="w-52 h-36 border-dashed border-2 border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 flex flex-col justify-center">
         <CardHeader className="text-center pb-2 pt-4">
@@ -55,16 +55,16 @@ const BoardPopover = ({ count }: BoardPopoverProps) => {
   
   return (
     <Popover>
-      <PopoverTrigger asChild disabled={role !== "ADMIN" || (!canCreateBoards && !isUnlimited)}>
+      <PopoverTrigger asChild disabled={role !== "ADMIN" || (!canCreateWorkspaces && !isUnlimited)}>
         <button 
           className={clsx(
             `relative flex flex-col items-center justify-center p-2 rounded-md cursor-pointer w-52 h-36 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-600 border border-zinc-200 dark:border-zinc-700 transition-all duration-200 ease-in-out`, 
-            role === "ADMIN" && canCreateBoards && "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700",
-            (!canCreateBoards && !isUnlimited) && "cursor-not-allowed opacity-50"
+            role === "ADMIN" && canCreateWorkspaces && "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700",
+            (!canCreateWorkspaces && !isUnlimited) && "cursor-not-allowed opacity-50"
           )}
         >
           <PlusIcon className="w-8 h-8 mb-2 text-zinc-900 dark:text-white" />
-          <span className="text-sm font-bold text-zinc-900 dark:text-white">Create New Board</span>
+          <span className="text-sm font-bold text-zinc-900 dark:text-white">Create New Workspace</span>
           <span className="text-xs font-medium text-zinc-600 dark:text-white">
             {isUnlimited ? "Unlimited" : `${count} Remaining`}
           </span>
@@ -84,10 +84,10 @@ const BoardPopover = ({ count }: BoardPopoverProps) => {
         side="right"
         sideOffset={5}
       >
-        <BoardForm count={count} />
+        <WorkspaceForm count={count} />
       </PopoverContent>
     </Popover>
   );
 };
 
-export default BoardPopover;
+export default WorkspacePopover; 

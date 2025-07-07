@@ -588,7 +588,7 @@ const RightPanel = () => {
               <div className="space-y-2">
                 {assignedMembers.map((assignedMember) => (
                   <div key={assignedMember.id} className="group relative">
-                    <div className="flex items-center gap-2 p-2 bg-muted/30 hover:bg-muted/50 border border-[#e3e3e3b5] dark:border-zinc-700 rounded-md transition-all duration-200 dark:border-zinc-600">
+                    <div className="flex items-center gap-2 p-2 bg-muted/30 hover:bg-muted/50 border border-[#e3e3e3b5] rounded-md transition-all duration-200 dark:border-zinc-600">
                       <Avatar className="w-8 h-8 ring-1 ring-border">
                         <AvatarImage
                           src={assignedMember.imageUrl}

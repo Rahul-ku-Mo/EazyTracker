@@ -35,8 +35,8 @@ import {
 interface BoardPermissionsDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  boardId: string;
-  boardTitle: string;
+  workspaceId: string;
+  workspaceTitle: string;
 }
 
 interface TeamMember {
@@ -51,22 +51,22 @@ interface TeamMember {
   } | null;
 }
 
-const BoardPermissionsDialog = ({ 
+const WorkspacePermissionsDialog = ({ 
   isOpen, 
   onClose, 
-  boardId, 
-  boardTitle 
+  workspaceId, 
+  workspaceTitle 
 }: BoardPermissionsDialogProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const accessToken = Cookies.get("accessToken") || "";
 
-  // Fetch team members with board access status
+  // Fetch team members with workspace access status
   const { data: permissionsData, isLoading } = useQuery({
-    queryKey: ["board-permissions", boardId],
+    queryKey: ["workspace-permissions", workspaceId],
     queryFn: async () => {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/boards/${boardId}/permissions`,
+        `${import.meta.env.VITE_API_URL}/workspaces/${workspaceId}/permissions`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -75,14 +75,14 @@ const BoardPermissionsDialog = ({
       );
       return response.data.data;
     },
-    enabled: isOpen && !!boardId,
+    enabled: isOpen && !!workspaceId,
   });
 
-  // Grant board access mutation
+  // Grant workspace access mutation
   const grantAccessMutation = useMutation({
     mutationFn: async ({ memberId, role }: { memberId: string; role: string }) => {
       return axios.post(
-        `${import.meta.env.VITE_API_URL}/boards/${boardId}/permissions/grant`,
+        `${import.meta.env.VITE_API_URL}/workspaces/${workspaceId}/permissions/grant`,
         { memberId, role },
         {
           headers: {
@@ -94,10 +94,10 @@ const BoardPermissionsDialog = ({
     onSuccess: () => {
       toast({
         title: "Access granted",
-        description: `Board access has been granted successfully`,
+        description: `Workspace access has been granted successfully`,
         variant: "default",
       });
-      queryClient.invalidateQueries({ queryKey: ["board-permissions", boardId] });
+      queryClient.invalidateQueries({ queryKey: ["workspace-permissions", workspaceId] });
     },
     onError: (error: any) => {
       toast({
@@ -108,11 +108,11 @@ const BoardPermissionsDialog = ({
     },
   });
 
-  // Revoke board access mutation
+  // Revoke workspace access mutation
   const revokeAccessMutation = useMutation({
     mutationFn: async (memberId: string) => {
       return axios.delete(
-        `${import.meta.env.VITE_API_URL}/boards/${boardId}/permissions/${memberId}`,
+        `${import.meta.env.VITE_API_URL}/workspaces/${workspaceId}/permissions/${memberId}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -123,10 +123,10 @@ const BoardPermissionsDialog = ({
     onSuccess: () => {
       toast({
         title: "Access revoked",
-        description: "Board access has been revoked successfully",
+        description: "Workspace access has been revoked successfully",
         variant: "default",
       });
-      queryClient.invalidateQueries({ queryKey: ["board-permissions", boardId] });
+      queryClient.invalidateQueries({ queryKey: ["workspace-permissions", workspaceId] });
     },
     onError: (error: any) => {
       toast({
@@ -190,10 +190,10 @@ const BoardPermissionsDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            Board Permissions
+            Workspace Permissions
           </DialogTitle>
           <DialogDescription>
-            Manage team member access to <strong>{boardTitle}</strong>
+            Manage team member access to <strong>{workspaceTitle}</strong>
           </DialogDescription>
         </DialogHeader>
 
@@ -210,7 +210,7 @@ const BoardPermissionsDialog = ({
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span>{members.length} total members</span>
                 <span>•</span>
-                <span>{membersWithAccess.length} have board access</span>
+                <span>{membersWithAccess.length} have workspace access</span>
               </div>
             </CardContent>
           </Card>
@@ -219,7 +219,7 @@ const BoardPermissionsDialog = ({
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-600" />
-              <h3 className="text-lg font-semibold">Members with Access ({membersWithAccess.length})</h3>
+              <h3 className="text-lg font-semibold">Members with Workspace Access ({membersWithAccess.length})</h3>
             </div>
             
             {membersWithAccess.length > 0 ? (
@@ -373,4 +373,4 @@ const BoardPermissionsDialog = ({
   );
 };
 
-export default BoardPermissionsDialog; 
+export default WorkspacePermissionsDialog; 

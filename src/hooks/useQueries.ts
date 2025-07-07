@@ -2,6 +2,7 @@ import { useQuery  } from "@tanstack/react-query";
 import { fetchCard, fetchCards } from "../apis/CardApis";
 import { fetchColumn, fetchColumns } from "../apis/ColumnApis";
 import { fetchBoards, fetchBoard } from "../apis/BoardApis";
+import { fetchWorkspaces, fetchWorkspace } from "../apis/WorkspaceApis";
 import { fetchUserProfile, fetchUsers } from "../apis/userApis";
 import { fetchLabels } from "../apis/LabelApis";
 
@@ -21,10 +22,10 @@ const useCards = (accessToken: string, columnId: string) => {
   });
 };
 
-const useColumns = (accessToken: string, boardId: string) => {
+const useColumns = (accessToken: string, workspaceId: string) => {
   return useQuery({
-    queryKey: ["columns", "boards", boardId],
-    queryFn: async () => await fetchColumns(accessToken, boardId),
+    queryKey: ["columns", "workspaces", workspaceId],
+    queryFn: async () => await fetchColumns(accessToken, workspaceId),
   });
 };
 const useColumn = (accessToken: string, columnId: string) => {
@@ -34,17 +35,31 @@ const useColumn = (accessToken: string, columnId: string) => {
   });
 };
 
-const useBoard = (accessToken: string, boardId: string) => {
+const useBoard = (boardId: string) => {
   return useQuery({
     queryKey: ["boards", boardId],
-    queryFn: async () => await fetchBoard(accessToken, boardId),
+    queryFn: async () => await fetchBoard(boardId),
   });
 };
 
-const useBoards = (accessToken: string) => {
+const useBoards = () => {
   return useQuery({
     queryKey: ["boards"],
-    queryFn: async () => await fetchBoards(accessToken),
+    queryFn: async () => await fetchBoards(),
+  });
+};
+
+const useWorkspace = (workspaceId: string) => {
+  return useQuery({
+    queryKey: ["workspaces", workspaceId],
+    queryFn: async () => await fetchWorkspace(workspaceId),
+  });
+};
+
+const useWorkspaces = () => {
+  return useQuery({
+    queryKey: ["workspaces"],
+    queryFn: async () => await fetchWorkspaces(),
   });
 };
 
@@ -85,6 +100,8 @@ export {
   useColumns,
   useBoard,
   useBoards,
+  useWorkspace,
+  useWorkspaces,
   useUser,
   useUsers,
   useLabels,

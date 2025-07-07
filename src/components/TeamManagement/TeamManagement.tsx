@@ -97,12 +97,12 @@ const TeamManagement: React.FC = () => {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'ADMIN' | 'MEMBER'>('MEMBER');
-  const [selectedBoard, setSelectedBoard] = useState<number | null>(null);
+  const [selectedWorkspace, setSelectedWorkspace] = useState<number | null>(null);
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
-  const [selectedBoardForBulk, setSelectedBoardForBulk] = useState<number | null>(null);
+  const [selectedWorkspaceForBulk, setSelectedWorkspaceForBulk] = useState<number | null>(null);
   const [filterByRole, setFilterByRole] = useState<'ALL' | 'ADMIN' | 'MEMBER'>('ALL');
   const [filterByStatus, setFilterByStatus] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
   const { toast } = useToast();
@@ -126,23 +126,23 @@ const TeamManagement: React.FC = () => {
     enabled: !!accessToken,
   });
 
-  // Fetch team-related boards only
-  const { data: boards = [], isLoading: isLoadingBoards } = useQuery({
-    queryKey: ["team-boards", teamData?.team?.id],
+  // Fetch team-related workspaces only
+  const { data: workspaces = [], isLoading: isLoadingWorkspaces } = useQuery({
+    queryKey: ["team-workspaces", teamData?.team?.id],
     queryFn: async () => {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/teams/boards`,
+        `${import.meta.env.VITE_API_URL}/teams/workspaces`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         }
       );
-      return response.data.data.map((board: any) => ({
-        id: board.id,
-        title: board.title,
-        colorName: board.colorName,
-        colorValue: board.colorValue,
+      return response.data.data.map((workspace: any) => ({
+        id: workspace.id,
+        title: workspace.title,
+        colorName: workspace.colorName,
+        colorValue: workspace.colorValue,
       }));
     },
     enabled: !!accessToken && !!teamData,
@@ -187,21 +187,21 @@ const TeamManagement: React.FC = () => {
     }
   };
 
-  const handleBulkAddToBoard = () => {
-    if (!selectedBoardForBulk || selectedMembers.size === 0) return;
+  const handleBulkAddToWorkspace = () => {
+    if (!selectedWorkspaceForBulk || selectedMembers.size === 0) return;
     
     const promises = Array.from(selectedMembers).map(userId => 
-      addToBoardMutation.mutateAsync({ userId, boardId: selectedBoardForBulk, role: inviteRole })
+      addToWorkspaceMutation.mutateAsync({ userId, workspaceId: selectedWorkspaceForBulk, role: inviteRole })
     );
 
     Promise.all(promises).then(() => {
       toast({
         title: 'Bulk Action Completed',
-        description: `Added ${selectedMembers.size} members to the board.`,
+        description: `Added ${selectedMembers.size} members to the workspace.`,
       });
       setSelectedMembers(new Set());
       setShowBulkActions(false);
-      setSelectedBoardForBulk(null);
+      setSelectedWorkspaceForBulk(null);
     }).catch(() => {
       toast({
         title: 'Error',
@@ -211,21 +211,21 @@ const TeamManagement: React.FC = () => {
     });
   };
 
-  const handleBulkRemoveFromBoard = () => {
-    if (!selectedBoardForBulk || selectedMembers.size === 0) return;
+  const handleBulkRemoveFromWorkspace = () => {
+    if (!selectedWorkspaceForBulk || selectedMembers.size === 0) return;
     
     const promises = Array.from(selectedMembers).map(userId => 
-      removeFromBoardMutation.mutateAsync({ userId, boardId: selectedBoardForBulk })
+      removeFromWorkspaceMutation.mutateAsync({ userId, workspaceId: selectedWorkspaceForBulk })
     );
 
     Promise.all(promises).then(() => {
       toast({
         title: 'Bulk Action Completed',
-        description: `Removed ${selectedMembers.size} members from the board.`,
+        description: `Removed ${selectedMembers.size} members from the workspace.`,
       });
       setSelectedMembers(new Set());
       setShowBulkActions(false);
-      setSelectedBoardForBulk(null);
+      setSelectedWorkspaceForBulk(null);
     }).catch(() => {
       toast({
         title: 'Error',
@@ -255,9 +255,9 @@ const TeamManagement: React.FC = () => {
   });
 
   const updatePermissionsMutation = useMutation({
-    mutationFn: async ({ userId, boardId, role }: { userId: string; boardId: number; role: string }) => {
+    mutationFn: async ({ userId, workspaceId, role }: { userId: string; workspaceId: number; role: string }) => {
       const response = await axios.patch(
-        `${import.meta.env.VITE_API_URL}/teams/boards/${boardId}/members/${userId}/permissions`,
+        `${import.meta.env.VITE_API_URL}/teams/workspaces/${workspaceId}/members/${userId}/permissions`,
         { role },
         {
           headers: {
@@ -269,14 +269,14 @@ const TeamManagement: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team-members"] });
-      queryClient.invalidateQueries({ queryKey: ["team-boards"] });
+      queryClient.invalidateQueries({ queryKey: ["team-workspaces"] });
     },
   });
 
-  const removeFromBoardMutation = useMutation({
-    mutationFn: async ({ userId, boardId }: { userId: string; boardId: number }) => {
+  const removeFromWorkspaceMutation = useMutation({
+    mutationFn: async ({ userId, workspaceId }: { userId: string; workspaceId: number }) => {
       const response = await axios.delete(
-        `${import.meta.env.VITE_API_URL}/teams/boards/${boardId}/members/${userId}`,
+        `${import.meta.env.VITE_API_URL}/teams/workspaces/${workspaceId}/members/${userId}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -287,14 +287,14 @@ const TeamManagement: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team-members"] });
-      queryClient.invalidateQueries({ queryKey: ["team-boards"] });
+      queryClient.invalidateQueries({ queryKey: ["team-workspaces"] });
     },
   });
 
-  const addToBoardMutation = useMutation({
-    mutationFn: async ({ userId, boardId, role }: { userId: string; boardId: number; role: string }) => {
+  const addToWorkspaceMutation = useMutation({
+    mutationFn: async ({ userId, workspaceId, role }: { userId: string; workspaceId: number; role: string }) => {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/teams/boards/${boardId}/members/${userId}`,
+        `${import.meta.env.VITE_API_URL}/teams/workspaces/${workspaceId}/members/${userId}`,
         { role },
         {
           headers: {
@@ -306,12 +306,12 @@ const TeamManagement: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team-members"] });
-      queryClient.invalidateQueries({ queryKey: ["team-boards"] });
+      queryClient.invalidateQueries({ queryKey: ["team-workspaces"] });
     },
   });
 
   // Loading state
-  if (isLoadingTeam || isLoadingBoards) {
+  if (isLoadingTeam || isLoadingWorkspaces) {
     return (
       <MainLayout title="Team Management">
         <div className="flex items-center justify-center py-12">
@@ -343,12 +343,12 @@ const TeamManagement: React.FC = () => {
     });
   };
 
-  const handleUpdatePermissions = (userId: string, boardId: number, role: 'ADMIN' | 'MEMBER') => {
-    updatePermissionsMutation.mutate({ userId, boardId, role }, {
+  const handleUpdatePermissions = (userId: string, workspaceId: number, role: 'ADMIN' | 'MEMBER') => {
+    updatePermissionsMutation.mutate({ userId, workspaceId, role }, {
       onSuccess: () => {
         toast({
           title: 'Permissions Updated',
-          description: `User permissions updated to ${role} for the selected board.`,
+          description: `User permissions updated to ${role} for the selected workspace.`,
           variant: 'default',
         });
       },
@@ -362,12 +362,12 @@ const TeamManagement: React.FC = () => {
     });
   };
 
-  const handleRemoveFromBoard = (userId: string, boardId: number) => {
-    removeFromBoardMutation.mutate({ userId, boardId }, {
+  const handleRemoveFromWorkspace = (userId: string, workspaceId: number) => {
+    removeFromWorkspaceMutation.mutate({ userId, workspaceId }, {
       onSuccess: () => {
         toast({
           title: 'User Removed',
-          description: 'User has been removed from the board.',
+          description: 'User has been removed from the workspace.',
           variant: 'default',
         });
         // Close the member dialog if removing from selected member
@@ -378,7 +378,7 @@ const TeamManagement: React.FC = () => {
       onError: () => {
         toast({
           title: 'Error',
-          description: 'Failed to remove user from board.',
+          description: 'Failed to remove user from workspace.',
           variant: 'destructive',
         });
       }
@@ -386,10 +386,10 @@ const TeamManagement: React.FC = () => {
   };
 
   const handleSendInvitation = () => {
-    if (!inviteEmail || !selectedBoard) {
+    if (!inviteEmail || !selectedWorkspace) {
       toast({
         title: 'Missing Information',
-        description: 'Please provide email and select a board.',
+        description: 'Please provide email and select a workspace.',
         variant: 'destructive',
       });
       return;
@@ -397,13 +397,13 @@ const TeamManagement: React.FC = () => {
 
     toast({
       title: 'Invitation Sent',
-      description: `Invitation sent to ${inviteEmail} for board access.`,
+      description: `Invitation sent to ${inviteEmail} for workspace access.`,
       variant: 'default',
     });
 
     setShowInviteDialog(false);
     setInviteEmail('');
-    setSelectedBoard(null);
+    setSelectedWorkspace(null);
     setInviteRole('MEMBER');
   };
 
@@ -417,25 +417,25 @@ const TeamManagement: React.FC = () => {
     return 'text-red-600';
   };
 
-  const handleInviteToBoard = () => {
-    if (!selectedBoard || !selectedMember) return;
+  const handleInviteToWorkspace = () => {
+    if (!selectedWorkspace || !selectedMember) return;
     
-    addToBoardMutation.mutate({ 
+    addToWorkspaceMutation.mutate({ 
       userId: selectedMember.id, 
-      boardId: selectedBoard, 
+      workspaceId: selectedWorkspace, 
       role: inviteRole 
     }, {
       onSuccess: () => {
         toast({
-          title: "Board Access Granted",
-          description: `${selectedMember.name} has been added to the board.`,
+          title: "Workspace Access Granted",
+          description: `${selectedMember.name} has been added to the workspace.`,
         });
-        setSelectedBoard(null);
+        setSelectedWorkspace(null);
       },
       onError: () => {
         toast({
           title: 'Error',
-          description: 'Failed to add user to board.',
+          description: 'Failed to add user to workspace.',
           variant: 'destructive',
         });
       }
@@ -453,7 +453,7 @@ const TeamManagement: React.FC = () => {
             <div>
               <h1 className="text-2xl font-bold">Team Management</h1>
               <p className="text-sm text-muted-foreground">
-                Manage team members, permissions, and board access
+                Manage team members, permissions, and workspace access
               </p>
             </div>
           </div>
@@ -503,7 +503,7 @@ const TeamManagement: React.FC = () => {
             </TabsTrigger>
             <TabsTrigger value="permissions" className="flex items-center gap-2">
               <Shield className="w-4 h-4" />
-              Board Permissions
+              Workspace Permissions
             </TabsTrigger>
             <TabsTrigger value="performance" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
@@ -561,30 +561,30 @@ const TeamManagement: React.FC = () => {
                     </span>
                     <div className="flex items-center gap-2">
                       <Select 
-                        value={selectedBoardForBulk?.toString() || ""} 
-                        onValueChange={(value) => setSelectedBoardForBulk(parseInt(value))}
+                        value={selectedWorkspaceForBulk?.toString() || ""} 
+                        onValueChange={(value) => setSelectedWorkspaceForBulk(parseInt(value))}
                       >
                         <SelectTrigger className="w-48">
                           <SelectValue placeholder={
-                            boards.length === 0 
-                              ? "No boards available" 
-                              : "Select board for bulk action"
+                                          workspaces.length === 0
+              ? "No workspaces available" 
+                              : "Select workspace for bulk action"
                           } />
                         </SelectTrigger>
                         <SelectContent>
-                          {boards.length === 0 ? (
+                          {workspaces.length === 0 ? (
                             <div className="p-2 text-sm text-muted-foreground text-center">
-                              No boards available for bulk actions
+                              No workspaces available for bulk actions
                             </div>
                           ) : (
-                            boards.map((board: Board) => (
-                              <SelectItem key={board.id} value={board.id.toString()}>
+                            workspaces.map((workspace: Board) => (
+                              <SelectItem key={workspace.id} value={workspace.id.toString()}>
                                 <div className="flex items-center gap-2">
                                   <div 
                                     className="w-3 h-3 rounded-full" 
-                                    style={{ backgroundColor: board.colorValue }} 
+                                    style={{ backgroundColor: workspace.colorValue }} 
                                   />
-                                  {board.title}
+                                  {workspace.title}
                                 </div>
                               </SelectItem>
                             ))
@@ -593,20 +593,20 @@ const TeamManagement: React.FC = () => {
                       </Select>
                       <Button 
                         size="sm" 
-                        onClick={handleBulkAddToBoard}
-                        disabled={!selectedBoardForBulk || boards.length === 0}
+                        onClick={handleBulkAddToWorkspace}
+                        disabled={!selectedWorkspaceForBulk || workspaces.length === 0}
                       >
                         <Plus className="h-4 w-4 mr-1" />
-                        Add to Board
+                        Add to Workspace
                       </Button>
                       <Button 
                         size="sm" 
                         variant="destructive"
-                        onClick={handleBulkRemoveFromBoard}
-                        disabled={!selectedBoardForBulk || boards.length === 0}
+                        onClick={handleBulkRemoveFromWorkspace}
+                        disabled={!selectedWorkspaceForBulk || workspaces.length === 0}
                       >
                         <Minus className="h-4 w-4 mr-1" />
-                        Remove from Board
+                        Remove from Workspace
                       </Button>
                     </div>
                   </div>
@@ -712,7 +712,7 @@ const TeamManagement: React.FC = () => {
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuItem onClick={() => setSelectedMember(member)}>
                                   <Settings className="h-4 w-4 mr-2" />
-                                  Manage Boards
+                                  Manage Workspaces
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 {currentUser?.role === 'ADMIN' && member.id !== currentUser?.id && (
@@ -738,16 +738,16 @@ const TeamManagement: React.FC = () => {
 
           <TabsContent value="permissions" className="space-y-6">
             <div className="grid gap-4">
-              {boards.map((board: Board) => (
-                <Card key={board.id}>
+              {workspaces.map((workspace: Board) => (
+                <Card key={workspace.id}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
-                        <SquareKanban className="w-4 h-4" style={{ color: board.colorValue }} />
-                        {board.title}
+                        <SquareKanban className="w-4 h-4" style={{ color: workspace.colorValue }} />
+                        {workspace.title}
                       </CardTitle>
                       
-                      {/* Add Users to Board Button */}
+                      {/* Add Users to Workspace Button */}
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="outline">
@@ -757,23 +757,23 @@ const TeamManagement: React.FC = () => {
                         </DialogTrigger>
                         <DialogContent className="max-w-md">
                           <DialogHeader>
-                            <DialogTitle>Add Users to {board.title}</DialogTitle>
+                            <DialogTitle>Add Users to {workspace.title}</DialogTitle>
                           </DialogHeader>
                           <div className="space-y-4">
                             <div className="space-y-2">
                               <Label>Select users to add:</Label>
                               {teamMembers
                                 .filter((member: TeamMember) => 
-                                  !member.boardAccess.some((access: any) => access.board.id === board.id)
+                                  !member.boardAccess.some((access: any) => access.board.id === workspace.id)
                                 )
                                 .map((member: TeamMember) => (
                                   <div
                                     key={member.id}
                                     className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent cursor-pointer"
                                     onClick={() => {
-                                      addToBoardMutation.mutate({
+                                      addToWorkspaceMutation.mutate({
                                         userId: member.id,
-                                        boardId: board.id,
+                                        workspaceId: workspace.id,
                                         role: 'MEMBER'
                                       });
                                     }}
@@ -797,10 +797,10 @@ const TeamManagement: React.FC = () => {
                                 ))
                               }
                               {teamMembers.filter((member: TeamMember) => 
-                                !member.boardAccess.some((access: any) => access.board.id === board.id)
+                                !member.boardAccess.some((access: any) => access.board.id === workspace.id)
                               ).length === 0 && (
                                 <p className="text-sm text-muted-foreground text-center py-4">
-                                  All team members already have access to this board
+                                  All team members already have access to this workspace
                                 </p>
                               )}
                             </div>
@@ -820,11 +820,11 @@ const TeamManagement: React.FC = () => {
                       </TableHeader>
                       <TableBody>
                         {teamMembers
-                          .filter((member: TeamMember) => member.boardAccess.some((access: any) => access.board.id === board.id))
+                          .filter((member: TeamMember) => member.boardAccess.some((access: any) => access.board.id === workspace.id))
                           .map((member: TeamMember) => {
-                            const boardAccess = member.boardAccess.find((access: any) => access.board.id === board.id);
+                            const boardAccess = member.boardAccess.find((access: any) => access.board.id === workspace.id);
                             return (
-                              <TableRow key={`${board.id}-${member.id}`}>
+                              <TableRow key={`${workspace.id}-${member.id}`}>
                                 <TableCell>
                                   <div className="flex items-center gap-3">
                                     <Avatar className="w-6 h-6">
@@ -851,10 +851,10 @@ const TeamManagement: React.FC = () => {
                                           </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                          <DropdownMenuLabel>Board Actions</DropdownMenuLabel>
+                                          <DropdownMenuLabel>Workspace Actions</DropdownMenuLabel>
                                           <DropdownMenuSeparator />
                                           <DropdownMenuItem
-                                            onClick={() => handleUpdatePermissions(member.id, board.id, 
+                                            onClick={() => handleUpdatePermissions(member.id, workspace.id, 
                                               boardAccess?.role === 'ADMIN' ? 'MEMBER' : 'ADMIN'
                                             )}
                                           >
@@ -863,20 +863,20 @@ const TeamManagement: React.FC = () => {
                                           </DropdownMenuItem>
                                           <DropdownMenuItem
                                             onClick={() => {
-                                              navigator.clipboard.writeText(`${window.location.origin}/boards/${board.id}`);
+                                              navigator.clipboard.writeText(`${window.location.origin}/workspaces/${workspace.id}`);
                                               toast({
-                                                title: 'Board link copied',
-                                                description: 'Board link has been copied to clipboard',
+                                                title: 'Workspace link copied',
+                                                description: 'Workspace link has been copied to clipboard',
                                               });
                                             }}
                                           >
                                             <Link className="mr-2 h-4 w-4" />
-                                            Copy Board Link
+                                            Copy Workspace Link
                                           </DropdownMenuItem>
                                           <DropdownMenuItem
                                             onClick={() => {
-                                              const subject = `Board Access: ${board.title}`;
-                                              const body = `You have ${boardAccess?.role?.toLowerCase()} access to the board "${board.title}". You can access it here: ${window.location.origin}/boards/${board.id}`;
+                                              const subject = `Workspace Access: ${workspace.title}`;
+                                              const body = `You have ${boardAccess?.role?.toLowerCase()} access to the workspace "${workspace.title}". You can access it here: ${window.location.origin}/workspaces/${workspace.id}`;
                                               window.open(`mailto:${member.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
                                             }}
                                           >
@@ -886,10 +886,10 @@ const TeamManagement: React.FC = () => {
                                           <DropdownMenuSeparator />
                                           <DropdownMenuItem
                                             className="text-destructive"
-                                            onClick={() => handleRemoveFromBoard(member.id, board.id)}
+                                            onClick={() => handleRemoveFromWorkspace(member.id, workspace.id)}
                                           >
                                             <UserMinus className="mr-2 h-4 w-4" />
-                                            Remove from Board
+                                            Remove from Workspace
                                           </DropdownMenuItem>
                                         </DropdownMenuContent>
                                       </DropdownMenu>
@@ -1037,7 +1037,7 @@ const TeamManagement: React.FC = () => {
                           </div>
                           <div className="text-right">
                             <div className="font-medium text-sm">{member.boardAccess.length}</div>
-                            <div className="text-xs text-gray-500">Boards</div>
+                            <div className="text-xs text-gray-500">Workspaces</div>
                           </div>
                           <div className="text-right">
                             <div className="font-medium text-sm text-green-600">↗ +5%</div>
@@ -1087,7 +1087,7 @@ const TeamManagement: React.FC = () => {
                         High team velocity with consistent delivery rates
                       </div>
                       <div className="text-xs bg-green-50 dark:bg-green-900/10 p-3 rounded border-l-2 border-green-500">
-                        Strong collaboration across {boards.length} active projects
+                        Strong collaboration across {workspaces.length} active projects
                       </div>
                       <div className="text-xs bg-green-50 dark:bg-green-900/10 p-3 rounded border-l-2 border-green-500">
                         Efficient task completion with {teamMembers.filter((m: TeamMember) => (m.efficiency || 0) > 90).length} high-performers
@@ -1158,37 +1158,37 @@ const TeamManagement: React.FC = () => {
                 
                 <div className="space-y-3">
                   <div>
-                    <Label>Add to Board</Label>
+                    <Label>Add to Workspace</Label>
                     <div className="flex space-x-2 mt-1">
                       <Select 
-                        value={selectedBoard?.toString() || ""} 
-                        onValueChange={(value) => setSelectedBoard(parseInt(value))}
+                        value={selectedWorkspace?.toString() || ""} 
+                        onValueChange={(value) => setSelectedWorkspace(parseInt(value))}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder={
-                            boards.filter((board: Board) => 
-                              !selectedMember.boardAccess.some((access: any) => access.board.id === board.id)
+                            workspaces.filter((workspace: Board) => 
+                              !selectedMember.boardAccess.some((access: any) => access.board.id === workspace.id)
                             ).length === 0 
-                              ? "No boards available" 
-                              : "Select board"
+                              ? "No workspaces available" 
+                              : "Select workspace"
                           } />
                         </SelectTrigger>
                         <SelectContent>
-                          {boards
-                            .filter((board: Board) => 
-                              !selectedMember.boardAccess.some((access: any) => access.board.id === board.id)
+                          {workspaces
+                            .filter((workspace: Board) => 
+                              !selectedMember.boardAccess.some((access: any) => access.board.id === workspace.id)
                             ).length === 0 ? (
                             <div className="p-2 text-sm text-muted-foreground text-center">
-                              No boards available to add
+                              No workspaces available to add
                             </div>
                           ) : (
-                            boards
-                              .filter((board: Board) => 
-                                !selectedMember.boardAccess.some((access: any) => access.board.id === board.id)
+                            workspaces
+                              .filter((workspace: Board) => 
+                                !selectedMember.boardAccess.some((access: any) => access.board.id === workspace.id)
                               )
-                              .map((board: Board) => (
-                                <SelectItem key={board.id} value={board.id.toString()}>
-                                  {board.title}
+                              .map((workspace: Board) => (
+                                <SelectItem key={workspace.id} value={workspace.id.toString()}>
+                                  {workspace.title}
                                 </SelectItem>
                               ))
                           )}
@@ -1204,9 +1204,9 @@ const TeamManagement: React.FC = () => {
                         </SelectContent>
                       </Select>
                       <Button 
-                        onClick={handleInviteToBoard} 
-                        disabled={!selectedBoard || boards.filter((board: Board) => 
-                          !selectedMember.boardAccess.some((access: any) => access.board.id === board.id)
+                        onClick={handleInviteToWorkspace} 
+                                                disabled={!selectedWorkspace || workspaces.filter((workspace: Board) =>
+                          !selectedMember.boardAccess.some((access: any) => access.board.id === workspace.id)
                         ).length === 0}
                       >
                         Add
@@ -1215,13 +1215,13 @@ const TeamManagement: React.FC = () => {
                   </div>
                   
                   <div>
-                    <Label>Current Board Access</Label>
+                    <Label>Current Workspace Access</Label>
                     <div className="space-y-2 mt-1">
                       {selectedMember.boardAccess.length === 0 ? (
                         <div className="p-4 text-sm text-muted-foreground text-center border rounded-lg border-dashed">
                           <UserX className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                          No board access yet
-                          <p className="text-xs mt-1">Add this member to boards to get started</p>
+                          No workspace access yet
+                          <p className="text-xs mt-1">Add this member to workspaces to get started</p>
                         </div>
                       ) : (
                         selectedMember.boardAccess.map((access: any) => (
@@ -1241,7 +1241,7 @@ const TeamManagement: React.FC = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => handleRemoveFromBoard(selectedMember.id, access.board.id)}
+                                                                              onClick={() => handleRemoveFromWorkspace(selectedMember.id, access.board.id)}
                                   className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                                 >
                                   ×

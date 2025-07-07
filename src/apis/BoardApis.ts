@@ -1,4 +1,4 @@
-import axios from "axios";
+import { apiClient } from "./config";
 
 interface Board {
   id: string;
@@ -14,13 +14,9 @@ interface Board {
   [key: string]: any;
 }
 
-export const fetchBoards = async (accessToken: string): Promise<Board[] | undefined> => {
+export const fetchWorkspaces = async (): Promise<Board[] | undefined> => {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/boards`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    const response = await apiClient.get(`/workspaces`);
 
     if (response.status === 200) return response.data.data;
     return undefined;
@@ -30,16 +26,9 @@ export const fetchBoards = async (accessToken: string): Promise<Board[] | undefi
   }
 };
 
-export const fetchBoard = async (accessToken: string, boardId: string): Promise<Board> => {
+export const fetchWorkspace = async (workspaceId: string): Promise<Board> => {
   try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/boards/${boardId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const response = await apiClient.get(`/workspaces/${workspaceId}`);
 
     return response.data.data;
   } catch (error: any) {
@@ -47,35 +36,20 @@ export const fetchBoard = async (accessToken: string, boardId: string): Promise<
   }
 };
 
-export const createBoard = async (accessToken: string, data: Partial<Board>): Promise<Board> => {
+export const createWorkspace = async (data: Partial<Board>): Promise<Board> => {
   try {
-    const response = await axios.post(
-      `${import.meta.env.VITE_API_URL}/boards`,
-      data,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const response = await apiClient.post(`/workspaces`, data);
 
     if (response.status === 201) return response.data.data;
-    throw new Error("Failed to create board");
+    throw new Error("Failed to create workspace");
   } catch (error: any) {
     throw new Error(error?.response?.data?.message);
   }
 };
 
-export const deleteBoard = async (accessToken: string, boardId: string): Promise<any> => {
+export const deleteWorkspace = async (workspaceId: string): Promise<any> => {
   try {
-    const response = await axios.delete(
-      `${import.meta.env.VITE_API_URL}/boards/${boardId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const response = await apiClient.delete(`/workspaces/${workspaceId}`);
 
     return response;
   } catch (error: any) {
@@ -83,21 +57,12 @@ export const deleteBoard = async (accessToken: string, boardId: string): Promise
   }
 };
 
-export const updateBoard = async (
-  accessToken: string,
-  boardId: string,
+export const updateWorkspace = async (
+  workspaceId: string,
   data: Partial<Board>
 ): Promise<Board | undefined> => {
   try {
-    const response = await axios.patch(
-      `${import.meta.env.VITE_API_URL}/boards/${boardId}`,
-      data,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const response = await apiClient.patch(`/workspaces/${workspaceId}`, data);
 
     if (response.status === 200) return response.data.data;
     return undefined;
@@ -106,3 +71,10 @@ export const updateBoard = async (
     return undefined;
   }
 };
+
+// Backward compatibility - keep old function names for existing code
+export const fetchBoards = fetchWorkspaces;
+export const fetchBoard = fetchWorkspace;
+export const createBoard = createWorkspace;
+export const deleteBoard = deleteWorkspace;
+export const updateBoard = updateWorkspace;

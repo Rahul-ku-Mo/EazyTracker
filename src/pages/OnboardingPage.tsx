@@ -73,7 +73,11 @@ const Onboarding = () => {
         }
       );
 
-      const { needsOnboarding, isAdmin } = response.data;
+      const { needsOnboarding, isAdmin , team} = response.data;
+
+      localStorage.setItem("teamId", team.id);
+
+      console.log(team.id);
 
       if (!needsOnboarding) {
         // Already onboarded, redirect to boards
@@ -98,7 +102,12 @@ const Onboarding = () => {
         }
       );
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
+      // Store the teamId in localStorage before redirecting
+      if (response.data?.data?.id) {
+        localStorage.setItem("teamId", response.data.data.id);
+        console.log('Team created, stored teamId:', response.data.data.id);
+      }
       window.location.href = "/workspace";
     },
     onError: (error) => {
@@ -119,7 +128,12 @@ const Onboarding = () => {
         }
       );
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
+      // Store the teamId in localStorage before redirecting
+      if (response.data?.data?.id) {
+        localStorage.setItem("teamId", response.data.data.id);
+        console.log('Team joined, stored teamId:', response.data.data.id);
+      }
       window.location.href = "/workspace";
     },
     onError: (error) => {

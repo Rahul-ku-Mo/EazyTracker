@@ -101,8 +101,10 @@ const HighPriority = ({className, isDark, ...props}: {className?: string, isDark
 };
 
 const UrgentPriority = ({className, isDark, ...props}: {className?: string, isDark?: boolean, props?: any}) => {
-  const filledColor = isDark ? "#FFFFFF" : "#FF0000";
+  const filledColor = "#FF0000";
   
+  console.log(isDark);
+
   return (
     <svg
       width="30"

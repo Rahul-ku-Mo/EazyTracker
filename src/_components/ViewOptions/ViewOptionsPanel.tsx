@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
   ChevronDown,
@@ -148,24 +147,17 @@ const ViewOptionsPanel = ({
   );
 
   return (
-    <AnimatePresence>
+    <>
       {isOpen && (
         <>
           {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+          <div
             className="fixed inset-0 bg-black/20 dark:bg-black/40 z-40"
             onClick={onClose}
           />
           
           {/* Panel */}
-          <motion.div
-            initial={{ x: 400, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 400, opacity: 0 }}
-            transition={{ type: "spring", damping: 20, stiffness: 300 }}
+          <div
             className="fixed right-0 top-0 h-full w-80 bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 z-50 overflow-y-auto"
           >
             {/* Header */}
@@ -183,12 +175,7 @@ const ViewOptionsPanel = ({
               {/* View Toggle */}
               <SectionHeader title="View" icon={Eye} sectionKey="view" />
               {expandedSections.includes('view') && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="px-4 py-3 bg-zinc-50/50 dark:bg-zinc-800/30"
-                >
+                <div className="px-4 py-3 bg-zinc-50/50 dark:bg-zinc-800/30">
                   <div className="grid grid-cols-2 gap-2">
                     <Button
                       variant={currentView === 'listview' ? 'default' : 'outline'}
@@ -209,18 +196,13 @@ const ViewOptionsPanel = ({
                       Board
                     </Button>
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {/* Grouping */}
               <SectionHeader title="Grouping" icon={Columns3} sectionKey="grouping" />
               {expandedSections.includes('grouping') && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="px-4 py-3 space-y-4 bg-zinc-50/50 dark:bg-zinc-800/30"
-                >
+                <div className="px-4 py-3 space-y-4 bg-zinc-50/50 dark:bg-zinc-800/30">
                   <div>
                     <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 block">
                       Group by
@@ -263,18 +245,13 @@ const ViewOptionsPanel = ({
                       </SelectContent>
                     </Select>
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {/* Options */}
               <SectionHeader title="Options" icon={Settings} sectionKey="options" />
               {expandedSections.includes('options') && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="bg-zinc-50/50 dark:bg-zinc-800/30"
-                >
+                <div className="bg-zinc-50/50 dark:bg-zinc-800/30">
                   <div className="flex items-center justify-between px-4 py-2.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors">
                     <span className="text-sm text-zinc-700 dark:text-zinc-300">Show completed cards</span>
                     <Switch
@@ -316,18 +293,13 @@ const ViewOptionsPanel = ({
                       onCheckedChange={(checked) => onOptionsChange({ dateFormat: checked ? 'readable' : 'calendar' })}
                     />
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {/* Display Properties */}
               <SectionHeader title="Display Properties" icon={BarChart3} sectionKey="display" />
               {expandedSections.includes('display') && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="bg-zinc-50/50 dark:bg-zinc-800/30"
-                >
+                <div className="bg-zinc-50/50 dark:bg-zinc-800/30">
                   <PropertyToggle label="Priority" icon={Flag} property="priority" />
                   <PropertyToggle label="Assignee" icon={User} property="assignee" />
                   <PropertyToggle label="Due Date" icon={Calendar} property="dueDate" />
@@ -338,13 +310,13 @@ const ViewOptionsPanel = ({
                   <PropertyToggle label="Updated Date" icon={Clock} property="updatedDate" />
                   <PropertyToggle label="Milestone" icon={Milestone} property="milestone" />
                   <PropertyToggle label="Estimate" icon={BarChart3} property="estimate" />
-                </motion.div>
+                </div>
               )}
             </div>
-          </motion.div>
+          </div>
         </>
       )}
-    </AnimatePresence>
+    </>
   );
 };
 

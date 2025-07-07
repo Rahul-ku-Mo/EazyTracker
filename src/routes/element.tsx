@@ -24,12 +24,12 @@ export const AuthPage = Loadable(lazy(() => import("../pages/AuthPage")));
 
 export const AccountPage = Loadable(lazy(() => import("../pages/AccountPage")));
 
-export const BoardPage = Loadable(
-  lazy(() => import("../pages/boards/BoardPage"))
+export const WorkspaceSelectionPage = Loadable(
+  lazy(() => import("../pages/WorkspaceSelectionPage"))
 );
 
-export const BoardSettingsPage = Loadable(
-  lazy(() => import("../pages/boards/BoardSettingsPage"))
+export const WorkspaceSettingsPage = Loadable(
+  lazy(() => import("../pages/WorkspaceSettingsPage"))
 );
 
 export const NotFoundPage = Loadable(
@@ -88,4 +88,6 @@ export const NotePage = Loadable(lazy(() => import("../pages/notes/NotePage")));
 export const NoteViewPage = Loadable(lazy(() => import("../pages/notes/NoteViewPage")));
 
 export const NoteEditPage = Loadable(lazy(() => import("../pages/notes/NoteEditPage")));
+
+export const ProjectsPage = Loadable(lazy(() => import("../pages/ProjectsPage")));
 

@@ -166,11 +166,11 @@ ${user?.username}`);
                   {user?.username.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-sm leading-tight text-left">
+              <div className="grid flex-1 text-[13px] leading-[1.2] text-left">
                 <span className="font-semibold truncate">{user?.username}</span>
-                <span className="text-xs truncate">{user?.email}</span>
+                <span className="text-[11px] truncate">{user?.email}</span>
               </div>
-              <ChevronsUpDown className="ml-auto size-4" />
+              <ChevronsUpDown className="ml-auto h-4 w-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -190,27 +190,27 @@ ${user?.username}`);
                     {user?.username?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="grid flex-1 text-sm leading-tight text-left">
+                <div className="grid flex-1 text-[13px] leading-[1.2] text-left">
                   <span className="font-semibold truncate">
                     {user?.username}
                   </span>
-                  <span className="text-xs truncate">{user?.email}</span>
+                  <span className="text-[11px] truncate">{user?.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               {upgradeOption.show && (
-                <DropdownMenuItem onClick={handleUpgradeClick}>
-                  <upgradeOption.icon />
+                <DropdownMenuItem onClick={handleUpgradeClick} className="text-[13px] leading-[1.2]">
+                  <upgradeOption.icon className="h-4 w-4" />
                   {upgradeOption.text}
                 </DropdownMenuItem>
               )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => navigate("/setting/account")}>
-                <BadgeCheck />
+              <DropdownMenuItem onClick={() => navigate("/setting/account")} className="text-[13px] leading-[1.2]">
+                <BadgeCheck className="h-4 w-4" />
                 Settings
               </DropdownMenuItem>
               {/* <DropdownMenuItem>
@@ -223,8 +223,8 @@ ${user?.username}`);
               </DropdownMenuItem> */}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
-              <LogOut />
+            <DropdownMenuItem onClick={handleLogout} className="text-[13px] leading-[1.2]">
+              <LogOut className="h-4 w-4" />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

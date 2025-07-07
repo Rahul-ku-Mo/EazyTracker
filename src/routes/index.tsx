@@ -5,7 +5,6 @@ import {
   KanbanPage,
   AuthPage,
   AccountPage,
-  BoardPage,
   NotFoundPage,
   ConversationPage,
   InboxPage,
@@ -17,7 +16,6 @@ import {
   FeedbackPage,
   SupportPage,
   IntegrationsForm,
-  BoardSettingsPage,
   OnboardingPage,
   TeamManagementPage,
   ComingSoonPage,
@@ -26,7 +24,10 @@ import {
   NotePage,
   NoteViewPage,
   NoteEditPage,
+  ProjectsPage,
 } from "@/routes/element";
+import WorkspaceSelectionPage from "@/pages/WorkspaceSelectionPage";
+import WorkspaceSettingsPage from "@/pages/WorkspaceSettingsPage";
 
 import { KanbanProvider } from "@/context/KanbanProvider";
 import { UserContextProvider } from "@/context/UserContext";
@@ -39,6 +40,7 @@ import LaunchGuard from "@/components/LaunchGuard";
 import AdminRouteGuard from "@/_components/shared/AdminRouteGuard";
 import { PaddleProvider } from "@/context/PaddleProvider";
 import AccessControlGuard from "@/components/AccessControlGuard";
+import ProjectDetailPage from '@/pages/ProjectDetailPage';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -94,19 +96,19 @@ const authenticatedRoutes = [
     element: <WithContexts Component={OnboardingPage} />,
   },
   {
-    path: "/workspace/board/:id",
-    element: <WithContexts Component={KanbanPage} includeKanban={true} />,
-  },
-  {
     path: "/workspace",
     children: [
       {
         index: true,
-        element: <WithContexts Component={BoardPage} />,
+        element: <WithContexts Component={WorkspaceSelectionPage} />,
+      },
+      {
+        path: ":id",
+        element: <WithContexts Component={KanbanPage} includeKanban={true} />,
       },
       {
         path: "settings/:id",
-        element: <WithContexts Component={BoardSettingsPage} />,
+        element: <WithContexts Component={WorkspaceSettingsPage} />,
       },
       {
         path: "analytics",
@@ -114,7 +116,14 @@ const authenticatedRoutes = [
       },
     ],
   },
-
+  {
+    path: "/projects",
+    element: <WithContexts Component={ProjectsPage} />,
+  },
+  {
+    path: "/projects/:projectSlug",
+    element: <ProjectDetailPage />,
+  },
   {
     path: "billing",
     element: (

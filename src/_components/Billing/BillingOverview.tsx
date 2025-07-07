@@ -127,13 +127,13 @@ export const BillingOverview: React.FC = () => {
 
       {/* Usage Statistics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        {/* Projects */}
+        {/* Workspaces */}
         <Card>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <FolderOpen className="w-4 h-4 text-blue-500 dark:text-blue-400" />
-                <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">Projects</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">Workspaces</CardTitle>
               </div>
               {usageStats.usage.projects.limit !== null && 
                usageStats.usage.projects.current >= usageStats.usage.projects.limit && (
@@ -201,13 +201,13 @@ export const BillingOverview: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Tasks per Project */}
+        {/* Tasks per Workspace */}
         <Card>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Clock className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
-                <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">Max Tasks/Project</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">Max Tasks/Workspace</CardTitle>
               </div>
               {usageStats.usage.tasksPerProject?.limit !== null && 
                usageStats.usage.tasksPerProject?.current >= usageStats.usage.tasksPerProject?.limit && (
