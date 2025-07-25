@@ -12,7 +12,7 @@ import {
   Plus,
   Minus,
   Filter,
-  MoreHorizontal,
+  MoreVertical,
   UserX,
   CheckSquare,
   Square,
@@ -615,9 +615,9 @@ const TeamManagement: React.FC = () => {
 
               <CardContent>
                 <Table>
-                  <TableHeader>
+                  <TableHeader className="bg-muted sticky top-0 z-10">
                     <TableRow>
-                      <TableHead className="w-12">
+                      <TableHead className="w-12 text-[13px]">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -630,12 +630,38 @@ const TeamManagement: React.FC = () => {
                           }
                         </Button>
                       </TableHead>
-                      <TableHead>Member</TableHead>
-                      <TableHead>Department</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Efficiency</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead className="text-[13px]">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4" />
+                          Member
+                        </div>
+                      </TableHead>
+                      <TableHead className="text-[13px]">
+                        <div className="flex items-center justify-center">
+                          Department
+                        </div>
+                      </TableHead>
+                      <TableHead className="text-[13px]">
+                        <div className="flex items-center justify-center">
+                          <Shield className="h-4 w-4" />
+                          Role
+                        </div>
+                      </TableHead>
+                      <TableHead className="text-[13px]">
+                        <div className="flex items-center justify-center">
+                          Status
+                        </div>
+                      </TableHead>
+                      <TableHead className="text-[13px]">
+                        <div className="flex items-center justify-center">
+                          Efficiency
+                        </div>
+                      </TableHead>
+                      <TableHead className="text-[13px]">
+                        <div className="flex items-center justify-center">
+                          Actions
+                        </div>
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -664,35 +690,44 @@ const TeamManagement: React.FC = () => {
                             </Avatar>
                             <div>
                               <div className="font-medium">{member.name || member.email}</div>
-                              <div className="text-sm text-gray-500">{member.email}</div>
+                              <div className="text-xs text-muted-foreground">{member.email}</div>
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>{member.department || 'Not specified'}</TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-1">
-                            {getRoleIcon(member.role)}
-                            <Badge variant={member.role === 'ADMIN' ? 'default' : 'secondary'}>
+                          <div className="flex items-center justify-center">
+                            <span className="text-xs">{member.department || 'Not specified'}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-center">
+                            <Badge variant="outline" className="text-muted-foreground px-1.5">
+                              {getRoleIcon(member.role)}
                               {member.role}
                             </Badge>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={member.isActive !== false ? 'default' : 'destructive'}>
-                            {member.isActive !== false ? 'Active' : 'Disabled'}
-                          </Badge>
+                          <div className="flex items-center justify-center">
+                            <Badge variant="outline" className="text-muted-foreground px-1.5">
+                              {member.isActive !== false ? 'Active' : 'Disabled'}
+                            </Badge>
+                          </div>
                         </TableCell>
                         <TableCell>
-                          <span className={getEfficiencyColor(member.efficiency || 0)}>
-                            {member.efficiency || 0}%
-                          </span>
+                          <div className="flex items-center justify-center">
+                            <span className={`text-xs ${getEfficiencyColor(member.efficiency || 0)}`}>
+                              {member.efficiency || 0}%
+                            </span>
+                          </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center justify-center gap-2">
                             {currentUser?.role === 'ADMIN' && member.id !== currentUser?.id && (
                               <Button
                                 size="sm"
                                 variant="outline"
+                                className="text-xs"
                                 onClick={() => handleToggleUserStatus(member.id, member.isActive === false)}
                               >
                                 {member.isActive !== false ? (
@@ -704,11 +739,16 @@ const TeamManagement: React.FC = () => {
                             )}
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm">
-                                  <MoreHorizontal className="h-4 w-4" />
+                                <Button
+                                  variant="ghost"
+                                  className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
+                                  size="icon"
+                                >
+                                  <MoreVertical className="h-4 w-4" />
+                                  <span className="sr-only">Open menu</span>
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
+                              <DropdownMenuContent align="end" className="w-40">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuItem onClick={() => setSelectedMember(member)}>
                                   <Settings className="h-4 w-4 mr-2" />
@@ -811,11 +851,25 @@ const TeamManagement: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <Table>
-                      <TableHeader>
+                      <TableHeader className="bg-muted sticky top-0 z-10">
                         <TableRow>
-                          <TableHead>Member</TableHead>
-                          <TableHead>Access Level</TableHead>
-                          <TableHead>Actions</TableHead>
+                          <TableHead className="text-[13px]">
+                            <div className="flex items-center gap-2">
+                              <Users className="h-4 w-4" />
+                              Member
+                            </div>
+                          </TableHead>
+                          <TableHead className="text-[13px]">
+                            <div className="flex items-center justify-center">
+                              <Shield className="h-4 w-4" />
+                              Access Level
+                            </div>
+                          </TableHead>
+                          <TableHead className="text-[13px]">
+                            <div className="flex items-center justify-center">
+                              Actions
+                            </div>
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -827,7 +881,7 @@ const TeamManagement: React.FC = () => {
                               <TableRow key={`${workspace.id}-${member.id}`}>
                                 <TableCell>
                                   <div className="flex items-center gap-3">
-                                    <Avatar className="w-6 h-6">
+                                    <Avatar className="w-8 h-8">
                                       <AvatarImage src={member.imageUrl} />
                                       <AvatarFallback className="text-xs">
                                         {member?.name?.split(' ').map((n: string) => n[0]).join('') || member?.email?.charAt(0).toUpperCase() || 'U'}
@@ -837,20 +891,27 @@ const TeamManagement: React.FC = () => {
                                   </div>
                                 </TableCell>
                                 <TableCell>
-                                  <Badge variant={boardAccess?.role === 'ADMIN' ? 'default' : 'secondary'}>
-                                    {boardAccess?.role}
-                                  </Badge>
+                                  <div className="flex items-center justify-center">
+                                    <Badge variant="outline" className="text-muted-foreground px-1.5">
+                                      {boardAccess?.role}
+                                    </Badge>
+                                  </div>
                                 </TableCell>
                                 <TableCell>
-                                  {currentUser?.role === 'ADMIN' && member.id !== currentUser?.id && (
-                                    <div className="flex items-center gap-2">
+                                  <div className="flex items-center justify-center">
+                                    {currentUser?.role === 'ADMIN' && member.id !== currentUser?.id && (
                                       <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                          <Button variant="ghost" size="sm">
-                                            <MoreHorizontal className="h-4 w-4" />
+                                          <Button
+                                            variant="ghost"
+                                            className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
+                                            size="icon"
+                                          >
+                                            <MoreVertical className="h-4 w-4" />
+                                            <span className="sr-only">Open menu</span>
                                           </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
+                                        <DropdownMenuContent align="end" className="w-40">
                                           <DropdownMenuLabel>Workspace Actions</DropdownMenuLabel>
                                           <DropdownMenuSeparator />
                                           <DropdownMenuItem
@@ -893,13 +954,13 @@ const TeamManagement: React.FC = () => {
                                           </DropdownMenuItem>
                                         </DropdownMenuContent>
                                       </DropdownMenu>
-                                    </div>
-                                  )}
-                                  {member.id === currentUser?.id && (
-                                    <Badge variant="outline" className="text-xs">
-                                      You
-                                    </Badge>
-                                  )}
+                                    )}
+                                    {member.id === currentUser?.id && (
+                                      <Badge variant="outline" className="text-xs">
+                                        You
+                                      </Badge>
+                                    )}
+                                  </div>
                                 </TableCell>
                               </TableRow>
                             );

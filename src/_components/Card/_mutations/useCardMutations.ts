@@ -25,7 +25,9 @@ type TIssueUpdateCard = {
 };
 
 export const useCardMutation = () => {
-  const { id: boardId } = useParams();
+  const { teamId, slug } = useParams();
+  // Handle both new teamId + slug pattern and legacy slug pattern
+  const workspaceId = teamId && slug ? `${teamId}/${slug}` : slug || "";
 
   const accessToken: string = Cookies.get("accessToken") || "";
 
@@ -44,7 +46,7 @@ export const useCardMutation = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["columns", "boards", boardId],
+        queryKey: ["columns", "workspaces", workspaceId],
       });
     },
   });
@@ -101,7 +103,7 @@ export const useCardMutation = () => {
       });
 
       await queryClient.invalidateQueries({
-        queryKey: ["columns", "boards", boardId],
+        queryKey: ["columns", "workspaces", workspaceId],
       });
     },
   });
@@ -122,7 +124,7 @@ export const useCardMutation = () => {
       }),
     onSettled: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["columns", "boards", boardId],
+        queryKey: ["columns", "workspaces", workspaceId],
       });
     },
   });
@@ -143,7 +145,7 @@ export const useCardMutation = () => {
       }),
     onSettled: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["columns", "boards", boardId],
+        queryKey: ["columns", "workspaces", workspaceId],
       });
     },
   });
@@ -164,7 +166,7 @@ export const useCardMutation = () => {
       }),
     onSettled: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["columns", "boards", boardId],
+        queryKey: ["columns", "workspaces", workspaceId],
       });
     },
   });

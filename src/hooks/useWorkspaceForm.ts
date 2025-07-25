@@ -36,6 +36,7 @@ const useWorkspaceForm = (count: number) => {
         colorName
       };
 
+
       const response = await createWorkspace(kanbanWorkspaceData);
       return response;
     },
@@ -45,7 +46,9 @@ const useWorkspaceForm = (count: number) => {
           title: "Workspace created successfully",
           variant: "default",
         });
-        navigate(`/workspace/${data.id}`);
+
+        const teamName = localStorage.getItem("teamName");
+        navigate(`/workspace/${teamName}/${data.slug}`);
         setCurrentWorkspaceInput("");
         setSelectedImageId(null);
       }

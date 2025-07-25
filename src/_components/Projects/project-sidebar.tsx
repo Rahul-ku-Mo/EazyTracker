@@ -1,127 +1,119 @@
-
-import { Circle, ChevronRight } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import { Badge } from "@/components/ui/badge";
+import { MemberAvatars, LeadAvatar } from "./utils";
+import { useTheme } from "@/context/ThemeProvider";
+import PriorityDropdown from "./contextMenu/PriorityDropdown";
 
 interface ProjectSidebarProps {
-  project: {
-    status: string;
-    priority: string;
-    lead: {
-      name: string;
-      avatar?: string;
-    };
-    members: {
-      name: string;
-      avatar?: string;
-    }[];
-    dates?: {
-      start?: string;
-      target?: string;
-    };
-    teams?: string[];
-    initiatives?: string[];
-  };
+  project?: any;
 }
 
 export const ProjectSidebar = ({ project }: ProjectSidebarProps) => {
+  const { theme } = useTheme();
   return (
-    <div className="w-[300px] border-l p-4 space-y-6">
-      <div className="space-y-4">
-        <div>
-          <Label className="text-xs text-muted-foreground">Status</Label>
-          <div className="flex items-center gap-2 mt-1">
-            <Circle className="h-4 w-4" />
-            <span className="text-xs">{project.status}</span>
+    <>
+      {/* Properties */}
+      <div>
+        <h3 className="text-sm font-semibold mb-2 text-muted-foreground">
+          Properties
+        </h3>
+        <div className="space-y-2 text-xs">
+          <div className="flex items-center justify-between">
+            <span>Status</span>
+            <Badge variant="outline">{project.status}</Badge>
           </div>
-        </div>
-
-        <div>
-          <Label className="text-xs text-muted-foreground">Priority</Label>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs">{project.priority}</span>
-          </div>
-        </div>
-
-        <div>
-          <Label className="text-xs text-muted-foreground">Lead</Label>
-          <div className="flex items-center gap-2 mt-1">
-            <Avatar className="h-5 w-5">
-              <AvatarImage src={project.lead.avatar} />
-              <AvatarFallback>{project.lead.name[0]}</AvatarFallback>
-            </Avatar>
-            <span className="text-xs">{project.lead.name}</span>
-          </div>
-        </div>
-
-        <div>
-          <Label className="text-xs text-muted-foreground">Members</Label>
-          <div className="flex items-center gap-2 mt-1">
-            <div className="flex -space-x-2">
-              {project.members.map((member, i) => (
-                <Avatar key={i} className="h-5 w-5 border-2 border-background">
-                  <AvatarImage src={member.avatar} />
-                  <AvatarFallback>{member.name[0]}</AvatarFallback>
-                </Avatar>
-              ))}
-            </div>
-            <span className="text-xs text-muted-foreground">
-              {project.members.length} members
-            </span>
-          </div>
-        </div>
-
-        {project.dates && (
-          <div>
-            <Label className="text-xs text-muted-foreground">Dates</Label>
-            <div className="space-y-1 mt-1">
-              {project.dates.target && (
-                <div className="flex items-center gap-2">
-                  <ChevronRight className="h-4 w-4" />
-                  <span className="text-xs">
-                    {new Date(project.dates.target).toLocaleDateString()}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {project.teams && project.teams.length > 0 && (
-          <div>
-            <Label className="text-xs text-muted-foreground">Teams</Label>
-            <div className="flex flex-wrap gap-1 mt-1">
-              {project.teams.map((team, i) => (
-                <Badge key={i} variant="outline" className="text-xs">
-                  {team}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {project.initiatives && project.initiatives.length > 0 && (
-          <div>
+          {project.priority && (
             <div className="flex items-center justify-between">
-              <Label className="text-xs text-muted-foreground">Initiatives</Label>
-              <Button variant="ghost" size="sm" className="h-6 text-xs">
-                <Circle className="h-3 w-3 mr-1" />
-                Add
-              </Button>
+              <span>Priority</span>
+              <PriorityDropdown
+                priority={project.priority}
+                onChange={(priority) => {
+                  console.log(priority);
+                }}
+                isDark={theme === "dark"}
+              />
             </div>
-            <div className="flex flex-wrap gap-1 mt-1">
-              {project.initiatives.map((initiative, i) => (
-                <Badge key={i} variant="outline" className="text-xs">
-                  {initiative}
-                </Badge>
-              ))}
+          )}
+          {project.lead && (
+            <div className="flex items-center justify-between">
+              <span>Lead</span>
+              <LeadAvatar lead={project.lead} />
             </div>
-          </div>
-        )}
+          )}
+          {project.members && project.members.length > 0 && (
+            <div className="flex items-center justify-between">
+              <span>Members</span>
+              <span className="flex items-center gap-1">
+                <MemberAvatars members={project.members} />{" "}
+                {project.members.length}
+              </span>
+            </div>
+          )}
+          {project.targetDate && (
+            <div className="flex items-center justify-between">
+              <span>Target Date</span>
+              <span>{new Date(project.targetDate).toLocaleDateString()}</span>
+            </div>
+          )}
+          {project.workspaces && project.workspaces.length > 0 && (
+            <div className="flex items-center justify-between">
+              <span>Workspaces</span>
+              <span>
+                {project.workspaces
+                  .map(({ workspace }: any) => workspace.title)
+                  .join(", ")}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+
+      {/* Progress */}
+      {project.cards && project.cards.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold mb-2 text-muted-foreground">
+            Progress
+          </h3>
+          <div className="flex items-center gap-2 text-xs">
+            <span>Total</span>
+            <Badge variant="outline">{project.cards.length}</Badge>
+            <span>Completed</span>
+            <Badge variant="outline">
+              {
+                project.cards.filter((c: any) => c.status === "Completed")
+                  .length
+              }
+            </Badge>
+          </div>
+        </div>
+      )}
+
+      {/* Team Members */}
+      {project.members && project.members.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold mb-2 text-muted-foreground">
+            Team Members
+          </h3>
+          <div className="flex flex-col gap-2">
+            {project.members.map((member: any, idx: number) => (
+              <div key={idx} className="flex items-center gap-2 text-xs">
+                <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-bold">
+                  {member.user.imageUrl ? (
+                    <img
+                      src={member.user.imageUrl}
+                      alt={member.user.name}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    member.user.name?.[0] || "?"
+                  )}
+                </div>
+                <span>{member.user.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

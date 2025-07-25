@@ -1,12 +1,6 @@
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
-import {
-  CalendarIcon,
-  TagIcon,
-  DatabaseZap,
-  Library,
-  User,
-} from "lucide-react";
+import {  TagIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import {
@@ -48,6 +42,12 @@ import {
   MediumPriority,
   Priority,
 } from "../shared/svg/Priority";
+import { getPriorityIcon } from "../Projects/utils";
+import {
+  Assignee,
+  ColumnNameinListViewIcon,
+} from "../shared/svg/ListViewIcons";
+import { DateCreatedIcon } from "../shared/svg/ViewOptionsIcons";
 
 interface CardItem {
   id: number;
@@ -87,21 +87,6 @@ const listVariants = {
   },
 };
 
-const getPriorityIcon = (priority: string, theme: string) => {
-  switch (priority) {
-    case "urgent":
-      return <UrgentPriority className="size-3" isDark={theme === "dark"} />;
-    case "high":
-      return <HighPriority className="size-3" isDark={theme === "dark"} />;
-    case "medium":
-      return <MediumPriority className="size-3" isDark={theme === "dark"} />;
-    case "low":
-      return <LowPriority className="size-3" isDark={theme === "dark"} />;
-    default:
-      return <Priority className="size-3" isDark={theme === "dark"} />;
-  }
-};
-
 const ListView = ({
   data,
   onEditItem,
@@ -111,8 +96,8 @@ const ListView = ({
 }: ListViewProps) => {
   const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { id } = useParams();
-  const { members } = useMembers(id as string);
+  const { slug } = useParams();
+  const { members } = useMembers();
   const { updateCardMutation } = useCardMutation();
   const queryClient = useQueryClient();
   const accessToken = Cookies.get("accessToken") as string;
@@ -133,17 +118,19 @@ const ListView = ({
     },
     onMutate: async ({ cardId, columnId, order }) => {
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["columns", "boards", id] });
+      await queryClient.cancelQueries({
+        queryKey: ["columns", "workspaces", slug],
+      });
 
       // Snapshot the previous value
       const previousColumns = queryClient.getQueryData([
         "columns",
-        "boards",
-        id,
+        "workspaces",
+        slug,
       ]);
 
       // Optimistically update the cache
-      queryClient.setQueryData(["columns", "boards", id], (old: any) => {
+      queryClient.setQueryData(["columns", "workspaces", slug], (old: any) => {
         if (!old) return old;
 
         return old.map((column: any) => {
@@ -187,7 +174,7 @@ const ListView = ({
       // Rollback to previous state
       if (context?.previousColumns) {
         queryClient.setQueryData(
-          ["columns", "boards", id],
+          ["columns", "workspaces", slug],
           context.previousColumns
         );
       }
@@ -195,7 +182,7 @@ const ListView = ({
     onSettled: () => {
       // Always refetch to ensure we have the latest data
       queryClient.invalidateQueries({
-        queryKey: ["columns", "boards", id],
+        queryKey: ["columns", "workspaces", slug],
       });
     },
   });
@@ -308,7 +295,7 @@ const ListView = ({
     <>
       <DragDropContext onDragEnd={handleDragEnd}>
         <motion.div
-          className="flex flex-1 flex-col pt-4"
+          className="flex flex-1 flex-col"
           initial="hidden"
           animate="visible"
           variants={listVariants}
@@ -316,9 +303,12 @@ const ListView = ({
           {Object.entries(data).map(([columnTitle, columnData]) => {
             const items = columnData.cards || [];
             return (
-              <div key={columnTitle} className="mb-6">
+              <div key={columnTitle}>
                 <h2 className="text-sm flex items-center gap-2 font-bold px-4 py-2 text-zinc-900 dark:text-zinc-100 w-full border dark:bg-zinc-800 bg-zinc-100 border-zinc-200 dark:border-zinc-800">
-                  <Library strokeWidth={2} className="size-4 " />
+                  <ColumnNameinListViewIcon
+                    strokeWidth={2}
+                    className="size-4 "
+                  />
                   {columnTitle}
                 </h2>
 
@@ -366,7 +356,7 @@ const ListView = ({
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
                                   className={cn(
-                                    "group relative flex items-center justify-between p-3 border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-all duration-300 ease-out",
+                                    "group relative flex items-center justify-between p-3 border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-all duration-300 ease-out h-12",
                                     snapshot.isDragging &&
                                       "shadow-2xl z-50 rounded-lg scale-105 rotate-1 transform-gpu bg-white dark:bg-zinc-800 border-2 border-emerald-200 dark:border-emerald-700"
                                   )}
@@ -375,25 +365,12 @@ const ListView = ({
                                     setIsModalOpen(true);
                                   }}
                                 >
-                                  <div className="flex items-center gap-3 flex-grow min-w-0">
+                                  <div className="flex items-center gap-2 flex-grow min-w-0">
                                     {/* Title - Clickable area for opening card */}
-                                    <DatabaseZap className="size-4 text-zinc-500 dark:text-zinc-400" />
-
-                                    <span className="text-sm text-zinc-500 dark:text-zinc-200 font-bold geist-font">
-                                      {`${columnTitle
-                                        .substring(0, 2)
-                                        .toUpperCase()} - ${item.id}`}
-                                    </span>
-
-                                    <div className="flex-grow truncate font-medium text-xs text-zinc-900 dark:text-zinc-100">
-                                      {item.title}
-                                    </div>
-
-                                    {/* Priority - Inline editable */}
                                     <DropdownMenu>
                                       <DropdownMenuTrigger asChild>
                                         <div
-                                          className="flex items-center gap-1 hover:bg-muted rounded px-2 py-1 transition-colors"
+                                          className="flex items-center gap-1 cursor-pointer"
                                           onClick={(e) => e.stopPropagation()}
                                         >
                                           {item.priority ? (
@@ -402,17 +379,10 @@ const ListView = ({
                                                 item.priority,
                                                 theme
                                               )}
-                                              <span className="text-xs capitalize">
-                                                {item.priority}
-                                              </span>
                                             </div>
                                           ) : (
                                             <div className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer">
-                                              <Priority
-                                                className="size-3"
-                                                isDark={theme === "dark"}
-                                              />
-                                              <span>Priority</span>
+                                              <Priority className="size-3" />
                                             </div>
                                           )}
                                         </div>
@@ -429,10 +399,7 @@ const ListView = ({
                                             updatePriority(item.id, "urgent");
                                           }}
                                         >
-                                          <UrgentPriority
-                                            className="size-3"
-                                            isDark={theme === "dark"}
-                                          />
+                                          <UrgentPriority className="size-3" />
                                           Urgent
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
@@ -481,26 +448,31 @@ const ListView = ({
                                             updatePriority(item.id, "");
                                           }}
                                         >
-                                          <Priority
-                                            className="size-3"
-                                            isDark={theme === "dark"}
-                                          />
+                                          <Priority className="size-3" />
                                           No priority
                                         </DropdownMenuItem>
                                       </DropdownMenuContent>
                                     </DropdownMenu>
+                                    <span className="text-sm text-zinc-500 dark:text-zinc-200 font-bold geist-font">
+                                      {`${columnTitle
+                                        .substring(0, 2)
+                                        .toUpperCase()} - ${item.id}`}
+                                    </span>
+
+                                    <div className="flex-grow truncate font-medium text-xs text-zinc-900 dark:text-zinc-100">
+                                      {item.title}
+                                    </div>
+
+                                    {/* Priority - Inline editable */}
 
                                     {/* Assignee - Inline editable */}
                                     <DropdownMenu>
                                       <DropdownMenuTrigger asChild>
                                         <div
-                                          className="flex items-center gap-1 hover:bg-muted rounded px-2 py-1 transition-colors"
+                                          className="flex items-center gap-1 hover:bg-muted rounded p-1 transition-colors"
                                           onClick={(e) => e.stopPropagation()}
                                         >
-                                          <User className="h-3 w-3 text-muted-foreground" />
-                                          <span className="text-xs text-muted-foreground">
-                                            Assign
-                                          </span>
+                                          <Assignee className="size-5" />
                                         </div>
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent
@@ -530,7 +502,11 @@ const ListView = ({
                                                   />
                                                 ) : (
                                                   <span className="text-xs">
-                                                    {member.username ? member.username.charAt(0) : ''}
+                                                    {member.username
+                                                      ? member.username.charAt(
+                                                          0
+                                                        )
+                                                      : ""}
                                                   </span>
                                                 )}
                                               </div>
@@ -546,7 +522,7 @@ const ListView = ({
                                             updateAssignee(item.id, "");
                                           }}
                                         >
-                                          <User className="w-3 h-3 mr-2" />
+                                          <Assignee />
                                           Unassigned
                                         </DropdownMenuItem>
                                       </DropdownMenuContent>
@@ -555,7 +531,7 @@ const ListView = ({
                                     {/* Labels/Tags */}
                                     {item.labels && item.labels.length > 0 && (
                                       <div
-                                        className="flex items-center justify-end gap-1.5 flex-shrink-0 min-w-[90px]"
+                                        className="flex items-center justify-end gap-2 flex-shrink-0 min-w-fit"
                                         onClick={(e) => e.stopPropagation()}
                                       >
                                         <TagIcon className="h-3 w-3 text-zinc-400" />
@@ -584,25 +560,21 @@ const ListView = ({
                                     )}
                                   </div>
 
-                                  <div className="flex items-center gap-3 ml-4 flex-shrink-0 ">
+                                  <div className="flex items-center gap-2 flex-shrink-0 ml-1.5">
                                     {/* Due date - Inline editable */}
                                     <Popover>
                                       <PopoverTrigger asChild>
                                         <div
-                                          className="flex items-center gap-1 hover:bg-muted rounded px-2 py-1 transition-colors cursor-pointer min-w-[90px]"
+                                          className="flex items-center gap-1 hover:bg-muted rounded p-1 transition-colors cursor-pointer min-w-fit"
                                           onClick={(e) => e.stopPropagation()}
                                         >
-                                          <CalendarIcon className="size-3 text-zinc-500 dark:text-zinc-400" />
-                                          {item.dueDate ? (
+                                          <DateCreatedIcon className="size-5 text-zinc-500 dark:text-zinc-400" />
+                                          {item.dueDate && (
                                             <span className="text-xs text-zinc-500 dark:text-zinc-400">
                                               {formatDistanceToNow(
                                                 new Date(item.dueDate),
                                                 { addSuffix: true }
                                               )}
-                                            </span>
-                                          ) : (
-                                            <span className="text-xs text-muted-foreground">
-                                              Set date
                                             </span>
                                           )}
                                         </div>

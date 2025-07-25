@@ -185,7 +185,7 @@ export const CardDetailsEditor = ({
   const initialDescriptionRef = useRef(description);
 
   const onRef = (_floatingAnchorElem: HTMLDivElement) => {
-    if (_floatingAnchorElem !== null) {
+    if (_floatingAnchorElem !== null) { 
       setFloatingAnchorElem(_floatingAnchorElem);
     }
   };

@@ -29,7 +29,7 @@ export const TrialExpiredModal: React.FC<TrialExpiredModalProps> = ({ open, onCl
             Hey! Did you like our application?
           </DialogTitle>
           
-          <DialogDescription className="text-gray-600 dark:text-gray-400 text-lg">
+          <DialogDescription className="text-gray-600 dark:text-gray-400 text-sm">
             Your 14-day free trial has ended. Subscribe to continue using PulseBoard and unlock all the features you love!
           </DialogDescription>
         </DialogHeader>

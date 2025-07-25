@@ -1,15 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import Cookies from "js-cookie";
-export const useMembers = (id: string) => {
+import {  useParams } from "react-router-dom";
+
+export const useMembers = () => {
   const accessToken = Cookies.get("accessToken") || "";
 
+  const teamId = localStorage.getItem("teamId");
+
+  const {slug} = useParams();
+
   const { data: members, isPending } = useQuery({
-    queryKey: ["members", id],
+    queryKey: ["members", teamId],
     queryFn: async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/workspaces/${id}/members`,
+          `${import.meta.env.VITE_API_URL}/workspaces/${teamId}/${slug}/members`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,

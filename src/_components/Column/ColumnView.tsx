@@ -53,7 +53,7 @@ const ColumnView = ({ title, cards, columnId, viewOptions, members }: ColumnView
   const [isNewCardOpen, setIsNewCardOpen] = useState(false);
   const [currentSort, setCurrentSort] = useState<string>("manual");
 
-  const { id: workspaceId } = useParams();
+  const { slug: workspaceId } = useParams();
   const queryClient = useQueryClient();
   const accessToken = Cookies.get("accessToken") as string;
 

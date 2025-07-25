@@ -82,10 +82,12 @@ const NavFavorites = ({ favoriteWorkspaces }: { favoriteWorkspaces: any[] }) => 
 };
 
 const getNavigationData = (isAdmin: boolean, pathname: string) => {
+
+  const teamName = localStorage.getItem("teamName")
   const baseNavigation = [
     {
       title: "Workspaces",
-      url: "/workspace",
+      url: `/workspace/${teamName}`,
       icon: SquareTerminal,
       isActive: pathname.includes("/workspace"),
     },
@@ -96,7 +98,7 @@ const getNavigationData = (isAdmin: boolean, pathname: string) => {
       isActive: pathname.includes("/projects"),
     },
     {
-      title: "Notifications",
+      title: "Inbox",
       url: "/inbox",
       icon: Inbox,
       isActive: pathname.includes("/inbox"),

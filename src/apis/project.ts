@@ -16,10 +16,12 @@ export interface Project {
   creatorId: string;
   createdAt: Date;
   updatedAt: Date;
-  boards: {
-    board: {
+  workspaces: {
+    workspace: {
       id: number;
       title: string;
+      colorName?: string;
+      colorValue?: string;
     };
   }[];
   members: {
@@ -64,6 +66,13 @@ export interface UpdateProjectInput extends Partial<CreateProjectInput> {
   slug: string;
 }
 
+export interface ProjectWorkspace {
+  id: number;
+  title: string;
+  colorName?: string;
+  colorValue?: string;
+}
+
 export const getProjects = async (teamId: string, boardId?: number): Promise<Project[]> => {
   try {
     const params = new URLSearchParams();
@@ -88,6 +97,20 @@ export const getProject = async (projectSlug: string): Promise<Project> => {
   }
 };
 
+export const getProjectWorkspaces = async (projectSlug: string): Promise<{
+  projectId: string;
+  projectTitle: string;
+  workspaces: ProjectWorkspace[];
+}> => {
+  try {
+    const response = await apiClient.get(`/projects/${projectSlug}/workspaces`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching project workspaces:', error);
+    throw error;
+  }
+};
+
 export const createProject = async (data: CreateProjectInput): Promise<Project> => {
   try {
     const response = await apiClient.post(`/projects`, data);
@@ -105,6 +128,45 @@ export const updateProject = async (data: UpdateProjectInput): Promise<Project> 
     return response.data;
   } catch (error) {
     console.error('Error updating project:', error);
+    throw error;
+  }
+};
+
+export const updateProjectTargetDate = async (projectSlug: string, targetDate: string | null): Promise<Project> => {
+  try {
+    const response = await apiClient.patch(`/projects/${projectSlug}/target-date`, { targetDate });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating project target date:', error);
+    throw error;
+  }
+};
+
+export const updateProjectPriority = async (projectSlug: string, priority: string): Promise<Project> => {
+  try {
+    const response = await apiClient.patch(`/projects/${projectSlug}/priority`, { priority });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating project priority:', error);
+    throw error;
+  }
+};
+export const updateProjectLead = async (projectSlug: string, leadId: string | null): Promise<Project> => {
+  try {
+    const response = await apiClient.patch(`/projects/${projectSlug}/lead`, { leadId });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating project lead:', error);
+    throw error;
+  }
+};
+
+export const updateProjectMembers = async (projectSlug: string, memberIds: string[]): Promise<Project> => {
+  try {
+    const response = await apiClient.patch(`/projects/${projectSlug}/members`, { memberIds });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating project members:', error);
     throw error;
   }
 };

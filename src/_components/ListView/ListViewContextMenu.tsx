@@ -13,10 +13,10 @@ import { cn } from "@/lib/utils";
 import {  Tag, Plus, User, ArrowRight, Calendar, Edit, Trash2 } from "lucide-react";
 import { useCardMutation } from "../Card/_mutations/useCardMutations";
 import { useMembers } from "@/hooks/useMembers";
-import { useParams } from "react-router-dom";
 import { TUser } from "@/types";
 import { HighPriority, LowPriority, MediumPriority, Priority, UrgentPriority } from "../shared/svg/Priority";
 import { useTheme } from "@/context/ThemeProvider";
+import { Assignee } from "../shared/svg/ListViewIcons";
 
 interface ContextMenuItem {
   icon: React.ReactNode;
@@ -43,8 +43,8 @@ const ListViewContextMenu = ({
   onMove, 
   onSchedule 
 }: ListViewContextMenuProps) => {
-  const { id } = useParams();
-  const { members, isPending } = useMembers(id as string);
+
+  const { members, isPending } = useMembers();
   const { updateCardMutation } = useCardMutation();
   const { theme } = useTheme();
   const updatePriorityForATicket = (priority: string) => {
@@ -118,7 +118,7 @@ const ListViewContextMenu = ({
             {item.label === "Set priority" ? (
               <ContextMenuSub>
                 <ContextMenuSubTrigger className="gap-2 text-xs">
-                  <UrgentPriority className="size-3 mr-2" isDark={theme === "dark"} />
+                  <UrgentPriority className="size-3 mr-2"  />
                   Set priority
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-48">
@@ -126,7 +126,7 @@ const ListViewContextMenu = ({
                     className="gap-2 text-xs"
                     onClick={() => updatePriorityForATicket("urgent")}
                   >
-                    <UrgentPriority className="size-3" isDark={theme === "dark"} />
+                    <UrgentPriority className="size-3" />
                     Urgent
                     <ContextMenuShortcut>⌘1</ContextMenuShortcut>
                   </ContextMenuItem>
@@ -159,7 +159,7 @@ const ListViewContextMenu = ({
                     className="gap-2 text-xs text-muted-foreground"
                     onClick={() => updatePriorityForATicket("")}
                   >
-                    <Priority className="size-3" isDark={theme === "dark"} />
+                    <Priority className="size-3"  />
                     No priority
                     <ContextMenuShortcut>⌘0</ContextMenuShortcut>
                   </ContextMenuItem>
@@ -168,7 +168,7 @@ const ListViewContextMenu = ({
             ) : item.label === "Assignee" ? (
               <ContextMenuSub>
                 <ContextMenuSubTrigger className="gap-2 text-xs">
-                  <User className="w-3 h-3 mr-2" />
+                  <Assignee />
                   Assignee
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-48">
@@ -198,7 +198,7 @@ const ListViewContextMenu = ({
                     className="gap-2 text-xs text-muted-foreground"
                     onClick={() => updateAssigneeForATicket("")}
                   >
-                    <User className="w-3 h-3" />
+                    <Assignee />
                     Unassigned
                   </ContextMenuItem>
                 </ContextMenuSubContent>

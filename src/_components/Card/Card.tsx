@@ -7,12 +7,9 @@ import {
   ExternalLink,
   Paperclip,
   MessageSquare,
-  UserCircle2Icon,
   EllipsisVerticalIcon,
   CheckCircle2,
   Circle,
-  AlertTriangle,
-  User,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Badge } from "../../components/ui/badge";
@@ -55,6 +52,9 @@ import {
 } from "@/_components/shared/svg/Priority";
 import { useTheme } from "@/context/ThemeProvider";
 import { Tooltip } from "@/components/ui/tooltip";
+import { getPriorityIcon } from "../Projects/utils";
+import { DateCreatedIcon, DueDateIcon } from "../shared/svg/ViewOptionsIcons";
+import { Assignee } from "../shared/svg/ListViewIcons";
 
 interface CardProps {
   columnName: string;
@@ -114,26 +114,11 @@ const CardDescription = ({
           isCompleted && "line-through text-zinc-500 dark:text-zinc-400"
         )}
       />
-      
+
       {/* Gradient overlay - positioned after content to ensure it's on top */}
       <div className="absolute top-0 bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-zinc-900 from-10% dark:to-transparent pointer-events-none z-20" />
     </div>
   );
-};
-
-const getPriorityIcon = (priority?: string, theme?: string) => {
-  switch (priority?.toLowerCase()) {
-    case "urgent":
-      return <UrgentPriority className="size-4 " isDark={theme === "dark"} />;
-    case "high":
-      return <HighPriority className="size-4" isDark={theme === "dark"} />;
-    case "medium":
-      return <MediumPriority className="size-4" isDark={theme === "dark"} />;
-    case "low":
-      return <LowPriority className="size-4" isDark={theme === "dark"} />;
-    default:
-      return <Priority className="size-4" isDark={theme === "dark"} />;
-  }
 };
 
 const CardFooter = ({
@@ -205,6 +190,39 @@ const CardFooter = ({
   const [newLabel, setNewLabel] = useState("");
   const predefinedLabels = ["Bug", "Feature", "Enhancement", "Documentation"];
 
+  // Helper function to get due date display information
+  const getDueDateDisplay = () => {
+    if (!dueDate) {
+      return {
+        icon: <DateCreatedIcon className="size-5 text-zinc-500 dark:text-zinc-400" />,
+        text: null,
+        tooltipText: "Set due date",
+        isOverdue: false
+      };
+    }
+    
+    const isOverdue = new Date(dueDate) < new Date();
+    const dateText = dateFormat === "readable"
+      ? formatDistanceToNow(new Date(dueDate), { addSuffix: true })
+      : format(new Date(dueDate), "MMM dd, yyyy");
+    
+    if (isOverdue) {
+      return {
+        icon: <DueDateIcon className="size-4 text-red-600 dark:text-red-500 mr-1" />,
+        text: <div className="font-bold text-[10px] text-red-600 dark:text-red-500">{dateText}</div>,
+        tooltipText: "Overdue - Edit due date",
+        isOverdue: true
+      };
+    }
+    
+    return {
+      icon: <Calendar className="size-4 text-zinc-700 dark:text-zinc-300 mr-1" />,
+      text: <div className="font-bold text-[10px] text-zinc-700 dark:text-zinc-300">{dateText}</div>,
+      tooltipText: "Edit due date",
+      isOverdue: false
+    };
+  };
+
   // Status indicator for footer
   const getStatusInfo = () => {
     if (status?.isCompleted) {
@@ -217,10 +235,8 @@ const CardFooter = ({
     }
     if (status?.isOverdue) {
       return {
-        color: "text-red-600 dark:text-red-400",
-        bg: "bg-red-100 dark:bg-red-900/30",
-        text: `Overdue ${status.daysOverdue}d`,
-        icon: AlertTriangle,
+        color: "text-red-600 dark:text-red-500",
+        icon: DueDateIcon,
       };
     }
     return null;
@@ -314,7 +330,7 @@ const CardFooter = ({
                 updatePriority("");
               }}
             >
-              <Priority className="size-4" isDark={theme === "dark"} />
+              <Priority className="size-4" />
               No priority
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -334,18 +350,12 @@ const CardFooter = ({
               {labels && labels.length > 0 ? (
                 <div className="flex items-center gap-1 flex-nowrap">
                   {labels.slice(0, 1).map((label, index) => (
-                    <div
-                      key={index}
-                      className="text-xs"
-                      title={label}
-                    >
+                    <div key={index} className="text-xs" title={label}>
                       {label}
                     </div>
                   ))}
                   {labels.length > 1 && (
-                    <div
-                      className="text-[9px] px-1 rounded-[2px] h-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-300 border-zinc-300 dark:border-zinc-600 shrink-0"
-                    >
+                    <div className="text-[9px] px-1 rounded-[2px] h-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-300 border-zinc-300 dark:border-zinc-600 shrink-0">
                       +{labels.length - 1}
                     </div>
                   )}
@@ -432,20 +442,30 @@ const CardFooter = ({
             >
               {assignees && assignees.length > 0 ? (
                 <div className="flex items-center -space-x-1">
-                  {assignees.filter(assignee => assignee && assignee.id).slice(0, 3).map((assignee, index) => (
-                    <Avatar
-                      key={assignee.id}
-                      className="w-4 h-4 border border-white dark:border-zinc-800 relative "
-                      style={{ zIndex: assignees.length - index }}
-                    >
-                      <AvatarImage src={assignee.imageUrl} className="object-cover object-top" />
-                      <AvatarFallback className="text-[8px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                        {(assignee.name || assignee.username || assignee.email)
-                          ?.slice(0, 2)
-                          .toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  ))}
+                  {assignees
+                    .filter((assignee) => assignee && assignee.id)
+                    .slice(0, 3)
+                    .map((assignee, index) => (
+                      <Avatar
+                        key={assignee.id}
+                        className="w-4 h-4 border border-white dark:border-zinc-800 relative "
+                        style={{ zIndex: assignees.length - index }}
+                      >
+                        <AvatarImage
+                          src={assignee.imageUrl}
+                          className="object-cover object-top"
+                        />
+                        <AvatarFallback className="text-[8px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                          {(
+                            assignee.name ||
+                            assignee.username ||
+                            assignee.email
+                          )
+                            ?.slice(0, 2)
+                            .toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    ))}
                   {assignees.length > 3 && (
                     <div className="w-4 h-4 bg-zinc-200 dark:bg-zinc-700 rounded-full flex items-center justify-center text-[8px] text-zinc-600 dark:text-zinc-300 border border-white dark:border-zinc-800">
                       +{assignees.length - 3}
@@ -454,7 +474,7 @@ const CardFooter = ({
                 </div>
               ) : (
                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground cursor-pointer">
-                  <User className="size-4" />
+                  <Assignee className="size-4" />
                 </div>
               )}
             </div>
@@ -464,126 +484,126 @@ const CardFooter = ({
             className="w-40"
             onClick={(e) => e.stopPropagation()}
           >
-            {members?.filter((member: TUser) => member && member.id)?.map((member: TUser) => (
-              <DropdownMenuItem
-                key={member.id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  updateAssignee(member.id);
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center">
-                    {member.imageUrl ? (
-                      <img
-                        src={member.imageUrl}
-                        alt={member.username || 'User'}
-                        className="w-full h-full rounded-full"
-                      />
-                    ) : (
-                      <span className="text-xs">
-                        {member.username?.charAt(0) || '?'}
-                      </span>
-                    )}
+            {members
+              ?.filter((member: TUser) => member && member.id)
+              ?.map((member: TUser) => (
+                <DropdownMenuItem
+                  key={member.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateAssignee(member.id);
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center">
+                      {member.imageUrl ? (
+                        <img
+                          src={member.imageUrl}
+                          alt={member.username || "User"}
+                          className="w-full h-full rounded-full"
+                        />
+                      ) : (
+                        <span className="text-xs">
+                          {member.username?.charAt(0) || "?"}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs">
+                      {member.username || "Unknown User"}
+                    </span>
                   </div>
-                  <span className="text-xs">{member.username || 'Unknown User'}</span>
-                </div>
-              </DropdownMenuItem>
-            ))}
+                </DropdownMenuItem>
+              ))}
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation();
                 updateAssignee("");
               }}
             >
-              <User className="w-3 h-3 mr-2" />
+              <Assignee />
               Unassigned
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
       <div className="flex items-center text-xs">
-        {/* Completion checkbox - moved from absolute position */}
-      
-
         {/* Status indicator */}
         {statusInfo && (
           <div
             className={cn(
-              "flex items-center gap-1 p-1 rounded-[2px] text-xs leading-3 font-medium",
-              statusInfo.bg
+              "flex items-center gap-1 p-1 rounded-[2px] text-xs leading-3 font-medium"
             )}
           >
             <statusInfo.icon
-              className={cn("size-4 p-0.5", statusInfo.color)}
+              className={cn("size-6 p-0.5", statusInfo.color)}
               strokeWidth={2}
             />
-            <div className={statusInfo.color}>{statusInfo.text}</div>
           </div>
         )}
 
-        {/* Due date - Inline editable */}
+        {/* Due date - Inline editable with updated logic */}
         {!statusInfo && (
-          <Popover>
-            <PopoverTrigger asChild>
-              <div
-                className="flex items-center gap-0.5 hover:bg-muted border border-border rounded-[2px] px-1 py-0.5 transition-colors cursor-pointer"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {dueDate ? (
-                  <>
-                    <Calendar
-                      className="size-4 text-zinc-700 dark:text-zinc-300"
-                    />
-                    <div className="font-bold relative top-0.5 text-[10px]">
-                      {dateFormat === "readable"
-                        ? formatDistanceToNow(new Date(dueDate), {
-                            addSuffix: true,
-                          })
-                        : format(new Date(dueDate), "MMM dd, yyyy")}
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex items-center gap-1 cursor-pointer">
-                    <Calendar className="size-4" />
+          <Tooltip>
+            <Popover>
+              <TooltipTrigger asChild>
+                <PopoverTrigger asChild>
+                  <div
+                    className="flex items-center cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded p-1 transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {(() => {
+                      const display = getDueDateDisplay();
+                      return (
+                        <>
+                          {display.icon}
+                          {display.text}
+                        </>
+                      );
+                    })()}
                   </div>
-                )}
-              </div>
-            </PopoverTrigger>
-            <PopoverContent
-              className="w-auto p-0"
-              align="start"
-              side="top"
-              sideOffset={8}
-              onClick={(e) => e.stopPropagation()}
-              style={{ zIndex: 9999 }}
-            >
-              <CalendarComponent
-                mode="single"
-                selected={dueDate ? new Date(dueDate) : undefined}
-                onSelect={(date) => {
-                  updateDueDate(date || null);
-                }}
-                initialFocus
-                className="p-3"
-              />
-              <div className="p-3 border-t">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    updateDueDate(null);
+                </PopoverTrigger>
+              </TooltipTrigger>
+              <PopoverContent
+                className="w-auto p-0"
+                align="start"
+                side="top"
+                sideOffset={8}
+                onClick={(e) => e.stopPropagation()}
+                style={{ zIndex: 9999 }}
+              >
+                <CalendarComponent
+                  mode="single"
+                  selected={dueDate ? new Date(dueDate) : undefined}
+                  onSelect={(date) => {
+                    updateDueDate(date || null);
                   }}
-                >
-                  Clear due date
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
+                  initialFocus
+                  className="p-3"
+                />
+                <div className="p-3 border-t">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateDueDate(null);
+                    }}
+                  >
+                    Clear due date
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+            <TooltipContent className="rounded-sm bg-[#606060] dark:bg-black text-white dark:text-white">
+              <p className="text-xs">
+                {getDueDateDisplay().tooltipText}
+              </p>
+            </TooltipContent>
+          </Tooltip>
         )}
-          <div
+        
+        <div
           className="flex items-center gap-1 px-1 py-0.5 transition-colors cursor-pointer"
           onClick={handleCompletionClick}
         >
@@ -610,7 +630,7 @@ const CardFooter = ({
             </TooltipContent>
           </Tooltip>
         </div>
-      </div> 
+      </div>
     </div>
   );
 };
@@ -727,7 +747,7 @@ const Card = ({ columnName, viewOptions, members }: CardProps) => {
       shortcut: "⌘D",
     },
     {
-      icon: <UserCircle2Icon className="w-3 h-3 mr-2" />,
+      icon: <Assignee className="w-3 h-3 mr-2" />,
       label: "Assignee",
       onClick: () => {},
       shortcut: "⌘A",

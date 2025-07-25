@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createBoard } from "../apis/BoardApis";
+import { createWorkspace } from "../apis/WorkspaceApis";
 import { useToast } from "../hooks/use-toast";
 import { useFeatureGating } from "./useFeatureGating";
 
@@ -36,7 +36,7 @@ const useBoardForm = (count: number) => {
         colorName
       };
 
-      const response = await createBoard(kanbanBoardData);
+      const response = await createWorkspace(kanbanBoardData);
       return response;
     },
     onSuccess: (data) => {

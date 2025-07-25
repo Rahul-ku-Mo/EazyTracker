@@ -31,16 +31,13 @@ const MainLayout = ({
           <AppHeader>{headerChildren}</AppHeader>
           <TrialStatusBanner />
           {/* View Bar - positioned below header and banner */}
-          {viewBar && (
-            <div className="border-b border-zinc-200 dark:border-zinc-800">
-              {viewBar}
-            </div>
-          )}
+          {viewBar}
           <main
             className={cn(
               background,
+              "flex flex-col flex-1 gap-4 px-4 py-2 pt-0",
+              "overflow-y-hidden",
               fwdClassName,
-              "flex flex-col flex-1 gap-4 px-4 py-2 pt-0","overflow-y-hidden"
             )}
           >
             {children}

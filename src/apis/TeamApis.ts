@@ -29,10 +29,10 @@ export const getTeamMembers = async (teamId: string) => {
 };
 
 // Get workspace members with permissions
-export const getWorkspaceMembers = async (workspaceId: number) => {
+export const getWorkspaceMembers = async (workspaceSlug: number) => {
   try {
     const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/teams/workspaces/${workspaceId}/members`,
+      `${import.meta.env.VITE_API_URL}/teams/workspaces/${workspaceSlug}/members`,
       {
         headers: getAuthHeaders(),
       }

@@ -8,7 +8,14 @@ import { useWorkspaces } from "@/hooks/useQueries";
 import { useFeatureGating } from "@/hooks/useFeatureGating";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Lock, Eye, Info, Shield, SquareTerminal, MoreHorizontal } from "lucide-react";
+import {
+  Lock,
+  Eye,
+  Info,
+  Shield,
+  SquareTerminal,
+  MoreHorizontal,
+} from "lucide-react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +31,7 @@ import { useAdminCheck } from "@/hooks/useAdminCheck";
 interface Workspace {
   id: string;
   title: string;
+  slug?: string;
   colorId: string;
   colorValue: string;
   colorName: string;
@@ -33,10 +41,9 @@ interface Workspace {
 interface TeamWorkspace {
   id: number;
   title: string;
-  colorName: string;
+  slug?: string;
   colorValue: string;
-  userId: string;
-  createdAt: string;
+  colorName: string;
   hasAccess: boolean;
   userRole: string | null;
   isOwner: boolean;
@@ -49,8 +56,10 @@ const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
   const queryClient = useQueryClient();
   const accessToken = Cookies.get("accessToken");
 
-  const [isOpenDeleteWorkspaceDialog, setIsOpenDeleteWorkspaceDialog] = useState(false);
-  const [isOpenInviteWorkspaceDialog, setIsOpenInviteWorkspaceDialog] = useState(false);
+  const [isOpenDeleteWorkspaceDialog, setIsOpenDeleteWorkspaceDialog] =
+    useState(false);
+  const [isOpenInviteWorkspaceDialog, setIsOpenInviteWorkspaceDialog] =
+    useState(false);
 
   const openInviteWorkspaceDialog = () => {
     setIsOpenInviteWorkspaceDialog(true);
@@ -83,12 +92,14 @@ const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
 
       // Snapshot the previous value
       const previousWorkspaces = queryClient.getQueryData(["workspaces"]);
-      const previousFavoriteWorkspaces = queryClient.getQueryData(["favoriteWorkspaces"]);
+      const previousFavoriteWorkspaces = queryClient.getQueryData([
+        "favoriteWorkspaces",
+      ]);
 
       // Optimistically update the workspaces cache
       queryClient.setQueryData(["workspaces"], (old: any) => {
         if (!old) return old;
-        return old.map((w: any) => 
+        return old.map((w: any) =>
           w.id === workspaceId ? { ...w, isFavorite: !w.isFavorite } : w
         );
       });
@@ -108,8 +119,11 @@ const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
     onError: (error: any, _workspaceId: string, context: any) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       queryClient.setQueryData(["workspaces"], context?.previousWorkspaces);
-      queryClient.setQueryData(["favoriteWorkspaces"], context?.previousFavoriteWorkspaces);
-      
+      queryClient.setQueryData(
+        ["favoriteWorkspaces"],
+        context?.previousFavoriteWorkspaces
+      );
+
       toast({
         title: "Error",
         description:
@@ -133,11 +147,21 @@ const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
   };
 
   const handleOpenWorkspace = () => {
-    navigate(`/workspace/${workspace.id}`);
+    // Use new teamId + slug pattern if workspace has teamId and slug
+    if (workspace.slug) {
+
+      const teamName = localStorage.getItem("teamName")
+
+      navigate(`/workspace/${teamName}/${workspace.slug}`);
+    } 
   };
 
   const handleOpenWorkspaceSettings = () => {
-    navigate(`/workspace/settings/${workspace.id}`);
+    // Use new teamId + slug pattern if workspace has teamId and slug
+    if (workspace.slug) {
+      const teamName = localStorage.getItem("teamName")
+      navigate(`/workspace/settings/${teamName}/${workspace.slug}`);
+    } 
   };
 
   const handleToggleFavorite = (e?: React.MouseEvent) => {
@@ -181,13 +205,15 @@ const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     // Trigger context menu by dispatching a right-click event
-                    const contextMenuEvent = new MouseEvent('contextmenu', {
+                    const contextMenuEvent = new MouseEvent("contextmenu", {
                       bubbles: true,
                       cancelable: true,
                       clientX: e.clientX,
                       clientY: e.clientY,
                     });
-                    e.currentTarget.parentElement?.parentElement?.parentElement?.dispatchEvent(contextMenuEvent);
+                    e.currentTarget.parentElement?.parentElement?.parentElement?.dispatchEvent(
+                      contextMenuEvent
+                    );
                   }}
                   className={cn(
                     "p-1 rounded-full transition-all duration-200 hover:bg-white/20",
@@ -310,11 +336,13 @@ const WorkspaceSelection = () => {
 
   // Only fetch user's own workspaces if user is admin
   const { data: workspaces, isPending: isWorkspacesPending } = useWorkspaces();
-  const { data: teamWorkspaces, isPending: isTeamWorkspacesPending } = useQuery({
-    queryKey: ["team-workspaces"],
-    queryFn: getTeamWorkspaces,
-    enabled: !!accessToken,
-  });
+  const { data: teamWorkspaces, isPending: isTeamWorkspacesPending } = useQuery(
+    {
+      queryKey: ["team-workspaces"],
+      queryFn: getTeamWorkspaces,
+      enabled: !!accessToken,
+    }
+  );
   const { canCreate } = useFeatureGating();
 
   const currentWorkspaceCount = workspaces?.length ?? 0;
@@ -339,7 +367,8 @@ const WorkspaceSelection = () => {
     ? (workspaces?.length || 0) +
       (accessibleTeamWorkspaces?.length || 0) +
       (lockedTeamWorkspaces?.length || 0)
-    : (accessibleTeamWorkspaces?.length || 0) + (lockedTeamWorkspaces?.length || 0);
+    : (accessibleTeamWorkspaces?.length || 0) +
+      (lockedTeamWorkspaces?.length || 0);
 
   const hasAnyWorkspaces = relevantWorkspaceCount > 0;
 
@@ -348,26 +377,29 @@ const WorkspaceSelection = () => {
       fwdClassName="pl-2 bg-background"
       title={isAdmin ? "Manage Workspaces" : "Workspaces"}
     >
+      <div className="flex items-center gap-3 pb-2 pt-4">
+        <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+          <SquareTerminal className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold">My Workspaces</h1>
+          <p className="text-sm text-muted-foreground">
+            Manage your workspaces and create new ones
+          </p>
+        </div>
+      </div>
       {isPending ? (
         <LoadingState />
       ) : !hasAnyWorkspaces ? (
-        <EmptyWorkspaceState remainingWorkspaces={remainingWorkspaces} isAdmin={isAdmin} />
+        <EmptyWorkspaceState
+          remainingWorkspaces={remainingWorkspaces}
+          isAdmin={isAdmin}
+        />
       ) : (
         <div className="space-y-6">
           {/* User's own workspaces - Only show for admin users */}
           {isAdmin && workspaces && workspaces.length > 0 && (
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3 py-2">
-                <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-                  <SquareTerminal className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold">My Workspaces</h1>
-                  <p className="text-sm text-muted-foreground">
-                    Manage your workspaces and create new ones
-                  </p>
-                </div>
-              </div>
+          
               <div className="flex flex-wrap gap-4">
                 {workspaces?.map((workspace: any) => (
                   <WorkspaceCard
@@ -377,7 +409,7 @@ const WorkspaceSelection = () => {
                 ))}
                 <WorkspacePopover count={remainingWorkspaces} />
               </div>
-            </div>
+          
           )}
 
           {/* Accessible team workspaces */}
@@ -393,10 +425,12 @@ const WorkspaceSelection = () => {
                     workspace={{
                       id: workspace.id.toString(),
                       title: workspace.title,
+                      slug: workspace.slug, // Include slug for navigation
                       colorId: "", // Team workspaces don't have colorId
                       colorValue: workspace.colorValue,
                       colorName: workspace.colorName,
                       isFavorite: false,
+                      
                     }}
                   />
                 ))}
@@ -412,7 +446,10 @@ const WorkspaceSelection = () => {
               </h3>
               <div className="flex flex-wrap gap-4">
                 {lockedTeamWorkspaces?.map((workspace: TeamWorkspace) => (
-                  <LockedWorkspaceCard key={`locked-${workspace.id}`} workspace={workspace} />
+                  <LockedWorkspaceCard
+                    key={`locked-${workspace.id}`}
+                    workspace={workspace}
+                  />
                 ))}
               </div>
             </div>
@@ -444,8 +481,8 @@ const WorkspaceSelection = () => {
                     </h4>
                     <p className="text-xs text-blue-700 dark:text-blue-300">
                       As a team member, you can access workspaces that have been
-                      shared with you. To create new workspaces or manage existing
-                      ones, contact your team administrator.
+                      shared with you. To create new workspaces or manage
+                      existing ones, contact your team administrator.
                     </p>
                   </div>
                   <Shield className="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" />
@@ -459,4 +496,4 @@ const WorkspaceSelection = () => {
   );
 };
 
-export default WorkspaceSelection; 
+export default WorkspaceSelection;

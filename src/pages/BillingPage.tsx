@@ -36,7 +36,7 @@ const BillingPage: React.FC = () => {
       title="Billing & Subscription"
       fwdClassName="flex flex-col h-full p-0"
     >
-      <div className="flex items-center gap-3 py-2">
+      <div className="flex items-center gap-3 pb-2 pt-4">
         <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
           <CreditCard className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
         </div>

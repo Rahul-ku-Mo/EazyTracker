@@ -1,7 +1,7 @@
 import { useQuery  } from "@tanstack/react-query";
 import { fetchCard, fetchCards } from "../apis/CardApis";
 import { fetchColumn, fetchColumns } from "../apis/ColumnApis";
-import { fetchBoards, fetchBoard } from "../apis/BoardApis";
+
 import { fetchWorkspaces, fetchWorkspace } from "../apis/WorkspaceApis";
 import { fetchUserProfile, fetchUsers } from "../apis/userApis";
 import { fetchLabels } from "../apis/LabelApis";
@@ -35,24 +35,12 @@ const useColumn = (accessToken: string, columnId: string) => {
   });
 };
 
-const useBoard = (boardId: string) => {
-  return useQuery({
-    queryKey: ["boards", boardId],
-    queryFn: async () => await fetchBoard(boardId),
-  });
-};
 
-const useBoards = () => {
-  return useQuery({
-    queryKey: ["boards"],
-    queryFn: async () => await fetchBoards(),
-  });
-};
 
-const useWorkspace = (workspaceId: string) => {
+const useWorkspace = (workspaceIdentifier: string) => {
   return useQuery({
-    queryKey: ["workspaces", workspaceId],
-    queryFn: async () => await fetchWorkspace(workspaceId),
+    queryKey: ["workspaces", workspaceIdentifier],
+    queryFn: async () => await fetchWorkspace(workspaceIdentifier),
   });
 };
 
@@ -98,8 +86,6 @@ export {
   useCards,
   useColumn,
   useColumns,
-  useBoard,
-  useBoards,
   useWorkspace,
   useWorkspaces,
   useUser,

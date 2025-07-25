@@ -266,7 +266,7 @@ const InboxPage = () => {
     <MainLayout title="Inbox" fwdClassName="flex flex-col h-full p-0">
       {/* Header */}
       <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex items-center justify-between py-2">
+        <div className="flex items-center justify-between pb-2 pt-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
               <Inbox className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />

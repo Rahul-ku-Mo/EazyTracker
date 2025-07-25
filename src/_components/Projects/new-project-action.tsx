@@ -41,6 +41,7 @@ import { Badge } from "@/components/ui/badge";
 import { Priority, LowPriority, MediumPriority, HighPriority, UrgentPriority } from "@/_components/shared/svg/Priority";
 import { useTheme } from "@/context/ThemeProvider";
 import { Input } from "@/components/ui/input";
+import { getPriorityIcon } from "./utils";
 
 type TNewProjectActionsProps = {
   targetDate: Date | undefined;
@@ -67,20 +68,6 @@ interface TeamMember {
   imageUrl?: string;
 }
 
-const getPriorityIcon = (priority: string, theme: string) => {
-  switch (priority) {
-    case "urgent":
-      return <UrgentPriority className="size-3" isDark={theme === "dark"} />;
-    case "high":
-      return <HighPriority className="size-3" isDark={theme === "dark"} />;
-    case "medium":
-      return <MediumPriority className="size-3" isDark={theme === "dark"} />;
-    case "low":
-      return <LowPriority className="size-3" isDark={theme === "dark"} />;
-    default:
-      return <Priority className="size-3" isDark={theme === "dark"} />;
-  }
-};
 
 const getPriorityLabel = (priority: string) => {
   switch (priority) {
@@ -211,7 +198,7 @@ const NewProjectActions = ({
   };
 
   return (
-    <div className="flex gap-2 flex-wrap py-2.5">
+    <div className="flex gap-2 flex-wrap py-2.5 px-4">
       {/* Status Select */}
       <Select value={status} onValueChange={setStatus}>
         <SelectTrigger

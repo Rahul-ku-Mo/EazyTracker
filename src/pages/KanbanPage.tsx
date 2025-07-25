@@ -1,22 +1,27 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
-import ColumnBoard from "../_components/Column/ColumnBoard";
-import { useBoard } from "../hooks/useQueries";
+import ColumnBoard from "../_components/Column/ColumnWorkspace";
+import { useWorkspace } from "../hooks/useQueries";
 import { useParams } from "react-router-dom";
 
 import LoadingScreen from "../_components/LoadingScreen";
 
 const KanbanPage = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
+
+  const teamId = localStorage.getItem("teamId");
+  const teamName = localStorage.getItem("teamName");
+  
   const navigate = useNavigate();
 
-
-  const { data: boardDetail, isPending, isError } = useBoard(id || "");
+  // Handle both new teamId + slug pattern and legacy slug pattern
+  const workspaceIdentifier = teamId && slug ? `${teamId}/${slug}` : slug || "";
+  const { data: workspaceDetail, isPending, isError } = useWorkspace(workspaceIdentifier);
 
   // Function to handle going back to the boards section
   const handleGoBack = () => {
-    navigate("/workspace");
+    navigate(`/workspace/${teamName}`);
   };
 
   if (isPending) {
@@ -33,7 +38,8 @@ const KanbanPage = () => {
       >
         <h2 className="text-lg font-medium text-destructive">Access Error</h2>
         <p className="text-sm text-muted-foreground text-center">
-          The board you're trying to access either doesn't exist or you don't have permission to view it.
+          The board you're trying to access either doesn't exist or you don't
+          have permission to view it.
         </p>
         <button
           onClick={handleGoBack}
@@ -53,9 +59,7 @@ const KanbanPage = () => {
       exit={{ opacity: 0 }}
       className="relative w-full h-full"
     >
-      <ColumnBoard 
-        title={boardDetail?.title}
-      />
+      <ColumnBoard title={workspaceDetail?.title} />
     </motion.div>
   );
 };

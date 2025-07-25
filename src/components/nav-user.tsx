@@ -55,6 +55,13 @@ export function NavUser({
 
   const handleLogout = (): void => {
     Cookies.remove("accessToken");
+
+    localStorage.removeItem("teamId");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("teamName");
+    localStorage.removeItem("email");
+    localStorage.removeItem("trialModalDismissed");
+
     setIsLoggedIn(false);
     queryClient.clear();
     navigate("/auth");

@@ -33,6 +33,11 @@ const User = () => {
 
   const logOut = (): void => {
     Cookies.remove("accessToken");
+
+    localStorage.removeItem("teamId");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("teamName");
+    
     setIsLoggedIn(false);
     queryClient.clear();
 

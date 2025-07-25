@@ -32,10 +32,8 @@ import {
   GripVertical,
   Columns,
   Clock,
-  Building,
   AlertTriangle,
-  Minus,
-  Check,
+  Box,
 } from "lucide-react";
 import {
   ColumnDef,
@@ -54,9 +52,13 @@ import {
 } from "@tanstack/react-table";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import Cookies from "js-cookie";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+import {
+  updateProjectTargetDate,
+  updateProjectLead,
+  updateProjectMembers,
+} from "@/apis/project";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -92,19 +94,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+
+import PriorityDropdown from "./contextMenu/PriorityDropdown";
+import LeadCommandDropdown from "./contextMenu/LeadCommandDropdown";
+import MembersCommandDropdown from "./contextMenu/MembersCommandDropdown";
+import { updateProjectPriority } from "@/apis/project";
+import { useTheme } from "@/context/ThemeProvider";
 
 export interface ProjectTableRow {
   id: string;
@@ -115,24 +110,22 @@ export interface ProjectTableRow {
   lead: { id: string; name: string; imageUrl?: string } | null;
   members: { id: string; name: string; imageUrl?: string }[];
   targetDate?: string;
-  teams: string[];
-}
-
-interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  imageUrl?: string;
+  workspaces: {
+    id: number;
+    title: string;
+    colorName?: string;
+    colorValue?: string;
+  }[];
 }
 
 // DatePicker component for inline editing
-function DatePicker({ 
-  value, 
-  onChange, 
-  placeholder = "Pick a date" 
-}: { 
-  value?: string; 
-  onChange: (date: string) => void; 
+function DatePicker({
+  value,
+  onChange,
+  placeholder = "Pick a date",
+}: {
+  value?: string;
+  onChange: (date: string) => void;
   placeholder?: string;
 }) {
   const [date, setDate] = React.useState<Date | undefined>(
@@ -146,19 +139,21 @@ function DatePicker({
   const handleSelect = (selectedDate: Date | undefined) => {
     setDate(selectedDate);
     if (selectedDate) {
-      onChange(selectedDate.toISOString().split('T')[0]);
+      onChange(selectedDate.toISOString().split("T")[0]);
     } else {
-      onChange('');
+      onChange("");
     }
   };
 
   const handleClear = () => {
     setDate(undefined);
-    onChange('');
+    onChange("");
   };
 
-  const isOverdue = date && date < new Date();
-  const isToday = date && date.toDateString() === new Date().toDateString();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const isOverdue = date && date < today;
+  const isToday = date && date.toDateString() === today.toDateString();
 
   return (
     <Popover>
@@ -166,20 +161,27 @@ function DatePicker({
         <Button
           variant="ghost"
           className={`hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 h-8 w-32 border-transparent bg-transparent text-right shadow-none focus-visible:border dark:bg-transparent justify-start font-normal text-xs ${
-            isOverdue ? 'text-red-500 dark:text-red-400' : ''
+            isOverdue ? "text-red-500 dark:text-red-400" : ""
           }`}
         >
-          <div className={cn("flex items-center gap-1 w-full", (!isOverdue || !date) && "justify-center")}>
+          <div
+            className={cn(
+              "flex items-center gap-1 w-full",
+              (!isOverdue || !date) && "justify-center"
+            )}
+          >
             {isOverdue && (
               <AlertTriangle className="h-3 w-3 text-red-500 dark:text-red-400" />
             )}
             {date ? (
               <span className="truncate">
-                {isToday ? 'Today' : date.toLocaleDateString()}
+                {isToday ? "Today" : date.toLocaleDateString()}
               </span>
             ) : (
               <div className="flex items-center gap-1">
-                <span className="text-muted-foreground truncate">{placeholder}</span>
+                <span className="text-muted-foreground truncate">
+                  {placeholder}
+                </span>
               </div>
             )}
           </div>
@@ -212,270 +214,13 @@ function DatePicker({
   );
 }
 
-// Lead Command Dropdown Component
-function LeadCommandDropdown({ 
-  currentLead, 
-  onLeadChange, 
-  teamId 
-}: { 
-  currentLead: { id: string; name: string; imageUrl?: string } | null; 
-  onLeadChange: (leadId: string | null) => void; 
+export function ProjectsTable({
+  data,
+  teamId,
+}: {
+  data: ProjectTableRow[];
   teamId: string;
 }) {
-  const [open, setOpen] = React.useState(false);
-  const [searchValue, setSearchValue] = React.useState("");
-
-  // Fetch team members
-  const { data: teamData } = useQuery({
-    queryKey: ["team-members", teamId],
-    queryFn: async () => {
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/teams/${teamId}/members`,
-        {
-          headers: {
-            Authorization: `Bearer ${Cookies.get("accessToken")}`,
-          },
-        }
-      );
-      return response.data.data;
-    },
-    enabled: !!teamId && !!Cookies.get("accessToken"),
-  });
-
-  const teamMembers: TeamMember[] = teamData?.members || [];
-  const currentLeadMember = currentLead ? teamMembers.find(member => member.id === currentLead.id) : null;
-
-  const handleLeadSelect = (memberId: string) => {
-    if (currentLead?.id === memberId) {
-      onLeadChange(null);
-    } else {
-      onLeadChange(memberId);
-    }
-    setOpen(false);
-  };
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          className="h-8 w-full justify-start px-2 text-left font-normal"
-        >
-          {currentLeadMember ? (
-            <div className="flex items-center gap-2 w-full">
-              <Avatar className="h-5 w-5">
-                <AvatarImage src={currentLeadMember.imageUrl} />
-                <AvatarFallback className="text-xs">
-                  {currentLeadMember.name?.[0]?.toUpperCase() || "?"}
-                </AvatarFallback>
-              </Avatar>
-              <span className="truncate text-xs">{currentLeadMember.name}</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 w-full">
-              <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center">
-                <Minus className="h-3 w-3 text-muted-foreground" />
-              </div>
-            </div>
-          )}
-          <ChevronDown className="ml-auto h-3 w-3 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-56 p-0" align="start">
-        <Command>
-          <CommandInput 
-            placeholder="Search members..." 
-            value={searchValue}
-            onValueChange={setSearchValue}
-            className="h-8 text-xs"
-          />
-          <CommandList className="max-h-48">
-            <CommandEmpty>No members found.</CommandEmpty>
-            <CommandGroup>
-              {teamMembers
-                .filter(member => 
-                  member.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-                  member.email.toLowerCase().includes(searchValue.toLowerCase())
-                )
-                .map((member) => {
-                  const isSelected = currentLead?.id === member.id;
-                  return (
-                    <CommandItem
-                      key={member.id}
-                      value={member.id}
-                      onSelect={() => handleLeadSelect(member.id)}
-                      className="text-xs"
-                    >
-                      <div className="flex items-center gap-2 w-full">
-                        <Avatar className="h-4 w-4">
-                          <AvatarImage src={member.imageUrl} />
-                          <AvatarFallback className="text-xs">
-                            {member.name?.[0]?.toUpperCase() || "?"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs font-medium truncate">
-                            {member.name}
-                          </div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {member.email}
-                          </div>
-                        </div>
-                        {isSelected && <Check className="w-3 h-3 text-primary" />}
-                      </div>
-                    </CommandItem>
-                  );
-                })}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-// Members Command Dropdown Component
-function MembersCommandDropdown({ 
-  currentMembers, 
-  onMembersChange, 
-  teamId 
-}: { 
-  currentMembers: { id: string; name: string; imageUrl?: string }[]; 
-  onMembersChange: (members: { id: string; name: string; imageUrl?: string }[]) => void; 
-  teamId: string;
-}) {
-  const [open, setOpen] = React.useState(false);
-  const [searchValue, setSearchValue] = React.useState("");
-
-  // Fetch team members
-  const { data: teamData } = useQuery({
-    queryKey: ["team-members", teamId],
-    queryFn: async () => {
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/teams/${teamId}/members`,
-        {
-          headers: {
-            Authorization: `Bearer ${Cookies.get("accessToken")}`,
-          },
-        }
-      );
-      return response.data.data;
-    },
-    enabled: !!teamId && !!Cookies.get("accessToken"),
-  });
-
-  const teamMembers: TeamMember[] = teamData?.members || [];
-
-  const handleMemberSelect = (memberId: string) => {
-    const member = teamMembers.find(m => m.id === memberId);
-    if (!member) return;
-
-    const isSelected = currentMembers.some(m => m.id === member.id);
-    
-    if (isSelected) {
-      onMembersChange(currentMembers.filter(m => m.id !== member.id));
-    } else {
-      onMembersChange([...currentMembers, { id: member.id, name: member.name, imageUrl: member.imageUrl }]);
-    }
-  };
-
-  const isSelected = (memberId: string) => {
-    const member = teamMembers.find(m => m.id === memberId);
-    return member ? currentMembers.some(m => m.id === member.id) : false;
-  };
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          className="h-8 w-full justify-start px-2 text-left font-normal"
-        >
-          {currentMembers.length > 0 ? (
-            <div className="flex items-center gap-1 w-full">
-              <div className="flex -space-x-1">
-                {currentMembers.slice(0, 3).map((member, index) => (
-                  <Avatar key={index} className="h-5 w-5 border-2 border-background">
-                    <AvatarImage src={member.imageUrl} />
-                    <AvatarFallback className="text-xs">
-                      {member.name?.[0]?.toUpperCase() || "?"}
-                    </AvatarFallback>
-                  </Avatar>
-                ))}
-                {currentMembers.length > 3 && (
-                  <div className="h-5 w-5 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-medium">
-                    +{currentMembers.length - 3}
-                  </div>
-                )}
-              </div>
-              <span className="text-xs text-muted-foreground ml-1">
-                {currentMembers.length} member{currentMembers.length !== 1 ? 's' : ''}
-              </span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 w-full">
-              <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center">
-                <Minus className="h-3 w-3 text-muted-foreground" />
-              </div>
-            </div>
-          )}
-          <ChevronDown className="ml-auto h-3 w-3 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-56 p-0" align="start">
-        <Command>
-          <CommandInput 
-            placeholder="Search members..." 
-            value={searchValue}
-            onValueChange={setSearchValue}
-            className="h-8 text-xs"
-          />
-          <CommandList className="max-h-48">
-            <CommandEmpty>No members found.</CommandEmpty>
-            <CommandGroup>
-              {teamMembers
-                .filter(member => 
-                  member.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-                  member.email.toLowerCase().includes(searchValue.toLowerCase())
-                )
-                .map((member) => {
-                  const selected = isSelected(member.id);
-                  return (
-                    <CommandItem
-                      key={member.id}
-                      value={member.id}
-                      onSelect={() => handleMemberSelect(member.id)}
-                      className="text-xs"
-                    >
-                      <div className="flex items-center gap-2 w-full">
-                        <Avatar className="h-4 w-4">
-                          <AvatarImage src={member.imageUrl} />
-                          <AvatarFallback className="text-xs">
-                            {member.name?.[0]?.toUpperCase() || "?"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs font-medium truncate">
-                            {member.name}
-                          </div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {member.email}
-                          </div>
-                        </div>
-                        {selected && <Check className="w-3 h-3 text-primary" />}
-                      </div>
-                    </CommandItem>
-                  );
-                })}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-export function ProjectsTable({ data, teamId }: { data: ProjectTableRow[]; teamId: string }) {
   return <DataTable data={data} teamId={teamId} />;
 }
 
@@ -498,8 +243,6 @@ function DragHandle({ id }: { id: string }) {
     </Button>
   );
 }
-
-
 
 function DraggableRow({ row }: { row: Row<ProjectTableRow> }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
@@ -526,13 +269,84 @@ function DraggableRow({ row }: { row: Row<ProjectTableRow> }) {
   );
 }
 
-export function DataTable({ 
-  data: initialData, 
-  teamId 
-}: { 
+export function DataTable({
+  data: initialData,
+  teamId,
+}: {
   data: ProjectTableRow[];
   teamId: string;
 }) {
+  const queryClient = useQueryClient();
+  const { theme } = useTheme();
+  // Mutations for updating project fields
+  const updateTargetDateMutation = useMutation({
+    mutationFn: ({
+      projectSlug,
+      targetDate,
+    }: {
+      projectSlug: string;
+      targetDate: string | null;
+    }) => updateProjectTargetDate(projectSlug, targetDate),
+    onSuccess: () => {
+      // Only invalidate the projects query
+      queryClient.invalidateQueries({
+        queryKey: ["projects", teamId],
+        exact: true,
+      });
+    },
+  });
+
+  const updatePriorityMutation = useMutation({
+    mutationFn: ({
+      projectSlug,
+      priority,
+    }: {
+      projectSlug: string;
+      priority: string;
+    }) => updateProjectPriority(projectSlug, priority),
+    onSuccess: () => {
+      // Only invalidate the projects query
+      queryClient.invalidateQueries({
+        queryKey: ["projects", teamId],
+        exact: true,
+      });
+    },
+  });
+
+  const updateLeadMutation = useMutation({
+    mutationFn: ({
+      projectSlug,
+      leadId,
+    }: {
+      projectSlug: string;
+      leadId: string | null;
+    }) => updateProjectLead(projectSlug, leadId),
+    onSuccess: () => {
+      // Only invalidate the projects query
+      queryClient.invalidateQueries({
+        queryKey: ["projects", teamId],
+        exact: true,
+      });
+    },
+  });
+
+  const updateMembersMutation = useMutation({
+    mutationFn: ({
+      projectSlug,
+      memberIds,
+    }: {
+      projectSlug: string;
+      memberIds: string[];
+    }) => updateProjectMembers(projectSlug, memberIds),
+    onSuccess: () => {
+      // Only invalidate the projects query
+      queryClient.invalidateQueries({
+        queryKey: ["projects", teamId],
+        exact: true,
+      });
+    },
+  });
+
   // Create columns with the correct teamId
   const columnsWithTeamId: ColumnDef<ProjectTableRow>[] = [
     {
@@ -543,7 +357,12 @@ export function DataTable({
 
     {
       accessorKey: "title",
-      header: "Project",
+      header: () => (
+        <div className="flex items-center gap-2">
+          <Box className="h-4 w-4" />
+          Project
+        </div>
+      ),
       cell: ({ row }) => {
         return <TableCellViewer item={row.original} />;
       },
@@ -551,38 +370,66 @@ export function DataTable({
     },
     {
       accessorKey: "status",
-      header: "Status",
+      header: () => (
+        <div className="flex items-center justify-center">
+          Status
+        </div>
+      ),
       cell: ({ row }) => (
-        <Badge variant="outline" className="text-muted-foreground px-1.5">
-          {row.original.status === "Completed" ? (
-            <CheckCircle className="fill-green-500 dark:fill-green-400" />
-          ) : null}
-          {row.original.status}
-        </Badge>
+        <div className="flex items-center justify-center">
+          <Badge variant="outline" className="text-muted-foreground px-1.5">
+            {row.original.status === "Completed" ? (
+              <CheckCircle className="fill-green-500 dark:fill-green-400" />
+            ) : null}
+            {row.original.status}
+          </Badge>
+        </div>
       ),
     },
     {
       accessorKey: "priority",
-      header: "Priority",
+      header: () => (
+        <div className="flex items-center justify-center">
+          Priority
+        </div>
+      ),
       cell: ({ row }) => (
-        <Badge variant="outline" className="text-muted-foreground px-1.5">
-          {row.original.priority}
-        </Badge>
+        <div className="flex items-center gap-1 text-xs justify-center">
+          <PriorityDropdown
+          isDark={theme==="dark"}
+            priority={row.original.priority}
+            onChange={(priority) => {
+              updatePriorityMutation.mutate({
+                projectSlug: row.original.slug,
+                priority,
+              });
+            }}
+          />
+        </div>
       ),
     },
     {
       accessorKey: "lead",
-      header: "Lead",
+      header: () => (
+        <div className="flex items-center justify-center">
+          Lead
+        </div>
+      ),
       cell: ({ row }) => (
         <LeadCommandDropdown
           currentLead={row.original.lead}
           onLeadChange={(leadId) => {
-            console.log(`Setting lead for ${row.original.title}:`, leadId);
-            toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-              loading: `Updating lead for ${row.original.title}`,
-              success: "Lead updated successfully",
-              error: "Failed to update lead",
-            });
+            updateLeadMutation.mutate(
+              { projectSlug: row.original.slug, leadId },
+              {
+                onSuccess: () => {
+                  toast.success("Lead updated successfully");
+                },
+                onError: () => {
+                  toast.error("Failed to update lead");
+                },
+              }
+            );
           }}
           teamId={teamId}
         />
@@ -590,17 +437,29 @@ export function DataTable({
     },
     {
       accessorKey: "members",
-      header: "Members",
+      header: () => {
+        return (
+          <div className="flex items-center gap-2 justify-center text-center">
+            Members
+          </div>
+        );
+      },
       cell: ({ row }) => (
         <MembersCommandDropdown
           currentMembers={row.original.members}
           onMembersChange={(members) => {
-            console.log(`Setting members for ${row.original.title}:`, members);
-            toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-              loading: `Updating members for ${row.original.title}`,
-              success: "Members updated successfully",
-              error: "Failed to update members",
-            });
+            const memberIds = members.map((m) => m.id);
+            updateMembersMutation.mutate(
+              { projectSlug: row.original.slug, memberIds },
+              {
+                onSuccess: () => {
+                  toast.success("Members updated successfully");
+                },
+                onError: () => {
+                  toast.error("Failed to update members");
+                },
+              }
+            );
           }}
           teamId={teamId}
         />
@@ -609,79 +468,118 @@ export function DataTable({
     {
       accessorKey: "targetDate",
       header: () => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 justify-center">
           <Clock className="h-4 w-4" />
           <span>Target Date</span>
         </div>
       ),
       cell: ({ row }) => (
-        <DatePicker
-          value={row.original.targetDate}
-          onChange={(date) => {
-            console.log(`Setting target date for ${row.original.title}:`, date);
-            toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-              loading: `Saving ${row.original.title}`,
-              success: "Done",
-              error: "Error",
-            });
-          }}
-          placeholder="Set date"
-        />
+        <div className="flex items-center justify-center">
+          <DatePicker
+            value={row.original.targetDate}
+            onChange={(date) => {
+              updateTargetDateMutation.mutate(
+                { projectSlug: row.original.slug, targetDate: date },
+                {
+                  onSuccess: () => {
+                    toast.success("Target date updated successfully");
+                  },
+                  onError: () => {
+                    toast.error("Failed to update target date");
+                  },
+                }
+              );
+            }}
+            placeholder="Set date"
+          />
+        </div>
       ),
     },
     {
-      accessorKey: "teams",
+      accessorKey: "workspaces",
       header: () => (
-        <div className="flex items-center gap-2">
-          <Building className="h-4 w-4" />
-          <span>Teams</span>
+        <div className="flex items-center gap-2 justify-center">
+          <svg
+            width="100%"
+            height="100%"
+            className="h-4 w-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M7.5 11H4.6C4.03995 11 3.75992 11 3.54601 11.109C3.35785 11.2049 3.20487 11.3578 3.10899 11.546C3 11.7599 3 12.0399 3 12.6V21M16.5 11H19.4C19.9601 11 20.2401 11 20.454 11.109C20.6422 11.2049 20.7951 11.3578 20.891 11.546C21 11.7599 21 12.0399 21 12.6V21M16.5 21V6.2C16.5 5.0799 16.5 4.51984 16.282 4.09202C16.0903 3.71569 15.7843 3.40973 15.408 3.21799C14.9802 3 14.4201 3 13.3 3H10.7C9.57989 3 9.01984 3 8.59202 3.21799C8.21569 3.40973 7.90973 3.71569 7.71799 4.09202C7.5 4.51984 7.5 5.0799 7.5 6.2V21M22 21H2M11 7H13M11 11H13M11 15H13"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span>Workspaces</span>
         </div>
       ),
       cell: ({ row }) => {
-        const teams = row.original.teams;
-        if (teams.length === 0) {
+        const workspaces = row.original.workspaces;
+        if (workspaces.length === 0) {
           return (
-            <Select>
-              <SelectTrigger className="w-38 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate">
-                <SelectValue placeholder="Assign team" />
-              </SelectTrigger>
-              <SelectContent align="end">
-                <SelectItem value="Engineering">Engineering</SelectItem>
-                <SelectItem value="Design">Design</SelectItem>
-                <SelectItem value="Marketing">Marketing</SelectItem>
-                <SelectItem value="Sales">Sales</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center justify-center w-full text-xs">
+               N/A        
+            </div>
           );
         }
 
-        return <span className="text-sm">{teams.join(", ")}</span>;
+        return (
+          <div className="flex items-center justify-center">
+            <div className="flex -space-x-1">
+              {workspaces.slice(0, 3).map((workspace, index) => (
+                <div
+                  key={index}
+                  className="h-5 w-5 rounded-full border-2 border-background flex items-center justify-center text-xs font-medium"
+                  style={{
+                    backgroundColor: workspace.colorValue || "#6b7280",
+                    color: "#ffffff",
+                  }}
+                >
+                  {workspace.title[0]?.toUpperCase() || "?"}
+                </div>
+              ))}
+              {workspaces.length > 3 && (
+                <div className="h-5 w-5 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-medium">
+                  +{workspaces.length - 3}
+                </div>
+              )}
+            </div>
+          </div>
+        );
       },
     },
     {
       id: "actions",
+      header: "",
       cell: () => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-              size="icon"
-            >
-              <MoreVertical />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-32">
-            <DropdownMenuItem>Edit</DropdownMenuItem>
-            <DropdownMenuItem>Make a copy</DropdownMenuItem>
-            <DropdownMenuItem>Favorite</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center justify-center">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
+                size="icon"
+              >
+                <MoreVertical />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-32">
+              <DropdownMenuItem>Edit</DropdownMenuItem>
+              <DropdownMenuItem>Make a copy</DropdownMenuItem>
+              <DropdownMenuItem>Favorite</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-destructive">
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       ),
     },
   ];
@@ -723,13 +621,24 @@ export function DataTable({
   // Filter data based on search
   const filteredData = React.useMemo(() => {
     if (!debouncedSearchValue) return data;
-    
-    return data.filter((item) =>
-      item.title.toLowerCase().includes(debouncedSearchValue.toLowerCase()) ||
-      (item.lead?.name || '').toLowerCase().includes(debouncedSearchValue.toLowerCase()) ||
-      item.status.toLowerCase().includes(debouncedSearchValue.toLowerCase()) ||
-      item.priority.toLowerCase().includes(debouncedSearchValue.toLowerCase()) ||
-      item.teams.some(team => team.toLowerCase().includes(debouncedSearchValue.toLowerCase()))
+
+    return data.filter(
+      (item) =>
+        item.title.toLowerCase().includes(debouncedSearchValue.toLowerCase()) ||
+        (item.lead?.name || "")
+          .toLowerCase()
+          .includes(debouncedSearchValue.toLowerCase()) ||
+        item.status
+          .toLowerCase()
+          .includes(debouncedSearchValue.toLowerCase()) ||
+        item.priority
+          .toLowerCase()
+          .includes(debouncedSearchValue.toLowerCase()) ||
+        item.workspaces.some((workspace) =>
+          workspace.title
+            .toLowerCase()
+            .includes(debouncedSearchValue.toLowerCase())
+        )
     );
   }, [data, debouncedSearchValue]);
 
@@ -821,8 +730,8 @@ export function DataTable({
           <NewProjectDialog teamId={teamId} />
         </div>
       </div>
-      <div className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6">
-        <div className="overflow-hidden rounded-lg border">
+      <div className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6 flex-1">
+        <div className="overflow-hidden rounded-lg border flex-1">
           <DndContext
             collisionDetection={closestCenter}
             modifiers={[restrictToVerticalAxis]}
@@ -836,7 +745,11 @@ export function DataTable({
                   <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => {
                       return (
-                        <TableHead key={header.id} colSpan={header.colSpan}>
+                        <TableHead
+                          key={header.id}
+                          colSpan={header.colSpan}
+                          className="text-[13px]"
+                        >
                           {header.isPlaceholder
                             ? null
                             : flexRender(
@@ -958,8 +871,8 @@ function TableCellViewer({ item }: { item: ProjectTableRow }) {
   const navigate = useNavigate();
 
   return (
-    <Button 
-      variant="link" 
+    <Button
+      variant="link"
       className="text-foreground w-fit px-0 text-left hover:underline"
       onClick={() => navigate(`/projects/${item.slug}`)}
     >

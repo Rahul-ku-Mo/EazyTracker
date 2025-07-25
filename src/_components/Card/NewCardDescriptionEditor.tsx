@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { EditorState } from "lexical";
+import { EditorState, ParagraphNode, $getRoot } from "lexical";
 
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
@@ -7,17 +7,17 @@ import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { useLexicalIsTextContentEmpty } from "@lexical/react/useLexicalIsTextContentEmpty";
 import { $generateHtmlFromNodes } from "@lexical/html";
 import { cn } from "../../lib/utils";
 import { ListItemNode, ListNode } from "@lexical/list";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
+import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
 import { EditorRefPlugin } from "@lexical/react/LexicalEditorRefPlugin";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
-import { LinkNode, AutoLinkNode } from "@lexical/link";
-import { HeadingNode } from "@lexical/rich-text";
-
+import { LinkNode } from "@lexical/link";
+import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
 // Floating toolbar imports
 import { FloatingTextFormatToolbarPlugin } from "@/_components/Notes/_editor/plugins/FloatingTextFormatToolbarPlugin";
 import { FloatingLinkEditorPlugin } from "@/_components/Notes/_editor/plugins/FloatingLinkEditorPlugin";
@@ -27,8 +27,12 @@ import { ImageNode } from "./_editor/ImageNode";
 import { ImagesPlugin } from "./_editor/Plugins/ImagePlugin";
 import { CopyImagePlugin } from "./_editor/Plugins/CopyImagePlugin";
 
+// Import markdown transformers
+import { MARKDOWN_TRANSFORMERS } from "./_editor/MARKDOWN_TRANSFORMERS";
+
 // Import image styles
 import "./_editor/ImageNode/styles.css";
+import { CodeHighlightNode, CodeNode } from "@lexical/code";
 
 interface EditorTheme {
   root: string;
@@ -56,7 +60,7 @@ interface EditorTheme {
 }
 const theme: EditorTheme = {
   root: cn(
-    "editor-root bg-background text-foreground relative outline-none p-0",
+    "editor-root bg-background text-foreground relative outline-none p-0"
   ),
   paragraph: "editor-paragraph",
   text: {
@@ -91,7 +95,26 @@ interface PlaceholderPluginProps {
 
 function PlaceholderPlugin({ placeholder }: PlaceholderPluginProps) {
   const [editor] = useLexicalComposerContext();
-  const isEmpty = useLexicalIsTextContentEmpty(editor);
+  const [isEmpty, setIsEmpty] = useState(true);
+
+  useEffect(() => {
+    return editor.registerUpdateListener(
+      ({ editorState }: { editorState: EditorState }) => {
+        editorState.read(() => {
+          const root = $getRoot();
+          const children = root.getChildren();
+          
+          // Check if the editor is truly empty
+          const isEditorEmpty = children.length === 0 || 
+            (children.length === 1 && 
+             children[0].getType() === 'paragraph' && 
+             children[0].getTextContent().trim() === '');
+          
+          setIsEmpty(isEditorEmpty);
+        });
+      }
+    );
+  }, [editor]);
 
   useEffect(() => {
     const rootElement = editor.getRootElement() as HTMLElement;
@@ -153,7 +176,18 @@ export const NewCardDescriptionEditor = ({
     namespace: "CardDescriptionEditor",
     theme,
     onError,
-    nodes: [ListNode, ListItemNode, ImageNode, LinkNode, AutoLinkNode, HeadingNode] as any,
+    nodes: [
+      ListNode,
+      ListItemNode,
+      ParagraphNode,
+      HorizontalRuleNode,
+      CodeNode,
+      CodeHighlightNode,
+      LinkNode,
+      HeadingNode,
+      QuoteNode,
+      ImageNode,
+    ] as any,
   };
 
   return (
@@ -193,13 +227,14 @@ export const NewCardDescriptionEditor = ({
             <HistoryPlugin />
             <ListPlugin />
             <CheckListPlugin />
+            <MarkdownShortcutPlugin transformers={MARKDOWN_TRANSFORMERS} />
             <LinkPlugin />
             <ImagesPlugin />
             <EditorRefPlugin editorRef={editorRef} />
             <CopyImagePlugin ref={editorRef} />
             {anchorElemRef.current && (
               <>
-                <FloatingTextFormatToolbarPlugin 
+                <FloatingTextFormatToolbarPlugin
                   anchorElem={anchorElemRef.current}
                   setIsLinkEditMode={setIsLinkEditMode}
                 />

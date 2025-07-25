@@ -30,11 +30,18 @@ export const fetchWorkspaces = async (): Promise<Workspace[] | undefined> => {
   }
 };
 
-export const fetchWorkspace = async (workspaceId: string): Promise<Workspace> => {
+export const fetchWorkspace = async (workspaceIdentifier: string): Promise<Workspace> => {
   try {
-    const response = await apiClient.get(`/workspaces/${workspaceId}`);
-
-    return response.data.data;
+    // Check if the identifier contains a slash (teamId/slug format)
+    if (workspaceIdentifier.includes('/')) {
+      const [teamId, slug] = workspaceIdentifier.split('/');
+      const response = await apiClient.get(`/workspaces/team/${teamId}/${slug}`);
+      return response.data.data;
+    } else {
+      // Legacy format - just slug or ID
+      const response = await apiClient.get(`/workspaces/${workspaceIdentifier}`);
+      return response.data.data;
+    }
   } catch (error: any) {
     throw new Error(error?.response?.data?.message);
   }
@@ -51,9 +58,9 @@ export const createWorkspace = async (data: Partial<Workspace>): Promise<Workspa
   }
 };
 
-export const deleteWorkspace = async (workspaceId: string): Promise<any> => {
+export const deleteWorkspace = async (workspaceIdentifier: string): Promise<any> => {
   try {
-    const response = await apiClient.delete(`/workspaces/${workspaceId}`);
+    const response = await apiClient.delete(`/workspaces/${workspaceIdentifier}`);
 
     return response;
   } catch (error: any) {
@@ -61,9 +68,9 @@ export const deleteWorkspace = async (workspaceId: string): Promise<any> => {
   }
 };
 
-export const updateWorkspace = async (workspaceId: string, data: Partial<Workspace>): Promise<Workspace> => {
+export const updateWorkspace = async (workspaceIdentifier: string, data: Partial<Workspace>): Promise<Workspace> => {
   try {
-    const response = await apiClient.put(`/workspaces/${workspaceId}`, data);
+    const response = await apiClient.put(`/workspaces/${workspaceIdentifier}`, data);
 
     return response.data.data;
   } catch (error: any) {

@@ -47,14 +47,21 @@ export const fetchColumns = async (
   workspaceId: string
 ): Promise<Column[] | undefined> => {
   try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/columns?workspaceId=${workspaceId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    // Check if the identifier contains a slash (teamId/slug format)
+    let url: string;
+    if (workspaceId.includes('/')) {
+      const [teamId, slug] = workspaceId.split('/');
+      url = `${import.meta.env.VITE_API_URL}/workspaces/team/${teamId}/${slug}/columns`;
+    } else {
+      // Legacy format - just slug or ID
+      url = `${import.meta.env.VITE_API_URL}/columns?workspaceId=${workspaceId}`;
+    }
+
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
     if (response.data.data && response.status === 200) {
       return response.data.data;

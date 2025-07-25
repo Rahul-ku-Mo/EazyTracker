@@ -39,10 +39,13 @@ export default function ProjectsPage() {
       name: m.user.name,
       imageUrl: m.user.imageUrl,
     })),
-    targetDate: project.targetDate
-      ? new Date(project.targetDate).toLocaleDateString()
-      : "",
-    teams: project.boards?.map((b: any) => b.board.title) || [],
+    targetDate: project.targetDate ? String(project.targetDate) : "",
+    workspaces: project.workspaces?.map((w: any) => ({
+      id: w.workspace.id,
+      title: w.workspace.title,
+      colorName: w.workspace.colorName,
+      colorValue: w.workspace.colorValue,
+    })) || [],
   }));
 
 
@@ -76,7 +79,7 @@ export default function ProjectsPage() {
   return (
     <Container fwdClassName="!px-0">
       <div className="flex items-center justify-between pt-4 px-4">
-        <div className="flex items-center gap-3 py-2">
+        <div className="flex items-center gap-3 pb-2 ">
           <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
             <Box className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
           </div>

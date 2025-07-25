@@ -201,3 +201,7 @@ html {
   scrollbar-color: rgba(75, 85, 99, 0.4) transparent;
 }
 
+
+.transition-all-linear {
+  @apply transition-all ease-linear;
+}

@@ -9,11 +9,12 @@ export const useWorkspaceMutation = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const teamName = localStorage.getItem("teamName")
 
 
   const deleteWorkspaceMutation = useMutation({
-    mutationFn: async (workspaceId: string) => {
-      await deleteWorkspace(workspaceId);
+    mutationFn: async (workspaceIdentifier: string) => {
+      await deleteWorkspace(workspaceIdentifier);
     },
     onSuccess: () => {
       toast({
@@ -23,8 +24,12 @@ export const useWorkspaceMutation = () => {
           "Unknown user",
         variant: "default",
       });
-      navigate("/workspace", { replace: true });
+      navigate(`/workspace/${teamName}`, { replace: true });
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+
+      if (document.body.style.pointerEvents === 'none') {
+        document.body.style.removeProperty('pointer-events');
+      } 
     },
     onError: () => {
       toast({
@@ -37,13 +42,13 @@ export const useWorkspaceMutation = () => {
 
   const updateWorkspaceMutation = useMutation({
     mutationFn: async ({
-      workspaceId,
+      workspaceIdentifier,
       updatedWorkspaceData,
     }: {
-      workspaceId: string;
+      workspaceIdentifier: string;
       updatedWorkspaceData: any;
     }) => {
-      await updateWorkspace(workspaceId, updatedWorkspaceData);
+      await updateWorkspace(workspaceIdentifier, updatedWorkspaceData);
     },
     onSuccess: () => {
       toast({

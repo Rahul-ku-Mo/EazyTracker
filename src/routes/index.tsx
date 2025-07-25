@@ -78,8 +78,11 @@ const WithContexts = ({
 
 const AuthRoute = ({ children }: ProtectedRouteProps) => {
   const { isLoggedIn } = useContext(AuthContext);
+
+  const teamName = localStorage.getItem("teamName");
+  
   if (isLoggedIn) {
-    return <Navigate to="/workspace" replace />;
+    return <Navigate to={`/workspace/${teamName}`} replace />;
   }
   return <>{children}</>;
 };
@@ -96,18 +99,18 @@ const authenticatedRoutes = [
     element: <WithContexts Component={OnboardingPage} />,
   },
   {
-    path: "/workspace",
+    path: "/workspace/:teamName",
     children: [
       {
         index: true,
         element: <WithContexts Component={WorkspaceSelectionPage} />,
       },
       {
-        path: ":id",
+        path: ":slug",
         element: <WithContexts Component={KanbanPage} includeKanban={true} />,
       },
       {
-        path: "settings/:id",
+        path: "settings/:slug",
         element: <WithContexts Component={WorkspaceSettingsPage} />,
       },
       {

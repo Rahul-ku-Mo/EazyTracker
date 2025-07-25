@@ -13,7 +13,7 @@ import { cn } from "../../lib/utils";
 import {  Tag, CheckSquare, Plus, User } from "lucide-react";
 import { useCardMutation } from "./_mutations/useCardMutations";
 import { useMembers } from "../../hooks/useMembers";
-import { useParams } from "react-router-dom";
+
 import { TUser } from "../../types";
 import { UrgentPriority, HighPriority, LowPriority, Priority, MediumPriority } from "../shared/svg/Priority";
 import { useTheme } from "@/context/ThemeProvider";
@@ -34,10 +34,9 @@ interface CardContextMenuProps {
 
 const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
   const { theme } = useTheme();
-  const { id } = useParams();
 
   // TODO: get members from the database who are in the same board
-  const { members, isPending } = useMembers(id as string);
+  const { members, isPending } = useMembers();
 
   const { updateCardMutation } = useCardMutation();
 

@@ -1,7 +1,16 @@
-const LowPriority = ({className, isDark, ...props}: {className?: string, isDark?: boolean, props?: any}) => {
+import { SVGProps } from "react";
+
+const LowPriority = ({
+  className,
+  isDark = false,
+  ...props
+}: {
+  className?: string;
+  isDark?: boolean;
+} & SVGProps<SVGSVGElement>) => {
   const filledColor = isDark ? "#FFFFFF" : "#3A3A3A";
   const unfilledColor = isDark ? "#6B7280" : "#C3C3C3";
-  
+
   return (
     <svg
       width="30"
@@ -9,8 +18,8 @@ const LowPriority = ({className, isDark, ...props}: {className?: string, isDark?
       viewBox="0 0 30 30"
       fill="none"
       className={className}
-      {...props}
       xmlns="http://www.w3.org/2000/svg"
+      {...props}
     >
       <path
         d="M8.35724 14.0864C8.06113 14.3538 7.89478 14.7164 7.89478 15.0945V25.0743C7.89478 25.4524 8.06113 25.8151 8.35724 26.0824C8.65335 26.3498 9.05496 26.5 9.47372 26.5H12.6316C13.0504 26.5 13.452 26.3498 13.7481 26.0824C14.0442 25.8151 14.2106 25.4524 14.2106 25.0743V15.0945C14.2106 14.7164 14.0442 14.3538 13.7481 14.0864C13.452 13.819 13.0504 13.6688 12.6316 13.6688H9.47372C9.05496 13.6688 8.65335 13.819 8.35724 14.0864Z"
@@ -32,19 +41,26 @@ const LowPriority = ({className, isDark, ...props}: {className?: string, isDark?
   );
 };
 
-const MediumPriority = ({className, isDark, ...props}: {className?: string, isDark?: boolean, props?: any}) => {
+const MediumPriority = ({
+  className,
+  isDark = false,
+  ...props
+}: {
+  className?: string;
+  isDark?: boolean;
+} & SVGProps<SVGSVGElement>) => {
   const filledColor = isDark ? "#FFFFFF" : "#3A3A3A";
   const unfilledColor = isDark ? "#6B7280" : "#C3C3C3";
-  
+
   return (
     <svg
       width="30"
       height="30"
       viewBox="0 0 30 30"
       fill="none"
-      {...props}
       className={className}
       xmlns="http://www.w3.org/2000/svg"
+      {...props}
     >
       <path
         d="M0.462463 19.289C0.166353 19.5564 0 19.919 0 20.2971V24.5742C0 24.9523 0.166353 25.315 0.462463 25.5823C0.758573 25.8497 1.16018 25.9999 1.57895 25.9999H4.73684C5.1556 25.9999 5.55722 25.8497 5.85333 25.5823C6.14944 25.315 6.31579 24.9523 6.31579 24.5742V20.2971C6.31579 19.919 6.14944 19.5564 5.85333 19.289C5.55722 19.0217 5.1556 18.8715 4.73684 18.8715H1.57895C1.16018 18.8715 0.758573 19.0217 0.462463 19.289Z"
@@ -66,10 +82,17 @@ const MediumPriority = ({className, isDark, ...props}: {className?: string, isDa
   );
 };
 
-const HighPriority = ({className, isDark, ...props}: {className?: string, isDark?: boolean, props?: any}) => {
+const HighPriority = ({
+  className,
+  isDark = false,
+  ...props
+}: {
+  className?: string;
+  isDark?: boolean;
+} & SVGProps<SVGSVGElement>) => {
   const filledColor = isDark ? "#FFFFFF" : "#3A3A3A";
   const unfilledColor = isDark ? "#6B7280" : "#C3C3C3";
-  
+
   return (
     <svg
       width="30"
@@ -77,8 +100,8 @@ const HighPriority = ({className, isDark, ...props}: {className?: string, isDark
       viewBox="0 0 30 30"
       fill="none"
       className={className}
-      {...props}
       xmlns="http://www.w3.org/2000/svg"
+      {...props}
     >
       <path
         d="M0.462463 19.289C0.166353 19.5564 0 19.919 0 20.2971V24.5742C0 24.9523 0.166353 25.315 0.462463 25.5823C0.758573 25.8497 1.16018 25.9999 1.57895 25.9999H4.73684C5.1556 25.9999 5.55722 25.8497 5.85333 25.5823C6.14944 25.315 6.31579 24.9523 6.31579 24.5742V20.2971C6.31579 19.919 6.14944 19.5564 5.85333 19.289C5.55722 19.0217 5.1556 18.8715 4.73684 18.8715H1.57895C1.16018 18.8715 0.758573 19.0217 0.462463 19.289Z"
@@ -100,10 +123,13 @@ const HighPriority = ({className, isDark, ...props}: {className?: string, isDark
   );
 };
 
-const UrgentPriority = ({className, isDark, ...props}: {className?: string, isDark?: boolean, props?: any}) => {
+const UrgentPriority = ({
+  className,
+  ...props
+}: {
+  className?: string;
+} & SVGProps<SVGSVGElement>) => {
   const filledColor = "#FF0000";
-  
-  console.log(isDark);
 
   return (
     <svg
@@ -112,8 +138,8 @@ const UrgentPriority = ({className, isDark, ...props}: {className?: string, isDa
       viewBox="0 0 30 30"
       fill="none"
       className={className}
-      {...props}
       xmlns="http://www.w3.org/2000/svg"
+      {...props}
     >
       <path
         d="M0.462463 19.289C0.166353 19.5564 0 19.919 0 20.2971V24.5742C0 24.9523 0.166353 25.315 0.462463 25.5823C0.758573 25.8497 1.16018 25.9999 1.57895 25.9999H4.73684C5.1556 25.9999 5.55722 25.8497 5.85333 25.5823C6.14944 25.315 6.31579 24.9523 6.31579 24.5742V20.2971C6.31579 19.919 6.14944 19.5564 5.85333 19.289C5.55722 19.0217 5.1556 18.8715 4.73684 18.8715H1.57895C1.16018 18.8715 0.758573 19.0217 0.462463 19.289Z"
@@ -133,40 +159,23 @@ const UrgentPriority = ({className, isDark, ...props}: {className?: string, isDa
       />
     </svg>
   );
-}
+};
 
-const Priority = ({className, isDark, ...props}: {className?: string, isDark?: boolean, props?: any}) => {
-   const unfilledColor = isDark ? "#6B7280" : "#C3C3C3";
-    
-    return (
-      <svg
-        width="30"
-        height="30"
-        viewBox="0 0 30 30"
-        fill="none"
-        className={className}
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M0.462463 19.289C0.166353 19.5564 0 19.919 0 20.2971V24.5742C0 24.9523 0.166353 25.315 0.462463 25.5823C0.758573 25.8497 1.16018 25.9999 1.57895 25.9999H4.73684C5.1556 25.9999 5.55722 25.8497 5.85333 25.5823C6.14944 25.315 6.31579 24.9523 6.31579 24.5742V20.2971C6.31579 19.919 6.14944 19.5564 5.85333 19.289C5.55722 19.0217 5.1556 18.8715 4.73684 18.8715H1.57895C1.16018 18.8715 0.758573 19.0217 0.462463 19.289Z"
-          fill={unfilledColor}
-        />
-        <path
-          d="M8.35699 13.5864C8.06088 13.8538 7.89453 14.2164 7.89453 14.5945V24.5743C7.89453 24.9524 8.06088 25.3151 8.35699 25.5824C8.6531 25.8498 9.05471 26 9.47348 26H12.6314C13.0501 26 13.4517 25.8498 13.7479 25.5824C14.044 25.3151 14.2103 24.9524 14.2103 24.5743V14.5945C14.2103 14.2164 14.044 13.8538 13.7479 13.5864C13.4517 13.319 13.0501 13.1688 12.6314 13.1688H9.47348C9.05471 13.1688 8.6531 13.319 8.35699 13.5864Z"
-          fill={unfilledColor}
-        />
-        <path
-          d="M16.2518 6.45798C15.9557 6.72535 15.7893 7.08798 15.7893 7.46609V24.5743C15.7893 24.9524 15.9557 25.3151 16.2518 25.5824C16.5479 25.8498 16.9495 26 17.3683 26H20.5261C20.9449 26 21.3465 25.8498 21.6426 25.5824C21.9387 25.3151 22.1051 24.9524 22.1051 24.5743V7.46609C22.1051 7.08798 21.9387 6.72535 21.6426 6.45798C21.3465 6.19062 20.9449 6.04041 20.5261 6.04041H17.3683C16.9495 6.04041 16.5479 6.19062 16.2518 6.45798Z"
-          fill={unfilledColor}
-        />
-        <path
-          d="M24.1465 0.417572C23.8504 0.68494 23.6841 1.04757 23.6841 1.42568V24.5743C23.6841 24.9524 23.8504 25.315 24.1465 25.5824C24.4427 25.8498 24.8443 26 25.263 26H28.4209C28.8397 26 29.2413 25.8498 29.5374 25.5824C29.8335 25.315 29.9999 24.9524 29.9999 24.5743V1.42568C29.9999 1.04757 29.8335 0.68494 29.5374 0.417572C29.2413 0.150204 28.8397 0 28.4209 0H25.263C24.8443 0 24.4427 0.150204 24.1465 0.417572Z"
-          fill={unfilledColor}
-        />
-      </svg>
-    );
-  };
+const Priority = (props: SVGProps<SVGSVGElement>) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="1em"
+      height="1em"
+      viewBox="0 0 1024 1024"
+      {...props}
+    >
+      <path
+        fill="currentColor"
+        d="M112 476h160v72H112zm320 0h160v72H432zm320 0h160v72H752z"
+      />
+    </svg>
+  );
+};
 
-export { LowPriority, MediumPriority, HighPriority, Priority , UrgentPriority};
-
+export { LowPriority, MediumPriority, HighPriority, UrgentPriority, Priority };

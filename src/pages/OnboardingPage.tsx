@@ -17,8 +17,23 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Users, Plus, LogIn, Sparkles, Building, LogOut } from "lucide-react";
+import {
+  Loader2,
+  Users,
+  Plus,
+  LogIn,
+  Sparkles,
+  Building,
+  LogOut,
+} from "lucide-react";
 import clsx from "clsx";
+
+const generateCapitalizedDashedSlug = (name: string) => {
+  return name
+    .split(/\s+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join("-");
+};
 
 // Animation variants
 const containerVariants = {
@@ -73,15 +88,18 @@ const Onboarding = () => {
         }
       );
 
-      const { needsOnboarding, isAdmin , team} = response.data;
+      const { needsOnboarding, isAdmin, team } = response.data;
+
+      const generalizedTeamName = generateCapitalizedDashedSlug(team.name);
 
       localStorage.setItem("teamId", team.id);
 
-      console.log(team.id);
+      localStorage.setItem("teamName", generalizedTeamName);
 
+      console.log(localStorage);
       if (!needsOnboarding) {
-        // Already onboarded, redirect to boards
-        navigate("/workspace");
+        // Already onboarded, redirect to workspaces
+        navigate(`/workspace/${generalizedTeamName}`);
         return null;
       }
 
@@ -106,9 +124,14 @@ const Onboarding = () => {
       // Store the teamId in localStorage before redirecting
       if (response.data?.data?.id) {
         localStorage.setItem("teamId", response.data.data.id);
-        console.log('Team created, stored teamId:', response.data.data.id);
+
+        const generalizedTeamName = generateCapitalizedDashedSlug(
+          response.data.data.name
+        );
+
+        localStorage.setItem("teamName", generalizedTeamName);
+        window.location.href = `/workspace/${generalizedTeamName}`;
       }
-      window.location.href = "/workspace";
     },
     onError: (error) => {
       console.error("Team creation failed:", error);
@@ -132,9 +155,14 @@ const Onboarding = () => {
       // Store the teamId in localStorage before redirecting
       if (response.data?.data?.id) {
         localStorage.setItem("teamId", response.data.data.id);
-        console.log('Team joined, stored teamId:', response.data.data.id);
+
+        const generalizedTeamName = generateCapitalizedDashedSlug(
+          response.data.data.name
+        );
+        localStorage.setItem("teamName", generalizedTeamName);
+        console.log("Team joined, stored teamId:", response.data.data.id);
+        window.location.href = `/workspace/${teamName}`;
       }
-      window.location.href = "/workspace";
     },
     onError: (error) => {
       console.error("Team join failed:", error);
@@ -366,7 +394,9 @@ const Onboarding = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <p className="text-destructive text-sm font-medium">{error}</p>
+                  <p className="text-destructive text-sm font-medium">
+                    {error}
+                  </p>
                 </motion.div>
               )}
             </CardContent>
@@ -379,7 +409,9 @@ const Onboarding = () => {
               >
                 <Button
                   onClick={
-                    isAdmin || activeTab === "create" ? handleCreateTeam : handleJoinTeam
+                    isAdmin || activeTab === "create"
+                      ? handleCreateTeam
+                      : handleJoinTeam
                   }
                   disabled={isLoading}
                   className={clsx(
@@ -392,7 +424,9 @@ const Onboarding = () => {
                   {isLoading ? (
                     <div className="flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      {isAdmin || activeTab === "create" ? "Creating team..." : "Joining team..."}
+                      {isAdmin || activeTab === "create"
+                        ? "Creating team..."
+                        : "Joining team..."}
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">

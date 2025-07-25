@@ -371,12 +371,12 @@ export const NotificationCenter = () => {
       </Button>
 
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetContent side="right" className="w-full sm:w-[480px] p-0">
+        <SheetContent side="right" className="w-full sm:w-[320px] p-0">
           <div className="flex flex-col h-full">
             {/* Header */}
-            <SheetHeader className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
+            <SheetHeader className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 h-12">
               <div className="flex items-center justify-between">
-                <SheetTitle className="text-xl font-semibold">Notifications</SheetTitle>
+                <SheetTitle className="text-lg font-semibold">Notifications</SheetTitle>
                 <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
@@ -398,7 +398,7 @@ export const NotificationCenter = () => {
             </SheetHeader>
 
             {/* Tabs */}
-            <div className="flex items-center px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center p-4 border-b border-zinc-200 dark:border-zinc-800 h-12">
               <div className="flex gap-6">
                 <button
                   onClick={() => setActiveTab("all")}
@@ -410,7 +410,7 @@ export const NotificationCenter = () => {
                   )}
                 >
                   All
-                  <Badge variant="secondary" className="ml-1 h-5 px-2 text-xs">
+                  <Badge variant="secondary" className="h-5 px-2 text-xs">
                     {notifications.length}
                   </Badge>
                 </button>
@@ -450,8 +450,8 @@ export const NotificationCenter = () => {
               <ScrollArea className="h-full">
                 {filteredNotifications.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-64 text-center">
-                    <Bell className="h-12 w-12 text-zinc-400 mb-4" />
-                    <p className="text-zinc-500 text-sm">
+                    <Bell className="size-8 text-zinc-400 mb-2" />
+                    <p className="text-zinc-500 text-sm font-medium">
                       {activeTab === "unread" 
                         ? "No unread notifications" 
                         : activeTab === "archived" 

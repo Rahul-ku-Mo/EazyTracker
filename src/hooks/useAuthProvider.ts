@@ -105,7 +105,7 @@ const useAuthProvider = () => {
         });
         setIsLoggedIn(true);
         queryClient.setQueryData(["user"], response.data.data);
-        navigate("/workspace");
+        navigate(`/workspace/${localStorage.getItem("teamName")}`);
       }
     } catch (err : any) {
       console.error("Login error:", err);
@@ -177,8 +177,9 @@ const useAuthProvider = () => {
         description: "Your account is ready to go 🎉",
       });
       setIsLoggedIn(true);
+      
       queryClient.setQueryData(["user"], response.data.data);
-      navigate("/workspace");
+      navigate(`/workspace/${localStorage.getItem("teamName")}`);
     } catch (err : any) {
       console.error("Signup error:", err);
       const fieldErrors: AuthErrors = {
