@@ -27,13 +27,7 @@ import {
   LogOut,
 } from "lucide-react";
 import clsx from "clsx";
-
-const generateCapitalizedDashedSlug = (name: string) => {
-  return name
-    .split(/\s+/)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join("-");
-};
+import { generateCapitalizedDashedSlug } from "@/utils";
 
 // Animation variants
 const containerVariants = {
@@ -90,15 +84,9 @@ const Onboarding = () => {
 
       const { needsOnboarding, isAdmin, team } = response.data;
 
-      const generalizedTeamName = generateCapitalizedDashedSlug(team.name);
-
-      localStorage.setItem("teamId", team.id);
-
-      localStorage.setItem("teamName", generalizedTeamName);
-
-      console.log(localStorage);
       if (!needsOnboarding) {
         // Already onboarded, redirect to workspaces
+        const generalizedTeamName = generateCapitalizedDashedSlug(team.name);
         navigate(`/workspace/${generalizedTeamName}`);
         return null;
       }
@@ -121,15 +109,11 @@ const Onboarding = () => {
       );
     },
     onSuccess: (response) => {
-      // Store the teamId in localStorage before redirecting
+      // Redirect to workspace after team creation
       if (response.data?.data?.id) {
-        localStorage.setItem("teamId", response.data.data.id);
-
         const generalizedTeamName = generateCapitalizedDashedSlug(
           response.data.data.name
         );
-
-        localStorage.setItem("teamName", generalizedTeamName);
         window.location.href = `/workspace/${generalizedTeamName}`;
       }
     },
@@ -152,16 +136,13 @@ const Onboarding = () => {
       );
     },
     onSuccess: (response) => {
-      // Store the teamId in localStorage before redirecting
+      // Redirect to workspace after joining team
       if (response.data?.data?.id) {
-        localStorage.setItem("teamId", response.data.data.id);
-
         const generalizedTeamName = generateCapitalizedDashedSlug(
           response.data.data.name
         );
-        localStorage.setItem("teamName", generalizedTeamName);
-        console.log("Team joined, stored teamId:", response.data.data.id);
-        window.location.href = `/workspace/${teamName}`;
+        console.log("Team joined:", response.data.data.id);
+        window.location.href = `/workspace/${generalizedTeamName}`;
       }
     },
     onError: (error) => {

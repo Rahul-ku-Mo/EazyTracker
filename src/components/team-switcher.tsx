@@ -21,22 +21,41 @@ import { Button } from "../components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { useUser } from "../hooks/useQueries";
 import { uploadImageToS3 } from "../_components/Card/_editor/Plugins/CopyImagePlugin";
+import { useTeam } from "@/context/TeamContext";
 
 type Team = {
-  name: string;
   id: string;
+  name: string;
   joinCode?: string;
-  teamImageUrl?: string;
+  captainId: string;
+  teamImageUrl?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  captain: {
+    id: string;
+    name: string;
+    email: string;
+    imageUrl?: string | null;
+  };
+  members: Array<{
+    id: string;
+    name: string;
+    email: string;
+    imageUrl?: string | null;
+  }>;
   bannerImage?: string;
 };
 
-export function TeamSwitcher({ teams }: { teams: Team | Team[] }) {
+export function TeamSwitcher({ team }: { team?: Team }) {
   const accessToken = Cookies.get("accessToken") || "";
   const { data: userData } = useUser(accessToken);
+  
+  // Get current team from context
+  const { currentTeam } = useTeam();
 
-  // Convert single team to array if not already an array
-  const teamArray = Array.isArray(teams) ? teams : [teams];
-  const [activeTeam, setActiveTeam] = React.useState<Team>(teamArray[0]);
+  // Use the current team from context or fall back to the provided team
+  const [activeTeam, setActiveTeam] = React.useState<Team | null>(currentTeam || team || null);
+  
   const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   // Form states
@@ -46,14 +65,17 @@ export function TeamSwitcher({ teams }: { teams: Team | Team[] }) {
   const [teamPhoto, setTeamPhoto] = React.useState(
     activeTeam?.teamImageUrl || ""
   );
+  
+ 
 
   //Image Viewing States
   const [isImageModalOpen, setIsImageModalOpen] = React.useState(false);
   const [imageLoading, setImageLoading] = React.useState(false);
 
   const copyTeamLink = () => {
+    if (!activeTeam) return;
     const teamLink = `${window.location.origin}/join/${
-      activeTeam?.joinCode || "team"
+      activeTeam.joinCode || "team"
     }`;
     navigator.clipboard.writeText(teamLink);
     setCopied(true);
@@ -100,6 +122,7 @@ export function TeamSwitcher({ teams }: { teams: Team | Team[] }) {
   };
 
   const handleSaveTeamName = async () => {
+    if (!activeTeam) return;
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/teams`, {
         method: "PUT",
@@ -113,7 +136,9 @@ export function TeamSwitcher({ teams }: { teams: Team | Team[] }) {
       if (response.ok) {
         const data = await response.json();
         // Update the activeTeam state with the new name
-        setActiveTeam((prev: Team) => ({ ...prev, name: data.data.name }));
+        setActiveTeam((prev: Team | null) => 
+          prev ? { ...prev, name: data.data.name } : null
+        );
         setIsEditingName(false);
         // Optional: Show success message
         console.log("Team name updated successfully");
@@ -121,7 +146,7 @@ export function TeamSwitcher({ teams }: { teams: Team | Team[] }) {
         const errorData = await response.json();
         console.error("Failed to update team name:", errorData.message);
         // Reset to original name on error
-        setTeamName(activeTeam?.name || "");
+        setTeamName(activeTeam.name || "");
       }
     } catch (error) {
       console.error("Error updating team name:", error);
@@ -135,6 +160,20 @@ export function TeamSwitcher({ teams }: { teams: Team | Team[] }) {
       setTeamName(activeTeam.name);
     }
   }, [activeTeam]);
+
+  // Sync with current team from context
+  React.useEffect(() => {
+    if (currentTeam && currentTeam.id !== activeTeam?.id) {
+      setActiveTeam(currentTeam);
+      setTeamName(currentTeam.name);
+      setTeamPhoto(currentTeam.teamImageUrl || "");
+    }
+  }, [currentTeam, activeTeam]);
+
+  // Don't render if no team is available
+  if (!activeTeam) {
+    return null;
+  }
 
   return (
     <>
@@ -155,13 +194,13 @@ export function TeamSwitcher({ teams }: { teams: Team | Team[] }) {
                     />
                   ) : (
                     <div className="size-full text-white bg-emerald-600 text-lg font-bold rounded-md flex items-center justify-center">
-                      {activeTeam?.name?.charAt(0).toUpperCase()}
+                      {activeTeam.name.charAt(0).toUpperCase()}
                     </div>
                   )}
                 </div>
                 <div className="grid flex-1 text-sm leading-tight text-left">
                   <span className="font-semibold truncate">
-                    {activeTeam?.name}
+                    {activeTeam.name}
                   </span>
                   <span className="text-xs truncate">Free Plan</span>
                 </div>
@@ -174,7 +213,7 @@ export function TeamSwitcher({ teams }: { teams: Team | Team[] }) {
               <div className="relative bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl">
                 {/* Default Banner Section */}
                 <div className="relative h-24 bg-gradient-to-r from-zinc-200 to-zinc-100 dark:from-zinc-800 dark:to-zinc-700">
-                  {activeTeam?.bannerImage && (
+                  {activeTeam.bannerImage && (
                     <img
                       src={activeTeam.bannerImage}
                       alt="Team banner"
@@ -192,10 +231,10 @@ export function TeamSwitcher({ teams }: { teams: Team | Team[] }) {
                         <AvatarImage
                           className="object-cover rounded-full bg-center transition-all duration-200 group-hover:brightness-110"
                           src={teamPhoto}
-                          alt={activeTeam?.name}
+                          alt={activeTeam.name}
                         />
                         <AvatarFallback className="text-lg font-bold bg-emerald-600 text-white">
-                          {activeTeam?.name?.charAt(0).toUpperCase()}
+                          {activeTeam.name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
 
@@ -253,7 +292,7 @@ export function TeamSwitcher({ teams }: { teams: Team | Team[] }) {
                   {/* Team Name Field */}
                   <div className="flex flex-col mt-2">
                     <p className="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">
-                      {activeTeam?.name}
+                      {activeTeam.name}
                     </p>
                     <p className="text-sm text-zinc-900/50 font-semibold tracking-tight dark:text-zinc-400">
                       {userData?.email}
@@ -288,7 +327,7 @@ export function TeamSwitcher({ teams }: { teams: Team | Team[] }) {
                           variant="outline"
                           onClick={() => {
                             setIsEditingName(false);
-                            setTeamName(activeTeam?.name || "");
+                            setTeamName(activeTeam.name || "");
                           }}
                           className="border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 h-8 px-4"
                         >
@@ -345,7 +384,7 @@ export function TeamSwitcher({ teams }: { teams: Team | Team[] }) {
             {/* Team info overlay */}
             <div className="absolute bottom-6 left-6 right-6 bg-black/40 backdrop-blur-md rounded-lg p-4 text-white flex justify-between items-center">
               <div className="flex flex-col">
-                <h3 className="font-semibold text-lg">{activeTeam?.name}</h3>
+                <h3 className="font-semibold text-lg">{activeTeam.name}</h3>
                 <p className="text-sm text-white/80">Team Photo</p>
               </div>
               <div className="flex gap-2">

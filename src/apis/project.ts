@@ -1,5 +1,11 @@
 import { apiClient } from "./config";
 
+export interface MilestoneItem {
+  id: string;
+  milestoneValue: string;
+  isCompletedMilestone: boolean;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -8,7 +14,7 @@ export interface Project {
   description?: string;
   startDate?: Date;
   targetDate?: Date;
-  milestones: string[];
+  milestones: MilestoneItem[];
   priority?: string;
   status: string;
   teamId: string;
@@ -59,7 +65,7 @@ export interface CreateProjectInput {
   priority?: string;
   status?: string;
   summary?: string;
-  milestones?: string[];
+  milestones?: MilestoneItem[];
 }
 
 export interface UpdateProjectInput extends Partial<CreateProjectInput> {
@@ -167,6 +173,23 @@ export const updateProjectMembers = async (projectSlug: string, memberIds: strin
     return response.data;
   } catch (error) {
     console.error('Error updating project members:', error);
+    throw error;
+  }
+};
+
+export const updateMilestoneCompletion = async (
+  projectSlug: string, 
+  milestoneId: string, 
+  isCompleted: boolean
+): Promise<Project> => {
+  try {
+    const response = await apiClient.patch(`/projects/${projectSlug}/milestone/completion`, {
+      milestoneId,
+      isCompleted
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating milestone completion:', error);
     throw error;
   }
 };

@@ -92,14 +92,8 @@ const ColumnWorkspace = ({ title, headerChildren }: ColumnWorkspaceProps) => {
   const workspaceId = teamId && slug ? `${teamId}/${slug}` : slug || "";
   const { columns } = useContext(KanbanContext);
   const { view, toggleView } = useStore(useToggleViewStore);
-  const { 
-    viewOptions, 
-    isPanelOpen, 
-    updateViewOptions, 
-    openPanel, 
-    closePanel 
-  } = useViewOptionsStore();
-
+  const { viewOptions, isPanelOpen, updateViewOptions, openPanel, closePanel } =
+    useViewOptionsStore();
 
   const inputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
@@ -112,7 +106,8 @@ const ColumnWorkspace = ({ title, headerChildren }: ColumnWorkspaceProps) => {
   const { members } = useMembers();
 
   const createColumnMutation = useMutation({
-    mutationFn: (title: string) => createColumn(accessToken, title, workspaceId),
+    mutationFn: (title: string) =>
+      createColumn(accessToken, title, workspaceId),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["columns", "workspaces", workspaceId],
@@ -126,65 +121,89 @@ const ColumnWorkspace = ({ title, headerChildren }: ColumnWorkspaceProps) => {
 
   // Drag and drop mutation for updating card column/order
   const moveCardMutation = useMutation({
-    mutationFn: async ({ cardId, columnId, order }: { cardId: number; columnId: number; order: number }) => {
+    mutationFn: async ({
+      cardId,
+      columnId,
+      order,
+    }: {
+      cardId: number;
+      columnId: number;
+      order: number;
+    }) => {
       await updateCardColumn(accessToken, cardId, columnId);
       await updateCardOrder(accessToken, cardId, order);
     },
     onMutate: async ({ cardId, columnId, order }) => {
       // Cancel any outgoing refetches to prevent race conditions
-      await queryClient.cancelQueries({ queryKey: ["columns", "workspaces", workspaceId] });
+      await queryClient.cancelQueries({
+        queryKey: ["columns", "workspaces", workspaceId],
+      });
 
       // Snapshot the previous value for rollback
-      const previousColumns = queryClient.getQueryData(["columns", "workspaces", workspaceId]);
+      const previousColumns = queryClient.getQueryData([
+        "columns",
+        "workspaces",
+        workspaceId,
+      ]);
 
       // Optimistically update the cache for immediate UI feedback
-      queryClient.setQueryData(["columns", "workspaces", workspaceId], (old: any) => {
-        if (!old || !Array.isArray(old)) return old;
+      queryClient.setQueryData(
+        ["columns", "workspaces", workspaceId],
+        (old: any) => {
+          if (!old || !Array.isArray(old)) return old;
 
-        const columnsCopy = [...old];
-        let cardToMove: any = null;
+          const columnsCopy = [...old];
+          let cardToMove: any = null;
 
-        // First pass: find and remove the card from its source column
-        const updatedColumns = columnsCopy.map((column: any) => {
-          const cardIndex = column.cards.findIndex((card: any) => card.id === cardId);
-          if (cardIndex >= 0) {
-            cardToMove = { ...column.cards[cardIndex] };
-            return {
-              ...column,
-              cards: column.cards.filter((card: any) => card.id !== cardId)
-            };
-          }
-          return column;
-        });
-
-        // Second pass: add the card to the destination column
-        if (cardToMove) {
-          return updatedColumns.map((column: any) => {
-            if (column.id === columnId) {
-              const updatedCard = { ...cardToMove, columnId, order };
-              const newCards = [...column.cards, updatedCard].sort((a, b) => a.order - b.order);
-              
+          // First pass: find and remove the card from its source column
+          const updatedColumns = columnsCopy.map((column: any) => {
+            const cardIndex = column.cards.findIndex(
+              (card: any) => card.id === cardId
+            );
+            if (cardIndex >= 0) {
+              cardToMove = { ...column.cards[cardIndex] };
               return {
                 ...column,
-                cards: newCards
+                cards: column.cards.filter((card: any) => card.id !== cardId),
               };
             }
             return column;
           });
-        }
 
-        return updatedColumns;
-      });
+          // Second pass: add the card to the destination column
+          if (cardToMove) {
+            return updatedColumns.map((column: any) => {
+              if (column.id === columnId) {
+                const updatedCard = { ...cardToMove, columnId, order };
+                const newCards = [...column.cards, updatedCard].sort(
+                  (a, b) => a.order - b.order
+                );
+
+                return {
+                  ...column,
+                  cards: newCards,
+                };
+              }
+              return column;
+            });
+          }
+
+          return updatedColumns;
+        }
+      );
 
       return { previousColumns };
     },
     onError: (error, _, context) => {
       console.error("Error moving card:", error);
       toast.error("Failed to move card");
-      
+
       // Rollback to previous state on error
       if (context?.previousColumns) {
-        queryClient.setQueryData(["columns", "workspaces", workspaceId], context.previousColumns);
+        queryClient.setQueryData(
+          ["columns", "workspaces", workspaceId],
+          context.previousColumns
+        );
       }
     },
     onSettled: () => {
@@ -201,56 +220,47 @@ const ColumnWorkspace = ({ title, headerChildren }: ColumnWorkspaceProps) => {
   const processedColumns = useMemo(() => {
     const columnsData = columns || [];
     if (!columnsData) return [];
-    
-    let filteredColumns = [...columnsData].sort((a: Column, b: Column) => a.order - b.order);
-    
+
+    let filteredColumns = [...columnsData].sort(
+      (a: Column, b: Column) => a.order - b.order
+    );
+
     // Apply comprehensive view options to each column's cards
-    filteredColumns = filteredColumns.map(column => {
+    filteredColumns = filteredColumns.map((column) => {
       let columnCards = column.cards || [];
-      
+
       // 1. Apply search filtering
       if (searchQuery.trim()) {
-        columnCards = columnCards.filter((card: any) => 
-          card.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          card.description?.toLowerCase().includes(searchQuery.toLowerCase())
+        columnCards = columnCards.filter(
+          (card: any) =>
+            card.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            card.description?.toLowerCase().includes(searchQuery.toLowerCase())
         );
       }
-      
+
       // 2. Filter cards based on active filters
       columnCards = filterCards(columnCards, viewOptions);
-      
+
       // 3. Hide completed cards if option is disabled
       if (!viewOptions.showCompletedCards) {
-        columnCards = columnCards.filter((card: any) => card.status !== 'completed' && card.status !== 'done');
+        columnCards = columnCards.filter(
+          (card: any) => card.status !== "completed" && card.status !== "done"
+        );
       }
-      
+
       // 4. Order cards within the column
       columnCards = orderCards(columnCards, viewOptions);
-      
-      console.log(`Column "${column.title}" after processing:`, {
-        originalCount: (column.cards || []).length,
-        filteredCount: columnCards.length,
-        orderBy: viewOptions.orderBy,
-        activeFilters: viewOptions.activeFilters
-      });
-      
+
       return { ...column, cards: columnCards };
     });
-    
+
     // Hide empty columns if option is disabled
     if (!viewOptions.showEmptyColumns) {
-      filteredColumns = filteredColumns.filter(column => column.cards && column.cards.length > 0);
+      filteredColumns = filteredColumns.filter(
+        (column) => column.cards && column.cards.length > 0
+      );
     }
-    
-    console.log('Processed columns for Kanban:', {
-      totalColumns: filteredColumns.length,
-      viewOptions: viewOptions,
-      columnsWithCards: filteredColumns.map(col => ({
-        title: col.title,
-        cardCount: col.cards.length
-      }))
-    });
-    
+
     return filteredColumns;
   }, [columns, viewOptions, searchQuery]);
 
@@ -265,24 +275,22 @@ const ColumnWorkspace = ({ title, headerChildren }: ColumnWorkspaceProps) => {
 
   const listViewData = useMemo(() => {
     if (!columns) return {};
-    
+
     // Get all cards from all columns
     let allCards = columns.flatMap((col: any) => col.cards || []);
-    
+
     // Apply search filtering
     if (searchQuery.trim()) {
-      allCards = allCards.filter((card: any) => 
-        card.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        card.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      allCards = allCards.filter(
+        (card: any) =>
+          card.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          card.description?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-    
+
     // Apply view options (grouping, filtering, ordering)
     const groupedData = groupCards(allCards, columns, viewOptions);
-    
-    console.log('Applied view options:', viewOptions);
-    console.log('Grouped data:', groupedData);
-    
+
     return groupedData;
   }, [columns, viewOptions, searchQuery]);
 
@@ -310,21 +318,25 @@ const ColumnWorkspace = ({ title, headerChildren }: ColumnWorkspaceProps) => {
 
     // Validate parsed IDs
     if (isNaN(sourceColumnId) || isNaN(destinationColumnId) || isNaN(cardId)) {
-      console.error('Invalid IDs in drag operation');
+      console.error("Invalid IDs in drag operation");
       return;
     }
 
     // Find source and destination columns
     const sourceColumn = columns?.find((col: any) => col.id === sourceColumnId);
-    const destinationColumn = columns?.find((col: any) => col.id === destinationColumnId);
+    const destinationColumn = columns?.find(
+      (col: any) => col.id === destinationColumnId
+    );
 
     if (!sourceColumn || !destinationColumn) {
-      console.error('Source or destination column not found');
+      console.error("Source or destination column not found");
       return;
     }
 
     // Get destination cards and sort them by order for accurate positioning
-    const destinationCards = [...(destinationColumn.cards || [])].sort((a, b) => a.order - b.order);
+    const destinationCards = [...(destinationColumn.cards || [])].sort(
+      (a, b) => a.order - b.order
+    );
     let newOrder: number;
 
     // Calculate new order with better precision
@@ -343,7 +355,7 @@ const ColumnWorkspace = ({ title, headerChildren }: ColumnWorkspaceProps) => {
       const previousCard = destinationCards[destination.index - 1];
       const nextCard = destinationCards[destination.index];
       newOrder = (previousCard.order + nextCard.order) / 2;
-      
+
       // If the difference is too small, recalculate with larger gaps
       if (nextCard.order - previousCard.order < 2) {
         newOrder = previousCard.order + 500;
@@ -371,7 +383,7 @@ const ColumnWorkspace = ({ title, headerChildren }: ColumnWorkspaceProps) => {
 
   return (
     <>
-      <Container 
+      <Container
         fwdClassName={view === "kanban" ? "bg-transparent px-2" : "p-0"}
         title={title}
         headerChildren={headerChildren}
@@ -387,45 +399,54 @@ const ColumnWorkspace = ({ title, headerChildren }: ColumnWorkspaceProps) => {
           />
         }
       >
-
         <div className="relative w-full h-full ">
           {view === "kanban" ? (
             sortedColumns ? (
               <DragDropContext onDragEnd={handleDragEnd}>
-              <ol className="absolute inset-0 flex items-start h-full py-2">
-                {sortedColumns && sortedColumns.map((column: Column) => (
-                  <ColumnProvider columnId={column.id.toString()} key={column.id}>
-                    <ColumnView 
-                      title={column.title} 
-                      cards={column.cards} 
-                      columnId={column.id}
-                      viewOptions={viewOptions}
-                      members={members}
-                    />
-                  </ColumnProvider>
-                ))}
-                <div className="p-1 rounded-md">
-                  {showListInput ? (
-                    <NewColumnForm
-                      columnName={columnName}
-                      setColumnName={setColumnName}
-                      onAddColumn={handleAddColumn}
-                      onCancel={() => setShowListInput(false)}
-                      inputRef={inputRef}
-                    />
-                  ) : (
-                    <ExpandAddColumnButton onClick={() => setShowListInput(true)} />
-                  )}
-                </div>
-              </ol>
-            </DragDropContext>
+                <ol className="absolute inset-0 flex items-start h-full py-2">
+                  {sortedColumns &&
+                    sortedColumns.map((column: Column) => (
+                      <ColumnProvider
+                        columnId={column.id.toString()}
+                        key={column.id}
+                      >
+                        <ColumnView
+                          title={column.title}
+                          cards={column.cards}
+                          columnId={column.id}
+                          viewOptions={viewOptions}
+                          members={members}
+                        />
+                      </ColumnProvider>
+                    ))}
+                  <div className="p-1 rounded-md">
+                    {showListInput ? (
+                      <NewColumnForm
+                        columnName={columnName}
+                        setColumnName={setColumnName}
+                        onAddColumn={handleAddColumn}
+                        onCancel={() => setShowListInput(false)}
+                        inputRef={inputRef}
+                      />
+                    ) : (
+                      <ExpandAddColumnButton
+                        onClick={() => setShowListInput(true)}
+                      />
+                    )}
+                  </div>
+                </ol>
+              </DragDropContext>
             ) : (
               <div className="flex items-center justify-center w-full h-32 text-muted-foreground">
                 Loading columns...
               </div>
             )
           ) : (
-            <ListView data={listViewData} />
+            <ListView
+              data={listViewData}
+              viewOptions={viewOptions}
+              members={members}
+            />
           )}
         </div>
       </Container>

@@ -1,120 +1,297 @@
+
 import { Badge } from "@/components/ui/badge";
-import { MemberAvatars, LeadAvatar } from "./utils";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
 import { useTheme } from "@/context/ThemeProvider";
 import PriorityDropdown from "./contextMenu/PriorityDropdown";
+import LeadCommandDropdown from "./contextMenu/LeadCommandDropdown";
+import MembersCommandDropdown from "./contextMenu/MembersCommandDropdown";
+
+import { cn } from "@/lib/utils";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { 
+  updateProject, 
+  updateProjectTargetDate, 
+  updateProjectLead, 
+  updateProjectMembers,
+  updateProjectPriority 
+} from "@/apis/project";
+import { useToast } from "@/hooks/use-toast";
+import { DateCreatedIcon } from "../shared/svg/ViewOptionsIcons";
+import { TargetIcon } from "../shared/svg/SharedIcons";
+import StatusDropdown from "./contextMenu/StatusDropdown";
+import { useTeam } from "@/context/TeamContext";
 
 interface ProjectSidebarProps {
-  project?: any;
+  project: any;
 }
+
 
 export const ProjectSidebar = ({ project }: ProjectSidebarProps) => {
   const { theme } = useTheme();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { currentTeam } = useTeam();
+  
+
+
+  // Mutations
+  const updateProjectMutation = useMutation({
+    mutationFn: (data: any) => updateProject({ slug: project.slug, ...data }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project", project.slug] });
+      toast({
+        title: "Success",
+        description: "Project updated successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update project",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateTargetDateMutation = useMutation({
+    mutationFn: (targetDate: string | null) => updateProjectTargetDate(project.slug, targetDate),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project", project.slug] });
+      toast({
+        title: "Success",
+        description: "Target date updated successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update target date",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateLeadMutation = useMutation({
+    mutationFn: (leadId: string | null) => updateProjectLead(project.slug, leadId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project", project.slug] });
+      toast({
+        title: "Success",
+        description: "Project lead updated successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update project lead",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateMembersMutation = useMutation({
+    mutationFn: (memberIds: string[]) => updateProjectMembers(project.slug, memberIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project", project.slug] });
+      toast({
+        title: "Success",
+        description: "Project members updated successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update project members",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updatePriorityMutation = useMutation({
+    mutationFn: (priority: string) => updateProjectPriority(project.slug, priority),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project", project.slug] });
+      toast({
+        title: "Success",
+        description: "Project priority updated successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update project priority",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Auto-save handler for status
+  const handleAutoSaveStatus = (newStatus: string) => {
+    if (newStatus !== project.status) {
+      updateProjectMutation.mutate({ status: newStatus });
+    }
+  };
+
+  const handleLeadChange = (leadId: string | null) => {
+    updateLeadMutation.mutate(leadId);
+  };
+
+  const handleMembersChange = (memberIds: string[]) => {
+    updateMembersMutation.mutate(memberIds);
+  };
+
+  const handlePriorityChange = (priority: string) => {
+    updatePriorityMutation.mutate(priority);
+  };
+
   return (
-    <>
-      {/* Properties */}
-      <div>
-        <h3 className="text-sm font-semibold mb-2 text-muted-foreground">
-          Properties
-        </h3>
-        <div className="space-y-2 text-xs">
-          <div className="flex items-center justify-between">
-            <span>Status</span>
-            <Badge variant="outline">{project.status}</Badge>
-          </div>
-          {project.priority && (
-            <div className="flex items-center justify-between">
-              <span>Priority</span>
-              <PriorityDropdown
-                priority={project.priority}
-                onChange={(priority) => {
-                  console.log(priority);
+    <div className="space-y-4">
+      {/* Status */}
+      <div className="flex items-center justify-between text-xs group">
+        <span className="text-muted-foreground font-medium inline-flex items-center gap-1.5">Status</span>
+       <StatusDropdown status={project.status || "not_started"} onChange={handleAutoSaveStatus} />
+      </div>
+
+      {/* Priority */}
+      <div className="flex items-center justify-between text-xs group">
+        <span className="text-muted-foreground font-medium inline-flex items-center gap-1.5">Priority</span>
+        <div >
+          <PriorityDropdown
+            priority={project.priority || "none"}
+            onChange={handlePriorityChange}
+            isDark={theme === "dark"}
+          />
+        </div>
+      </div>
+
+      {/* Start Date */}
+      <div className="flex items-center justify-between text-xs group">
+        <span className="text-muted-foreground font-medium inline-flex items-center gap-1.5">
+          <DateCreatedIcon />
+          Start Date</span>
+        <div >
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                className={cn(
+                  "w-full justify-start px-0 text-left font-mono tracking-tight text-xs h-7 hover:bg-accent/20 transition-colors",
+                  !project.startDate && "text-muted-foreground"
+                )}
+              >
+                {project.startDate ? new Date(project.startDate).toLocaleDateString() : "No start date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={project.startDate ? new Date(project.startDate) : undefined}
+                onSelect={(date) => {
+                  updateProjectMutation.mutate({ 
+                    startDate: date ? date.toISOString() : null 
+                  });
                 }}
-                isDark={theme === "dark"}
+                initialFocus
               />
-            </div>
-          )}
-          {project.lead && (
-            <div className="flex items-center justify-between">
-              <span>Lead</span>
-              <LeadAvatar lead={project.lead} />
-            </div>
-          )}
-          {project.members && project.members.length > 0 && (
-            <div className="flex items-center justify-between">
-              <span>Members</span>
-              <span className="flex items-center gap-1">
-                <MemberAvatars members={project.members} />{" "}
-                {project.members.length}
-              </span>
-            </div>
-          )}
-          {project.targetDate && (
-            <div className="flex items-center justify-between">
-              <span>Target Date</span>
-              <span>{new Date(project.targetDate).toLocaleDateString()}</span>
-            </div>
-          )}
-          {project.workspaces && project.workspaces.length > 0 && (
-            <div className="flex items-center justify-between">
-              <span>Workspaces</span>
-              <span>
-                {project.workspaces
-                  .map(({ workspace }: any) => workspace.title)
-                  .join(", ")}
-              </span>
-            </div>
-          )}
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+
+      {/* Target Date */}
+      <div className="flex items-center justify-between text-xs group">
+        <span className="text-muted-foreground font-medium inline-flex items-center gap-1.5">
+          <TargetIcon />
+          Target Date</span>
+        <div >
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                className={cn(
+                  "w-full justify-start px-0 text-left font-mono tracking-tight text-xs h-7 hover:bg-accent/20 transition-colors",
+                  !project.targetDate && "text-muted-foreground"
+                )}
+              >
+                {project.targetDate ? new Date(project.targetDate).toLocaleDateString() : "No due date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={project.targetDate ? new Date(project.targetDate) : undefined}
+                onSelect={(date) => {
+                  updateTargetDateMutation.mutate(
+                    date ? date.toISOString() : null
+                  );
+                }}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+
+      {/* Lead */}
+      <div className="flex items-center justify-between text-xs group">
+        <span className="text-muted-foreground font-medium inline-flex items-center gap-1.5">Lead</span>
+        <div >
+          <LeadCommandDropdown
+            currentLead={project.lead}
+            onLeadChange={handleLeadChange}
+            teamId={currentTeam?.id as string}
+          />
+        </div>
+      </div>
+
+      {/* Members */}
+      <div className="flex items-center justify-between text-xs group">
+        <span className="text-muted-foreground font-medium inline-flex items-center gap-1.5">Members</span>
+        <div >
+          <MembersCommandDropdown
+            currentMembers={project.members?.map((m: any) => m.user) || []}
+            onMembersChange={(members) => handleMembersChange(members.map(m => m.id))}
+            teamId={currentTeam?.id as string}
+          />
         </div>
       </div>
 
       {/* Progress */}
       {project.cards && project.cards.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold mb-2 text-muted-foreground">
-            Progress
-          </h3>
-          <div className="flex items-center gap-2 text-xs">
-            <span>Total</span>
-            <Badge variant="outline">{project.cards.length}</Badge>
-            <span>Completed</span>
+        <div className="flex items-center justify-between text-sm pt-4 border-t">
+          <span className="text-muted-foreground font-medium inline-flex items-center gap-1.5">Progress</span>
+          <div className="flex-1 flex items-center gap-2 text-xs">
+            <Badge variant="outline">{project.cards.length} total</Badge>
             <Badge variant="outline">
-              {
-                project.cards.filter((c: any) => c.status === "Completed")
-                  .length
-              }
+              {project.cards.filter((c: any) => c.status === "Completed").length} done
             </Badge>
           </div>
         </div>
       )}
 
-      {/* Team Members */}
-      {project.members && project.members.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold mb-2 text-muted-foreground">
-            Team Members
-          </h3>
-          <div className="flex flex-col gap-2">
-            {project.members.map((member: any, idx: number) => (
-              <div key={idx} className="flex items-center gap-2 text-xs">
-                <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-bold">
-                  {member.user.imageUrl ? (
-                    <img
-                      src={member.user.imageUrl}
-                      alt={member.user.name}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    member.user.name?.[0] || "?"
-                  )}
-                </div>
-                <span>{member.user.name}</span>
-              </div>
+      {/* Workspaces */}
+      {project.workspaces && project.workspaces.length > 0 && (
+        <div className="flex items-start justify-between text-sm pt-2">
+          <span className="text-muted-foreground font-medium inline-flex items-center gap-1.5 pt-1">Boards</span>
+          <div className="flex-1 flex flex-wrap gap-1">
+            {project.workspaces.map(({ workspace }: any) => (
+              <Badge key={workspace.id} variant="secondary" className="text-xs">
+                {workspace.title}
+              </Badge>
             ))}
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
-export default ProjectSidebar;
+export default ProjectSidebar; 

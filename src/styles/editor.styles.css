@@ -1,4 +1,3 @@
-
 .editor-root {
   padding: 0.75rem;
   position: relative;
@@ -13,7 +12,7 @@
 }
 
 .editor-paragraph {
-  margin: 0 0 0.75rem 0;
+  padding: 3px 0px;
   line-height: 1.6;
   user-select: text;
 }
@@ -54,13 +53,11 @@
 /* Fixed list styling - no more wrapping issues */
 .editor-list-ul {
   list-style: none;
-  margin: 0.75rem 0;
   padding-left: 0;
 }
 
 .editor-list-ol {
   list-style: none;
-  margin: 0.75rem 0;
   padding-left: 0;
   counter-reset: list-counter;
 }
@@ -68,7 +65,6 @@
 .editor-list-checklist {
   list-style: none !important;
   list-style-type: none !important;
-  margin: 0.75rem 0;
   padding-left: 0;
 }
 
@@ -80,7 +76,6 @@
 /* Regular list items */
 .editor-list-item {
   position: relative;
-  margin: 0.375rem 0;
   padding-left: 1.75rem;
   line-height: 1.6;
   user-select: text;
@@ -104,6 +99,10 @@
   counter-increment: list-counter;
 }
 
+.editor-list-item .editor-nested-list-item{
+  counter-increment: customLowerAlpha;
+}
+
 .editor-list-ol .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked)::before {
   content: counter(list-counter) ".";
   position: absolute;
@@ -115,33 +114,89 @@
   text-align: right;
   pointer-events: none;
   user-select: none;
+  font-family: monospace;
 }
 
-/* FIXED: Enhanced checklist items with emerald styling */
+/* UPDATED: Checklist items using marker approach like Lexical */
 .editor-list-item-checked,
 .editor-list-item-unchecked {
   position: relative;
-  list-style: none !important;
-  list-style-type: none !important;
-  list-style-image: none !important;
-  list-style-position: outside !important;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+  list-style-type: none;
   outline: none;
-  user-select: text;
+  display: block;
+  min-height: 1.5em;
+  cursor: pointer;
+}
+
+.editor-list-item-checked > *,
+.editor-list-item-unchecked > * {
+  margin-left: 0.01em;
+}
+
+/* Base marker styling for both checked and unchecked */
+.editor-list-item-unchecked::marker,
+.editor-list-item-checked::marker {
+  content: '\200B'; /* Zero-width space to hide default marker */
+}
+
+/* Checkbox markers using ::before pseudo-element */
+.editor-list-item-unchecked::before,
+.editor-list-item-checked::before {
+  content: '\200B';
+  width: 0.9em;
+  height: 0.9em;
+  top: 50%;
+  left: 0;
   cursor: pointer;
   display: block;
+  background-size: cover;
+  position: absolute;
+  transform: translateY(-50%);
 }
 
-.editor-list-item-checked::marker,
-.editor-list-item-unchecked::marker {
-  display: none !important;
-  content: none !important;
+/* Unchecked checkbox styling */
+.editor-list-item-unchecked {
+  color: #374151;
 }
 
+.dark .editor-list-item-unchecked {
+  color: #d1d5db;
+}
+
+.editor-list-item-unchecked:focus::before {
+  box-shadow: 0 0 0 2px #10b981;
+  border-radius: 2px;
+}
+
+.editor-list-item-unchecked::before {
+  border: 1.5px solid #d1d5db;
+  border-radius: 2px;
+  background-color: transparent;
+  transition: all 0.2s ease;
+}
+
+.dark .editor-list-item-unchecked::before {
+  border-color: #4b5563;
+  background-color: #1f2937;
+}
+
+.editor-list-item-unchecked:hover::before {
+  border-color: #10b981;
+  background-color: #f0fdf4;
+}
+
+.dark .editor-list-item-unchecked:hover::before {
+  border-color: #10b981;
+  background-color: #064e3b;
+}
+
+/* Checked checkbox styling */
 .editor-list-item-checked {
   color: #6b7280;
   text-decoration: line-through;
   text-decoration-color: #6b7280;
-  padding-left: 1.5rem;
 }
 
 .dark .editor-list-item-checked {
@@ -149,123 +204,38 @@
   text-decoration-color: #9ca3af;
 }
 
-.editor-list-item-unchecked {
-  color: #374151;
-  padding-left: 1.5rem;
+.editor-list-item-checked:focus::before {
+  box-shadow: 0 0 0 2px #10b981;
+  border-radius: 2px;
 }
 
-.dark .editor-list-item-unchecked {
-  color: #d1d5db;
-}
-
-/* FIXED: Checkbox styling - CHECKED - Allow checkboxes at any nesting level */
 .editor-list-item-checked::before {
-  content: "" !important;
-  position: absolute !important;
-  left: 0 !important;
-  top: 5px !important;
-  width: 1rem !important;
-  height: 1rem !important;
-  border: 1.5px solid #10b981 !important;
-  background-color: #10b981 !important;
-  border-radius: 2px !important;
-  cursor: pointer !important;
-  pointer-events: auto !important;
-  user-select: none !important;
-  transition: all 0.2s ease !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
-  display: block !important;
-  font-size: inherit !important;
-  color: transparent !important;
+  border: 1.5px solid #10b981;
+  border-radius: 2px;
+  background-color: #10b981;
+  background-repeat: no-repeat;
+  transition: all 0.2s ease;
 }
 
 .editor-list-item-checked:hover::before {
   background-color: #059669;
   border-color: #059669;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
-.editor-list-item-checked::before {
-  /* Your existing checkbox styles */
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 5px;
-  width: 1rem;
-  height: 1rem;
-  border: 1.5px solid #10b981;
-  background-color: #10b981;
-  border-radius: 2px;
-  cursor: pointer;
-  
-  /* Add flexbox centering */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  /* Put the SVG directly in the background */
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><polygon points="5.5 11.9993304 14 3.49933039 12.5 2 5.5 8.99933039 1.5 4.9968652 0 6.49933039" fill="white"/></svg>');
-  background-repeat: no-repeat;
-  background-size: 60%; /* Scale the checkmark to 60% of checkbox size */
-  background-position: center;
-}
-
-/* Remove the ::after pseudo-element entirely */
+/* Checkmark for checked items */
 .editor-list-item-checked::after {
-  display: none;
-}
-/* FIXED: Checkbox styling - UNCHECKED - Allow checkboxes at any nesting level */
-.editor-list-item-unchecked::before {
-  content: "" !important;
-  position: absolute !important;
-  left: 0 !important;
-  top: 5px !important;
-  width: 1rem !important;
-  height: 1rem !important;
-  border: 1.5px solid #d1d5db !important;
-  background-color: transparent !important;
-  border-radius: 2px !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  pointer-events: auto !important;
-  user-select: none !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
-  display: block !important;
-  font-size: inherit !important;
-  color: transparent !important;
-}
-
-.dark .editor-list-item-unchecked::before {
-  border-color: #4b5563;
-  background-color: #1f2937;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.editor-list-item-unchecked:hover::before {
-  border-color: #10b981;
-  background-color: #f0fdf4;
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.1);
-}
-
-.dark .editor-list-item-unchecked:hover::before {
-  border-color: #10b981;
-  background-color: #064e3b;
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
-}
-
-/* IMPORTANT: Remove the overly restrictive nested list overrides */
-/* Only prevent checkbox styling on regular nested list items that aren't checkboxes */
-.editor-nested-list .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked)::before,
-.editor-nested-list .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked)::after {
-  display: none !important;
-  content: none !important;
-}
-
-/* Ensure nested checkbox items maintain proper spacing */
-.editor-nested-list .editor-list-item-checked,
-.editor-nested-list .editor-list-item-unchecked {
-  padding-left: 1.45rem !important;
-  margin: 0.5rem 0;
+  content: '';
+  cursor: pointer;
+  border-color: #fff;
+  border-style: solid;
+  position: absolute;
+  display: block;
+  top: 50%;
+  width: 0.2em;
+  left: 0.35em;
+  height: 0.4em;
+  transform: translateY(-50%) rotate(45deg);
+  border-width: 0 0.1em 0.1em 0;
 }
 
 /* Nested lists */
@@ -275,6 +245,11 @@
 
 .editor-nested-list-item::before,
 .editor-nested-list-item::after {
+  display: none !important;
+  content: none !important;
+}
+
+.editor-nested-list-item::marker {
   display: none !important;
   content: none !important;
 }
@@ -299,6 +274,15 @@
   font-size: 1.1em;
   pointer-events: none;
   user-select: none;
+}
+
+/* Ensure nested checkbox items maintain proper spacing and styling */
+.editor-nested-list .editor-list-item-checked,
+.editor-nested-list .editor-list-item-unchecked {
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+  padding-left: 1.5em;
+  padding-right: 1.5em;
 }
 
 /* Improved placeholder */
@@ -474,16 +458,13 @@ code:not(.editor-code),
 
 /* Link styling */
 .editor-link {
-  color: var(--primary);
-  text-decoration: underline;
-  text-decoration-color: var(--primary);
-  text-underline-offset: 2px;
-  transition: color 0.2s ease;
+  color: hsl(157, 70%, 26%); /* emerald-500 */
+  text-decoration: none;
 }
 
 .editor-link:hover {
-  color: var(--primary);
-  text-decoration-color: var(--primary);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 /* Horizontal rule */
@@ -507,11 +488,6 @@ code:not(.editor-code),
 /* Focus styles */
 .editor-root:focus-within {
   outline: none;
-}
-
-/* Improved spacing for better readability */
-.editor-root > * + * {
-  margin-top: 0.75rem;
 }
 
 /* Better handling of empty paragraphs */
@@ -539,13 +515,4 @@ code:not(.editor-code),
   .editor-list-item-unchecked {
     padding-left: 1.5rem;
   }
-}
-
-.editor-link {
-  color: hsl(157, 70%, 26%); /* emerald-500 */
-  text-decoration: none;
-}
-.editor-link:hover {
-  text-decoration: underline;
-  cursor: pointer;
 }

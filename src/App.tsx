@@ -44,7 +44,6 @@ const App = () => {
   return (
     <>
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-
           <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
             <Toaster />
             <QueryClientProvider client={queryClient}>

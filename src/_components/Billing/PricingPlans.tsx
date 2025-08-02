@@ -8,20 +8,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import { Check, Crown, Sparkles, Zap } from "lucide-react";
+import { Check, Zap } from "lucide-react";
 import { useGetSubscriptionStatus } from "@/hooks/useBilling";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { usePaddle } from "@/context/PaddleProvider";
 import { CheckoutOpenOptions } from "@paddle/paddle-js";
+import { CrownBillingIcon, ProBillingIcon, CheckIcon } from "../shared/svg/SharedIcons";
 
 const planIcons = {
   free: Zap,
-  pro: Sparkles,
-  business: Crown,
+  pro: ProBillingIcon,
+  business: CrownBillingIcon,
 };
-
-
 
 // Your actual PulseBoard pricing plans
 const plans = [
@@ -228,7 +227,7 @@ export const PricingPlans: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Pricing Plans */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {plans.map((plan) => {
           const PlanIcon = planIcons[plan.id as keyof typeof planIcons];
           const isCurrentPlan =
@@ -356,7 +355,7 @@ export const PricingPlans: React.FC = () => {
                       {row.pro === "-" ? (
                         <span className="text-gray-400">—</span>
                       ) : row.pro === "Yes" ? (
-                        <Check className="w-4 h-4 text-green-500 mx-auto" />
+                        <CheckIcon className="w-4 h-4 text-green-500 mx-auto" />
                       ) : (
                         <span className="text-sm text-gray-600 dark:text-gray-400">
                           {row.pro}
@@ -367,7 +366,7 @@ export const PricingPlans: React.FC = () => {
                       {row.business === "-" ? (
                         <span className="text-gray-400">—</span>
                       ) : row.business === "Yes" ? (
-                        <Check className="w-4 h-4 text-green-500 mx-auto" />
+                        <CheckIcon className="w-4 h-4 text-green-500 mx-auto" />
                       ) : (
                         <span className="text-sm text-gray-600 dark:text-gray-400">
                           {row.business}

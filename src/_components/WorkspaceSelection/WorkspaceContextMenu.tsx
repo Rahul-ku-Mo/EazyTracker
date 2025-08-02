@@ -5,7 +5,8 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { FileEdit, Settings, Trash, UserPlus, Star } from "lucide-react";
+import { FileEdit, Settings, Trash, Star } from "lucide-react";
+import { InviteUserIcon } from "../shared/svg/SharedIcons";
 
 interface WorkspaceContextMenuProps {
   children: React.ReactNode;
@@ -37,7 +38,7 @@ export const WorkspaceContextMenu = ({
           Open
         </ContextMenuItem>
         <ContextMenuItem onClick={onInvite} className="text-xs">
-          <UserPlus className="w-4 h-4 mr-2" />
+          <InviteUserIcon className="w-4 h-4 mr-2" />
           Invite
         </ContextMenuItem>
         <ContextMenuItem 

@@ -48,6 +48,8 @@ import {
   ColumnNameinListViewIcon,
 } from "../shared/svg/ListViewIcons";
 import { DateCreatedIcon } from "../shared/svg/ViewOptionsIcons";
+import { ViewOptions } from "@/store/useViewOptionsStore";
+import { EmptyIcon } from "../shared/svg/SharedIcons";
 
 interface CardItem {
   id: number;
@@ -71,6 +73,8 @@ interface ListViewProps {
       cards: CardItem[];
     };
   };
+  viewOptions?: ViewOptions;
+  members?: TUser[];
   onEditItem?: (itemId: number) => void;
   onDeleteItem?: (itemId: number) => void;
   onMoveItem?: (itemId: number) => void;
@@ -89,6 +93,8 @@ const listVariants = {
 
 const ListView = ({
   data,
+  viewOptions,
+  members,
   onEditItem,
   onDeleteItem,
   onMoveItem,
@@ -97,11 +103,16 @@ const ListView = ({
   const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { slug } = useParams();
-  const { members } = useMembers();
+  const { members: hookMembers } = useMembers();
   const { updateCardMutation } = useCardMutation();
   const queryClient = useQueryClient();
   const accessToken = Cookies.get("accessToken") as string;
   const { theme } = useTheme();
+  
+
+  console.log(hookMembers)
+  // Use prop members if provided, otherwise fall back to hook
+  const effectiveMembers = members || hookMembers;
   // Drag and drop mutation for updating card column/order
   const moveCardMutation = useMutation({
     mutationFn: async ({
@@ -356,7 +367,7 @@ const ListView = ({
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
                                   className={cn(
-                                    "group relative flex items-center justify-between p-3 border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-all duration-300 ease-out h-12",
+                                    "group relative flex items-center justify-between p-3 border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-all duration-300 ease-out h-10",
                                     snapshot.isDragging &&
                                       "shadow-2xl z-50 rounded-lg scale-105 rotate-1 transform-gpu bg-white dark:bg-zinc-800 border-2 border-emerald-200 dark:border-emerald-700"
                                   )}
@@ -367,97 +378,101 @@ const ListView = ({
                                 >
                                   <div className="flex items-center gap-2 flex-grow min-w-0">
                                     {/* Title - Clickable area for opening card */}
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <div
-                                          className="flex items-center gap-1 cursor-pointer"
+                                    {viewOptions?.displayProperties.priority !== false && (
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <div
+                                            className="flex items-center gap-1 cursor-pointer"
+                                            onClick={(e) => e.stopPropagation()}
+                                          >
+                                            {item.priority ? (
+                                              <div className="flex items-center gap-1">
+                                                {getPriorityIcon(
+                                                  item.priority,
+                                                  theme
+                                                )}
+                                              </div>
+                                            ) : (
+                                              <div className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer">
+                                                <Priority className="size-3" />
+                                              </div>
+                                            )}
+                                          </div>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent
+                                          align="start"
+                                          className="w-32"
                                           onClick={(e) => e.stopPropagation()}
                                         >
-                                          {item.priority ? (
-                                            <div className="flex items-center gap-1">
-                                              {getPriorityIcon(
-                                                item.priority,
-                                                theme
-                                              )}
-                                            </div>
-                                          ) : (
-                                            <div className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer">
-                                              <Priority className="size-3" />
-                                            </div>
-                                          )}
-                                        </div>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent
-                                        align="start"
-                                        className="w-32"
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        <DropdownMenuItem
-                                          className="gap-2 text-xs"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            updatePriority(item.id, "urgent");
-                                          }}
-                                        >
-                                          <UrgentPriority className="size-3" />
-                                          Urgent
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                          className="gap-2 text-xs"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            updatePriority(item.id, "high");
-                                          }}
-                                        >
-                                          <HighPriority
-                                            className="size-3"
-                                            isDark={theme === "dark"}
-                                          />
-                                          High
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                          className="gap-2 text-xs"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            updatePriority(item.id, "medium");
-                                          }}
-                                        >
-                                          <MediumPriority
-                                            className="size-3"
-                                            isDark={theme === "dark"}
-                                          />
-                                          Medium
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                          className="gap-2 text-xs"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            updatePriority(item.id, "low");
-                                          }}
-                                        >
-                                          <LowPriority
-                                            className="size-3"
-                                            isDark={theme === "dark"}
-                                          />
-                                          Low
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                          className="gap-2 text-xs"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            updatePriority(item.id, "");
-                                          }}
-                                        >
-                                          <Priority className="size-3" />
-                                          No priority
-                                        </DropdownMenuItem>
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
-                                    <span className="text-sm text-zinc-500 dark:text-zinc-200 font-bold geist-font">
-                                      {`${columnTitle
-                                        .substring(0, 2)
-                                        .toUpperCase()} - ${item.id}`}
-                                    </span>
+                                          <DropdownMenuItem
+                                            className="gap-2 text-xs"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              updatePriority(item.id, "urgent");
+                                            }}
+                                          >
+                                            <UrgentPriority className="size-3" />
+                                            Urgent
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem
+                                            className="gap-2 text-xs"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              updatePriority(item.id, "high");
+                                            }}
+                                          >
+                                            <HighPriority
+                                              className="size-3"
+                                              isDark={theme === "dark"}
+                                            />
+                                            High
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem
+                                            className="gap-2 text-xs"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              updatePriority(item.id, "medium");
+                                            }}
+                                          >
+                                            <MediumPriority
+                                              className="size-3"
+                                              isDark={theme === "dark"}
+                                            />
+                                            Medium
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem
+                                            className="gap-2 text-xs"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              updatePriority(item.id, "low");
+                                            }}
+                                          >
+                                            <LowPriority
+                                              className="size-3"
+                                              isDark={theme === "dark"}
+                                            />
+                                            Low
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem
+                                            className="gap-2 text-xs"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              updatePriority(item.id, "");
+                                            }}
+                                          >
+                                            <Priority className="size-3" />
+                                            No priority
+                                          </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
+                                    )}
+                                    {viewOptions?.showCardIds !== false && (
+                                      <span className="text-sm text-zinc-500 dark:text-zinc-200 font-bold geist-font">
+                                        {`${columnTitle
+                                          .substring(0, 2)
+                                          .toUpperCase()} - ${item.id}`}
+                                      </span>
+                                    )}
 
                                     <div className="flex-grow truncate font-medium text-xs text-zinc-900 dark:text-zinc-100">
                                       {item.title}
@@ -466,70 +481,72 @@ const ListView = ({
                                     {/* Priority - Inline editable */}
 
                                     {/* Assignee - Inline editable */}
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <div
-                                          className="flex items-center gap-1 hover:bg-muted rounded p-1 transition-colors"
+                                    {viewOptions?.displayProperties.assignee !== false && (
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <div
+                                            className="flex items-center gap-1 hover:bg-muted rounded p-1 transition-colors"
+                                            onClick={(e) => e.stopPropagation()}
+                                          >
+                                            <Assignee className="size-5" />
+                                          </div>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent
+                                          align="start"
+                                          className="w-40"
                                           onClick={(e) => e.stopPropagation()}
                                         >
-                                          <Assignee className="size-5" />
-                                        </div>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent
-                                        align="start"
-                                        className="w-40"
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        {members?.map((member: TUser) => (
+                                          {effectiveMembers?.map((member: TUser) => (
+                                            <DropdownMenuItem
+                                              key={member.id}
+                                              className="gap-2 text-xs"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                updateAssignee(
+                                                  item.id,
+                                                  member.id
+                                                );
+                                              }}
+                                            >
+                                              <div className="flex items-center gap-2">
+                                                <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center">
+                                                  {member.imageUrl ? (
+                                                    <img
+                                                      src={member.imageUrl}
+                                                      alt={member.username}
+                                                      className="w-full h-full rounded-full"
+                                                    />
+                                                  ) : (
+                                                    <span className="text-xs">
+                                                      {member.username
+                                                        ? member.username.charAt(
+                                                            0
+                                                          )
+                                                        : ""}
+                                                    </span>
+                                                  )}
+                                                </div>
+                                                <span className="text-xs">
+                                                  {member.username}
+                                                </span>
+                                              </div>
+                                            </DropdownMenuItem>
+                                          ))}
                                           <DropdownMenuItem
-                                            key={member.id}
-                                            className="gap-2 text-xs"
                                             onClick={(e) => {
                                               e.stopPropagation();
-                                              updateAssignee(
-                                                item.id,
-                                                member.id
-                                              );
+                                              updateAssignee(item.id, "");
                                             }}
                                           >
-                                            <div className="flex items-center gap-2">
-                                              <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center">
-                                                {member.imageUrl ? (
-                                                  <img
-                                                    src={member.imageUrl}
-                                                    alt={member.username}
-                                                    className="w-full h-full rounded-full"
-                                                  />
-                                                ) : (
-                                                  <span className="text-xs">
-                                                    {member.username
-                                                      ? member.username.charAt(
-                                                          0
-                                                        )
-                                                      : ""}
-                                                  </span>
-                                                )}
-                                              </div>
-                                              <span className="text-xs">
-                                                {member.username}
-                                              </span>
-                                            </div>
+                                            <Assignee />
+                                            Unassigned
                                           </DropdownMenuItem>
-                                        ))}
-                                        <DropdownMenuItem
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            updateAssignee(item.id, "");
-                                          }}
-                                        >
-                                          <Assignee />
-                                          Unassigned
-                                        </DropdownMenuItem>
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
+                                    )}
 
                                     {/* Labels/Tags */}
-                                    {item.labels && item.labels.length > 0 && (
+                                    {viewOptions?.displayProperties.labels !== false && item.labels && item.labels.length > 0 && (
                                       <div
                                         className="flex items-center justify-end gap-2 flex-shrink-0 min-w-fit"
                                         onClick={(e) => e.stopPropagation()}
@@ -562,63 +579,65 @@ const ListView = ({
 
                                   <div className="flex items-center gap-2 flex-shrink-0 ml-1.5">
                                     {/* Due date - Inline editable */}
-                                    <Popover>
-                                      <PopoverTrigger asChild>
-                                        <div
-                                          className="flex items-center gap-1 hover:bg-muted rounded p-1 transition-colors cursor-pointer min-w-fit"
+                                    {viewOptions?.displayProperties.dueDate !== false && (
+                                      <Popover>
+                                        <PopoverTrigger asChild>
+                                          <div
+                                            className="flex items-center gap-1 hover:bg-muted rounded p-1 transition-colors cursor-pointer min-w-fit"
+                                            onClick={(e) => e.stopPropagation()}
+                                          >
+                                            <DateCreatedIcon className="size-5 text-zinc-500 dark:text-zinc-400" />
+                                            {item.dueDate && (
+                                              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                                                {formatDistanceToNow(
+                                                  new Date(item.dueDate),
+                                                  { addSuffix: true }
+                                                )}
+                                              </span>
+                                            )}
+                                          </div>
+                                        </PopoverTrigger>
+                                        <PopoverContent
+                                          className="w-auto p-0"
+                                          align="start"
                                           onClick={(e) => e.stopPropagation()}
                                         >
-                                          <DateCreatedIcon className="size-5 text-zinc-500 dark:text-zinc-400" />
-                                          {item.dueDate && (
-                                            <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                                              {formatDistanceToNow(
-                                                new Date(item.dueDate),
-                                                { addSuffix: true }
-                                              )}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </PopoverTrigger>
-                                      <PopoverContent
-                                        className="w-auto p-0"
-                                        align="start"
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        <CalendarComponent
-                                          mode="single"
-                                          selected={
-                                            item.dueDate
-                                              ? new Date(item.dueDate)
-                                              : undefined
-                                          }
-                                          onSelect={(date) => {
-                                            if (date) {
-                                              updateDueDate(
-                                                item.id,
-                                                date.toISOString()
-                                              );
+                                          <CalendarComponent
+                                            mode="single"
+                                            selected={
+                                              item.dueDate
+                                                ? new Date(item.dueDate)
+                                                : undefined
                                             }
-                                          }}
-                                          initialFocus
-                                          className="p-3"
-                                        />
-                                        <div className="p-3 border-t">
-                                          {item.dueDate && (
-                                            <Button
-                                              variant="outline"
-                                              size="sm"
-                                              className="w-full"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                updateDueDate(item.id, "");
-                                              }}
-                                            >
-                                              Clear due date
-                                            </Button>
-                                          )}
-                                        </div>
-                                      </PopoverContent>
-                                    </Popover>
+                                            onSelect={(date) => {
+                                              if (date) {
+                                                updateDueDate(
+                                                  item.id,
+                                                  date.toISOString()
+                                                );
+                                              }
+                                            }}
+                                            initialFocus
+                                            className="p-3"
+                                          />
+                                          <div className="p-3 border-t">
+                                            {item.dueDate && (
+                                              <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="w-full"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  updateDueDate(item.id, "");
+                                                }}
+                                              >
+                                                Clear due date
+                                              </Button>
+                                            )}
+                                          </div>
+                                        </PopoverContent>
+                                      </Popover>
+                                    )}
                                   </div>
                                 </div>
                               </ListViewContextMenu>
@@ -650,9 +669,12 @@ const ListView = ({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex flex-col items-center justify-center h-32 text-zinc-500 dark:text-zinc-400"
+              className="absolute inset-0 w-full h-full flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400"
             >
-              <p>No items found</p>
+              <span className="text-sm flex flex-col gap-1 items-center">
+              <EmptyIcon className="size-5"/>
+            <p>No items found</p>
+              </span>
             </motion.div>
           )}
         </motion.div>

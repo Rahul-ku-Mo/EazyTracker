@@ -5,6 +5,7 @@ import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { CreditCard, Package } from "lucide-react";
 import MainLayout from "@/layouts/Container";
+import { BillingIcon } from "@/_components/shared/svg/SidebarIcons";
 
 const BillingPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -34,11 +35,11 @@ const BillingPage: React.FC = () => {
   return (
     <MainLayout
       title="Billing & Subscription"
-      fwdClassName="flex flex-col h-full p-0"
+      fwdClassName="flex flex-col h-full px-4"
     >
       <div className="flex items-center gap-3 pb-2 pt-4">
         <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-          <CreditCard className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+          <BillingIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
         </div>
         <div>
           <h1 className="text-2xl font-bold">Billing & Subscription</h1>

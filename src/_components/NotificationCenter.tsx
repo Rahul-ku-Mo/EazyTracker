@@ -1,11 +1,10 @@
 import { useState, useEffect, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Bell, 
+import {  
   Check, 
   CheckCheck, 
-  Settings,
-  FileText
+  FileText,
+  Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -13,77 +12,73 @@ import { AuthContext } from "@/context/AuthContext";
 import { UserContext } from "@/context/UserContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchNotifications, markNotificationAsRead, markAllNotificationsAsRead } from "@/apis/NotificationApis";
-import pusherClient from "@/services/pusherClientService";
+import pusherClient from "@/services/pusherClient.service";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { BellIcon } from "./shared/svg/SharedIcons";
 
 interface Notification {
   id: number;
+  type: string;
+  title: string;
   message: string;
-  metadata?: string;
-  isRead: boolean;
-  createdAt: string;
-  sender: {
-    id: string;
+  notificationId: number;
+  contentType: string;
+  contentId: string;
+  authorName: string;
+  contentTitle: string;
+  timestamp: string;
+  isRead?: boolean;
+  sender?: {
     name: string;
     email: string;
     imageUrl?: string;
+  };
+  metadata?: {
+    [key: string]: any;
   };
 }
 
 type NotificationTab = "all" | "unread" | "archived";
 
 const getNotificationMessage = (notification: Notification) => {
-  const metadata = notification.metadata ? JSON.parse(notification.metadata) : {};
-  const senderName = notification.sender.name || notification.sender.email;
+  const notificationType = notification.type;
 
-  switch (notification.message) {
-    case "CARD_ASSIGNED":
-      return `${senderName} assigned you to "${metadata.cardTitle}"`;
-    case "CARD_UPDATED":
-      return `${senderName} updated "${metadata.cardTitle}"${metadata.changes ? ` (${metadata.changes})` : ""}`;
-    case "CARD_COMPLETED":
-      return `${senderName} completed "${metadata.cardTitle}"`;
-    case "CARD_COMMENTED":
-      return `${senderName} commented on "${metadata.cardTitle}"`;
-    case "CARD_DUE_SOON":
-      return `Card "${metadata.cardTitle}" is due soon`;
-    case "CARD_OVERDUE":
-      return `Card "${metadata.cardTitle}" is ${metadata.daysPastDue} days overdue`;
-    case "JOIN":
-      if (metadata.teamName) {
-        return `${senderName} joined your team "${metadata.teamName}"`;
-      } else if (metadata.boardTitle) {
-        return `${senderName} invited you to join "${metadata.boardTitle}"`;
-      } else {
-        return `${senderName} joined your team`;
-      }
-    case "FILE_ADDED":
-      return `${senderName} added file to File manager`;
-    case "PAYMENT_REQUEST":
-      return `${senderName} request a payment of $${metadata.amount || '200'}`;
+  switch (notificationType) {
+    case 'mention':
+      return notification.message;
+    case 'card_assignment':
+      return notification.message;
+    case 'card_update':
+      return notification.message;
+    case 'card_completion':
+      return notification.message;
+    case 'card_comment':
+      return notification.message;
     default:
-      return "New notification";
+      return notification.message || notification.title;
   }
 };
 
 const getNotificationCategory = (notification: Notification) => {
-  switch (notification.message) {
-    case "CARD_ASSIGNED":
-    case "CARD_UPDATED":
-    case "CARD_COMPLETED":
-    case "CARD_COMMENTED":
-      return "Project UI";
+  switch (notification.type) {
+    case "card_assignment":
+    case "card_update":
+    case "card_completion":
+    case "card_comment":
+      return "Project";
+    case "mention":
+      return "Mentions";
     case "JOIN":
       return "Communication";
     case "FILE_ADDED":
-      return "File manager";
+      return "Files";
     case "PAYMENT_REQUEST":
-      return "File manager";
+      return "Billing";
     default:
       return "General";
   }
@@ -98,12 +93,12 @@ const NotificationItem = ({
   onMarkAsRead: (id: number) => void;
   onAction: (action: string, notification: Notification) => void;
 }) => {
-  const senderName = notification.sender.name || notification.sender.email;
-  const timeAgo = formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true });
+  const senderName = notification.authorName || notification.sender?.name || notification.sender?.email || 'Unknown User';
+  const timeAgo = formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true });
   const category = getNotificationCategory(notification);
   
   const renderActionButtons = () => {
-    switch (notification.message) {
+    switch (notification.type) {
       case "JOIN":
         return (
           <div className="flex gap-2 mt-2">
@@ -124,7 +119,7 @@ const NotificationItem = ({
             </Button>
           </div>
         );
-      case "CARD_COMMENTED":
+      case "card_comment":
         return (
           <div className="flex gap-2 mt-2">
             <Button 
@@ -180,13 +175,13 @@ const NotificationItem = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       className={cn(
-        "p-4 border-b border-zinc-100 dark:border-zinc-800 relative",
+        "p-4 border-b border-zinc-100 dark:border-zinc-800 relative group",
         !notification.isRead && "bg-blue-50/50 dark:bg-blue-950/20"
       )}
     >
       <div className="flex items-start gap-3">
         <Avatar className="w-10 h-10 flex-shrink-0">
-          <AvatarImage src={notification.sender.imageUrl} alt={senderName} />
+          <AvatarImage src={notification.sender?.imageUrl} alt={senderName} />
           <AvatarFallback className="text-sm bg-emerald-600 text-white">
             {senderName.charAt(0).toUpperCase()}
           </AvatarFallback>
@@ -211,7 +206,7 @@ const NotificationItem = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onMarkAsRead(notification.id)}
+                  onClick={() => onMarkAsRead(notification.id || notification.notificationId)}
                   className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
                 >
                   <Check className="h-3 w-3" />
@@ -221,13 +216,19 @@ const NotificationItem = ({
           </div>
           
           {/* Special content for specific notification types */}
-          {notification.message === "CARD_COMMENTED" && (
+          {notification.type === "card_comment" && (
             <div className="mt-2 p-2 bg-zinc-50 dark:bg-zinc-800 rounded text-xs text-zinc-600 dark:text-zinc-400">
-              @Jaydon Frankie feedback by asking questions or just leave a note of appreciation.
+              {notification.contentTitle}
             </div>
           )}
           
-          {notification.message === "FILE_ADDED" && (
+          {notification.type === "mention" && (
+            <div className="mt-2 p-2 bg-zinc-50 dark:bg-zinc-800 rounded text-xs text-zinc-600 dark:text-zinc-400">
+              {notification.contentTitle}
+            </div>
+          )}
+          
+          {notification.type === "FILE_ADDED" && (
             <div className="mt-2 flex items-center gap-2 p-2 bg-zinc-50 dark:bg-zinc-800 rounded">
               <div className="w-8 h-8 bg-purple-500 rounded flex items-center justify-center">
                 <FileText className="w-4 h-4 text-white" />
@@ -239,7 +240,7 @@ const NotificationItem = ({
             </div>
           )}
           
-          {notification.message === "FILE_ADDED" && notification.metadata && (
+          {notification.type === "FILE_ADDED" && notification.metadata && (
             <div className="mt-2 flex gap-1">
               <Badge variant="outline" className="text-xs">Design</Badge>
               <Badge variant="outline" className="text-xs bg-orange-100 text-orange-700">Dashboard</Badge>
@@ -287,11 +288,15 @@ export const NotificationCenter = () => {
   useEffect(() => {
     if (!user?.id) return;
 
-    const channel = pusherClient.subscribe("notification");
-    const eventName = `user:${user.id}`;
+    const channel = pusherClient.subscribe(`user-${user.id}`);
+    const eventName = 'notification';
 
     const handleNotification = (data: any) => {
-      toast.info(getNotificationMessage(data.notification), {
+
+      console.log("data", data)
+
+
+      toast.info(getNotificationMessage(data), {
         action: {
           label: "View",
           onClick: () => setIsOpen(true),
@@ -304,7 +309,7 @@ export const NotificationCenter = () => {
 
     return () => {
       channel.unbind(eventName, handleNotification);
-      pusherClient.unsubscribe("notification");
+      pusherClient.unsubscribe(`user-${user.id}`);
     };
   }, [user?.id, refetch]);
 
@@ -362,7 +367,7 @@ export const NotificationCenter = () => {
         className="relative h-8 w-8 p-0 hover:bg-zinc-100 dark:hover:bg-zinc-800"
         onClick={() => setIsOpen(true)}
       >
-        <Bell className="h-4 w-4" />
+        <BellIcon className="h-4 w-4" />
         {unreadCount > 0 && (
           <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-500 hover:bg-red-500">
             {unreadCount > 99 ? "99+" : unreadCount}
@@ -389,9 +394,13 @@ export const NotificationCenter = () => {
                   <Button
                     variant="ghost"
                     size="sm"
+                    onClick={() => {
+                     
+                      setIsOpen((open) => !open);
+                    }}
                     className="h-8 w-8 p-0 text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                   >
-                    <Settings className="h-4 w-4" />
+                    <Plus className="h-4 w-4 rotate-45" />
                   </Button>
                 </div>
               </div>
@@ -450,7 +459,7 @@ export const NotificationCenter = () => {
               <ScrollArea className="h-full">
                 {filteredNotifications.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-64 text-center">
-                    <Bell className="size-8 text-zinc-400 mb-2" />
+                    <BellIcon className="size-8 text-zinc-400 mb-2" />
                     <p className="text-zinc-500 text-sm font-medium">
                       {activeTab === "unread" 
                         ? "No unread notifications" 

@@ -55,6 +55,7 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { getPriorityIcon } from "../Projects/utils";
 import { DateCreatedIcon, DueDateIcon } from "../shared/svg/ViewOptionsIcons";
 import { Assignee } from "../shared/svg/ListViewIcons";
+import { LabelIcon } from "../shared/svg/SharedIcons";
 
 interface CardProps {
   columnName: string;
@@ -111,7 +112,8 @@ const CardDescription = ({
           "editor-readable-font text-xs",
           "overflow-hidden",
           "line-clamp-6",
-          isCompleted && "line-through text-zinc-500 dark:text-zinc-400"
+          isCompleted && "line-through text-zinc-500 dark:text-zinc-400",
+          "pointer-events-none"
         )}
       />
 
@@ -194,32 +196,47 @@ const CardFooter = ({
   const getDueDateDisplay = () => {
     if (!dueDate) {
       return {
-        icon: <DateCreatedIcon className="size-5 text-zinc-500 dark:text-zinc-400" />,
+        icon: (
+          <DateCreatedIcon className="size-5 text-zinc-500 dark:text-zinc-400" />
+        ),
         text: null,
         tooltipText: "Set due date",
-        isOverdue: false
+        isOverdue: false,
       };
     }
-    
+
     const isOverdue = new Date(dueDate) < new Date();
-    const dateText = dateFormat === "readable"
-      ? formatDistanceToNow(new Date(dueDate), { addSuffix: true })
-      : format(new Date(dueDate), "MMM dd, yyyy");
-    
+    const dateText =
+      dateFormat === "readable"
+        ? formatDistanceToNow(new Date(dueDate), { addSuffix: true })
+        : format(new Date(dueDate), "MMM dd, yyyy");
+
     if (isOverdue) {
       return {
-        icon: <DueDateIcon className="size-4 text-red-600 dark:text-red-500 mr-1" />,
-        text: <div className="font-bold text-[10px] text-red-600 dark:text-red-500">{dateText}</div>,
+        icon: (
+          <DueDateIcon className="size-4 text-red-600 dark:text-red-500 mr-1" />
+        ),
+        text: (
+          <div className="font-bold text-[10px] text-red-600 dark:text-red-500">
+            {dateText}
+          </div>
+        ),
         tooltipText: "Overdue - Edit due date",
-        isOverdue: true
+        isOverdue: true,
       };
     }
-    
+
     return {
-      icon: <Calendar className="size-4 text-zinc-700 dark:text-zinc-300 mr-1" />,
-      text: <div className="font-bold text-[10px] text-zinc-700 dark:text-zinc-300">{dateText}</div>,
+      icon: (
+        <Calendar className="size-4 text-zinc-700 dark:text-zinc-300 mr-1" />
+      ),
+      text: (
+        <div className="font-bold text-[10px] text-zinc-700 dark:text-zinc-300">
+          {dateText}
+        </div>
+      ),
       tooltipText: "Edit due date",
-      isOverdue: false
+      isOverdue: false,
     };
   };
 
@@ -362,32 +379,30 @@ const CardFooter = ({
                 </div>
               ) : (
                 <div className="flex items-center gap-1 cursor-pointer dark:text-[#c3c3c3] text-[#3a3a3a] py-0.5">
-                  <Tag className="size-3 -rotate-45" strokeWidth={2} />
+                  <LabelIcon className="size-3" />
                 </div>
               )}
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="start"
-            className="w-60"
+            className="w-60 p-0"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-2">
-              <Input
-                placeholder="Add new label..."
-                value={newLabel}
-                onChange={(e) => setNewLabel(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && newLabel.trim()) {
-                    e.stopPropagation();
-                    updateLabel(newLabel.trim());
-                    setNewLabel("");
-                  }
-                }}
-                className="text-xs h-7"
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
+            <Input
+              placeholder="Add new label..."
+              value={newLabel}
+              onChange={(e) => setNewLabel(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && newLabel.trim()) {
+                  e.stopPropagation();
+                  updateLabel(newLabel.trim());
+                  setNewLabel("");
+                }
+              }}
+              className="!text-xs h-full border-0 focus-visible:ring-0 focus:ring-0 px-1 placeholder:text-xs py-2"
+              onClick={(e) => e.stopPropagation()}
+            />
             <div className="border-t" />
             {predefinedLabels.map((label) => (
               <DropdownMenuItem
@@ -596,13 +611,11 @@ const CardFooter = ({
               </PopoverContent>
             </Popover>
             <TooltipContent className="rounded-sm bg-[#606060] dark:bg-black text-white dark:text-white">
-              <p className="text-xs">
-                {getDueDateDisplay().tooltipText}
-              </p>
+              <p className="text-xs">{getDueDateDisplay().tooltipText}</p>
             </TooltipContent>
           </Tooltip>
         )}
-        
+
         <div
           className="flex items-center gap-1 px-1 py-0.5 transition-colors cursor-pointer"
           onClick={handleCompletionClick}
@@ -813,12 +826,10 @@ const Card = ({ columnName, viewOptions, members }: CardProps) => {
             showCardId={viewOptions?.showCardIds || false}
           />
 
-          {viewOptions?.displayProperties.description !== false && (
-            <CardDescription
-              description={description}
-              isCompleted={status.isCompleted}
-            />
-          )}
+          <CardDescription
+            description={description}
+            isCompleted={status.isCompleted}
+          />
 
           <CardFooter
             dueDate={

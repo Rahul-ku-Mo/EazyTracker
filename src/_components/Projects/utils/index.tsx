@@ -48,7 +48,7 @@ export const LeadAvatar = ({ lead }: { lead: any }) => (
 export const getPriorityIcon = (priority?: string, theme?: string) => {
   switch (priority?.toLowerCase()) {
     case "urgent":
-      return <UrgentPriority className="size-4 " isDark={theme === "dark"} />;
+      return <UrgentPriority className="size-4 " />;
     case "high":
       return <HighPriority className="size-4" isDark={theme === "dark"} />;
     case "medium":
@@ -56,6 +56,6 @@ export const getPriorityIcon = (priority?: string, theme?: string) => {
     case "low":
       return <LowPriority className="size-4" isDark={theme === "dark"} />;
     default:
-      return <Priority className="size-4" isDark={theme === "dark"} />;
+      return <Priority className="size-4" />;
   }
 };

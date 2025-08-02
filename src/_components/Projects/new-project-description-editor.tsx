@@ -59,8 +59,8 @@ const theme = {
     nested: {
       listitem: 'list-none',
     },
-    ol: 'ml-4 list-decimal',
-    ul: 'ml-4 list-disc',
+    ol: 'ml-4 list-decimal flex flex-col gap-0.5',
+    ul: 'ml-4 list-disc flex flex-col gap-0.5',
     checklist: 'ml-4 list-none',
   },
   

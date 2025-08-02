@@ -71,7 +71,7 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
             {item.label === "Set priority" ? (
               <ContextMenuSub>
                 <ContextMenuSubTrigger className="gap-2 text-xs">
-                  <UrgentPriority className="size-3 mr-2" isDark={theme === "dark"} />
+                  <UrgentPriority className="size-3 mr-2"  />
                   Set priority
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-48">
@@ -79,7 +79,7 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
                     className="gap-2 text-xs"
                     onClick={() => updatePriorityForATicket("urgent")}
                   >
-                    <UrgentPriority className="size-3" isDark={theme === "dark"} />
+                    <UrgentPriority className="size-3"  />
                     Urgent
                     <ContextMenuShortcut>⌘1</ContextMenuShortcut>
                   </ContextMenuItem>
@@ -112,7 +112,7 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
                     className="gap-2 text-xs text-muted-foreground"
                     onClick={() => updatePriorityForATicket("")}
                   >
-                    <Priority className="size-3" isDark={theme === "dark"} />
+                    <Priority className="size-3"  />
                     No priority
                     <ContextMenuShortcut>⌘0</ContextMenuShortcut>
                   </ContextMenuItem>

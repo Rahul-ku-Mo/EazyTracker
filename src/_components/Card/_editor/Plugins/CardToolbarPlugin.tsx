@@ -15,10 +15,8 @@ import {
   UNDO_COMMAND,
 } from "lexical";
 import { ListNode, $isListNode } from "@lexical/list";
-import {
-  $isHeadingNode,
-} from "@lexical/rich-text";
-import { useCallback, useEffect, useState, useRef } from "react";
+import { $isHeadingNode } from "@lexical/rich-text";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "../../../../components/ui/button";
 import {
   DropdownMenu,
@@ -103,31 +101,20 @@ const ToolbarButton = ({
   </Button>
 );
 
-export const CardToolbarPlugin = ({ 
-  save, 
-  editorState, 
-  hasUnsavedChanges, 
-  onContentChange 
-}: { 
-  save: () => void;
-  editorState?: string;
+export const CardToolbarPlugin = ({
+  hasUnsavedChanges,
+}: {
   hasUnsavedChanges?: boolean;
-  onContentChange?: (hasChanges: boolean) => void;
 }) => {
   const [editor] = useLexicalComposerContext();
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const [showAIPopover, setShowAIPopover] = useState(false);
   const [showHelpPopover, setShowHelpPopover] = useState(false);
-  const [isAutoSaving, setIsAutoSaving] = useState(false);
-  const [showSavedIndicator, setShowSavedIndicator] = useState(false);
-
-  // Refs for autosave debouncing
-  const autosaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lastSavedContentRef = useRef<string>("");
 
   // AI improve writing hook
-  const { improvedText, isImproving, error, improveText, stopImproving } = useImproveWriting();
+  const { improvedText, isImproving, error, improveText, stopImproving } =
+    useImproveWriting();
 
   const [formats, setFormats] = useState({
     bold: false,
@@ -149,69 +136,6 @@ export const CardToolbarPlugin = ({
     orderedList: false,
     checkList: false,
   });
-
-  // Autosave function with debouncing
-  const triggerAutosave = useCallback(() => {
-    if (!editorState) return;
-    
-    // Check if content has actually changed
-    if (editorState === lastSavedContentRef.current) {
-      return; // No changes to save
-    }
-    
-    setIsAutoSaving(true);
-    
-    // Trigger the save function
-    save();
-    
-    // Update last saved content reference
-    lastSavedContentRef.current = editorState;
-    
-    // Simulate async save completion
-    setTimeout(() => {
-      setIsAutoSaving(false);
-      setShowSavedIndicator(true);
-      
-      // Hide saved indicator after 2 seconds
-      setTimeout(() => setShowSavedIndicator(false), 2000);
-    }, 500);
-  }, [editorState, save]);
-
-  // Track content changes and trigger autosave
-  useEffect(() => {
-    if (editorState && lastSavedContentRef.current !== undefined) {
-      const hasChanges = editorState !== lastSavedContentRef.current;
-      
-      // Notify parent about content changes
-      onContentChange?.(hasChanges);
-      
-      // Clear existing timeout
-      if (autosaveTimeoutRef.current) {
-        clearTimeout(autosaveTimeoutRef.current);
-      }
-      
-      // Set new timeout for autosave (2 seconds after last change)
-      if (hasChanges && !isAutoSaving) {
-        autosaveTimeoutRef.current = setTimeout(() => {
-          triggerAutosave();
-        }, 2000); // 2 seconds debounce
-      }
-    }
-    
-    // Initialize last saved content reference
-    if (lastSavedContentRef.current === "" && editorState) {
-      lastSavedContentRef.current = editorState;
-    }
-    
-    // Cleanup timeout on unmount
-    return () => {
-      if (autosaveTimeoutRef.current) {
-        clearTimeout(autosaveTimeoutRef.current);
-      }
-    };
-  }, [editorState, triggerAutosave, isAutoSaving, onContentChange]);
-
-  console.log('headings', headings);
 
   const updateToolbar = useCallback(() => {
     const selection = $getSelection();
@@ -265,8 +189,6 @@ export const CardToolbarPlugin = ({
             ? (element as any).getTag()
             : (element as any).getType();
 
-          console.log('type', type);
-
           if (type in blockTypeToBlockName) {
             setHeadings((prev) => ({
               ...prev,
@@ -316,7 +238,7 @@ export const CardToolbarPlugin = ({
 
     editor.update(() => {
       const selection = $getSelection();
-      
+
       if ($isRangeSelection(selection) && !selection.isCollapsed()) {
         selectedText = selection.getTextContent();
         hasValidSelection = selectedText.trim().length > 0;
@@ -329,12 +251,14 @@ export const CardToolbarPlugin = ({
     }
 
     if (selectedText.length > 10000) {
-      toast.error("Selected text is too long. Please select less than 10,000 characters.");
+      toast.error(
+        "Selected text is too long. Please select less than 10,000 characters."
+      );
       return;
     }
 
     setShowAIPopover(false);
-    
+
     // Start the improvement process
     improveText(selectedText);
   };
@@ -344,7 +268,7 @@ export const CardToolbarPlugin = ({
     if (improvedText && !isImproving) {
       editor.update(() => {
         const selection = $getSelection();
-        
+
         if ($isRangeSelection(selection)) {
           try {
             // Insert the improved text at the current selection
@@ -356,7 +280,7 @@ export const CardToolbarPlugin = ({
           }
         }
       });
-      
+
       toast.success("Text improved successfully!");
     }
   }, [improvedText, isImproving, editor]);
@@ -367,30 +291,6 @@ export const CardToolbarPlugin = ({
       toast.error(`Failed to improve text: ${error.message}`);
     }
   }, [error]);
-
-  // const insertImage = () => {
-  //   editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
-  //     src: "https://picsum.photos/300/200",
-  //     altText: "A random image",
-  //     showCaption: true,
-  //   });
-  // };
-
-  // Add save event listener for keyboard shortcuts (for manual save if needed)
-  useEffect(() => {
-    const handleSaveEvent = (event: CustomEvent) => {
-      if (event.type === 'lexical-save') {
-        triggerAutosave();
-        toast.success("Document saved!");
-      }
-    };
-
-    document.addEventListener('lexical-save', handleSaveEvent as EventListener);
-    
-    return () => {
-      document.removeEventListener('lexical-save', handleSaveEvent as EventListener);
-    };
-  }, [triggerAutosave]);
 
   return (
     <div className="flex flex-wrap items-center gap-1 p-1 mb-2 rounded-md bg-white border border-[#e3e3e3b5] dark:border-zinc-700 dark:bg-[#101010] w-fit">
@@ -527,10 +427,6 @@ export const CardToolbarPlugin = ({
         <CheckSquare className="w-4 h-4" />
       </ToolbarButton>
 
-      {/* <ToolbarButton onClick={insertImage}>
-        <Image className="w-4 h-4" />
-      </ToolbarButton> */}
-
       <div className="w-px h-6 mx-1 bg-border" />
 
       <Popover open={showAIPopover} onOpenChange={setShowAIPopover}>
@@ -610,15 +506,18 @@ export const CardToolbarPlugin = ({
               </div>
               <div className="flex justify-between">
                 <span>Redo:</span>
-                <span className="text-muted-foreground">Ctrl/⌘ + Y or Ctrl/⌘ + Shift + Z</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Save:</span>
-                <span className="text-muted-foreground">Ctrl/⌘ + S</span>
+                <span className="text-muted-foreground">
+                  Ctrl/⌘ + Y or Ctrl/⌘ + Shift + Z
+                </span>
               </div>
               <div className="mt-2 pt-2 border-t text-xs text-muted-foreground">
-                <p>Select text and use AI to improve writing with the ✨ button</p>
-                <p className="mt-1">Changes are automatically saved</p>
+                <p>
+                  Select text and use AI to improve writing with the ✨ button
+                </p>
+                <p className="mt-1">
+                  Changes are automatically saved locally and synced when you
+                  close the editor
+                </p>
               </div>
             </div>
           </div>
@@ -636,29 +535,25 @@ export const CardToolbarPlugin = ({
         </TooltipProvider>
       </ToolbarButton>
 
-      {/* Autosave Status Indicator */}
+      {/* Status Indicator */}
       <div className="ml-auto mr-0.5 flex items-center gap-2">
-        {isAutoSaving && (
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-            <span className="text-xs text-muted-foreground">Auto-saving...</span>
-          </div>
-        )}
-        {showSavedIndicator && !isAutoSaving && (
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-xs text-muted-foreground">Saved</span>
-          </div>
-        )}
-        {!isAutoSaving && !showSavedIndicator && hasUnsavedChanges && (
+        {hasUnsavedChanges && (
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-            <span className="text-xs text-muted-foreground">Unsaved changes</span>
+            <span className="text-xs text-muted-foreground">
+              Unsaved changes
+            </span>
+          </div>
+        )}
+        {!hasUnsavedChanges && (
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span className="text-xs text-muted-foreground">
+              Saved
+            </span>
           </div>
         )}
       </div>
     </div>
   );
 };
-
-

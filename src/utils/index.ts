@@ -9,3 +9,20 @@ export const formatDate = (createdAt: string) => {
 
   return formattedTime;
 };
+
+
+export function generateSlug(title: string) {
+  return title
+    ?.toLowerCase()
+    ?.trim()
+    ?.replace(/[^\w\s-]/g, '') // Remove special characters
+    ?.replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
+    ?.replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+}
+
+export const generateCapitalizedDashedSlug = (name: string) => {
+  return name
+    .split(/\s+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join("-");
+};

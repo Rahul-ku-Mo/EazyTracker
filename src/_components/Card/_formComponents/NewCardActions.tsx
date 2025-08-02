@@ -178,7 +178,7 @@ const NewCardActions = ({
         <SelectContent>
           <SelectItem value="none" className="text-xs">
             <div className="flex items-center gap-2">
-              <Priority className="size-3" isDark={theme === "dark"} />
+              <Priority className="size-3" />
               <span className="text-xs">None</span>
             </div>
           </SelectItem>
@@ -202,7 +202,7 @@ const NewCardActions = ({
           </SelectItem>
           <SelectItem value="urgent" className="text-xs">
             <div className="flex items-center gap-2">
-              <UrgentPriority className="size-3" isDark={theme === "dark"} />
+              <UrgentPriority className="size-3"  />
               <span className="text-xs">Urgent</span>
             </div>
           </SelectItem>

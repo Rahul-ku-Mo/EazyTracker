@@ -18,7 +18,6 @@ interface FormState {
   name?: string;
   phoneNumber?: string;
   imageUrl?: string;
-  username?: string;
   email: string;
 }
 
@@ -31,7 +30,6 @@ const AccountForm = () => {
     name: "",
     phoneNumber: "",
     imageUrl: "",
-    username: "",
     email: "",
   });
 
@@ -39,7 +37,6 @@ const AccountForm = () => {
     name: "",
     phoneNumber: "",
     imageUrl: "",
-    username: "",
     email: "",
   });
 
@@ -53,20 +50,12 @@ const AccountForm = () => {
         name: user.name || "",
         phoneNumber: user.phoneNumber || "",
         imageUrl: user.imageUrl || "",
-        username: user.username || "",
         email: user.email || "",
       };
       setFormState(newFormState);
       setInitialState(newFormState);
     }
-  }, [
-    user?.id,
-    user?.name,
-    user?.phoneNumber,
-    user?.imageUrl,
-    user?.username,
-    user?.email,
-  ]);
+  }, [user]);
 
   const handleChange =
     (prop: keyof FormState) => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -320,19 +309,17 @@ const AccountForm = () => {
                 <Input
                   id="username"
                   type="text"
-                  value={formState.username || ""}
-                  onChange={handleChange("username")}
+                  value={user?.username || ""}
                   placeholder="your-username"
+                  readOnly
                   className={clsx(
                     "transition-all duration-200",
-                    "border-input bg-background text-foreground",
-                    "placeholder:text-muted-foreground",
-                    "focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
-                    "focus:border-primary"
+                    "border-input bg-muted text-muted-foreground",
+                    "cursor-not-allowed opacity-60"
                   )}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Your unique identifier - can be changed anytime
+                  Username cannot be changed as it's used for mentions and user identification
                 </p>
               </div>
 

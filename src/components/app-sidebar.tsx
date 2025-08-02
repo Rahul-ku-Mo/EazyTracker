@@ -1,14 +1,6 @@
 import * as React from "react";
-import {
-  Inbox,
-  SquareTerminal,
-  Settings2,
-  CreditCard,
-  Star,
-  Box,
-} from "lucide-react";
+import { Star } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
@@ -34,13 +26,27 @@ import { cn } from "@/lib/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
+import { useTeam } from "@/context/TeamContext";
+import {
+  BillingIcon,
+  TeamManagementIcon,
+  WorkspaceIcon,
+  ProjectIcon,
+  InboxIcon,
+} from "@/_components/shared/svg/SidebarIcons";
+import { getFavoriteWorkspaces } from "@/apis/WorkspaceApis";
 
 // Favorites navigation component
-const NavFavorites = ({ favoriteWorkspaces }: { favoriteWorkspaces: any[] }) => {
+const NavFavorites = ({
+  favoriteWorkspaces,
+}: {
+  favoriteWorkspaces: any[];
+}) => {
   const navigate = useNavigate();
-
   const { state } = useSidebar();
-  
+
+  const teamName = localStorage.getItem("teamName");
+
   if (!favoriteWorkspaces || favoriteWorkspaces.length === 0) {
     return (
       <SidebarGroup>
@@ -48,7 +54,13 @@ const NavFavorites = ({ favoriteWorkspaces }: { favoriteWorkspaces: any[] }) => 
           <Star className="h-4 w-4" />
           Favorites
         </SidebarGroupLabel>
-        <div className={cn(state === "collapsed" ? "hidden" : "block px-2 py-1 text-[13px] leading-[1.2] text-muted-foreground")}>
+        <div
+          className={cn(
+            state === "collapsed"
+              ? "hidden"
+              : "block px-2 py-1 text-[13px] leading-[1.2] text-muted-foreground"
+          )}
+        >
           No favorite workspaces yet
         </div>
       </SidebarGroup>
@@ -63,13 +75,15 @@ const NavFavorites = ({ favoriteWorkspaces }: { favoriteWorkspaces: any[] }) => 
       </SidebarGroupLabel>
       <SidebarMenu>
         {favoriteWorkspaces.map((workspace) => (
-          <SidebarMenuItem key={workspace.id}>
+          <SidebarMenuItem key={workspace.slug}>
             <SidebarMenuButton
-              onClick={() => navigate(`/workspace/board/${workspace.id}`)}
+              onClick={() =>
+                navigate(`/workspace/${teamName}/${workspace.slug}`)
+              }
               className="flex items-center gap-2 text-[13px] leading-[1.2]"
             >
-              <div 
-                className="w-4 h-4 rounded-sm" 
+              <div
+                className="w-4 h-4 rounded-sm"
                 style={{ backgroundColor: workspace.colorValue }}
               />
               <span className="truncate">{workspace.title}</span>
@@ -81,26 +95,28 @@ const NavFavorites = ({ favoriteWorkspaces }: { favoriteWorkspaces: any[] }) => 
   );
 };
 
-const getNavigationData = (isAdmin: boolean, pathname: string) => {
-
-  const teamName = localStorage.getItem("teamName")
+const getNavigationData = (
+  isAdmin: boolean,
+  pathname: string,
+  teamName?: string
+) => {
   const baseNavigation = [
     {
       title: "Workspaces",
-      url: `/workspace/${teamName}`,
-      icon: SquareTerminal,
+      url: `/workspace/${teamName || ""}`,
+      icon: WorkspaceIcon,
       isActive: pathname.includes("/workspace"),
     },
     {
       title: "Projects",
       url: "/projects",
-      icon: Box,
+      icon: ProjectIcon,
       isActive: pathname.includes("/projects"),
     },
     {
       title: "Inbox",
       url: "/inbox",
-      icon: Inbox,
+      icon: InboxIcon,
       isActive: pathname.includes("/inbox"),
     },
   ];
@@ -110,7 +126,7 @@ const getNavigationData = (isAdmin: boolean, pathname: string) => {
     baseNavigation.push({
       title: "Billing & Plans",
       url: "/billing",
-      icon: CreditCard,
+      icon: BillingIcon,
       isActive: pathname.includes("/billing"),
     });
   }
@@ -118,7 +134,7 @@ const getNavigationData = (isAdmin: boolean, pathname: string) => {
   baseNavigation.push({
     title: "Manage Team",
     url: "/team/management",
-    icon: Settings2,
+    icon: TeamManagementIcon,
     isActive: pathname.includes("/team/management"),
   });
 
@@ -132,47 +148,33 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: userData } = useUser(accessToken);
   const { role } = useContext(AuthContext);
 
+  const { currentTeam } = useTeam();
+
+  const teamName = localStorage.getItem("teamName") as string;
   const { state } = useSidebar();
-  
+
   // Check if user is admin
-  const isAdmin = role === 'ADMIN';
+  const isAdmin = role === "ADMIN";
   const pathname = useLocation().pathname;
-  const navigationData = getNavigationData(isAdmin, pathname);
-
-
-  
-  const { data: teamData } = useQuery({
-    queryKey: ['team'],
-    queryFn: async () => {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/teams`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
-      return response.data.data;
-    },
-    enabled: !!accessToken
-  });
+  const navigationData = getNavigationData(isAdmin, pathname, teamName);
 
   // Fetch favorite workspaces
   const { data: favoriteWorkspaces } = useQuery({
-    queryKey: ['favoriteWorkspaces'],
-    queryFn: async () => {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/workspaces/favorites`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
-      return response.data.data;
-    },
-    enabled: !!accessToken
+    queryKey: ["favoriteWorkspaces"],
+    queryFn: getFavoriteWorkspaces,
+    enabled: !!accessToken,
   });
 
+  // Show TeamSwitcher if we have teams, or if we have a current team
+  // For debugging, let's show it always
+  const shouldShowTeamSwitcher = true; // allTeams.length > 0 || currentTeam;
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        {teamData && <TeamSwitcher teams={teamData} />}
+        {shouldShowTeamSwitcher && (
+          <TeamSwitcher team={currentTeam || undefined} />
+        )}
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navigationData.navMain} />
@@ -183,11 +185,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       <SidebarFooter>
-        {userData && <NavUser user={{
-          username: userData.username,
-          email: userData.email,
-          imageUrl: userData.imageUrl || null
-        }} />}
+        {userData && (
+          <NavUser
+            user={{
+              username: userData.username,
+              email: userData.email,
+              imageUrl: userData.imageUrl || null,
+            }}
+          />
+        )}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

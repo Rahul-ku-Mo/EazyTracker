@@ -19,13 +19,10 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import {
-  Users,
   ChevronDown,
   Check,
   X,
-  Calendar,
-  Target,
-  Milestone,
+
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -42,6 +39,9 @@ import { Priority, LowPriority, MediumPriority, HighPriority, UrgentPriority } f
 import { useTheme } from "@/context/ThemeProvider";
 import { Input } from "@/components/ui/input";
 import { getPriorityIcon } from "./utils";
+import { LeadIcon, MemberIcon, MilestoneIcon, StatusIcon, TargetIcon } from "../shared/svg/SharedIcons";
+import { MilestoneItem } from "@/apis/project";
+import { DateCreatedIcon } from "../shared/svg/ViewOptionsIcons";
 
 type TNewProjectActionsProps = {
   targetDate: Date | undefined;
@@ -52,8 +52,8 @@ type TNewProjectActionsProps = {
   setPriority: React.Dispatch<React.SetStateAction<string>>;
   status: string;
   setStatus: React.Dispatch<React.SetStateAction<string>>;
-  milestones: string[];
-  setMilestones: React.Dispatch<React.SetStateAction<string[]>>;
+  milestones: MilestoneItem[];
+  setMilestones: React.Dispatch<React.SetStateAction<MilestoneItem[]>>;
   lead: string | null;
   setLead: React.Dispatch<React.SetStateAction<string | null>>;
   members: string[];
@@ -170,23 +170,34 @@ const NewProjectActions = ({
     }
   };
 
-  const handleMilestoneSelect = (milestone: string) => {
-    if (milestones.includes(milestone)) {
-      setMilestones(milestones.filter((m) => m !== milestone));
+  const handleMilestoneSelect = (milestoneValue: string) => {
+    const existingMilestone = milestones.find((m) => m.milestoneValue === milestoneValue);
+    if (existingMilestone) {
+      setMilestones(milestones.filter((m) => m.milestoneValue !== milestoneValue));
     } else {
-      setMilestones([...milestones, milestone]);
+      const newMilestoneItem: MilestoneItem = {
+        id: `milestone-${Date.now()}`,
+        milestoneValue,
+        isCompletedMilestone: false
+      };
+      setMilestones([...milestones, newMilestoneItem]);
     }
   };
 
   const handleAddNewMilestone = () => {
-    if (newMilestone.trim() && !milestones.includes(newMilestone.trim())) {
-      setMilestones([...milestones, newMilestone.trim()]);
+    if (newMilestone.trim() && !milestones.some((m) => m.milestoneValue === newMilestone.trim())) {
+      const newMilestoneItem: MilestoneItem = {
+        id: `milestone-${Date.now()}`,
+        milestoneValue: newMilestone.trim(),
+        isCompletedMilestone: false
+      };
+      setMilestones([...milestones, newMilestoneItem]);
       setNewMilestone("");
     }
   };
 
-  const handleRemoveMilestone = (milestone: string) => {
-    setMilestones(milestones.filter((m) => m !== milestone));
+  const handleRemoveMilestone = (milestoneValue: string) => {
+    setMilestones(milestones.filter((m) => m.milestoneValue !== milestoneValue));
   };
 
   const handleDateChange = (date: Date | undefined, isTarget: boolean) => {
@@ -210,7 +221,7 @@ const NewProjectActions = ({
           )}
         >
           <div className="flex items-center gap-1">
-            <Target className="w-3 h-3" />
+            <StatusIcon className="w-3 h-3" />
             <span className="text-xs">{getStatusLabel(status)}</span>
           </div>
         </SelectTrigger>
@@ -218,7 +229,7 @@ const NewProjectActions = ({
           {PROJECT_STATUSES.map((statusOption) => (
             <SelectItem key={statusOption.value} value={statusOption.value} className="text-xs">
               <div className="flex items-center gap-2">
-                <Target className="w-3 h-3" />
+                <StatusIcon className="w-3 h-3" />
                 <span className="text-xs">{statusOption.label}</span>
               </div>
             </SelectItem>
@@ -245,7 +256,7 @@ const NewProjectActions = ({
         <SelectContent>
           <SelectItem value="none" className="text-xs">
             <div className="flex items-center gap-2">
-              <Priority className="size-3" isDark={theme === "dark"} />
+              <Priority className="size-3" />
               <span className="text-xs">None</span>
             </div>
           </SelectItem>
@@ -269,7 +280,7 @@ const NewProjectActions = ({
           </SelectItem>
           <SelectItem value="urgent" className="text-xs">
             <div className="flex items-center gap-2">
-              <UrgentPriority className="size-3" isDark={theme === "dark"} />
+              <UrgentPriority className="size-3" />
               <span className="text-xs">Urgent</span>
             </div>
           </SelectItem>
@@ -292,7 +303,7 @@ const NewProjectActions = ({
               "focus-visible:opacity-100"
             )}
           >
-            <Users className="w-3 h-3 mr-1" />
+            <LeadIcon className="size-3" />
             <span className="text-xs">
               Lead
               {lead &&
@@ -357,7 +368,7 @@ const NewProjectActions = ({
               "focus-visible:opacity-100"
             )}
           >
-            <Users className="w-3 h-3 mr-1" />
+            <MemberIcon className="size-3" />
             <span className="text-xs">
               Members{members.length > 0 && ` (${members.length})`}
             </span>
@@ -413,7 +424,7 @@ const NewProjectActions = ({
               "focus-visible:opacity-100"
             )}
           >
-            <Calendar className="w-3 h-3 mr-1" />
+            <DateCreatedIcon className="size-3" />
             <span className="text-xs">
               Start Date
               {startDate && ` (${startDate.toLocaleDateString()})`}
@@ -443,7 +454,7 @@ const NewProjectActions = ({
               "focus-visible:opacity-100"
             )}
           >
-            <Target className="w-3 h-3 mr-1" />
+            <TargetIcon className="size-3" />
             <span className="text-xs">
               Target Date
               {targetDate && ` (${targetDate.toLocaleDateString()})`}
@@ -476,7 +487,7 @@ const NewProjectActions = ({
               "focus-visible:opacity-100"
             )}
           >
-            <Milestone className="w-3 h-3 mr-1" />
+            <MilestoneIcon className="size-3" />
             <span className="text-xs">
               Milestones{milestones.length > 0 && ` (${milestones.length})`}
             </span>
@@ -507,16 +518,16 @@ const NewProjectActions = ({
               </CommandEmpty>
               <CommandGroup>
                 {milestones.map((milestone) => {
-                  const isSelected = milestones.includes(milestone);
+                  const isSelected = milestones.some((m) => m.milestoneValue === milestone.milestoneValue);
                   return (
                     <CommandItem
-                      key={milestone}
-                      value={milestone}
-                      onSelect={() => handleMilestoneSelect(milestone)}
+                      key={milestone.id}
+                      value={milestone.milestoneValue}
+                      onSelect={() => handleMilestoneSelect(milestone.milestoneValue)}
                       className="text-xs"
                     >
                       <div className="flex items-center justify-between w-full">
-                        <span>{milestone}</span>
+                        <span>{milestone.milestoneValue}</span>
                         {isSelected && <Check className="w-3 h-3 text-primary" />}
                       </div>
                     </CommandItem>
@@ -613,17 +624,17 @@ const NewProjectActions = ({
 
             return (
               <div
-                key={milestone}
+                key={milestone.id}
                 className={`text-xs h-7 pr-2 flex items-center gap-1 ${colorClass} hover:opacity-80 transition-opacity rounded-sm px-2`}
               >
-                <Milestone className="w-3 h-3" />
-                <span className="text-xs font-semibold">{milestone}</span>
+                <MilestoneIcon className="w-3 h-3" />
+                <span className="text-xs font-semibold">{milestone.milestoneValue}</span>
                 <X
                   className="w-3 h-3 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    handleRemoveMilestone(milestone);
+                    handleRemoveMilestone(milestone.milestoneValue);
                   }}
                 />
               </div>

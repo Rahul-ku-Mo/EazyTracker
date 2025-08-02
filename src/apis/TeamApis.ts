@@ -195,7 +195,9 @@ export const getUserTeams = async () => {
     );
 
     if (response.status === 200) {
-      return response.data.data;
+      // The backend returns a single team, but we need an array
+      const team = response.data.data;
+      return team ? [team] : [];
     }
     return [];
   } catch (error) {

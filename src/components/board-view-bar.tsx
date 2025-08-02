@@ -42,16 +42,8 @@ const BoardViewBar: React.FC<BoardViewBarProps> = ({
       </div>
 
       {/* Right side - Filters and Options */}
-      <div className="flex items-center gap-2">
-        {/* More Options Button */}
-
-        <div
-          onClick={onOpenViewOptions}
-          className="border p-1.5 rounded-md cursor-pointer hover:bg-muted dark:bg-black"
-        >
-          <Settings className="h-4 w-4 " />
-        </div>
-      </div>
+          <Settings className="h-4 w-4 cursor-pointer" onClick={onOpenViewOptions} />
+    
     </div>
   );
 };

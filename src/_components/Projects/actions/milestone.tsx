@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Diamond, MilestoneIcon, Plus, GripVertical } from "lucide-react";
+import { Plus, GripVertical } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -15,38 +15,48 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import {
-  useSortable,
-} from "@dnd-kit/sortable";
+import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import {
+  TargetIcon,
+  MilestoneIcon,
+  TargetCompleteIcon,
+} from "@/_components/shared/svg/SharedIcons";
+import { updateMilestoneCompletion } from "@/apis/project";
+import { cn } from "@/lib/utils";
 
 // Interface for milestone item
 interface MilestoneItem {
   id: string;
-  name: string;
+  milestoneValue: string;
+  isCompletedMilestone: boolean;
 }
 
 // Props for external state management
 interface MilestoneProps {
-  externalMilestones?: string[];
-  onMilestonesChange?: (milestones: string[]) => void;
+  externalMilestones?: MilestoneItem[];
+  onMilestonesChange?: (milestones: MilestoneItem[]) => void;
+  projectSlug?: string;
+  fwdClassname?: string;
   readOnly?: boolean;
 }
 
 // Sortable milestone item component
-const SortableMilestoneItem = ({ 
-  item, 
-  onDelete, 
+const SortableMilestoneItem = ({
+  item,
+  onDelete,
   onEdit,
-  readOnly = false 
-}: { 
-  item: MilestoneItem; 
+  onToggleComplete,
+  readOnly = false,
+}: {
+  item: MilestoneItem;
   onDelete: (id: string) => void;
   onEdit?: (id: string, newName: string) => void;
+  onToggleComplete?: (id: string, isCompleted: boolean) => void;
   readOnly?: boolean;
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(item.name);
+  const [editValue, setEditValue] = useState(item.milestoneValue);
 
   const {
     attributes,
@@ -64,18 +74,24 @@ const SortableMilestoneItem = ({
   };
 
   const handleEdit = () => {
-    if (onEdit && editValue.trim() !== item.name) {
+    if (onEdit && editValue.trim() !== item.milestoneValue) {
       onEdit(item.id, editValue.trim());
     }
     setIsEditing(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleEdit();
-    } else if (e.key === 'Escape') {
-      setEditValue(item.name);
+    } else if (e.key === "Escape") {
+      setEditValue(item.milestoneValue);
       setIsEditing(false);
+    }
+  };
+
+  const handleToggleComplete = () => {
+    if (onToggleComplete && !readOnly) {
+      onToggleComplete(item.id, !item.isCompletedMilestone);
     }
   };
 
@@ -95,7 +111,16 @@ const SortableMilestoneItem = ({
             <GripVertical className="size-3 text-muted-foreground" />
           </div>
         )}
-        <Diamond className="size-2.5" />
+        <div 
+          className="cursor-pointer" 
+          onClick={handleToggleComplete}
+        >
+          {item.isCompletedMilestone ? (
+            <TargetCompleteIcon className="size-2.5 text-emerald-500" />
+          ) : (
+            <TargetIcon className="size-2.5" />
+          )}
+        </div>
         {isEditing ? (
           <input
             value={editValue}
@@ -106,11 +131,11 @@ const SortableMilestoneItem = ({
             autoFocus
           />
         ) : (
-          <span 
-            className="text-xs font-semibold cursor-pointer hover:bg-accent/20 px-1 py-0.5 rounded"
+          <span
+            className={`text-xs font-semibold cursor-pointer hover:bg-accent/20 px-1 py-0.5 rounded ${item.isCompletedMilestone ? 'line-through text-muted-foreground !text-emerald-500' : ''}`}
             onClick={() => !readOnly && onEdit && setIsEditing(true)}
           >
-            {item.name}
+            {item.milestoneValue}
           </span>
         )}
       </div>
@@ -127,35 +152,28 @@ const SortableMilestoneItem = ({
   );
 };
 
-const Milestone = ({ externalMilestones, onMilestonesChange, readOnly = false }: MilestoneProps) => {
-  // Convert external milestones to internal format
-  const convertToMilestoneItems = (milestones: string[]): MilestoneItem[] => {
-    return milestones.map((milestone, index) => ({
-      id: `milestone-${index}`,
-      name: milestone,
-    }));
-  };
-
-  // Convert internal format to external format
-  const convertToStringArray = (items: MilestoneItem[]): string[] => {
-    return items.map(item => item.name);
-  };
-
+const Milestone = ({
+  externalMilestones,
+  onMilestonesChange,
+  projectSlug,
+  readOnly = false,
+  fwdClassname
+}: MilestoneProps) => {
   // Internal state for standalone mode
-  const [internalMilestones, setInternalMilestones] = useState<MilestoneItem[]>([
-    { id: "1", name: "Initial milestone" },
-    { id: "2", name: "Development phase" },
-    { id: "3", name: "Testing phase" },
-  ]);
+  const [internalMilestones, setInternalMilestones] = useState<MilestoneItem[]>(
+    [
+      { id: "1", milestoneValue: "Initial milestone", isCompletedMilestone: false },
+      { id: "2", milestoneValue: "Development phase", isCompletedMilestone: false },
+      { id: "3", milestoneValue: "Testing phase", isCompletedMilestone: false },
+    ]
+  );
 
   // Use external or internal state
-  const milestones = externalMilestones 
-    ? convertToMilestoneItems(externalMilestones)
-    : internalMilestones;
+  const milestones = externalMilestones || internalMilestones;
 
   const setMilestones = (newMilestones: MilestoneItem[]) => {
     if (onMilestonesChange) {
-      onMilestonesChange(convertToStringArray(newMilestones));
+      onMilestonesChange(newMilestones);
     } else {
       setInternalMilestones(newMilestones);
     }
@@ -170,7 +188,7 @@ const Milestone = ({ externalMilestones, onMilestonesChange, readOnly = false }:
 
   const handleDragEnd = (event: DragEndEvent) => {
     if (readOnly) return;
-    
+
     const { active, over } = event;
 
     if (active.id !== over?.id) {
@@ -183,32 +201,59 @@ const Milestone = ({ externalMilestones, onMilestonesChange, readOnly = false }:
 
   const addMilestone = () => {
     if (readOnly) return;
-    
+
     const newMilestone: MilestoneItem = {
       id: `milestone-${Date.now()}`,
-      name: `New milestone ${milestones.length + 1}`,
+      milestoneValue: `New milestone ${milestones.length + 1}`,
+      isCompletedMilestone: false,
     };
     setMilestones([...milestones, newMilestone]);
   };
 
   const deleteMilestone = (id: string) => {
     if (readOnly) return;
-    
+
     setMilestones(milestones.filter((milestone) => milestone.id !== id));
   };
 
   const editMilestone = (id: string, newName: string) => {
     if (readOnly) return;
-    
+
     setMilestones(
       milestones.map((milestone) =>
-        milestone.id === id ? { ...milestone, name: newName } : milestone
+        milestone.id === id ? { ...milestone, milestoneValue: newName } : milestone
       )
     );
   };
 
+  const toggleMilestoneComplete = async (id: string, isCompleted: boolean) => {
+    if (readOnly) return;
+
+    // Update local state immediately for optimistic UI
+    setMilestones(
+      milestones.map((milestone) =>
+        milestone.id === id ? { ...milestone, isCompletedMilestone: isCompleted } : milestone
+      )
+    );
+
+    // If projectSlug is provided, update the backend
+    if (projectSlug) {
+      try {
+        await updateMilestoneCompletion(projectSlug, id, isCompleted);
+      } catch (error) {
+        console.error('Failed to update milestone completion:', error);
+        // Revert the optimistic update on error
+        setMilestones(
+          milestones.map((milestone) =>
+            milestone.id === id ? { ...milestone, isCompletedMilestone: !isCompleted } : milestone
+          )
+        );
+      }
+    }
+  };
+
   return (
-    <div className="w-full mx-auto max-w-2xl border border-border rounded-t-md flex flex-col mb-4">
+    <div className={cn("border border-border rounded-t-md flex flex-col", fwdClassname)}>
       <div className="bg-accent p-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -226,27 +271,31 @@ const Milestone = ({ externalMilestones, onMilestonesChange, readOnly = false }:
           )}
         </div>
       </div>
-      
+
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <SortableContext items={milestones} strategy={verticalListSortingStrategy}>
+        <SortableContext
+          items={milestones}
+          strategy={verticalListSortingStrategy}
+        >
           {milestones.map((milestone) => (
             <SortableMilestoneItem
               key={milestone.id}
               item={milestone}
               onDelete={deleteMilestone}
               onEdit={editMilestone}
+              onToggleComplete={toggleMilestoneComplete}
               readOnly={readOnly}
             />
           ))}
         </SortableContext>
       </DndContext>
-      
+
       {milestones.length === 0 && (
-        <div className="p-4 text-center text-muted-foreground text-sm">
+        <div className="p-4 text-center text-muted-foreground text-xs">
           No milestones yet. Click the + button to add one.
         </div>
       )}

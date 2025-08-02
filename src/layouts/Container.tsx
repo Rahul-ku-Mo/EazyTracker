@@ -6,6 +6,7 @@ import { SidebarInset, SidebarProvider } from "../components/ui/sidebar";
 import AppHeader from "../components/app-header";
 import { TrialStatusBanner } from "../components/TrialStatusBanner";
 import { cn } from "../lib/utils";
+import { TeamProvider } from "@/context/TeamContext";
 
 type ContainerProps = {
   background?: string;
@@ -25,25 +26,27 @@ const MainLayout = ({
 }: ContainerProps) => {
   return (
     <>
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <AppHeader>{headerChildren}</AppHeader>
-          <TrialStatusBanner />
-          {/* View Bar - positioned below header and banner */}
-          {viewBar}
-          <main
-            className={cn(
-              background,
-              "flex flex-col flex-1 gap-4 px-4 py-2 pt-0",
-              "overflow-y-hidden",
-              fwdClassName,
-            )}
-          >
-            {children}
-          </main>
-        </SidebarInset>
-      </SidebarProvider>
+      <TeamProvider>
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset>
+            <AppHeader>{headerChildren}</AppHeader>
+            <TrialStatusBanner />
+            {/* View Bar - positioned below header and banner */}
+            {viewBar}
+            <main
+              className={cn(
+                background,
+                "flex flex-col flex-1 gap-4 px-4 py-2 pt-0",
+                "overflow-y-hidden",
+                fwdClassName,
+              )}
+            >
+              {children}
+            </main>
+          </SidebarInset>
+        </SidebarProvider>
+      </TeamProvider>
     </>
   );
 };

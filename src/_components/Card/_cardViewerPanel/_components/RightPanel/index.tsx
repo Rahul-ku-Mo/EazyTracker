@@ -13,18 +13,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   CalendarIcon,
-  Tag,
   X,
   Search,
-  Users,
-  Info,
   Plus,
-  Clock,
   User,
   Share,
   Copy,
   Link,
-  Construction,
   Triangle,
   Check,
 } from "lucide-react";
@@ -33,12 +28,21 @@ import { CardContext } from "@/context/CardProvider";
 import { TCardContext } from "@/types/cardTypes";
 import { useContext, useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Cookies from "js-cookie";
 
 import { useCardMutation } from "../../../_mutations/useCardMutations";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getPriorityIcon } from "@/_components/Projects/utils";
+import { DateCreatedIcon } from "@/_components/shared/svg/ViewOptionsIcons";
+import {
+  AdditionalInfoIcon,
+  LabelIcon,
+  MemberIcon,
+  TimeTrackingIcon,
+} from "@/_components/shared/svg/SharedIcons";
 
 // Types
 interface TeamMember {
@@ -105,6 +109,7 @@ const formatDate = (date?: Date | string | null) => {
 
 const RightPanel = () => {
   const cardDetails = useContext(CardContext);
+  const navigate = useNavigate();
   const {
     priority = "low",
     dueDate,
@@ -157,13 +162,14 @@ const RightPanel = () => {
     }
   };
 
+    
   return (
     <div className="h-full flex flex-col">
       <div className="py-4 pr-4 flex flex-col gap-4 overflow-y-auto flex-1 ">
         {/* Task Details Header */}
         <h2 className="text-sm font-semibold border border-[#e3e3e3b5] dark:border-zinc-700 rounded-md p-2 dark:bg-[#101010]">
           <div className="flex items-center justify-between gap-2 text-xs">
-            <span className="text-xs font-semibold text-primary"> Details</span>
+            <span className="text-xs font-medium text-primary">Details</span>
             <div className="flex items-center gap-2 text-muted-foreground">
               <Share
                 strokeWidth={3}
@@ -185,28 +191,23 @@ const RightPanel = () => {
         <div className="space-y-3 border border-[#e3e3e3b5] dark:border-zinc-700 rounded-md p-2 dark:bg-[#101010]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Construction
-                strokeWidth={3}
-                className="size-5 p-0.5 text-primary"
-              />
-              <span className="text-xs font-semibold text-primary">
-                Priority
-              </span>
+              {getPriorityIcon(priority)}
+              <span className="text-xs font-medium text-primary">Priority</span>
             </div>
             <div
               className={`px-3 py-1 text-white text-xs font-medium rounded-md ${
                 priority === "urgent"
                   ? "bg-red-500"
                   : priority === "high"
-                  ? "bg-amber-500"
-                  : priority === "medium"
-                  ? "bg-blue-500"
-                  : priority === "low"
-                  ? "bg-green-500"
-                  : "bg-zinc-400"
+                    ? "bg-amber-500"
+                    : priority === "medium"
+                      ? "bg-blue-500"
+                      : priority === "low"
+                        ? "bg-green-500"
+                        : "bg-zinc-400"
               }`}
             >
-              {priority?.charAt(0).toUpperCase() + priority?.slice(1)}
+              {priority === null ? "None" : `${priority?.charAt(0).toUpperCase() + priority?.slice(1)}`}
             </div>
           </div>
 
@@ -217,12 +218,12 @@ const RightPanel = () => {
                   priority === "urgent"
                     ? "bg-red-500 w-full"
                     : priority === "high"
-                    ? "bg-amber-500 w-3/4"
-                    : priority === "medium"
-                    ? "bg-blue-500 w-2/4"
-                    : priority === "low"
-                    ? "bg-green-500 w-1/4"
-                    : "w-0"
+                      ? "bg-amber-500 w-3/4"
+                      : priority === "medium"
+                        ? "bg-blue-500 w-2/4"
+                        : priority === "low"
+                          ? "bg-green-500 w-1/4"
+                          : "w-0"
                 }`}
               />
             </div>
@@ -290,13 +291,8 @@ const RightPanel = () => {
         <div className="space-y-3 border border-[#e3e3e3b5] dark:border-zinc-700 rounded-md p-2 dark:bg-[#101010]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <CalendarIcon
-                strokeWidth={3}
-                className="size-5 p-0.5 text-primary"
-              />
-              <span className="text-xs font-semibold text-primary">
-                Due Date
-              </span>
+              <DateCreatedIcon />
+              <span className="text-xs font-medium text-primary">Due Date</span>
             </div>
             {dueDate && (
               <div
@@ -304,15 +300,15 @@ const RightPanel = () => {
                   isToday(dueDate)
                     ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                     : isTomorrow(dueDate)
-                    ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
-                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+                      ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
+                      : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
                 }`}
               >
                 {isToday(dueDate)
                   ? "Today"
                   : isTomorrow(dueDate)
-                  ? "Tomorrow"
-                  : formatDate(dueDate)}
+                    ? "Tomorrow"
+                    : formatDate(dueDate)}
               </div>
             )}
           </div>
@@ -396,8 +392,8 @@ const RightPanel = () => {
         <div className="space-y-3 border border-[#e3e3e3b5] dark:border-zinc-700 rounded-md p-2 dark:bg-[#101010]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Tag strokeWidth={3} className="size-5 p-0.5 text-primary" />
-              <span className="text-xs font-semibold text-primary">Labels</span>
+              <LabelIcon className="size-4 text-primary" />
+              <span className="text-xs font-medium text-primary">Labels</span>
             </div>
             <Button
               variant="ghost"
@@ -460,10 +456,8 @@ const RightPanel = () => {
         <div className="space-y-3 border border-[#e3e3e3b5] dark:border-zinc-700 rounded-md p-2 dark:bg-[#101010]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Users strokeWidth={3} className="size-5 p-0.5 text-primary" />
-              <span className="text-xs font-semibold text-primary">
-                Assignee
-              </span>
+              <MemberIcon strokeWidth={3} className="size-4 text-primary" />
+              <span className="text-xs font-medium text-primary">Assignee</span>
             </div>
             <Popover
               open={showAssigneeDropdown}
@@ -481,7 +475,7 @@ const RightPanel = () => {
               <PopoverContent className="w-72 p-3" align="end">
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 pb-2 border-b border-border">
-                    <Users className="w-4 h-4 text-muted-foreground" />
+                    <MemberIcon className="w-4 h-4 text-muted-foreground" />
                     <div>
                       <h4 className="text-sm font-medium text-foreground">
                         Assign to team member
@@ -534,7 +528,6 @@ const RightPanel = () => {
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1 text-left min-w-0">
-                             
                               <div className="text-xs text-muted-foreground truncate">
                                 {member.email}
                               </div>
@@ -554,7 +547,7 @@ const RightPanel = () => {
                   ) : (
                     <div className="text-center py-8">
                       <div className="p-3 rounded-full bg-muted inline-flex mb-3">
-                        <Users className="w-5 h-5 text-muted-foreground" />
+                        <MemberIcon className="w-5 h-5 text-muted-foreground" />
                       </div>
                       <h4 className="text-sm font-medium text-foreground mb-1">
                         No team members found
@@ -653,8 +646,8 @@ const RightPanel = () => {
         {/* Additional Info Section */}
         <div className="space-y-3 border border-[#e3e3e3b5] dark:border-zinc-700 rounded-md p-2 dark:bg-[#101010]">
           <div className="flex items-center gap-2">
-            <Info strokeWidth={3} className="size-5 p-0.5 text-primary" />
-            <span className="text-xs font-semibold text-primary">
+            <AdditionalInfoIcon className="size-4 text-primary" />
+            <span className="text-xs font-medium text-primary">
               Additional Info
             </span>
           </div>
@@ -750,8 +743,11 @@ const RightPanel = () => {
         <div className="space-y-3 border border-[#e3e3e3b5] dark:border-zinc-700 rounded-md p-2 dark:bg-[#101010]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Clock strokeWidth={3} className="size-5 p-0.5 text-primary" />
-              <span className="text-xs font-semibold text-primary">
+              <TimeTrackingIcon
+                strokeWidth={3}
+                className="size-4 text-primary"
+              />
+              <span className="text-xs font-medium text-primary">
                 Time Tracking
               </span>
             </div>
@@ -760,7 +756,7 @@ const RightPanel = () => {
               size="sm"
               className="h-6 px-2 text-xs"
               onClick={() =>
-                (window.location.href = `/workspace/analytics?task=${cardId}`)
+                navigate(`analytics?task=${cardId}`)
               }
             >
               View Details
@@ -776,7 +772,7 @@ const RightPanel = () => {
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-muted-foreground text-xs">Time Spent</span>
-              <span className="text-sm font-medium">2h 15m</span>
+              <span className="text-xs font-medium">2h 15m</span>
             </div>
           </div>
         </div>

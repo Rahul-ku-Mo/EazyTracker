@@ -305,9 +305,6 @@ const ColumnBoard = ({ title, headerChildren }: ColumnBoardProps) => {
     // Apply view options (grouping, filtering, ordering)
     const groupedData = groupCards(allCards, columns, viewOptions);
 
-    console.log("Applied view options:", viewOptions);
-    console.log("Grouped data:", groupedData);
-
     return groupedData;
   }, [columns, viewOptions, searchQuery]);
 
@@ -465,7 +462,11 @@ const ColumnBoard = ({ title, headerChildren }: ColumnBoardProps) => {
             )}
           </div>
         ) : (
-          <ListView data={listViewData} />
+          <ListView 
+            data={listViewData} 
+            viewOptions={viewOptions}
+            members={members}
+          />
         )}
       </Container>
 

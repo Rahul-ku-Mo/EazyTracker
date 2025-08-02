@@ -12,8 +12,6 @@ import {
   Lock,
   Eye,
   Info,
-  Shield,
-  SquareTerminal,
   MoreHorizontal,
 } from "lucide-react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -27,6 +25,8 @@ import DeleteDialog from "../Dialog/DeleteDialog";
 import { useWorkspaceMutation } from "./_mutations/useWorkspaceMutation";
 import InviteWorkspaceDialog from "./InviteWorkspaceDialog";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
+import {  WorkspaceIcon } from "../shared/svg/SidebarIcons";
+import { AccessLevelIcon } from "../shared/svg/SharedIcons";
 
 interface Workspace {
   id: string;
@@ -374,12 +374,12 @@ const WorkspaceSelection = () => {
 
   return (
     <Container
-      fwdClassName="pl-2 bg-background"
+      fwdClassName="px-4"
       title={isAdmin ? "Manage Workspaces" : "Workspaces"}
     >
       <div className="flex items-center gap-3 pb-2 pt-4">
         <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-          <SquareTerminal className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+          <WorkspaceIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
         </div>
         <div>
           <h1 className="text-2xl font-bold">My Workspaces</h1>
@@ -485,7 +485,7 @@ const WorkspaceSelection = () => {
                       existing ones, contact your team administrator.
                     </p>
                   </div>
-                  <Shield className="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                  <AccessLevelIcon className="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                 </CardContent>
               </Card>
             </div>

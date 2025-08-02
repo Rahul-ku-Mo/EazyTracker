@@ -83,29 +83,21 @@ export const useCardMutation = () => {
 
       return await updateCard(accessToken, updatedData as TCardData, cardId);
     },
-    onSuccess: () =>
+    onSuccess: () => {
       toast({
         title: "Update",
-        description: `Card Status updated at ${new Date().toLocaleString()} by ${
-          Cookies.get("username") || "Unknown user"
-        }`,
+        description: `Card Status updated at ${new Date().toLocaleString()} by ${Cookies.get("username") || "Unknown user"
+          }`,
         variant: "default",
-      }),
-    onError: () =>
+      })
+    },
+    onError: () => {
       toast({
         title: "Something wrong happened 🔥",
         description: "Please try again later",
         variant: "destructive",
-      }),
-    onSettled: async (_, __, variables: TIssueUpdateCard) => {
-      await queryClient.invalidateQueries({
-        queryKey: ["cards", "columns", variables.columnId],
-      });
-
-      await queryClient.invalidateQueries({
-        queryKey: ["columns", "workspaces", workspaceId],
-      });
-    },
+      })
+    }
   });
 
   const deleteCardMutation = useMutation({

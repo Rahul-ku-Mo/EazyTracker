@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Box } from "lucide-react";
+
 import { getProjects } from "@/apis/project";
 import Container from "@/layouts/Container";
 
@@ -7,6 +7,8 @@ import {
   ProjectsTable,
   ProjectTableRow,
 } from "@/_components/Projects/all-projects-table";
+import { ProjectIcon } from "@/_components/shared/svg/SidebarIcons";
+import ProjectsTableSkeleton from "@/_components/Projects/ProjectsTableSkeleton";
 
 export default function ProjectsPage() {
  
@@ -19,8 +21,6 @@ export default function ProjectsPage() {
     queryFn: () => getProjects(teamId!),
     enabled: !!teamId,
   });
-
-
 
   // Map projects to table rows using real data
   const tableData: ProjectTableRow[] = (projects || []).map((project) => ({
@@ -66,12 +66,21 @@ export default function ProjectsPage() {
 
   if (isLoadingProjects) {
     return (
-      <Container>
-        <div className="flex h-[80vh] items-center justify-center">
-          <div className="text-center">
-            <h2 className="text-2xl font-semibold">Loading Projects...</h2>
+      <Container fwdClassName="!px-0">
+        <div className="flex items-center justify-between pt-4 px-4">
+          <div className="flex items-center gap-3 pb-2">
+            <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+              <ProjectIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold hidden md:block">My Projects</h1>
+              <p className="text-sm text-muted-foreground">
+                Manage your projects and create new ones
+              </p>
+            </div>
           </div>
         </div>
+        <ProjectsTableSkeleton />
       </Container>
     );
   }
@@ -81,7 +90,7 @@ export default function ProjectsPage() {
       <div className="flex items-center justify-between pt-4 px-4">
         <div className="flex items-center gap-3 pb-2 ">
           <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-            <Box className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            <ProjectIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div>
             <h1 className="text-2xl font-bold hidden md:block">My Projects</h1>

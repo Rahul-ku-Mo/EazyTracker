@@ -12,7 +12,7 @@ import { Input } from "../../components/ui/input";
 import { Badge } from "../../components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createProject, CreateProjectInput } from "@/apis/project";
+import { createProject, CreateProjectInput, MilestoneItem } from "@/apis/project";
 import { useToast } from "@/hooks/use-toast";
 import NewProjectActions from "./new-project-action";
 import { NewProjectDescriptionEditor } from "./new-project-description-editor";
@@ -31,7 +31,7 @@ const NewProjectForm = ({ isOpen, onClose, teamId }: NewProjectFormProps) => {
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [priority, setPriority] = useState<string>("none");
   const [status, setStatus] = useState<string>("not_started");
-  const [milestones, setMilestones] = useState<string[]>([]);
+  const [milestones, setMilestones] = useState<MilestoneItem[]>([]);
   const [lead, setLead] = useState<string | null>(null);
   const [members, setMembers] = useState<string[]>([]);
   const [dimensions, setDimensions] = useState<"small" | "large">("small");
@@ -113,8 +113,8 @@ const NewProjectForm = ({ isOpen, onClose, teamId }: NewProjectFormProps) => {
           dimensions === "small" ? "max-w-[800px]" : "max-w-[900px]"
         )}
         style={{
-          maxHeight: dimensions === "small" ? "400px" : "700px",
-          height: dimensions === "small" ? "400px" : "700px",
+          maxHeight: dimensions === "small" ? "700px" : "900px",
+          height: dimensions === "small" ? "700px" : "900px",
         }}
         isCloseButtonRequired={false}
       >
@@ -160,6 +160,7 @@ const NewProjectForm = ({ isOpen, onClose, teamId }: NewProjectFormProps) => {
           <Milestone 
             externalMilestones={milestones} 
             onMilestonesChange={setMilestones} 
+            fwdClassname="mx-4"
           />
           <NewProjectActions
             targetDate={targetDate}

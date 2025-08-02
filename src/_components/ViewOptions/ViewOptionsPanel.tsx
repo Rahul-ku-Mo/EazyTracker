@@ -9,7 +9,6 @@ import {
   Grid3x3,
   Columns3,
   Tag,
-  Milestone,
   Link,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,6 +34,7 @@ import {
   EstimateIcon,
   ViewIcon,
 } from "../shared/svg/ViewOptionsIcons";
+import { MilestoneIcon } from "../shared/svg/SharedIcons";
 
 interface ViewOptionsProps {
   isOpen: boolean;
@@ -451,7 +451,7 @@ const ViewOptionsPanel = ({
                     />
                     <PropertyItem
                       label="Milestone"
-                      icon={Milestone}
+                      icon={MilestoneIcon}
                       property="milestone"
                     />
                     <PropertyItem

@@ -32,8 +32,20 @@ const CardView = ({ columnName, isOpen, closeModal }: CardViewProps) => {
 
   const { title } = cardDetails as TCardContext;
 
+  // Handle modal close - save card description if needed
+  const handleModalClose = () => {
+    if (!isLocked) {
+      // Call the card editor close handler to save content
+      const closeHandler = (window as any).__cardEditorCloseHandler;
+      if (closeHandler && typeof closeHandler === 'function') {
+        closeHandler();
+      }
+      closeModal();
+    }
+  };
+
   return (
-    <Sheet open={isOpen} onOpenChange={() => !isLocked && closeModal()}>
+    <Sheet open={isOpen} onOpenChange={handleModalClose}>
       <SheetHeader>
         <SheetTitle>
           <div className="sr-only">{title}</div>
@@ -45,7 +57,7 @@ const CardView = ({ columnName, isOpen, closeModal }: CardViewProps) => {
         isCloseButtonNotHidden={false}
       >
         <div className="h-full flex flex-wrap">   
-          <div className="w-full md:w-4/5 ">
+          <div className="w-full md:w-4/5">
             <MainPanel
               columnName={columnName}
               isLocked={isLocked}

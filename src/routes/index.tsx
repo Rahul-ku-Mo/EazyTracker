@@ -25,6 +25,7 @@ import {
   NoteViewPage,
   NoteEditPage,
   ProjectsPage,
+  DashboardPage,
 } from "@/routes/element";
 import WorkspaceSelectionPage from "@/pages/WorkspaceSelectionPage";
 import WorkspaceSettingsPage from "@/pages/WorkspaceSettingsPage";
@@ -33,6 +34,7 @@ import { KanbanProvider } from "@/context/KanbanProvider";
 import { UserContextProvider } from "@/context/UserContext";
 import { AuthContext, AuthContextProvider } from "@/context/AuthContext";
 import { SubscriptionContextProvider } from "@/context/SubscriptionContext";
+import { TeamProvider } from "@/context/TeamContext";
 import GoogleCallback from "@/pages/callback/GoogleCallback";
 import RequireAuth from "@/_components/shared/RequireAuth";
 import JoinTeamPage from "@/pages/JoinTeamPage";
@@ -60,17 +62,19 @@ const WithContexts = ({
   return (
     <SubscriptionContextProvider>
       <UserContextProvider>
-        {includeKanban ? (
-          <KanbanProvider>
+        <TeamProvider>
+          {includeKanban ? (
+            <KanbanProvider>
+              <AccessControlGuard>
+                <Component {...props} />
+              </AccessControlGuard>
+            </KanbanProvider>
+          ) : (
             <AccessControlGuard>
               <Component {...props} />
             </AccessControlGuard>
-          </KanbanProvider>
-        ) : (
-          <AccessControlGuard>
-            <Component {...props} />
-          </AccessControlGuard>
-        )}
+          )}
+        </TeamProvider>
       </UserContextProvider>
     </SubscriptionContextProvider>
   );
@@ -79,10 +83,9 @@ const WithContexts = ({
 const AuthRoute = ({ children }: ProtectedRouteProps) => {
   const { isLoggedIn } = useContext(AuthContext);
 
-  const teamName = localStorage.getItem("teamName");
-  
+  // For auth route, we'll redirect to dashboard which will handle team data fetching
   if (isLoggedIn) {
-    return <Navigate to={`/workspace/${teamName}`} replace />;
+    return <Navigate to="/dashboard" replace />;
   }
   return <>{children}</>;
 };
@@ -94,6 +97,10 @@ const settingRoutes = [
 ];
 
 const authenticatedRoutes = [
+  {
+    path: "/dashboard",
+    element: <WithContexts Component={DashboardPage} />,
+  },
   {
     path: "/onboarding",
     element: <WithContexts Component={OnboardingPage} />,

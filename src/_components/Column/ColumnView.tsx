@@ -233,6 +233,8 @@ const ColumnView = ({ title, cards, columnId, viewOptions, members }: ColumnView
   const closeDeleteModal = () => setIsDeleteModalOpen(false);
   const openDeleteModal = () => setIsDeleteModalOpen(true);
 
+
+
   return (
     <>
       <li className="self-start block h-full list-none shrink-0 whitespace-nowrap rounded-md p-1  w-[300px] overflow-hidden">

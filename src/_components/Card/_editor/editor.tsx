@@ -32,25 +32,27 @@ import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
 import { registerCodeHighlighting } from "@lexical/code";
 
-
 import { useCardMutation } from "../_mutations/useCardMutations.ts";
 import { ColumnContext } from "../../../context/ColumnProvider.tsx";
 import { CardToolbarPlugin } from "./Plugins/CardToolbarPlugin.tsx";
 import { FloatingTextFormatToolbarPlugin } from "@/_components/Notes/_editor/plugins/FloatingTextFormatToolbarPlugin";
-//import { DraggableBlockPlugin } from "./Plugins/CustomDraggablePlugin.tsx";
-import { ImageNode } from "./ImageNode";
+import { FloatingLinkEditorPlugin } from "@/_components/Notes/_editor/plugins/FloatingLinkEditorPlugin";
 import { ImagesPlugin } from "./Plugins/ImagePlugin.tsx";
-import { KeyboardShortcutsPlugin } from "@/_components/Notes/_editor/plugins/KeyboardShortcutsPlugin"
+import MentionsPlugin from "./Plugins/MentionsPlugin.tsx";
+import { KeyboardShortcutsPlugin } from "@/_components/Notes/_editor/plugins/KeyboardShortcutsPlugin";
+import { ImageNode } from "./ImageNode";
+import { MentionNode } from "./MentionNode";
+import { cn } from "../../../lib/utils";
+import { indexedDBService } from "../../../services/indexedDB.service.ts";
 
 import "./ImageNode/styles.css";
 import "../../../styles/editor.styles.css";
-import { cn } from "@/lib/utils";
-import { FloatingLinkEditorPlugin } from "@/_components/Notes/_editor/plugins/FloatingLinkEditorPlugin/index.tsx";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 
 interface EditorTheme {
   root: string;
   paragraph: string;
+  placeholder: string;
   code?: string;
   codeHighlight?: Record<string, string>;
   text: {
@@ -80,12 +82,15 @@ interface EditorTheme {
       listitem: string;
     };
   };
-  placeholder: string;
+  link: string;
+  quote: string;
 }
 
+// Updated theme with corrected class names
 const theme: EditorTheme = {
   root: "editor-root",
   paragraph: "editor-paragraph",
+  placeholder: "editor-placeholder",
   text: {
     bold: "editor-text-bold",
     italic: "editor-text-italic",
@@ -146,7 +151,8 @@ const theme: EditorTheme = {
       listitem: "editor-nested-list-item",
     },
   },
-  placeholder: "editor-placeholder",
+  link: "editor-link",
+  quote: "editor-quote",
 };
 
 function onError(error: Error): void {
@@ -166,23 +172,27 @@ export const CodeHighlightPlugin = () => {
 interface CardDetailsEditorProps {
   cardId: number;
   description: string;
+  onEditorClose?: () => void; // Callback when editor closes
 }
 
 export const CardDetailsEditor = ({
   cardId,
   description,
+  onEditorClose,
 }: CardDetailsEditorProps): JSX.Element => {
   const [editorState, setEditorState] = useState<string>();
   const [floatingAnchorElem, setFloatingAnchorElem] =
     useState<HTMLDivElement | null>(null);
   const [isLinkEditMode, setIsLinkEditMode] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const columnId = useContext(ColumnContext);
   const { updateCardMutation } = useCardMutation();
 
   const editorRef = useRef(null);
   const initialDescriptionRef = useRef(description);
+  const lastSavedToIndexedDBRef = useRef<string>("");
 
   const onRef = (_floatingAnchorElem: HTMLDivElement) => {
     if (_floatingAnchorElem !== null) { 
@@ -190,19 +200,107 @@ export const CardDetailsEditor = ({
     }
   };
 
+  // Initialize IndexedDB and load saved content
+  useEffect(() => {
+    const initializeEditor = async () => {
+      try {
+        // Try to get saved content from IndexedDB
+        const savedContent = await indexedDBService.getCardDescription(cardId);
+        
+        if (savedContent && savedContent !== description) {
+          // Use saved content if it exists and is different from server description
+          setEditorState(savedContent);
+          lastSavedToIndexedDBRef.current = savedContent;
+          setHasUnsavedChanges(true);
+        } else {
+          // Use server description
+          setEditorState(description);
+          lastSavedToIndexedDBRef.current = description;
+          setHasUnsavedChanges(false);
+        }
+        
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Failed to initialize editor with IndexedDB:', error);
+        // Fallback to server description
+        setEditorState(description);
+        lastSavedToIndexedDBRef.current = description;
+        setIsInitialized(true);
+      }
+    };
+
+    initializeEditor();
+  }, [cardId, description]);
+
   // Initialize the initial description reference
   useEffect(() => {
     initialDescriptionRef.current = description;
   }, [description]);
 
-  // Track content changes
-  const handleContentChange = useCallback((hasChanges: boolean) => {
-    setHasUnsavedChanges(hasChanges);
-  }, []);
+  // Save to IndexedDB whenever content changes
+  const saveToIndexedDB = useCallback(async (content: string) => {
+    try {
+      await indexedDBService.saveCardDescription(cardId, content);
+      lastSavedToIndexedDBRef.current = content;
+    } catch (error) {
+      console.error('Failed to save to IndexedDB:', error);
+    }
+  }, [cardId]);
+
+  // Track editor state changes and save to IndexedDB
+  useEffect(() => {
+    if (editorState && editorState !== lastSavedToIndexedDBRef.current) {
+      const hasChanges = editorState !== initialDescriptionRef.current;
+      setHasUnsavedChanges(hasChanges);
+      
+      // Save to IndexedDB if content has changed
+      if (hasChanges) {
+        saveToIndexedDB(editorState);
+      }
+    }
+  }, [editorState, saveToIndexedDB]);
+
+  // Save to server when editor closes
+  const handleEditorClose = useCallback(async () => {
+    if (editorState && editorState !== description) {
+      try {
+        // Call the update mutation
+        updateCardMutation.mutate({
+          cardDescription: editorState,
+          cardId: cardId,
+          columnId,
+        });
+        
+        // Clear from IndexedDB after successful save
+        await indexedDBService.deleteCardDescription(cardId);
+        lastSavedToIndexedDBRef.current = editorState;
+        setHasUnsavedChanges(false);
+      } catch (error) {
+        console.error('Failed to save card description:', error);
+      }
+    }
+    
+    // Call the onEditorClose callback
+    onEditorClose?.();
+  }, [editorState, description, updateCardMutation, cardId, columnId, onEditorClose]);
+
+  // Expose the close handler to parent components
+  useEffect(() => {
+    // Store the close handler in a global variable or context that parent can access
+    (window as any).__cardEditorCloseHandler = handleEditorClose;
+    
+    return () => {
+      delete (window as any).__cardEditorCloseHandler;
+    };
+  }, [handleEditorClose]);
 
   const initialConfig: InitialConfigType = {
     namespace: "CardDetailsEditor",
-    editorState: () => $convertFromMarkdownString(description, TRANSFORMERS),
+    editorState: () => {
+      // Use the current editor state if available, otherwise use description
+      const contentToUse = editorState || description;
+      return $convertFromMarkdownString(contentToUse, TRANSFORMERS);
+    },
     theme,
     onError,
     nodes: [
@@ -216,28 +314,25 @@ export const CardDetailsEditor = ({
       HeadingNode,
       QuoteNode,
       ImageNode,
+      MentionNode
     ] as any,
   };
 
-  const handleSave = (): void => {
-    if (!editorState) return;
-
-    updateCardMutation.mutate({
-      cardDescription: editorState,
-      cardId: cardId,
-      columnId,
-    });
-  };
+  // Don't render until initialized
+  if (!isInitialized) {
+    return <div className="relative h-full border border-[#e3e3e3b5] rounded-lg bg-[#fafafa] dark:bg-[#181818] dark:border-zinc-700 p-2">
+      <div className="flex items-center justify-center h-full">
+        <div className="text-sm text-muted-foreground">Loading editor...</div>
+      </div>
+    </div>;
+  }
 
   return (
     <div className="relative h-full border border-[#e3e3e3b5] rounded-lg bg-[#fafafa] dark:bg-[#181818] dark:border-zinc-700 p-2">
       <LexicalComposer initialConfig={initialConfig}>
         <div className="editor-container">
           <CardToolbarPlugin 
-            save={handleSave} 
-            editorState={editorState}
             hasUnsavedChanges={hasUnsavedChanges}
-            onContentChange={handleContentChange}
           />
           <div className="h-full editor-inner">
             <RichTextPlugin
@@ -246,7 +341,7 @@ export const CardDetailsEditor = ({
                  <ContentEditable
                   className={cn(
                     "editor-root",
-                    "w-full!p-0 overflow-y-auto",
+                    "w-full p-0 overflow-y-auto",
                     "dark:text-zinc-100 focus:outline-none",
                     "min-h-[300px]",
                     "h-[calc(100vh-280px)]"
@@ -268,6 +363,7 @@ export const CardDetailsEditor = ({
             <ImagesPlugin />
             <EditorRefPlugin editorRef={editorRef} />
             <CopyImagePlugin ref={editorRef} />
+            <MentionsPlugin/>
             {floatingAnchorElem && (
               <>
                 <FloatingTextFormatToolbarPlugin
@@ -276,13 +372,13 @@ export const CardDetailsEditor = ({
                 />
               </>
             )}
-            {floatingAnchorElem && (
+            {
               <FloatingLinkEditorPlugin
                 anchorElem={floatingAnchorElem ?? undefined}
                 isLinkEditMode={isLinkEditMode}
                 setIsLinkEditMode={setIsLinkEditMode}
               />
-            )}
+            }
             {/* <DraggableBlockPlugin anchorElem={floatingAnchorElem ?? undefined} /> */}
           </div>
         </div>
@@ -293,4 +389,3 @@ export const CardDetailsEditor = ({
     </div>
   );
 };
-

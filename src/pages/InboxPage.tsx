@@ -25,7 +25,7 @@ import { AuthContext } from "@/context/AuthContext";
 import { UserContext } from "@/context/UserContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchNotifications, markNotificationAsRead, markAllNotificationsAsRead } from "@/apis/NotificationApis";
-import pusherClient from "@/services/pusherClientService";
+import pusherClient from "@/services/pusherClient.service";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MainLayout from "@/layouts/Container";
+import { InboxIcon } from "@/_components/shared/svg/SidebarIcons";
 
 interface Notification {
   id: number;
@@ -140,11 +141,11 @@ const InboxPage = () => {
   useEffect(() => {
     if (!user?.id) return;
 
-    const channel = pusherClient.subscribe("notification");
-    const eventName = `user:${user.id}`;
+    const channel = pusherClient.subscribe(`user-${user.id}`);
+    const eventName = 'notification';
 
     const handleNotification = (data: any) => {
-      toast.info(getNotificationMessage(data.notification), {
+      toast.info(getNotificationMessage(data), {
         action: {
           label: "View",
           onClick: () => window.location.href = "/inbox",
@@ -157,7 +158,7 @@ const InboxPage = () => {
 
     return () => {
       channel.unbind(eventName, handleNotification);
-      pusherClient.unsubscribe("notification");
+      pusherClient.unsubscribe(`user-${user.id}`);
     };
   }, [user?.id, refetch]);
 
@@ -263,13 +264,13 @@ const InboxPage = () => {
   };
 
   return (
-    <MainLayout title="Inbox" fwdClassName="flex flex-col h-full p-0">
+    <MainLayout title="Inbox" fwdClassName="flex flex-col h-full px-4">
       {/* Header */}
-      <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex items-center justify-between pb-2 pt-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-              <Inbox className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              <InboxIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
               <h1 className="text-2xl font-bold">Inbox</h1>

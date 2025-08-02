@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
-  Users, 
   Shield, 
   UserCheck, 
   UserX, 
@@ -31,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MemberIcon } from "../shared/svg/SharedIcons";
 
 interface BoardPermissionsDialogProps {
   isOpen: boolean;
@@ -202,7 +202,7 @@ const WorkspacePermissionsDialog = ({
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Users className="h-5 w-5" />
+                <MemberIcon className="h-5 w-5" />
                 Team: {permissionsData?.team?.name}
               </CardTitle>
             </CardHeader>

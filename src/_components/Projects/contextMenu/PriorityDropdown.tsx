@@ -40,7 +40,7 @@ const PriorityDropdown = ({
             className="text-[13px] font-semibold"
             onClick={() => onChange("Urgent")}
           >
-            <UrgentPriority className="h-4 w-4" isDark={isDark} />
+            <UrgentPriority className="h-4 w-4" />
             Urgent
           </DropdownMenuItem>
           <DropdownMenuItem
@@ -68,7 +68,7 @@ const PriorityDropdown = ({
             className="text-[13px] font-semibold"
             onClick={() => onChange("None")}
           >
-            <Priority className="h-4 w-4" isDark={isDark} />
+            <Priority className="h-4 w-4"/>
             N/A
           </DropdownMenuItem>
         </DropdownMenuGroup>

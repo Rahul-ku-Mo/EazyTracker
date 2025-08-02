@@ -31,7 +31,6 @@ import {
   MoreVertical,
   GripVertical,
   Columns,
-  Clock,
   AlertTriangle,
   Box,
 } from "lucide-react";
@@ -100,6 +99,8 @@ import LeadCommandDropdown from "./contextMenu/LeadCommandDropdown";
 import MembersCommandDropdown from "./contextMenu/MembersCommandDropdown";
 import { updateProjectPriority } from "@/apis/project";
 import { useTheme } from "@/context/ThemeProvider";
+import { TargetIcon } from "../shared/svg/SharedIcons";
+import { WorkspaceIcon } from "../shared/svg/SidebarIcons";
 
 export interface ProjectTableRow {
   id: string;
@@ -290,8 +291,7 @@ export function DataTable({
     onSuccess: () => {
       // Only invalidate the projects query
       queryClient.invalidateQueries({
-        queryKey: ["projects", teamId],
-        exact: true,
+        queryKey: ["projects", teamId]
       });
     },
   });
@@ -307,8 +307,7 @@ export function DataTable({
     onSuccess: () => {
       // Only invalidate the projects query
       queryClient.invalidateQueries({
-        queryKey: ["projects", teamId],
-        exact: true,
+        queryKey: ["projects", teamId]
       });
     },
   });
@@ -324,8 +323,7 @@ export function DataTable({
     onSuccess: () => {
       // Only invalidate the projects query
       queryClient.invalidateQueries({
-        queryKey: ["projects", teamId],
-        exact: true,
+        queryKey: ["projects", teamId]
       });
     },
   });
@@ -341,8 +339,7 @@ export function DataTable({
     onSuccess: () => {
       // Only invalidate the projects query
       queryClient.invalidateQueries({
-        queryKey: ["projects", teamId],
-        exact: true,
+        queryKey: ["projects", teamId]
       });
     },
   });
@@ -469,7 +466,7 @@ export function DataTable({
       accessorKey: "targetDate",
       header: () => (
         <div className="flex items-center gap-2 justify-center">
-          <Clock className="h-4 w-4" />
+          <TargetIcon className="h-4 w-4" />
           <span>Target Date</span>
         </div>
       ),
@@ -499,22 +496,7 @@ export function DataTable({
       accessorKey: "workspaces",
       header: () => (
         <div className="flex items-center gap-2 justify-center">
-          <svg
-            width="100%"
-            height="100%"
-            className="h-4 w-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M7.5 11H4.6C4.03995 11 3.75992 11 3.54601 11.109C3.35785 11.2049 3.20487 11.3578 3.10899 11.546C3 11.7599 3 12.0399 3 12.6V21M16.5 11H19.4C19.9601 11 20.2401 11 20.454 11.109C20.6422 11.2049 20.7951 11.3578 20.891 11.546C21 11.7599 21 12.0399 21 12.6V21M16.5 21V6.2C16.5 5.0799 16.5 4.51984 16.282 4.09202C16.0903 3.71569 15.7843 3.40973 15.408 3.21799C14.9802 3 14.4201 3 13.3 3H10.7C9.57989 3 9.01984 3 8.59202 3.21799C8.21569 3.40973 7.90973 3.71569 7.71799 4.09202C7.5 4.51984 7.5 5.0799 7.5 6.2V21M22 21H2M11 7H13M11 11H13M11 15H13"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <WorkspaceIcon />
           <span>Workspaces</span>
         </div>
       ),
@@ -583,10 +565,15 @@ export function DataTable({
       ),
     },
   ];
-  const [data, setData] = React.useState(() => initialData);
+  
+  // Only use local state for drag operations, otherwise use prop data directly
+  const [dragData, setDragData] = React.useState<ProjectTableRow[] | null>(null);
   const [searchValue, setSearchValue] = React.useState("");
   const [debouncedSearchValue, setDebouncedSearchValue] = React.useState("");
   const [rowSelection, setRowSelection] = React.useState({});
+
+  // Use prop data directly, or drag data during drag operations
+  const data = dragData || initialData;
 
   // Simple debounce effect
   React.useEffect(() => {
@@ -670,17 +657,23 @@ export function DataTable({
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (active && over && active.id !== over.id) {
-      setData((data) => {
-        const oldIndex = dataIds.indexOf(active.id);
-        const newIndex = dataIds.indexOf(over.id);
-        return arrayMove(data, oldIndex, newIndex);
-      });
+      const currentData = dragData || initialData;
+      const oldIndex = dataIds.indexOf(active.id);
+      const newIndex = dataIds.indexOf(over.id);
+      const newData = arrayMove(currentData, oldIndex, newIndex);
+      setDragData(newData);
+      
+      // TODO: Implement actual drag-and-drop persistence to server here
+      // For now, reset after a short delay to show the change
+      setTimeout(() => {
+        setDragData(null); // Reset to use prop data
+      }, 100);
     }
   }
 
   return (
     <>
-      <div className="flex items-center justify-between px-4 lg:px-6">
+      <div className="flex items-center justify-between px-4">
         <Label htmlFor="search" className="sr-only">
           View
         </Label>
@@ -730,7 +723,7 @@ export function DataTable({
           <NewProjectDialog teamId={teamId} />
         </div>
       </div>
-      <div className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6 flex-1">
+      <div className="relative flex flex-col gap-4 overflow-auto px-4 flex-1">
         <div className="overflow-hidden rounded-lg border flex-1">
           <DndContext
             collisionDetection={closestCenter}

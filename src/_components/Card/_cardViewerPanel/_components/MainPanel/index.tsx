@@ -98,7 +98,6 @@ const InlineEditableTitle = ({
         strokeWidth={3}
         onClick={() => setIsEditing(true)}
         aria-label="Edit title"
-        aria-role="button"
       />
     </div>
   );
