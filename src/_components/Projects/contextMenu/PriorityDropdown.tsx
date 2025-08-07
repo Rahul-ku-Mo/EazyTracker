@@ -37,35 +37,35 @@ const PriorityDropdown = ({
       <DropdownMenuContent className="w-28" align="start">
         <DropdownMenuGroup>
           <DropdownMenuItem
-            className="text-[13px] font-semibold"
+            className="text-sm font-semibold"
             onClick={() => onChange("Urgent")}
           >
             <UrgentPriority className="h-4 w-4" />
             Urgent
           </DropdownMenuItem>
           <DropdownMenuItem
-            className="text-[13px] font-semibold"
+            className="text-sm font-semibold"
             onClick={() => onChange("High")}
           >
             <HighPriority className="h-4 w-4" isDark={isDark} />
             High
           </DropdownMenuItem>
           <DropdownMenuItem
-            className="text-[13px] font-semibold"
+            className="text-sm font-semibold"
             onClick={() => onChange("Medium")}
           >
             <MediumPriority className="h-4 w-4" isDark={isDark} />
             Medium
           </DropdownMenuItem>
           <DropdownMenuItem
-            className="text-[13px] font-semibold"
+            className="text-sm font-semibold"
             onClick={() => onChange("Low")}
           >
             <LowPriority className="h-4 w-4" isDark={isDark} />
             Low
           </DropdownMenuItem>
           <DropdownMenuItem
-            className="text-[13px] font-semibold"
+            className="text-sm font-semibold"
             onClick={() => onChange("None")}
           >
             <Priority className="h-4 w-4"/>

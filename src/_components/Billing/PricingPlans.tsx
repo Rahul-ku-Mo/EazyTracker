@@ -339,7 +339,7 @@ export const PricingPlans: React.FC = () => {
                     key={index}
                     className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50"
                   >
-                    <td className="py-3 px-4 font-medium">{row.feature}</td>
+                    <td className="py-3 px-4 font-medium !text-base">{row.feature}</td>
                     <td className="py-3 px-4 text-center">
                       {row.free === "-" ? (
                         <span className="text-gray-400">—</span>

@@ -9,7 +9,7 @@ import {
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 
-import NewCardActions from "./_formComponents/NewCardActions";
+import NewCardActions from "./_newCardComponentsAndActions/new-card-actions";
 import { useCardMutation } from "./_mutations/useCardMutations";
 import { Badge } from "../../components/ui/badge";
 import { NewCardDescriptionEditor } from "./NewCardDescriptionEditor";
@@ -28,6 +28,7 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
   const [priority, setPriority] = useState<string>("none");
   const [labels, setLabels] = useState<string[]>([]);
   const [assignee, setAssignee] = useState<string | null>(null);
+  const [project, setProject] = useState<string | null>(null);  
 
   const { createCardMutation } = useCardMutation();
 
@@ -69,7 +70,7 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className={cn(
-          "transition-all duration-300 ease-in-out gap-0 p-0 flex flex-col justify-between overflow-hidden",
+          "transition-all duration-300 ease-in-out gap-0 p-0 flex flex-col justify-between overflow-hidden dark:bg-zinc-800",
           dimensions === "small" ? "max-w-[800px]" : "max-w-[900px]"
         )}
         style={{
@@ -119,16 +120,18 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
             setLabels={setLabels}
             assignee={assignee}
             setAssignee={setAssignee}
+            project={project}
+            setProject={setProject}
           />
 
-          <div className="flex items-center justify-end p-2 border-t border-[#e3e3e3b5] dark:border-border">
+          <div className="flex items-center justify-end p-2 border-t border-[#e3e3e3b5] dark:border-[#37423d]">
             <div className="flex items-center gap-2">
               <Button
                 type="submit"
                 disabled={createCardMutation.isPending}
-                className="h-7 text-xs rounded-sm"
+                className="h-7 text-xs rounded-sm !bg-emerald-600 text-white font-normal "
               >
-                {createCardMutation.isPending ? "Creating..." : "Create"}
+                {createCardMutation.isPending ? "Creating..." : "Create Ticket"}
               </Button>
             </div>
           </div>

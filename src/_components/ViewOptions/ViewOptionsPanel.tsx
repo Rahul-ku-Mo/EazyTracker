@@ -139,7 +139,7 @@ const ViewOptionsPanel = ({
     >
       <div className="flex items-center gap-3">
         <Icon className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
-        <span className="font-medium text-sm text-zinc-900 dark:text-zinc-100 !text-[13px] !eading-4">
+        <span className="font-medium text-sm text-zinc-900 dark:text-zinc-100">
           {title}
         </span>
       </div>

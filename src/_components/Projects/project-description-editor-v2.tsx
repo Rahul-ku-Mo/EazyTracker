@@ -47,7 +47,7 @@ import {
 import { CopyImagePlugin } from "../Card/_editor/Plugins/CopyImagePlugin";
 import { ImageNode } from "@/_components/Card/_editor/ImageNode";
 import { Button } from "@/components/ui/button";
-import { Save, Check } from "lucide-react";
+import { Cloud, Copy } from "lucide-react";
 
 interface ProjectDescriptionEditorProps {
   project: any;
@@ -330,8 +330,7 @@ export const ProjectDescriptionEditor = ({
 
   return (
     <div className="mb-6">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-semibold">Description</h2>
+      <div className="flex items-center justify-end mb-2 w-full">
         <div className="flex items-center gap-2">
           {hasUnsavedChanges && (
             <span className="text-xs text-muted-foreground">
@@ -346,21 +345,21 @@ export const ProjectDescriptionEditor = ({
             className="flex items-center gap-1.5"
           >
             {isLoadingSave ? (
-              <Save className="h-3 w-3 animate-spin" />
+              <Cloud className="h-3 w-3 animate-spin" />
             ) : hasUnsavedChanges ? (
-              <Save className="h-3 w-3" />
+              <Cloud className="h-3 w-3" />
             ) : (
-              <Check className="h-3 w-3" />
+              <Copy className="h-3 w-3" />
             )}
             {isLoadingSave ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>
 
-      <div className="rounded-md border min-h-[120px] max-h-full overflow-y-auto bg-background">
+      <div className="min-h-[120px] max-h-full overflow-y-auto bg-background">
         <LexicalComposer initialConfig={initialConfig}>
           <div className="editor-container">
-            <div className="relative editor-inner p-3">
+            <div className="relative editor-inner">
               <RichTextPlugin
                 contentEditable={
                   <ContentEditable

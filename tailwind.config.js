@@ -7,6 +7,16 @@ module.exports = {
 	  ],
   theme: {
   	extend: {
+		fontSize: {
+			'sm': ['13px', {
+				lineHeight: '18.2px'
+			}],
+			'base': [
+				"14px", {
+					lineHeight: "20px"
+				}
+			]
+		},
   		fontFamily: {
   			sans: ['Geist Variable', 'system-ui', 'sans-serif'],
   			mono: ['Geist Mono Variable', 'monospace'],

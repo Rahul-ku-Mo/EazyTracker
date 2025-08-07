@@ -15,6 +15,8 @@
   padding: 3px 0px;
   line-height: 1.6;
   user-select: text;
+  font-size: 14px;
+  line-height: 20px;
 }
 
 .editor-paragraph:last-child {

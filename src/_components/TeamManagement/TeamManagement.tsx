@@ -813,7 +813,7 @@ const TeamManagement: React.FC = () => {
                 <Table>
                   <TableHeader className="bg-muted sticky top-0 z-10">
                     <TableRow>
-                      <TableHead className="w-12 text-[13px]">
+                      <TableHead className="w-12 text-sm">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -828,34 +828,34 @@ const TeamManagement: React.FC = () => {
                           )}
                         </Button>
                       </TableHead>
-                      <TableHead className="text-[13px]">
+                      <TableHead className="text-sm">
                         <div className="flex items-center gap-2">
                           <MemberIcon className="h-4 w-4" />
                           Member
                         </div>
                       </TableHead>
-                      <TableHead className="text-[13px]">
+                      <TableHead className="text-sm">
                         <div className="flex items-center justify-center">
                           Department
                         </div>
                       </TableHead>
-                      <TableHead className="text-[13px]">
+                      <TableHead className="text-sm">
                         <div className="flex items-center justify-center">
                           <RoleIcon className="h-4 w-4 mr-1.5" />
                           Role
                         </div>
                       </TableHead>
-                      <TableHead className="text-[13px]">
+                      <TableHead className="text-sm">
                         <div className="flex items-center justify-center">
                           Status
                         </div>
                       </TableHead>
-                      <TableHead className="text-[13px]">
+                      <TableHead className="text-sm">
                         <div className="flex items-center justify-center">
                           Efficiency
                         </div>
                       </TableHead>
-                      <TableHead className="text-[13px]">
+                      <TableHead className="text-sm">
                         <div className="flex items-center justify-center">
                           Actions
                         </div>
@@ -1113,19 +1113,19 @@ const TeamManagement: React.FC = () => {
                     <Table>
                       <TableHeader className="bg-muted sticky top-0 z-10">
                         <TableRow>
-                          <TableHead className="text-[13px]">
+                          <TableHead className="text-sm">
                             <div className="flex items-center gap-2">
                               <MemberIcon className="h-4 w-4" />
                               Member
                             </div>
                           </TableHead>
-                          <TableHead className="text-[13px]">
+                          <TableHead className="text-sm">
                             <div className="flex items-center justify-center">
                               <AccessLevelIcon className="h-4 w-4 mr-1.5" />
                               Access Level
                             </div>
                           </TableHead>
-                          <TableHead className="text-[13px]">
+                          <TableHead className="text-sm">
                             <div className="flex items-center justify-center">
                               Actions
                             </div>

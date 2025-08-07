@@ -1,21 +1,20 @@
 import { useState, useContext, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Inbox, 
-  Bell, 
-  Check, 
-  CheckCheck, 
-  Archive, 
-  Filter, 
+import {
+  Inbox,
+  Bell,
+  Check,
+  CheckCheck,
+  Archive,
+  Filter,
   Search,
-  Users, 
-  MessageCircle, 
-  Trophy, 
+  Users,
+  MessageCircle,
+  Trophy,
   Clock,
-
   Eye,
   EyeOff,
-  RefreshCw
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,22 +23,28 @@ import { cn } from "@/lib/utils";
 import { AuthContext } from "@/context/AuthContext";
 import { UserContext } from "@/context/UserContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchNotifications, markNotificationAsRead, markAllNotificationsAsRead } from "@/apis/NotificationApis";
+import {
+  fetchNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+} from "@/apis/NotificationApis";
 import pusherClient from "@/services/pusherClient.service";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-  DropdownMenuLabel
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MainLayout from "@/layouts/Container";
 import { InboxIcon } from "@/_components/shared/svg/SidebarIcons";
+import { formatTimeAgo } from "@/utils";
+import { useNavigate } from "react-router-dom";
 
 interface Notification {
   id: number;
@@ -49,8 +54,8 @@ interface Notification {
   createdAt: string;
   sender: {
     id: string;
-    name: string;
-    email: string;
+    name?: string;
+    username: string;
     imageUrl?: string;
   };
 }
@@ -77,8 +82,10 @@ const getNotificationIcon = (type: string) => {
 };
 
 const getNotificationMessage = (notification: Notification) => {
-  const metadata = notification.metadata ? JSON.parse(notification.metadata) : {};
-  const senderName = notification.sender.name || notification.sender.email;
+  const metadata = notification.metadata
+    ? JSON.parse(notification.metadata)
+    : {};
+  const senderName = notification.sender.name || notification.sender.username;
 
   switch (notification.message) {
     case "CARD_ASSIGNED":
@@ -93,6 +100,8 @@ const getNotificationMessage = (notification: Notification) => {
       return `Card "${metadata.cardTitle}" is due soon`;
     case "CARD_OVERDUE":
       return `Card "${metadata.cardTitle}" is ${metadata.daysPastDue} days overdue`;
+    case "MENTION":
+      return `You have been mentioned by ${notification.sender.username} in <span class="text-xs font-bold tracking-tight bg-emerald-100 text-emerald-800 rounded">${metadata.contentTitle}</span>`;
     case "JOIN":
       if (metadata.teamName) {
         return `${senderName} joined your team "${metadata.teamName}"`;
@@ -110,11 +119,18 @@ const InboxPage = () => {
   const { accessToken } = useContext(AuthContext);
   const { user } = useContext(UserContext);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState<"all" | "unread" | "mentions" | "assignments">("all");
+  const [filterType, setFilterType] = useState<
+    "all" | "unread" | "mentions" | "assignments"
+  >("all");
   const [selectedTab, setSelectedTab] = useState("all");
   const queryClient = useQueryClient();
+  const navigate  = useNavigate();
 
-  const { data: notifications = [], refetch, isFetching } = useQuery({
+  const {
+    data: notifications = [],
+    refetch,
+    isFetching,
+  } = useQuery({
     queryKey: ["notifications"],
     queryFn: () => fetchNotifications(accessToken || ""),
     enabled: !!accessToken,
@@ -142,13 +158,13 @@ const InboxPage = () => {
     if (!user?.id) return;
 
     const channel = pusherClient.subscribe(`user-${user.id}`);
-    const eventName = 'notification';
+    const eventName = "notification";
 
     const handleNotification = (data: any) => {
       toast.info(getNotificationMessage(data), {
         action: {
           label: "View",
-          onClick: () => window.location.href = "/inbox",
+          onClick: () => (window.location.href = "/inbox"),
         },
       });
       refetch();
@@ -162,26 +178,41 @@ const InboxPage = () => {
     };
   }, [user?.id, refetch]);
 
-  const filteredNotifications = notifications.filter((notification: Notification) => {
-    if (searchQuery && !getNotificationMessage(notification).toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
+  const filteredNotifications = notifications.filter(
+    (notification: Notification) => {
+      if (
+        searchQuery &&
+        !getNotificationMessage(notification)
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
+      ) {
+        return false;
+      }
+
+      switch (filterType) {
+        case "unread":
+          return !notification.isRead;
+        case "mentions":
+          return (
+            notification.message === "CARD_COMMENTED" ||
+            notification.message === "MENTION"
+          );
+        case "assignments":
+          return notification.message === "CARD_ASSIGNED";
+        default:
+          return true;
+      }
     }
+  );
 
-    switch (filterType) {
-      case "unread":
-        return !notification.isRead;
-      case "mentions":
-        return notification.message === "CARD_COMMENTED" || notification.message === "MENTION";
-      case "assignments":
-        return notification.message === "CARD_ASSIGNED";
-      default:
-        return true;
-    }
-  });
+  const unreadCount = notifications.filter(
+    (n: Notification) => !n.isRead
+  ).length;
 
-  const unreadCount = notifications.filter((n: Notification) => !n.isRead).length;
-
-  const handleMarkAsRead = (notificationId: number, event: React.MouseEvent) => {
+  const handleMarkAsRead = (
+    notificationId: number,
+    event: React.MouseEvent
+  ) => {
     event.stopPropagation();
     markAsReadMutation.mutate(notificationId);
   };
@@ -190,9 +221,110 @@ const InboxPage = () => {
     markAllAsReadMutation.mutate();
   };
 
-  const NotificationItem = ({ notification }: { notification: Notification }) => {
-    const metadata = notification.metadata ? JSON.parse(notification.metadata) : {};
-    
+  const NotificationItem = ({
+    notification,
+  }: {
+    notification: Notification;
+  }) => {
+    const metadata = notification.metadata
+      ? JSON.parse(notification.metadata)
+      : {};
+
+    // Special layout for mention notifications
+    if (notification.message === "MENTION") {
+      return (
+        <motion.div
+          layout
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, x: -100 }}
+          className={cn(
+            "group flex items-start gap-3 p-4 border-b border-border hover:bg-muted/50 transition-colors cursor-pointer",
+            !notification.isRead &&
+              "bg-muted/30 border-l-4 border-l-emerald-500"
+          )}
+          onClick={() => {
+            if (!notification.isRead) {
+              markAsReadMutation.mutate(notification.id);
+            }
+
+            navigate(
+              `/workspace/${localStorage.getItem("teamName")}/${metadata.workspaceSlug}`
+            );
+          }}
+        >
+          {/* Profile Picture with @ overlay */}
+          <div className="flex-shrink-0 relative">
+            <div className="size-8 rounded-full border border-border bg-muted flex items-center justify-center">
+              {notification.sender.imageUrl ? (
+                <img
+                  src={notification.sender.imageUrl}
+                  alt={notification.sender.name || notification.sender.username}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              ) : (
+                <span className="text-zinc-900 dark:text-zinc-100 font-medium text-sm">
+                  {(notification.sender.name || notification.sender.username)
+                    .charAt(0)
+                    .toUpperCase()}
+                </span>
+              )}
+            </div>
+            {/* @ symbol overlay */}
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-gray-300 rounded-full flex items-center justify-center">
+              <span className="text-xs text-gray-600 font-bold">@</span>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1">
+                {/* First line - Content title */}
+                <div
+                  className={cn(
+                    "text-sm text-muted-foreground truncate font-light",
+                    !notification.isRead ? "font-medium" : ""
+                  )}
+                >
+                  {metadata.contentTitle}
+                </div>
+                {/* Second line - Mention message with context */}
+                <div
+                  className={cn(
+                    "text-xs inline-flex items-center flex-wrap gap-0.5",
+                    !notification.isRead
+                      ? "font-medium text-foreground"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  <div className="min-w-0 max-w-fit">
+                    {notification.sender.username} mentioned you:
+                  </div>
+                  <div
+                    className="truncate"
+                    dangerouslySetInnerHTML={{
+                      __html: metadata.contentContext,
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Status indicator (hollow circle) */}
+            </div>
+          </div>
+
+          {/* Timestamp */}
+          <div className="flex-shrink-0 mt-auto">
+            <span className="text-xs text-muted-foreground">
+              {formatTimeAgo(notification.createdAt)}
+            </span>
+          </div>
+        </motion.div>
+      );
+    }
+
+    // Default layout for other notifications
     return (
       <motion.div
         layout
@@ -203,7 +335,9 @@ const InboxPage = () => {
           "group flex items-start gap-3 p-4 border-b border-border hover:bg-muted/50 transition-colors cursor-pointer",
           !notification.isRead && "bg-muted/30 border-l-4 border-l-emerald-500"
         )}
-        onClick={() => !notification.isRead && markAsReadMutation.mutate(notification.id)}
+        onClick={() =>
+          !notification.isRead && markAsReadMutation.mutate(notification.id)
+        }
       >
         {/* Notification Icon */}
         <div className="flex-shrink-0 mt-1">
@@ -214,15 +348,22 @@ const InboxPage = () => {
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1">
-              <p className={cn(
-                "text-sm",
-                !notification.isRead ? "font-medium text-foreground" : "text-muted-foreground"
-              )}>
-                {getNotificationMessage(notification)}
-              </p>
+              <div
+                className={cn(
+                  "text-sm",
+                  !notification.isRead
+                    ? "font-medium text-foreground"
+                    : "text-muted-foreground"
+                )}
+                dangerouslySetInnerHTML={{
+                  __html: getNotificationMessage(notification),
+                }}
+              />
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(notification.createdAt), {
+                    addSuffix: true,
+                  })}
                 </span>
                 {metadata.cardTitle && (
                   <Badge variant="outline" className="text-xs px-1.5 py-0.5">
@@ -244,11 +385,7 @@ const InboxPage = () => {
                   <Check className="h-3 w-3" />
                 </Button>
               )}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0"
-              >
+              <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
                 <Archive className="h-3 w-3" />
               </Button>
             </div>
@@ -287,15 +424,13 @@ const InboxPage = () => {
               onClick={() => refetch()}
               disabled={isFetching}
             >
-              <RefreshCw className={cn("h-4 w-4", isFetching && "animate-spin")} />
+              <RefreshCw
+                className={cn("h-4 w-4", isFetching && "animate-spin")}
+              />
             </Button>
-            
+
             {unreadCount > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleMarkAllAsRead}
-              >
+              <Button variant="outline" size="sm" onClick={handleMarkAllAsRead}>
                 <CheckCheck className="h-4 w-4 mr-2" />
                 Mark all read ({unreadCount})
               </Button>
@@ -334,47 +469,54 @@ const InboxPage = () => {
 
         {/* Search and Tabs */}
         <div className="flex items-center gap-4 py-2">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search notifications..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search notifications..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
           </div>
+        </div>
 
-          <Tabs value={selectedTab} onValueChange={setSelectedTab} className="mt-4">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="all" className="flex items-center gap-2">
-                <Inbox className="h-4 w-4" />
-                All
-                {notifications.length > 0 && (
-                  <Badge variant="secondary" className="ml-1">
-                    {notifications.length}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="unread" className="flex items-center gap-2">
-                <EyeOff className="h-4 w-4" />
-                Unread
-                {unreadCount > 0 && (
-                  <Badge variant="destructive" className="ml-1">
-                    {unreadCount}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="mentions" className="flex items-center gap-2">
-                <MessageCircle className="h-4 w-4" />
-                Mentions
-              </TabsTrigger>
-              <TabsTrigger value="assignments" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Assignments
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+        <Tabs
+          value={selectedTab}
+          onValueChange={setSelectedTab}
+          className="mt-4"
+        >
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="all" className="flex items-center gap-2">
+              <Inbox className="h-4 w-4" />
+              All
+              {notifications.length > 0 && (
+                <Badge variant="secondary" className="ml-1">
+                  {notifications.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="unread" className="flex items-center gap-2">
+              <EyeOff className="h-4 w-4" />
+              Unread
+              {unreadCount > 0 && (
+                <Badge variant="destructive" className="ml-1">
+                  {unreadCount}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="mentions" className="flex items-center gap-2">
+              <MessageCircle className="h-4 w-4" />
+              Mentions
+            </TabsTrigger>
+            <TabsTrigger
+              value="assignments"
+              className="flex items-center gap-2"
+            >
+              <Users className="h-4 w-4" />
+              Assignments
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
       {/* Content */}
@@ -384,7 +526,10 @@ const InboxPage = () => {
             {filteredNotifications.length > 0 ? (
               <div className="divide-y divide-border">
                 {filteredNotifications.map((notification: Notification) => (
-                  <NotificationItem key={notification.id} notification={notification} />
+                  <NotificationItem
+                    key={notification.id}
+                    notification={notification}
+                  />
                 ))}
               </div>
             ) : (
@@ -397,16 +542,14 @@ const InboxPage = () => {
                   <Inbox className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <h3 className="text-lg font-medium mb-2">
-                  {searchQuery || filterType !== "all" 
-                    ? "No notifications found" 
-                    : "You're all caught up!"
-                  }
+                  {searchQuery || filterType !== "all"
+                    ? "No notifications found"
+                    : "You're all caught up!"}
                 </h3>
                 <p className="text-muted-foreground max-w-md">
                   {searchQuery || filterType !== "all"
                     ? "Try adjusting your search or filter criteria."
-                    : "All notifications have been read. New ones will appear here as they come in."
-                  }
+                    : "All notifications have been read. New ones will appear here as they come in."}
                 </p>
               </motion.div>
             )}
@@ -417,4 +560,4 @@ const InboxPage = () => {
   );
 };
 
-export default InboxPage; 
+export default InboxPage;

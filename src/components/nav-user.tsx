@@ -173,7 +173,7 @@ ${user?.username}`);
                   {user?.username.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-[13px] leading-[1.2] text-left">
+              <div className="grid flex-1 text-sm text-left">
                 <span className="font-semibold truncate">{user?.username}</span>
                 <span className="text-[11px] truncate">{user?.email}</span>
               </div>
@@ -197,7 +197,7 @@ ${user?.username}`);
                     {user?.username?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="grid flex-1 text-[13px] leading-[1.2] text-left">
+                <div className="grid flex-1 text-sm text-left">
                   <span className="font-semibold truncate">
                     {user?.username}
                   </span>
@@ -208,7 +208,7 @@ ${user?.username}`);
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               {upgradeOption.show && (
-                <DropdownMenuItem onClick={handleUpgradeClick} className="text-[13px] leading-[1.2]">
+                <DropdownMenuItem onClick={handleUpgradeClick} className="text-sm">
                   <upgradeOption.icon className="h-4 w-4" />
                   {upgradeOption.text}
                 </DropdownMenuItem>
@@ -216,7 +216,7 @@ ${user?.username}`);
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => navigate("/setting/account")} className="text-[13px] leading-[1.2]">
+              <DropdownMenuItem onClick={() => navigate("/setting/account")} className="text-sm">
                 <BadgeCheck className="h-4 w-4" />
                 Settings
               </DropdownMenuItem>
@@ -230,7 +230,7 @@ ${user?.username}`);
               </DropdownMenuItem> */}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} className="text-[13px] leading-[1.2]">
+            <DropdownMenuItem onClick={handleLogout} className="text-sm">
               <LogOut className="h-4 w-4" />
               Log out
             </DropdownMenuItem>

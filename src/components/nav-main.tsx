@@ -28,7 +28,7 @@ export function NavMain({
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild isActive={item.isActive} className="data-[active=true]:bg-zinc-900 data-[active=true]:text-white dark:data-[active=true]:bg-zinc-700 dark:data-[active=true]:text-white font-medium">
-                <a href={item.url} className="flex items-center gap-2 text-[13px] leading-[1.2]">
+                <a href={item.url} className="flex items-center gap-2 text-sm">
                   {item.icon && <item.icon className="h-4 w-4" />}
                   <span>{item.title}</span>
                 </a>

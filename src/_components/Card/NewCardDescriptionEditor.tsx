@@ -33,6 +33,8 @@ import { MARKDOWN_TRANSFORMERS } from "./_editor/MARKDOWN_TRANSFORMERS";
 // Import image styles
 import "./_editor/ImageNode/styles.css";
 import { CodeHighlightNode, CodeNode } from "@lexical/code";
+import MentionsPlugin from "./_editor/Plugins/MentionsPlugin";
+import { MentionNode } from "./_editor/MentionNode";
 
 interface EditorTheme {
   root: string;
@@ -187,6 +189,7 @@ export const NewCardDescriptionEditor = ({
       HeadingNode,
       QuoteNode,
       ImageNode,
+      MentionNode
     ] as any,
   };
 
@@ -202,7 +205,7 @@ export const NewCardDescriptionEditor = ({
                   className={cn(
                     "min-h-[150px] w-full overflow-y-auto",
                     dimensions === "small" ? "max-h-[160px]" : "max-h-[456px]",
-                    "text-sm text-foreground",
+                    "text-base text-foreground",
                     "focus:outline-none border-none",
                     "relative",
                     "px-0 py-0 !p-0",
@@ -213,7 +216,7 @@ export const NewCardDescriptionEditor = ({
                     "[&[data-empty-text]]:before:left-[1px]",
                     "[&[data-empty-text]]:before:top-[1px]",
                     "[&[data-empty-text]]:before:pointer-events-none",
-                    "[&[data-empty-text]]:before:text-sm",
+                    "[&[data-empty-text]]:before:leading-6",
                     "[&[data-empty-text]]:before:transition-opacity",
                     "[&[data-empty-text]]:before:duration-100",
                     "[&[data-empty-text]]:before:opacity-100",
@@ -230,6 +233,7 @@ export const NewCardDescriptionEditor = ({
             <MarkdownShortcutPlugin transformers={MARKDOWN_TRANSFORMERS} />
             <LinkPlugin />
             <ImagesPlugin />
+            <MentionsPlugin />
             <EditorRefPlugin editorRef={editorRef} />
             <CopyImagePlugin ref={editorRef} />
             {anchorElemRef.current && (

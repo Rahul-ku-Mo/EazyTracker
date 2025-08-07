@@ -38,7 +38,7 @@ const StatusDropdown = ({
           {PROJECT_STATUSES.map((statusOption) => (
             <DropdownMenuItem
               key={statusOption.value}
-              className="text-[13px] font-semibold"
+              className="text-sm font-semibold"
               onClick={() => onChange(statusOption.value)}
             >
               {statusOption.label}

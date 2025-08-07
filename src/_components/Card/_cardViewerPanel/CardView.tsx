@@ -1,5 +1,3 @@
- 
-
 import {
   Sheet,
   SheetContent,
@@ -8,8 +6,6 @@ import {
 } from "../../../components/ui/sheet";
 
 import { useState, useContext } from "react";
-
-
 
 import { CardContext } from "../../../context/CardProvider";
 import { TCardContext } from "../../../types/cardTypes";
@@ -24,7 +20,6 @@ interface CardViewProps {
   closeModal: () => void;
 }
 
-
 const CardView = ({ columnName, isOpen, closeModal }: CardViewProps) => {
   const [isLocked, setIsLocked] = useState(false);
 
@@ -37,7 +32,7 @@ const CardView = ({ columnName, isOpen, closeModal }: CardViewProps) => {
     if (!isLocked) {
       // Call the card editor close handler to save content
       const closeHandler = (window as any).__cardEditorCloseHandler;
-      if (closeHandler && typeof closeHandler === 'function') {
+      if (closeHandler && typeof closeHandler === "function") {
         closeHandler();
       }
       closeModal();
@@ -52,19 +47,17 @@ const CardView = ({ columnName, isOpen, closeModal }: CardViewProps) => {
         </SheetTitle>
       </SheetHeader>
       <SheetContent
-        side="bottom"
-        className="m-4 p-0 h-[90%] bg-white dark:bg-zinc-800 rounded-lg"
+        side="right"
+        className="!sm:max-w-[calc(100%-16rem)] !w-[calc(100%-16rem)] p-0 bg-white dark:bg-zinc-800 border-l border-gray-200 dark:border-gray-700"
         isCloseButtonNotHidden={false}
       >
-        <div className="h-full flex flex-wrap">   
-          <div className="w-full md:w-4/5">
+        <div className="h-full flex flex-col overflow-hidden">
+          <div className="flex-1 flex overflow-hidden">
             <MainPanel
               columnName={columnName}
               isLocked={isLocked}
               setIsLocked={setIsLocked}
             />
-          </div>
-          <div className="w-full md:w-1/5">
             <RightPanel />
           </div>
         </div>

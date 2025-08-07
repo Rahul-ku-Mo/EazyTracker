@@ -741,7 +741,7 @@ export function DataTable({
                         <TableHead
                           key={header.id}
                           colSpan={header.colSpan}
-                          className="text-[13px]"
+                          className="text-sm"
                         >
                           {header.isPlaceholder
                             ? null

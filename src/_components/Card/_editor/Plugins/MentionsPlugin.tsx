@@ -14,6 +14,7 @@ import * as ReactDOM from "react-dom";
 
 import { $createMentionNode } from "../MentionNode";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 import { getTeamMembersForMentions, searchTeamMembers } from "../../../../services/teamMembers.service";
   
 const PUNCTUATION =
@@ -200,12 +201,14 @@ function MentionsTypeaheadMenuItem({
   option: MentionTypeaheadOption;
 }) {
   return (
-    <li
+    <div
       key={option.key}
-      tabIndex={-1}
-      className={`flex items-center gap-3 px-3 py-2 cursor-pointer ${
-        isSelected ? "bg-accent" : ""
-      }`}
+      className={cn(
+        "flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors rounded-sm mx-1",
+        "hover:bg-accent hover:text-accent-foreground",
+        "focus:bg-accent focus:text-accent-foreground focus:outline-none",
+        isSelected && "bg-accent text-accent-foreground"
+      )}
       ref={option.setRefElement}
       role="option"
       aria-selected={isSelected}
@@ -213,25 +216,36 @@ function MentionsTypeaheadMenuItem({
       onMouseEnter={onMouseEnter}
       onClick={onClick}
     >
-      <Avatar className="size-4">
+      <Avatar className="size-6 flex-shrink-0">
         <AvatarImage
           src={option.user.imageUrl || "/placeholder.svg"}
           alt={option.user.name}
         />
-        <AvatarFallback className="text-[9px] font-semibold">
+        <AvatarFallback className="text-[10px] font-semibold bg-muted">
           {option.user.name
             .split(" ")
             .map((n) => n[0])
-            .join("")}
+            .join("")
+            .slice(0, 2)
+            .toUpperCase()}
         </AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
-        <div className="font-medium text-xs">{option.user.name}</div>
-        {option.user.department && (
-          <div className="text-xs text-muted-foreground">{option.user.department}</div>
-        )}
+        <div className="font-medium text-sm truncate text-foreground">
+          {option.user.name}
+        </div>
+        <div className="flex flex-col gap-0.5">
+          {option.user.department && (
+            <div className="text-xs text-muted-foreground truncate">
+              {option.user.department}
+            </div>
+          )}
+          <div className="text-xs text-muted-foreground truncate">
+            {option.user.email}
+          </div>
+        </div>
       </div>
-    </li>
+    </div>
   );
 }
 
@@ -250,7 +264,7 @@ export default function MentionsPlugin(): JSX.Element | null {
     () =>
       results
         .map((user) => new MentionTypeaheadOption(user))
-     ,
+        .slice(0, 8), // Limit to 8 results for better UX
     [results]
   );
 
@@ -263,7 +277,10 @@ export default function MentionsPlugin(): JSX.Element | null {
       editor.update(() => {
         // Create mention with @ symbol for proper display
         const mentionText = `@${selectedOption.user.username || selectedOption.user.name.toLowerCase().replace(/\s+/g, '')}`;
-        const mentionNode = $createMentionNode(selectedOption.user.username || selectedOption.user.name.toLowerCase().replace(/\s+/g, ''), mentionText);
+        const mentionNode = $createMentionNode(
+          selectedOption.user.username || selectedOption.user.name.toLowerCase().replace(/\s+/g, ''), 
+          mentionText
+        );
         
         if (nodeToReplace) {
           nodeToReplace.replace(mentionNode);
@@ -304,36 +321,86 @@ export default function MentionsPlugin(): JSX.Element | null {
       ) =>
         anchorElementRef.current && (results.length > 0 || isLoading)
           ? ReactDOM.createPortal(
-              <div className="fixed z-50 w-48 bg-popover border rounded-md shadow-lg">
-                <ul className="max-h-72 overflow-y-auto">
+              <div 
+                className={cn(
+                  "fixed z-[60] min-w-[16rem] max-w-[20rem]",
+                  "bg-popover text-popover-foreground",
+                  "border border-border rounded-md shadow-lg",
+                  "animate-in fade-in-0 zoom-in-95 duration-200"
+                )}
+                style={{
+                  top: `${anchorElementRef.current.getBoundingClientRect().bottom + window.scrollY + 4}px`,
+                  left: `${anchorElementRef.current.getBoundingClientRect().left + window.scrollX}px`,
+                }}
+              >
+                {/* Header */}
+                {queryString && queryString.length > 0 && (
+                  <div className="px-3 py-2 border-b border-border">
+                    <div className="text-xs font-medium text-muted-foreground">
+                      Mention team members
+                    </div>
+                  </div>
+                )}
+                
+                {/* Content */}
+                <div 
+                  className="py-1 max-h-64 overflow-y-auto overscroll-contain"
+                  style={{
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: 'hsl(var(--muted-foreground)) transparent'
+                  }}
+                >
                   {isLoading ? (
-                    <li className="px-3 py-2 text-xs text-muted-foreground">
-                      Loading team members...
-                    </li>
+                    <div className="px-3 py-6 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm text-muted-foreground">Loading...</span>
+                      </div>
+                    </div>
                   ) : results.length === 0 ? (
-                    <li className="px-3 py-2 text-xs text-muted-foreground">
-                      No team members found
-                    </li>
+                    <div className="px-3 py-6 text-center">
+                      <div className="text-sm text-muted-foreground mb-1">
+                        No team members found
+                      </div>
+                      {queryString && (
+                        <div className="text-xs text-muted-foreground">
+                          for "{queryString}"
+                        </div>
+                      )}
+                    </div>
                   ) : (
-                    options.map((option, i: number) => (
-                      <MentionsTypeaheadMenuItem
-                        index={i}
-                        isSelected={selectedIndex === i}
-                        onClick={() => {
-                          setHighlightedIndex(i);
-                          selectOptionAndCleanUp(option);
-                        }}
-                        onMouseEnter={() => {
-                          setHighlightedIndex(i);
-                        }}
-                        key={option.key}
-                        option={option}
-                      />
-                    ))
+                    <>
+                      <div role="listbox" className="focus:outline-none">
+                        {options.map((option, i: number) => (
+                          <MentionsTypeaheadMenuItem
+                            key={option.key}
+                            index={i}
+                            isSelected={selectedIndex === i}
+                            onClick={() => {
+                              setHighlightedIndex(i);
+                              selectOptionAndCleanUp(option);
+                            }}
+                            onMouseEnter={() => {
+                              setHighlightedIndex(i);
+                            }}
+                            option={option}
+                          />
+                        ))}
+                      </div>
+                      
+                      {/* Footer for overflow indicator */}
+                      {results.length > 8 && (
+                        <div className="px-3 py-2 border-t border-border bg-muted/30">
+                          <div className="text-xs text-muted-foreground text-center">
+                            Showing 8 of {results.length} results
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
-                </ul>
+                </div>
               </div>,
-              anchorElementRef.current
+              document.body
             )
           : null
       }

@@ -50,7 +50,7 @@ const NavFavorites = ({
   if (!favoriteWorkspaces || favoriteWorkspaces.length === 0) {
     return (
       <SidebarGroup>
-        <SidebarGroupLabel className="flex items-center gap-2 text-[13px] leading-[1.2]">
+        <SidebarGroupLabel className="flex items-center gap-2 text-sm">
           <Star className="h-4 w-4" />
           Favorites
         </SidebarGroupLabel>
@@ -58,7 +58,7 @@ const NavFavorites = ({
           className={cn(
             state === "collapsed"
               ? "hidden"
-              : "block px-2 py-1 text-[13px] leading-[1.2] text-muted-foreground"
+              : "block px-2 py-1 text-sm text-muted-foreground"
           )}
         >
           No favorite workspaces yet
@@ -80,7 +80,7 @@ const NavFavorites = ({
               onClick={() =>
                 navigate(`/workspace/${teamName}/${workspace.slug}`)
               }
-              className="flex items-center gap-2 text-[13px] leading-[1.2]"
+              className="flex items-center gap-2 text-sm"
             >
               <div
                 className="w-4 h-4 rounded-sm"

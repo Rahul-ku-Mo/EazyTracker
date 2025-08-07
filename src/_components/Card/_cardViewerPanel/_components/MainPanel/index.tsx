@@ -182,7 +182,7 @@ const MainPanel = ({
   const { description, id: cardId, title } = cardDetails as TCardContext;
 
   return (
-    <div className="relative p-4">
+    <div className="relative p-4 flex-1">
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
           <ColumnStatusIndicator columnName={columnName} />

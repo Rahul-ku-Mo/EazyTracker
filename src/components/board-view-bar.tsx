@@ -33,7 +33,7 @@ const BoardViewBar: React.FC<BoardViewBarProps> = ({
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-0 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
           <Input
-            placeholder="Search cards..."
+            placeholder="Search"
             value={searchQuery}
             onChange={(e) => onSearchChange?.(e.target.value)}
             className="pl-6 h-8 !text-xs border-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 outline-none shadow-none placeholder:text-xs"
