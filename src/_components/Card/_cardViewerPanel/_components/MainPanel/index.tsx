@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { CardDetailsEditor } from "../../../_editor/editor.tsx";
-import { Lock, Unlock, Edit2, Check, X } from "lucide-react";
+import { Lock, Unlock } from "lucide-react";
 import { useContext, useState, useRef, useEffect } from "react";
 import { CardContext } from "@/context/CardProvider.tsx";
 import { TCardContext } from "@/types/cardTypes";
 import { useCardMutation } from "../../../_mutations/useCardMutations.ts";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input.tsx";
 
 // Simple Inline Title Editor
 const InlineEditableTitle = ({
@@ -55,29 +56,18 @@ const InlineEditableTitle = ({
   if (isEditing) {
     return (
       <div className="flex items-center gap-2">
-        <input
+        <label htmlFor="Card-Title" className="sr-only">
+          Card Title
+        </label>
+        <Input
+          id="Card-Title"
+          name="Card-Title"
           ref={inputRef}
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={handleSave}
-          className="text-4xl font-bold py-2 bg-transparent border-none outline-none focus:bg-white dark:focus:bg-zinc-800 focus:px-2 focus:rounded-md transition-all"
-          style={{ width: `${Math.max(editValue.length * 0.6, 10)}ch` }}
-        />
-
-        <Check
-          onClick={handleSave}
-          className="size-5 p-0.5 cursor-pointer hover:text-primary/80 transition-colors"
-          strokeWidth={3}
-        />
-
-        <X
-          onClick={() => {
-            setEditValue(title);
-            setIsEditing(false);
-          }}
-          className="size-5 p-0.5 cursor-pointer hover:text-primary/80 transition-colors"
-          strokeWidth={3}
+          className="!text-3xl my-1.5 font-bold !p-0 border-none focus:ring-0 focus-visible:ring-offset-0 focus-visible:ring-0 rounded-none"
         />
       </div>
     );
@@ -92,13 +82,6 @@ const InlineEditableTitle = ({
       >
         {title}
       </div>
-
-      <Edit2
-        className="size-5 p-0.5 cursor-pointer hover:text-primary/80 transition-colors"
-        strokeWidth={3}
-        onClick={() => setIsEditing(true)}
-        aria-label="Edit title"
-      />
     </div>
   );
 };
@@ -182,7 +165,7 @@ const MainPanel = ({
   const { description, id: cardId, title } = cardDetails as TCardContext;
 
   return (
-    <div className="relative p-4 flex-1">
+    <div className="relative p-4 flex-1 pr-[20rem]">
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
           <ColumnStatusIndicator columnName={columnName} />

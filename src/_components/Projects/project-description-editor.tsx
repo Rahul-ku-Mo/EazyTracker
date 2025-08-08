@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { EditorState, ParagraphNode, $getRoot } from "lexical";
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -23,7 +23,8 @@ import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateProject } from "@/apis/project";
 import { useToast } from "@/hooks/use-toast";
-
+import { indexedDBService } from "@/services/indexedDB.service";
+import { useDebounce } from "@/hooks/use-debounce";
 
 // Import markdown transformers
 import {
@@ -45,6 +46,8 @@ import {
 } from "@lexical/markdown";
 import { CopyImagePlugin } from "../Card/_editor/Plugins/CopyImagePlugin";
 import { ImageNode } from "@/_components/Card/_editor/ImageNode";
+import { Button } from "@/components/ui/button";
+import { Cloud, Copy } from "lucide-react";
 
 interface ProjectDescriptionEditorProps {
   project: any;
@@ -103,9 +106,9 @@ function PlaceholderPlugin({ placeholder }: { placeholder: string }) {
 }
 
 function TransformToHTMLPlugin({
-  setDescription,
+  setCurrentContent,
 }: {
-  setDescription: (description: string) => void;
+  setCurrentContent: (content: string) => void;
 }) {
   const [editor] = useLexicalComposerContext();
 
@@ -117,26 +120,27 @@ function TransformToHTMLPlugin({
             let htmlString = $generateHtmlFromNodes(editor, null);
             htmlString = htmlString.replace(/^(<p[^>]*><br><\/p>)+/, "");
             htmlString = htmlString.replace(/(<p[^>]*><br><\/p>)+$/, "");
-            setDescription(htmlString);
+            setCurrentContent(htmlString);
           } catch (error) {
             console.error("Error generating HTML:", error);
-            setDescription("");
+            setCurrentContent("");
           }
         });
       }
     );
 
     return unregister;
-  }, [editor, setDescription]);
+  }, [editor, setCurrentContent]);
 
   return null;
 }
 
 function InitialContentPlugin({ initialContent }: { initialContent: string }) {
   const [editor] = useLexicalComposerContext();
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
-    if (initialContent) {
+    if (initialContent && !hasInitialized.current) {
       editor.update(() => {
         const parser = new DOMParser();
         const dom = parser.parseFromString(initialContent, "text/html");
@@ -145,65 +149,136 @@ function InitialContentPlugin({ initialContent }: { initialContent: string }) {
         root.clear();
         root.append(...nodes);
       });
+      hasInitialized.current = true;
     }
   }, [editor, initialContent]);
 
   return null;
 }
 
-// Helper function to check if HTML content is effectively empty
-function isContentEffectivelyEmpty(htmlContent: string): boolean {
-  if (!htmlContent || htmlContent.trim() === "") {
-    return true;
-  }
-
-  // Create a temporary element to parse the HTML
-  const tempDiv = document.createElement("div");
-  tempDiv.innerHTML = htmlContent;
-
-  // Get text content and check if it's empty or just whitespace
-  const textContent = tempDiv.textContent || tempDiv.innerText || "";
-
-  // Check if there's any meaningful text content
-  return textContent.trim() === "";
-}
-
 export const ProjectDescriptionEditor = ({
   project,
   initialDescription = "",
 }: ProjectDescriptionEditorProps): JSX.Element => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [description, setDescription] = useState(initialDescription);
+  const [currentContent, setCurrentContent] = useState(initialDescription);
+  const [loadedContent, setLoadedContent] = useState(initialDescription);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoadingSave, setIsLoadingSave] = useState(false);
   const editorRef = useRef(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
- 
+  
+  // Debounce the current content for IndexedDB saving
+  const debouncedContent = useDebounce(currentContent, 500);
+  
+  // Refs to track state
+  const initialDescriptionRef = useRef(initialDescription);
+  const lastSavedToCloudRef = useRef(initialDescription);
+  const currentContentRef = useRef(currentContent);
+  const handleSaveToCloudRef = useRef<(() => Promise<void>) | null>(null);
+
   const updateProjectMutation = useMutation({
     mutationFn: (data: any) => updateProject({ slug: project.slug, ...data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects", project.slug] });
       toast({
         title: "Success",
-        description: "Description updated successfully",
+        description: "Description saved to cloud successfully",
       });
+      lastSavedToCloudRef.current = currentContent;
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to update description",
+        description: "Failed to save description to cloud",
         variant: "destructive",
       });
-      // Revert to initial description on error
-      setDescription(initialDescription);
     },
   });
 
-  const handleAutoSave = () => {
-    if (description !== initialDescription) {
-      updateProjectMutation.mutate({ description });
+  // Initialize IndexedDB and load saved content
+  useEffect(() => {
+    const initializeEditor = async () => {
+      try {
+        const savedContent = await indexedDBService.getProjectDescription(project.slug);
+        
+        if (savedContent && savedContent !== initialDescription) {
+          setCurrentContent(savedContent);
+          setLoadedContent(savedContent);
+        } else {
+          setCurrentContent(initialDescription);
+          setLoadedContent(initialDescription);
+        }
+        
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Failed to initialize editor with IndexedDB:', error);
+        setCurrentContent(initialDescription);
+        setLoadedContent(initialDescription);
+        setIsInitialized(true);
+      }
+    };
+
+    initializeEditor();
+  }, [project.slug, initialDescription]);
+
+  // Update refs when values change
+  useEffect(() => {
+    initialDescriptionRef.current = initialDescription;
+    lastSavedToCloudRef.current = initialDescription;
+  }, [initialDescription]);
+
+  useEffect(() => {
+    currentContentRef.current = currentContent;
+  }, [currentContent]);
+
+  // Save to IndexedDB when debounced content changes
+  useEffect(() => {
+    if (isInitialized && debouncedContent !== initialDescriptionRef.current) {
+      const saveToIndexedDB = async () => {
+        try {
+          await indexedDBService.saveProjectDescription(project.slug, debouncedContent);
+        } catch (error) {
+          console.error('Failed to save to IndexedDB:', error);
+        }
+      };
+      saveToIndexedDB();
     }
-    setIsEditing(false);
-  };
+  }, [debouncedContent, isInitialized, project.slug]);
+
+  // Check if there are unsaved changes
+  const hasUnsavedChanges = currentContent !== lastSavedToCloudRef.current;
+
+  // Save to server
+  const handleSaveToCloud = useCallback(async () => {
+    if (currentContent !== lastSavedToCloudRef.current) {
+      setIsLoadingSave(true);
+      try {
+        await updateProjectMutation.mutateAsync({ description: currentContent });
+        
+        // Clear from IndexedDB after successful save
+        await indexedDBService.deleteProjectDescription(project.slug);
+      } catch (error) {
+        console.error('Failed to save project description:', error);
+      } finally {
+        setIsLoadingSave(false);
+      }
+    }
+  }, [currentContent, updateProjectMutation, project.slug]);
+
+  // Update the ref with the latest handleSaveToCloud function
+  useEffect(() => {
+    handleSaveToCloudRef.current = handleSaveToCloud;
+  }, [handleSaveToCloud]);
+
+  // Save to cloud on unmount only
+  useEffect(() => {
+    return () => {
+      if (currentContentRef.current !== lastSavedToCloudRef.current && handleSaveToCloudRef.current) {
+        handleSaveToCloudRef.current();
+      }
+    };
+  }, []);
 
   const initialConfig = {
     namespace: "ProjectDescriptionEditor",
@@ -241,64 +316,78 @@ export const ProjectDescriptionEditor = ({
     CODE,
   ];
 
+  // Don't render until initialized
+  if (!isInitialized) {
+    return (
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-semibold">Description</h2>
+        </div>
+        <div className="min-h-[120px] bg-muted/50 animate-pulse rounded-md"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="mb-6">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-semibold">Description</h2>
+      <div className="flex items-center justify-end mb-2 w-full">
+        <div className="flex items-center gap-2">
+          {hasUnsavedChanges && (
+            <span className="text-xs text-muted-foreground">
+              Unsaved changes
+            </span>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSaveToCloud}
+            disabled={!hasUnsavedChanges || isLoadingSave}
+            className="flex items-center gap-1.5"
+          >
+            {isLoadingSave ? (
+              <Cloud className="h-3 w-3 animate-spin" />
+            ) : hasUnsavedChanges ? (
+              <Cloud className="h-3 w-3" />
+            ) : (
+              <Copy className="h-3 w-3" />
+            )}
+            {isLoadingSave ? "Saving..." : "Save"}
+          </Button>
+        </div>
       </div>
 
-      {!isEditing ? (
-        <div
-          className="prose prose-sm max-w-none text-muted-foreground cursor-pointer rounded-md transition-colors"
-          onClick={() => setIsEditing(true)}
-        >
-          {initialDescription &&
-          !isContentEffectivelyEmpty(initialDescription) ? (
-            <div dangerouslySetInnerHTML={{ __html: initialDescription }} />
-          ) : (
-            <p className="text-muted-foreground italic text-sm">
-              No description provided. Click to add one.
-            </p>
-          )}
-        </div>
-      ) : (
-        <div
-          className="rounded-md min-h-[120px] max-h-full overflow-y-auto"
-          onBlur={handleAutoSave}
-        >
-          <LexicalComposer initialConfig={initialConfig}>
-            <div className="editor-container">
-              <div className="relative editor-inner">
-                <RichTextPlugin
-                  contentEditable={
-                    <ContentEditable
-                      id="project-description-editor"
-                      className={cn(
-                        "min-h-[100px] w-full overflow-y-auto",
-                        "text-sm text-foreground",
-                        "focus:outline-none border-none",
-                        "relative px-0 py-0"
-                      )}
-                      onBlur={handleAutoSave}
-                    />
-                  }
-                  ErrorBoundary={LexicalErrorBoundary}
-                />
-                <PlaceholderPlugin placeholder="Add project description..." />
-                <InitialContentPlugin initialContent={initialDescription} />
-                <TransformToHTMLPlugin setDescription={setDescription} />
-                <HistoryPlugin />
-                <ListPlugin />
-                <CheckListPlugin />
-                <MarkdownShortcutPlugin transformers={transformers} />
-                <LinkPlugin />
-                <CopyImagePlugin />
-                <EditorRefPlugin editorRef={editorRef} />
-              </div>
+      <div className="min-h-[120px] max-h-full overflow-y-auto bg-background">
+        <LexicalComposer initialConfig={initialConfig}>
+          <div className="editor-container">
+            <div className="relative editor-inner">
+              <RichTextPlugin
+                contentEditable={
+                  <ContentEditable
+                    id="project-description-editor"
+                    className={cn(
+                      "min-h-[100px] w-full overflow-y-auto",
+                      "text-sm text-foreground",
+                      "focus:outline-none border-none",
+                      "relative px-0 py-0"
+                    )}
+                  />
+                }
+                ErrorBoundary={LexicalErrorBoundary}
+              />
+              <PlaceholderPlugin placeholder="Add project description..." />
+              <InitialContentPlugin initialContent={loadedContent} />
+              <TransformToHTMLPlugin setCurrentContent={setCurrentContent} />
+              <HistoryPlugin />
+              <ListPlugin />
+              <CheckListPlugin />
+              <MarkdownShortcutPlugin transformers={transformers} />
+              <LinkPlugin />
+              <CopyImagePlugin />
+              <EditorRefPlugin editorRef={editorRef} />
             </div>
-          </LexicalComposer>
-        </div>
-      )}
+          </div>
+        </LexicalComposer>
+      </div>
     </div>
   );
 };

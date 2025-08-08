@@ -109,7 +109,7 @@ const CardDescription = ({
           "relative z-10 dark:text-muted-foreground w-full max-h-[153px]",
           "px-2 py-2",
           "card-editor-view",
-          "editor-readable-font text-xs",
+          "editor-readable-font !text-xs",
           "overflow-hidden",
           "line-clamp-6",
           isCompleted && "line-through text-zinc-500 dark:text-zinc-400",

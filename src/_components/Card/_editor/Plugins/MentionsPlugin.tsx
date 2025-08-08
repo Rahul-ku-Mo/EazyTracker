@@ -15,8 +15,11 @@ import * as ReactDOM from "react-dom";
 import { $createMentionNode } from "../MentionNode";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { getTeamMembersForMentions, searchTeamMembers } from "../../../../services/teamMembers.service";
-  
+import {
+  getTeamMembersForMentions,
+  searchTeamMembers,
+} from "../../../../services/teamMembers.service";
+
 const PUNCTUATION =
   "\\.,\\+\\*\\?\\$\\@\\|#{}\\(\\)\\^\\-\\[\\]\\\\/!%'\"~=<>_:;";
 const NAME = "\\b[A-Z][^\\s" + PUNCTUATION + "]";
@@ -92,10 +95,13 @@ const mentionsCache = new Map<string, TeamMember[]>();
 
 // Real team members lookup service
 const teamMembersLookupService = {
-  async search(string: string, callback: (results: TeamMember[]) => void): Promise<void> {
+  async search(
+    string: string,
+    callback: (results: TeamMember[]) => void
+  ): Promise<void> {
     try {
       // Check cache first
-      const cachedResults = mentionsCache.get('team-members');
+      const cachedResults = mentionsCache.get("team-members");
       if (cachedResults) {
         const filteredResults = searchTeamMembers(string, cachedResults);
         callback(filteredResults);
@@ -104,18 +110,18 @@ const teamMembersLookupService = {
 
       // Fetch team members from API
       const teamMembers = await getTeamMembersForMentions();
-      
+
       // Cache the results
-      mentionsCache.set('team-members', teamMembers);
-      
+      mentionsCache.set("team-members", teamMembers);
+
       // Filter and return results
       const filteredResults = searchTeamMembers(string, teamMembers);
       callback(filteredResults);
     } catch (error) {
-      console.error('Error fetching team members for mentions:', error);
+      console.error("Error fetching team members for mentions:", error);
       callback([]);
     }
-  }
+  },
 };
 
 function useMentionLookupService(mentionString: string | null) {
@@ -123,7 +129,7 @@ function useMentionLookupService(mentionString: string | null) {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const cachedResults = mentionsCache.get(mentionString || '');
+    const cachedResults = mentionsCache.get(mentionString || "");
 
     if (mentionString == null) {
       setResults([]);
@@ -200,28 +206,55 @@ function MentionsTypeaheadMenuItem({
   onMouseEnter: () => void;
   option: MentionTypeaheadOption;
 }) {
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onClick();
+    },
+    [onClick]
+  );
+
+  const handleMouseEnter = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      onMouseEnter();
+    },
+    [onMouseEnter]
+  );
+
   return (
     <div
       key={option.key}
       className={cn(
-        "flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors rounded-sm mx-1",
+        "flex items-center gap-3 px-2 py-1.5 cursor-pointer transition-colors rounded-sm mx-1 ease-linear",
         "hover:bg-accent hover:text-accent-foreground",
         "focus:bg-accent focus:text-accent-foreground focus:outline-none",
+        "select-none user-select-none", // Prevent text selection
         isSelected && "bg-accent text-accent-foreground"
       )}
       ref={option.setRefElement}
       role="option"
       aria-selected={isSelected}
       id={"typeahead-item-" + index}
-      onMouseEnter={onMouseEnter}
-      onClick={onClick}
+      onMouseEnter={handleMouseEnter}
+      onClick={handleClick}
+      onMouseDown={(e) => e.preventDefault()} // Prevent focus issues
+      style={{
+        WebkitUserSelect: "none",
+        MozUserSelect: "none",
+        msUserSelect: "none",
+        userSelect: "none",
+        pointerEvents: "auto", // Ensure pointer events work
+      }}
     >
-      <Avatar className="size-6 flex-shrink-0">
+      <Avatar className="size-6 flex-shrink-0 pointer-events-none">
         <AvatarImage
           src={option.user.imageUrl || "/placeholder.svg"}
           alt={option.user.name}
+          className="pointer-events-none"
         />
-        <AvatarFallback className="text-[10px] font-semibold bg-muted">
+        <AvatarFallback className="text-[10px] font-semibold bg-muted pointer-events-none">
           {option.user.name
             .split(" ")
             .map((n) => n[0])
@@ -230,19 +263,9 @@ function MentionsTypeaheadMenuItem({
             .toUpperCase()}
         </AvatarFallback>
       </Avatar>
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 pointer-events-none">
         <div className="font-medium text-sm truncate text-foreground">
           {option.user.name}
-        </div>
-        <div className="flex flex-col gap-0.5">
-          {option.user.department && (
-            <div className="text-xs text-muted-foreground truncate">
-              {option.user.department}
-            </div>
-          )}
-          <div className="text-xs text-muted-foreground truncate">
-            {option.user.email}
-          </div>
         </div>
       </div>
     </div>
@@ -261,10 +284,7 @@ export default function MentionsPlugin(): JSX.Element | null {
   });
 
   const options = useMemo(
-    () =>
-      results
-        .map((user) => new MentionTypeaheadOption(user))
-        .slice(0, 8), // Limit to 8 results for better UX
+    () => results.map((user) => new MentionTypeaheadOption(user)).slice(0, 8), // Limit to 8 results for better UX
     [results]
   );
 
@@ -276,20 +296,21 @@ export default function MentionsPlugin(): JSX.Element | null {
     ) => {
       editor.update(() => {
         // Create mention with @ symbol for proper display
-        const mentionText = `@${selectedOption.user.username || selectedOption.user.name.toLowerCase().replace(/\s+/g, '')}`;
+        const mentionText = `@${selectedOption.user.username || selectedOption.user.name.toLowerCase().replace(/\s+/g, "")}`;
         const mentionNode = $createMentionNode(
-          selectedOption.user.username || selectedOption.user.name.toLowerCase().replace(/\s+/g, ''), 
+          selectedOption.user.username ||
+            selectedOption.user.name.toLowerCase().replace(/\s+/g, ""),
           mentionText
         );
-        
+
         if (nodeToReplace) {
           nodeToReplace.replace(mentionNode);
         }
-        
+
         // Add a space after the mention for better UX
-        const spaceNode = $createTextNode(' ');
+        const spaceNode = $createTextNode(" ");
         mentionNode.insertAfter(spaceNode);
-        
+
         // Select the space node so user can continue typing
         spaceNode.select();
         closeMenu();
@@ -321,9 +342,9 @@ export default function MentionsPlugin(): JSX.Element | null {
       ) =>
         anchorElementRef.current && (results.length > 0 || isLoading)
           ? ReactDOM.createPortal(
-              <div 
+              <div
                 className={cn(
-                  "fixed z-[60] min-w-[16rem] max-w-[20rem]",
+                  "fixed min-w-[16rem] max-w-[20rem] max-h-[30rem]",
                   "bg-popover text-popover-foreground",
                   "border border-border rounded-md shadow-lg",
                   "animate-in fade-in-0 zoom-in-95 duration-200"
@@ -331,34 +352,41 @@ export default function MentionsPlugin(): JSX.Element | null {
                 style={{
                   top: `${anchorElementRef.current.getBoundingClientRect().bottom + window.scrollY + 4}px`,
                   left: `${anchorElementRef.current.getBoundingClientRect().left + window.scrollX}px`,
+                  zIndex: 9999, // High z-index but reasonable
+                  pointerEvents: "auto", // Ensure the container accepts pointer events
+                  position: "fixed",
                 }}
+                onMouseDown={(e) => e.preventDefault()} // Prevent editor focus loss
               >
                 {/* Header */}
                 {queryString && queryString.length > 0 && (
-                  <div className="px-3 py-2 border-b border-border">
+                  <div className="px-3 py-2 border-b border-border pointer-events-none">
                     <div className="text-xs font-medium text-muted-foreground">
                       Mention team members
                     </div>
                   </div>
                 )}
-                
+
                 {/* Content */}
-                <div 
+                <div
                   className="py-1 max-h-64 overflow-y-auto overscroll-contain"
                   style={{
-                    scrollbarWidth: 'thin',
-                    scrollbarColor: 'hsl(var(--muted-foreground)) transparent'
+                    scrollbarWidth: "thin",
+                    scrollbarColor: "hsl(var(--muted-foreground)) transparent",
+                    pointerEvents: "auto",
                   }}
                 >
                   {isLoading ? (
-                    <div className="px-3 py-6 text-center">
+                    <div className="px-3 py-6 text-center pointer-events-none">
                       <div className="flex items-center justify-center gap-2">
                         <div className="w-4 h-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin" />
-                        <span className="text-sm text-muted-foreground">Loading...</span>
+                        <span className="text-sm text-muted-foreground">
+                          Loading...
+                        </span>
                       </div>
                     </div>
                   ) : results.length === 0 ? (
-                    <div className="px-3 py-6 text-center">
+                    <div className="px-3 py-6 text-center pointer-events-none">
                       <div className="text-sm text-muted-foreground mb-1">
                         No team members found
                       </div>
@@ -370,7 +398,11 @@ export default function MentionsPlugin(): JSX.Element | null {
                     </div>
                   ) : (
                     <>
-                      <div role="listbox" className="focus:outline-none">
+                      <div
+                        role="listbox"
+                        className="focus:outline-none"
+                        style={{ pointerEvents: "auto" }}
+                      >
                         {options.map((option, i: number) => (
                           <MentionsTypeaheadMenuItem
                             key={option.key}
@@ -387,10 +419,10 @@ export default function MentionsPlugin(): JSX.Element | null {
                           />
                         ))}
                       </div>
-                      
+
                       {/* Footer for overflow indicator */}
                       {results.length > 8 && (
-                        <div className="px-3 py-2 border-t border-border bg-muted/30">
+                        <div className="px-3 py-2 border-t border-border bg-muted/30 pointer-events-none">
                           <div className="text-xs text-muted-foreground text-center">
                             Showing 8 of {results.length} results
                           </div>

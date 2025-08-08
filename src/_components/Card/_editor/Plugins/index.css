@@ -1,5 +1,4 @@
 .draggable-block-menu {
-    
     padding: 2px 1px;
     cursor: grab;
     opacity: 0;
@@ -14,7 +13,6 @@
   }
 
  
-  
   .draggable-block-menu .icon {
     width: 16px;
     height: 16px;

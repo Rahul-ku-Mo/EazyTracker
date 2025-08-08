@@ -5,7 +5,7 @@ import Container from "@/layouts/Container";
 import { getProject } from "@/apis/project";
 import { Loader2 } from "lucide-react";
 import { ProjectSidebar } from "@/_components/Projects/project-sidebar";
-import { ProjectDescriptionEditor } from "@/_components/Projects/project-description-editor-v2";
+import { ProjectDescriptionEditor } from "@/_components/Projects/project-description-editor";
 import { MemberAvatars, LeadAvatar } from "@/_components/Projects/utils";
 import Milestone from "@/_components/Projects/actions/milestone";
 import { TargetIcon } from "@/_components/shared/svg/SharedIcons";

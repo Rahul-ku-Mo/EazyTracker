@@ -48,6 +48,7 @@ import { indexedDBService } from "../../../services/indexedDB.service.ts";
 import "./ImageNode/styles.css";
 import "../../../styles/editor.styles.css";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
+import ComponentPickerPlugin from "./Plugins/ComponentPicketPlugin.tsx";
 
 interface EditorTheme {
   root: string;
@@ -328,9 +329,9 @@ export const CardDetailsEditor = ({
   }
 
   return (
-    <div className="relative h-full border border-[#e3e3e3b5] rounded-lg bg-[#fafafa] dark:bg-[#181818] dark:border-zinc-700 p-2">
+    <div className="relative h-full border border-[#e3e3e3b5] rounded-sm bg-[#fafafa] dark:bg-[#181818] dark:border-zinc-700 p-2 overflow-auto">
       <LexicalComposer initialConfig={initialConfig}>
-        <div className="editor-container">
+        <div>
           <CardToolbarPlugin 
             hasUnsavedChanges={hasUnsavedChanges}
           />
@@ -344,7 +345,7 @@ export const CardDetailsEditor = ({
                     "w-full p-0 overflow-y-auto",
                     "dark:text-zinc-100 focus:outline-none",
                     "min-h-[300px]",
-                    "h-[calc(100vh-280px)]"
+                    "h-full"
                   )}
                 />
                </div>
@@ -364,6 +365,7 @@ export const CardDetailsEditor = ({
             <EditorRefPlugin editorRef={editorRef} />
             <CopyImagePlugin ref={editorRef} />
             <MentionsPlugin/>
+            <ComponentPickerPlugin/>
             {floatingAnchorElem && (
               <>
                 <FloatingTextFormatToolbarPlugin
