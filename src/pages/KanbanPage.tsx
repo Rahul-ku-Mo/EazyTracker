@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
-import ColumnBoard from "../_components/Column/ColumnWorkspace";
 import { useWorkspace } from "../hooks/useQueries";
 import { useParams } from "react-router-dom";
 
 import LoadingScreen from "../_components/LoadingScreen";
+import ColumnWorkspace from "../_components/Column/ColumnWorkspace";
 
 const KanbanPage = () => {
   const { slug } = useParams();
@@ -59,7 +59,7 @@ const KanbanPage = () => {
       exit={{ opacity: 0 }}
       className="relative w-full h-full"
     >
-      <ColumnBoard title={workspaceDetail?.title} />
+      <ColumnWorkspace title={workspaceDetail?.title} />
     </motion.div>
   );
 };

@@ -32,70 +32,28 @@ import { MARKDOWN_TRANSFORMERS } from "./_editor/MARKDOWN_TRANSFORMERS";
 
 // Import image styles
 import "./_editor/ImageNode/styles.css";
-import { CodeHighlightNode, CodeNode } from "@lexical/code";
+import { CodeHighlightNode, CodeNode, registerCodeHighlighting } from "@lexical/code";
 import MentionsPlugin from "./_editor/Plugins/MentionsPlugin";
 import { MentionNode } from "./_editor/MentionNode";
 
-interface EditorTheme {
-  root: string;
-  paragraph: string;
-  text: {
-    bold: string;
-    italic: string;
-    underline: string;
-    strikethrough: string;
-    underlineStrikethrough: string;
-  };
-  list: {
-    ul: string;
-    ol: string;
-    checklist: string;
-    listitem: string;
-    listitemChecked: string;
-    listitemUnchecked: string;
-    nested: {
-      list: string;
-      listitem: string;
-    };
-  };
-  link: string;
-}
-const theme: EditorTheme = {
+import { theme, EditorTheme } from "@/_components/shared/Editor/editor-theme";
+
+const ExtendedTheme: EditorTheme = {
+  ...theme,
   root: cn(
     "editor-root bg-background text-foreground relative outline-none p-0"
   ),
-  paragraph: "editor-paragraph",
-  text: {
-    bold: "editor-text-bold",
-    italic: "editor-text-italic",
-    underline: "editor-text-underline",
-    strikethrough: "editor-text-strikethrough",
-    underlineStrikethrough: "editor-text-underline-strikethrough",
-  },
-  list: {
-    ul: "editor-list-ul",
-    ol: "editor-list-ol",
-    checklist: "editor-list-checklist",
-    listitem: "editor-list-item",
-    listitemChecked: "editor-list-item-checked",
-    listitemUnchecked: "editor-list-item-unchecked",
-    nested: {
-      list: "editor-nested-list",
-      listitem: "editor-nested-list-item",
-    },
-  },
-  link: "editor-link",
 };
 
-function onError(error: Error): void {
+export function onError(error: Error): void {
   console.error(error);
 }
 
-interface PlaceholderPluginProps {
+export interface PlaceholderPluginProps {
   placeholder: string;
 }
 
-function PlaceholderPlugin({ placeholder }: PlaceholderPluginProps) {
+export function PlaceholderPlugin({ placeholder }: PlaceholderPluginProps) {
   const [editor] = useLexicalComposerContext();
   const [isEmpty, setIsEmpty] = useState(true);
 
@@ -132,11 +90,11 @@ function PlaceholderPlugin({ placeholder }: PlaceholderPluginProps) {
   return null;
 }
 
-interface CustomTransformLexicalToHTMLProps {
+export interface CustomTransformLexicalToHTMLProps {
   setEditorState: (state: string) => void;
 }
 
-function CustomTransformLexicalToHTML({
+export function CustomTransformLexicalToHTML({
   setEditorState,
 }: CustomTransformLexicalToHTMLProps): null {
   const [editor] = useLexicalComposerContext();
@@ -160,6 +118,17 @@ function CustomTransformLexicalToHTML({
   return null;
 }
 
+
+export function CodeHighlightNodePlugin(){
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    return registerCodeHighlighting(editor);
+  }, [editor]);
+
+  return null;
+}
+
 interface CardDescriptionEditorProps {
   description?: string;
   dimensions: "small" | "large";
@@ -176,7 +145,7 @@ export const NewCardDescriptionEditor = ({
 
   const initialConfig = {
     namespace: "CardDescriptionEditor",
-    theme,
+    theme: ExtendedTheme,
     onError,
     nodes: [
       ListNode,
@@ -197,7 +166,7 @@ export const NewCardDescriptionEditor = ({
     <div className="relative px-4 flex-1">
       <LexicalComposer initialConfig={initialConfig}>
         <div className="editor-container" ref={anchorElemRef}>
-          <div className="relative editor-inner">
+          <div className="relative">
             <RichTextPlugin
               contentEditable={
                 <ContentEditable
@@ -205,7 +174,7 @@ export const NewCardDescriptionEditor = ({
                   className={cn(
                     "min-h-[150px] w-full overflow-y-auto",
                     dimensions === "small" ? "max-h-[160px]" : "max-h-[456px]",
-                    "text-base text-foreground",
+                    "text-foreground",
                     "focus:outline-none border-none",
                     "relative",
                     "px-0 py-0 !p-0",
@@ -250,6 +219,7 @@ export const NewCardDescriptionEditor = ({
               </>
             )}
             <CustomTransformLexicalToHTML setEditorState={setDescription} />
+            <CodeHighlightNodePlugin />
           </div>
         </div>
       </LexicalComposer>

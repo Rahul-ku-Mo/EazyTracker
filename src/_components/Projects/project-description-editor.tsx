@@ -48,6 +48,8 @@ import { CopyImagePlugin } from "../Card/_editor/Plugins/CopyImagePlugin";
 import { ImageNode } from "@/_components/Card/_editor/ImageNode";
 import { Button } from "@/components/ui/button";
 import { Cloud, Copy } from "lucide-react";
+import ComponentPickerPlugin from "../Card/_editor/Plugins/ComponentPicketPlugin";
+import { FloatingLinkEditorPlugin } from "@/_components/Notes/_editor/plugins/FloatingLinkEditorPlugin";
 
 interface ProjectDescriptionEditorProps {
   project: any;
@@ -83,6 +85,7 @@ const theme = {
   quote:
     "border-l-4 border-muted-foreground/20 pl-4 italic text-muted-foreground",
   link: "text-primary underline hover:text-primary/80",
+  hr: "editor-hr",
 };
 
 function onError(error: Error) {
@@ -165,6 +168,8 @@ export const ProjectDescriptionEditor = ({
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoadingSave, setIsLoadingSave] = useState(false);
   const editorRef = useRef(null);
+  const anchorElemRef = useRef<HTMLDivElement>(null);
+  const [isLinkEditMode, setIsLinkEditMode] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -358,7 +363,7 @@ export const ProjectDescriptionEditor = ({
 
       <div className="min-h-[120px] max-h-full overflow-y-auto bg-background">
         <LexicalComposer initialConfig={initialConfig}>
-          <div className="editor-container">
+          <div className="editor-container" ref={anchorElemRef}>
             <div className="relative editor-inner">
               <RichTextPlugin
                 contentEditable={
@@ -384,6 +389,10 @@ export const ProjectDescriptionEditor = ({
               <LinkPlugin />
               <CopyImagePlugin />
               <EditorRefPlugin editorRef={editorRef} />
+              {anchorElemRef.current && (
+                <FloatingLinkEditorPlugin anchorElem={anchorElemRef.current} isLinkEditMode={isLinkEditMode} setIsLinkEditMode={setIsLinkEditMode} />
+              )}
+              <ComponentPickerPlugin /> 
             </div>
           </div>
         </LexicalComposer>

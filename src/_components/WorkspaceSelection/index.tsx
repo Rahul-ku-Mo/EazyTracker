@@ -8,12 +8,7 @@ import { useWorkspaces } from "@/hooks/useQueries";
 import { useFeatureGating } from "@/hooks/useFeatureGating";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Lock,
-  Eye,
-  Info,
-  MoreHorizontal,
-} from "lucide-react";
+import { Lock, Eye, Info, MoreHorizontal } from "lucide-react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
@@ -25,7 +20,7 @@ import DeleteDialog from "../Dialog/DeleteDialog";
 import { useWorkspaceMutation } from "./_mutations/useWorkspaceMutation";
 import InviteWorkspaceDialog from "./InviteWorkspaceDialog";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
-import {  WorkspaceIcon } from "../shared/svg/SidebarIcons";
+import { WorkspaceIcon } from "../shared/svg/SidebarIcons";
 import { AccessLevelIcon } from "../shared/svg/SharedIcons";
 
 interface Workspace {
@@ -149,19 +144,18 @@ const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
   const handleOpenWorkspace = () => {
     // Use new teamId + slug pattern if workspace has teamId and slug
     if (workspace.slug) {
-
-      const teamName = localStorage.getItem("teamName")
+      const teamName = localStorage.getItem("teamName");
 
       navigate(`/workspace/${teamName}/${workspace.slug}`);
-    } 
+    }
   };
 
   const handleOpenWorkspaceSettings = () => {
     // Use new teamId + slug pattern if workspace has teamId and slug
     if (workspace.slug) {
-      const teamName = localStorage.getItem("teamName")
+      const teamName = localStorage.getItem("teamName");
       navigate(`/workspace/settings/${teamName}/${workspace.slug}`);
-    } 
+    }
   };
 
   const handleToggleFavorite = (e?: React.MouseEvent) => {
@@ -333,9 +327,12 @@ const LoadingState = () => (
 const WorkspaceSelection = () => {
   const accessToken = Cookies.get("accessToken");
   const { isAdmin } = useAdminCheck();
+  const teamId = localStorage.getItem("teamId") as string;
 
   // Only fetch user's own workspaces if user is admin
-  const { data: workspaces, isPending: isWorkspacesPending } = useWorkspaces();
+  const { data: workspaces, isPending: isWorkspacesPending } = useWorkspaces(
+    teamId,
+  );
   const { data: teamWorkspaces, isPending: isTeamWorkspacesPending } = useQuery(
     {
       queryKey: ["team-workspaces"],
@@ -399,17 +396,15 @@ const WorkspaceSelection = () => {
         <div className="space-y-6">
           {/* User's own workspaces - Only show for admin users */}
           {isAdmin && workspaces && workspaces.length > 0 && (
-          
-              <div className="flex flex-wrap gap-4">
-                {workspaces?.map((workspace: any) => (
-                  <WorkspaceCard
-                    key={`${workspace.id}${workspace.colorId}`}
-                    workspace={workspace}
-                  />
-                ))}
-                <WorkspacePopover count={remainingWorkspaces} />
-              </div>
-          
+            <div className="flex flex-wrap gap-4">
+              {workspaces?.map((workspace: any) => (
+                <WorkspaceCard
+                  key={`${workspace.id}${workspace.colorId}`}
+                  workspace={workspace}
+                />
+              ))}
+              <WorkspacePopover count={remainingWorkspaces} />
+            </div>
           )}
 
           {/* Accessible team workspaces */}
@@ -430,7 +425,6 @@ const WorkspaceSelection = () => {
                       colorValue: workspace.colorValue,
                       colorName: workspace.colorName,
                       isFavorite: false,
-                      
                     }}
                   />
                 ))}

@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import axios from "axios";
+import { api } from "@/lib/api";
 
 interface Column {
   id: string;
@@ -13,22 +14,16 @@ interface Column {
 
 /***Column CRUD API ***/
 export const createColumn = async (
-  accessToken: string, 
-  title: string, 
+  title: string,
   workspaceId: string
 ): Promise<Column | undefined> => {
   try {
-    const response = await axios.post(
-      `${import.meta.env.VITE_API_URL}/columns?workspaceId=${workspaceId}`,
-      {
-        title: title,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+
+    const [teamId, slug] = workspaceId.split('/')
+
+    const response = await api.post(`/columns/${teamId}/${slug}`, {
+      title: title,
+    })
 
     if (response.data.data && response.status === 201) {
       toast.success(`${title} created successfully`);
@@ -43,29 +38,17 @@ export const createColumn = async (
 };
 
 export const fetchColumns = async (
-  accessToken: string, 
   workspaceId: string
 ): Promise<Column[] | undefined> => {
   try {
-    // Check if the identifier contains a slash (teamId/slug format)
-    let url: string;
-    if (workspaceId.includes('/')) {
-      const [teamId, slug] = workspaceId.split('/');
-      url = `${import.meta.env.VITE_API_URL}/workspaces/team/${teamId}/${slug}/columns`;
-    } else {
-      // Legacy format - just slug or ID
-      url = `${import.meta.env.VITE_API_URL}/columns?workspaceId=${workspaceId}`;
-    }
-
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    const [teamId, slug] = workspaceId.split('/');
+ 
+    const response = await api.get(`/columns/${teamId}/${slug}`)
 
     if (response.data.data && response.status === 200) {
       return response.data.data;
     }
+
     return undefined;
   } catch (err) {
     console.log(err);
@@ -74,7 +57,7 @@ export const fetchColumns = async (
 };
 
 export const fetchColumn = async (
-  accessToken: string, 
+  accessToken: string,
   columnId: string
 ): Promise<Column | undefined> => {
   try {
@@ -98,8 +81,8 @@ export const fetchColumn = async (
 };
 
 export const updateColumn = async (
-  accessToken: string, 
-  title: string, 
+  accessToken: string,
+  title: string,
   columnId: string
 ): Promise<Column | undefined> => {
   try {
@@ -128,7 +111,7 @@ export const updateColumn = async (
 };
 
 export const deleteColumn = async (
-  accessToken: string, 
+  accessToken: string,
   columnId: string
 ): Promise<void> => {
   try {
@@ -151,7 +134,7 @@ export const deleteColumn = async (
 };
 
 export const updateColumnOrdering = async (
-  accessToken: string, 
+  accessToken: string,
   columns: Column[]
 ): Promise<Column[] | undefined> => {
   try {

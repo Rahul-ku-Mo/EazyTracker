@@ -54,7 +54,7 @@ const AppHeader = ({ children }: AppHeaderProps) => {
         </Breadcrumb>
       </div>
 
-      <div className="flex items-center pr-2">
+      <div className="flex items-center gap-1.5 pr-2">
         {/* Custom children elements (like settings button) */}
 
         {/* Default header elements */}

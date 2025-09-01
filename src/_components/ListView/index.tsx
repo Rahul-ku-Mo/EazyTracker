@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
-import {  TagIcon } from "lucide-react";
+import { TagIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import {
@@ -30,8 +30,7 @@ import {
   DropResult,
 } from "react-beautiful-dnd";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateCardColumn, updateCardOrder } from "@/apis/CardApis";
-import Cookies from "js-cookie";
+import { updateCardColumn } from "@/apis/CardApis";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/context/ThemeProvider";
@@ -43,13 +42,11 @@ import {
   Priority,
 } from "../shared/svg/Priority";
 import { getPriorityIcon } from "../Projects/utils";
-import {
-  Assignee,
-  ColumnNameinListViewIcon,
-} from "../shared/svg/ListViewIcons";
+import { Assignee } from "../shared/svg/ListViewIcons";
 import { DateCreatedIcon } from "../shared/svg/ViewOptionsIcons";
 import { ViewOptions } from "@/store/useViewOptionsStore";
 import { EmptyIcon } from "../shared/svg/SharedIcons";
+import { ProjectIcon } from "../shared/svg/SidebarIcons";
 
 interface CardItem {
   id: number;
@@ -64,6 +61,7 @@ interface CardItem {
   dueDate: string | null;
   updatedAt: string;
   creatorId: number | null;
+  slug?: string;
 }
 
 interface ListViewProps {
@@ -106,11 +104,8 @@ const ListView = ({
   const { members: hookMembers } = useMembers();
   const { updateCardMutation } = useCardMutation();
   const queryClient = useQueryClient();
-  const accessToken = Cookies.get("accessToken") as string;
   const { theme } = useTheme();
-  
 
-  console.log(hookMembers)
   // Use prop members if provided, otherwise fall back to hook
   const effectiveMembers = members || hookMembers;
   // Drag and drop mutation for updating card column/order
@@ -124,8 +119,7 @@ const ListView = ({
       columnId: number;
       order: number;
     }) => {
-      await updateCardColumn(accessToken, cardId, columnId);
-      await updateCardOrder(accessToken, cardId, order);
+      await updateCardColumn(cardId, columnId, order);
     },
     onMutate: async ({ cardId, columnId, order }) => {
       // Cancel any outgoing refetches
@@ -189,12 +183,6 @@ const ListView = ({
           context.previousColumns
         );
       }
-    },
-    onSettled: () => {
-      // Always refetch to ensure we have the latest data
-      queryClient.invalidateQueries({
-        queryKey: ["columns", "workspaces", slug],
-      });
     },
   });
 
@@ -316,10 +304,7 @@ const ListView = ({
             return (
               <div key={columnTitle}>
                 <h2 className="text-sm flex items-center gap-2 font-bold px-4 py-2 text-zinc-900 dark:text-zinc-100 w-full border dark:bg-zinc-800 bg-zinc-100 border-zinc-200 dark:border-zinc-800">
-                  <ColumnNameinListViewIcon
-                    strokeWidth={2}
-                    className="size-4 "
-                  />
+                  <ProjectIcon className="size-4" />
                   {columnTitle}
                 </h2>
 
@@ -376,9 +361,10 @@ const ListView = ({
                                     setIsModalOpen(true);
                                   }}
                                 >
-                                  <div className="flex items-center gap-2 flex-grow min-w-0">
+                                  <div className="flex items-center gap-2.5 flex-grow min-w-0">
                                     {/* Title - Clickable area for opening card */}
-                                    {viewOptions?.displayProperties.priority !== false && (
+                                    {viewOptions?.displayProperties.priority !==
+                                      false && (
                                       <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                           <div
@@ -467,21 +453,20 @@ const ListView = ({
                                       </DropdownMenu>
                                     )}
                                     {viewOptions?.showCardIds !== false && (
-                                      <span className="text-sm text-zinc-500 dark:text-zinc-200 font-bold geist-font">
-                                        {`${columnTitle
-                                          .substring(0, 2)
-                                          .toUpperCase()} - ${item.id}`}
+                                      <span className="text-sm text-zinc-500 dark:text-zinc-100/90 font-light font-id uppercase">
+                                        {item.slug}
                                       </span>
                                     )}
 
-                                    <div className="flex-grow truncate font-medium text-xs text-zinc-900 dark:text-zinc-100">
+                                    <div className="flex-grow truncate font-medium text-xs text-zinc-900 dark:text-zinc-100 ">
                                       {item.title}
                                     </div>
 
                                     {/* Priority - Inline editable */}
 
                                     {/* Assignee - Inline editable */}
-                                    {viewOptions?.displayProperties.assignee !== false && (
+                                    {viewOptions?.displayProperties.assignee !==
+                                      false && (
                                       <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                           <div
@@ -496,42 +481,44 @@ const ListView = ({
                                           className="w-40"
                                           onClick={(e) => e.stopPropagation()}
                                         >
-                                          {effectiveMembers?.map((member: TUser) => (
-                                            <DropdownMenuItem
-                                              key={member.id}
-                                              className="gap-2 text-xs"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                updateAssignee(
-                                                  item.id,
-                                                  member.id
-                                                );
-                                              }}
-                                            >
-                                              <div className="flex items-center gap-2">
-                                                <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center">
-                                                  {member.imageUrl ? (
-                                                    <img
-                                                      src={member.imageUrl}
-                                                      alt={member.username}
-                                                      className="w-full h-full rounded-full"
-                                                    />
-                                                  ) : (
-                                                    <span className="text-xs">
-                                                      {member.username
-                                                        ? member.username.charAt(
-                                                            0
-                                                          )
-                                                        : ""}
-                                                    </span>
-                                                  )}
+                                          {effectiveMembers?.map(
+                                            (member: TUser) => (
+                                              <DropdownMenuItem
+                                                key={member.id}
+                                                className="gap-2 text-xs"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  updateAssignee(
+                                                    item.id,
+                                                    member.id
+                                                  );
+                                                }}
+                                              >
+                                                <div className="flex items-center gap-2">
+                                                  <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center">
+                                                    {member.imageUrl ? (
+                                                      <img
+                                                        src={member.imageUrl}
+                                                        alt={member.username}
+                                                        className="w-full h-full rounded-full"
+                                                      />
+                                                    ) : (
+                                                      <span className="text-xs">
+                                                        {member.username
+                                                          ? member.username.charAt(
+                                                              0
+                                                            )
+                                                          : ""}
+                                                      </span>
+                                                    )}
+                                                  </div>
+                                                  <span className="text-xs">
+                                                    {member.username}
+                                                  </span>
                                                 </div>
-                                                <span className="text-xs">
-                                                  {member.username}
-                                                </span>
-                                              </div>
-                                            </DropdownMenuItem>
-                                          ))}
+                                              </DropdownMenuItem>
+                                            )
+                                          )}
                                           <DropdownMenuItem
                                             onClick={(e) => {
                                               e.stopPropagation();
@@ -546,40 +533,44 @@ const ListView = ({
                                     )}
 
                                     {/* Labels/Tags */}
-                                    {viewOptions?.displayProperties.labels !== false && item.labels && item.labels.length > 0 && (
-                                      <div
-                                        className="flex items-center justify-end gap-2 flex-shrink-0 min-w-fit"
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        <TagIcon className="h-3 w-3 text-zinc-400" />
-                                        <div className="flex gap-1">
-                                          {item.labels
-                                            .slice(0, 1)
-                                            .map((tag, index) => (
+                                    {viewOptions?.displayProperties.labels !==
+                                      false &&
+                                      item.labels &&
+                                      item.labels.length > 0 && (
+                                        <div
+                                          className="flex items-center justify-end gap-2 flex-shrink-0 min-w-fit"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          <TagIcon className="h-3 w-3 text-zinc-400" />
+                                          <div className="flex gap-1">
+                                            {item.labels
+                                              .slice(0, 1)
+                                              .map((tag, index) => (
+                                                <Badge
+                                                  key={index}
+                                                  variant="secondary"
+                                                  className="text-xs px-1.5 py-0.5 font-medium border transition-colors hover:opacity-80 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700"
+                                                >
+                                                  {tag}
+                                                </Badge>
+                                              ))}
+                                            {item.labels.length > 1 && (
                                               <Badge
-                                                key={index}
-                                                variant="secondary"
-                                                className="text-xs px-1.5 py-0.5 font-medium border transition-colors hover:opacity-80 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700"
+                                                variant="outline"
+                                                className="text-xs px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-600"
                                               >
-                                                {tag}
+                                                +{item.labels.length - 1}
                                               </Badge>
-                                            ))}
-                                          {item.labels.length > 1 && (
-                                            <Badge
-                                              variant="outline"
-                                              className="text-xs px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-600"
-                                            >
-                                              +{item.labels.length - 1}
-                                            </Badge>
-                                          )}
+                                            )}
+                                          </div>
                                         </div>
-                                      </div>
-                                    )}
+                                      )}
                                   </div>
 
                                   <div className="flex items-center gap-2 flex-shrink-0 ml-1.5">
                                     {/* Due date - Inline editable */}
-                                    {viewOptions?.displayProperties.dueDate !== false && (
+                                    {viewOptions?.displayProperties.dueDate !==
+                                      false && (
                                       <Popover>
                                         <PopoverTrigger asChild>
                                           <div
@@ -620,8 +611,8 @@ const ListView = ({
                                             initialFocus
                                             className="p-3"
                                           />
-                                          <div className="p-3 border-t">
-                                            {item.dueDate && (
+                                          {item.dueDate && (
+                                            <div className="p-3 border-t">
                                               <Button
                                                 variant="outline"
                                                 size="sm"
@@ -633,8 +624,8 @@ const ListView = ({
                                               >
                                                 Clear due date
                                               </Button>
-                                            )}
-                                          </div>
+                                            </div>
+                                          )}
                                         </PopoverContent>
                                       </Popover>
                                     )}
@@ -672,8 +663,8 @@ const ListView = ({
               className="absolute inset-0 w-full h-full flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400"
             >
               <span className="text-sm flex flex-col gap-1 items-center">
-              <EmptyIcon className="size-5"/>
-            <p>No items found</p>
+                <EmptyIcon className="size-5" />
+                <div>No items found</div>
               </span>
             </motion.div>
           )}

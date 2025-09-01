@@ -11,7 +11,7 @@ export function ModeToggle() {
 
   return (
     <div
-      className="relative size-7 rounded-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center mx-2"
+      className="relative size-7 rounded-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center"
       onClick={toggleTheme}
     >
       <SunIcon className="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />

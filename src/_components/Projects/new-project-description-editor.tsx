@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EditorState, ParagraphNode } from "lexical";
 
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -39,6 +39,7 @@ import {
   LINK,
   CODE,
 } from "@lexical/markdown";
+import { FloatingLinkEditorPlugin } from "@/_components/Notes/_editor/plugins/FloatingLinkEditorPlugin";
 
 interface ProjectDescriptionEditorProps {
   setDescription: (description: string) => void;
@@ -91,6 +92,7 @@ const theme = {
   
   // Link
   link: 'text-primary underline hover:text-primary/80',
+  hr: 'editor-hr',
 };
 
 function onError(error: Error) {
@@ -152,6 +154,7 @@ export const NewProjectDescriptionEditor = ({
 }: ProjectDescriptionEditorProps): JSX.Element => {
   const editorRef = useRef(null);
   const anchorElemRef = useRef<HTMLDivElement>(null);
+  const [isLinkEditMode, setIsLinkEditMode] = useState(false);
 
   const initialConfig = {
     namespace: "ProjectDescriptionEditor",
@@ -231,6 +234,9 @@ export const NewProjectDescriptionEditor = ({
             <CheckListPlugin />
             <MarkdownShortcutPlugin transformers={transformers} />
             <LinkPlugin />
+            {anchorElemRef.current && (
+              <FloatingLinkEditorPlugin anchorElem={anchorElemRef.current} isLinkEditMode={isLinkEditMode} setIsLinkEditMode={setIsLinkEditMode} />
+            )}
             <EditorRefPlugin editorRef={editorRef} />
           </div>
         </div>

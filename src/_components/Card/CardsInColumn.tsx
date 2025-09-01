@@ -17,7 +17,7 @@ const CardsInColumn = ({ columnName, cards = [], viewOptions, members }: CardCol
   
   return (
     <div className="flex flex-col rounded-md h-full overflow-y-auto px-1 pt-2 bg-transparent">
-        <ol className="flex flex-col gap-4">
+        <ol className="flex flex-col gap-1.5">
           {sortedCards.map((card, index) => {
             // Ensure card has required properties for drag and drop
             if (!card || !card.id) {

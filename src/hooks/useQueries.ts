@@ -4,7 +4,7 @@ import { fetchColumn, fetchColumns } from "../apis/ColumnApis";
 
 import { fetchWorkspaces, fetchWorkspace } from "../apis/WorkspaceApis";
 import { fetchUserProfile, fetchUsers } from "../apis/userApis";
-import { fetchLabels } from "../apis/LabelApis";
+import { fetchTeamLabels, fetchWorkspaceLabels } from "../apis/LabelApis";
 
 import { fetchNotifications } from "../apis/NotificationApis";
 
@@ -22,10 +22,13 @@ const useCards = (accessToken: string, columnId: string) => {
   });
 };
 
-const useColumns = (accessToken: string, workspaceId: string) => {
+const useColumns = (workspaceId: string | null | undefined) => {
+  const [teamId] = workspaceId?.split("/") || [""];
+
   return useQuery({
-    queryKey: ["columns", "workspaces", workspaceId],
-    queryFn: async () => await fetchColumns(accessToken, workspaceId),
+    queryKey: ["columns", "workspaces", teamId],
+    queryFn: async () => await fetchColumns(workspaceId!),
+    enabled: !!workspaceId, // Only run query when workspaceId is available
   });
 };
 const useColumn = (accessToken: string, columnId: string) => {
@@ -44,10 +47,10 @@ const useWorkspace = (workspaceIdentifier: string) => {
   });
 };
 
-const useWorkspaces = () => {
+const useWorkspaces = (teamId: string) => {
   return useQuery({
-    queryKey: ["workspaces"],
-    queryFn: async () => await fetchWorkspaces(),
+    queryKey: ["workspaces", teamId],
+    queryFn: async () => await fetchWorkspaces(teamId),
   });
 };
 
@@ -65,10 +68,19 @@ const useUsers = (accessToken: string) => {
   });
 };
 
-const useLabels = (accessToken: string, cardId: string) => {
+const useTeamLabels = (teamId: string) => {
   return useQuery({
-    queryKey: ["labels", cardId],
-    queryFn: async () => await fetchLabels(accessToken, cardId),
+    queryKey: ["labels", "team", teamId],
+    queryFn: async () => await fetchTeamLabels(teamId),
+    enabled: !!teamId,
+  });
+};
+
+const useWorkspaceLabels = (workspaceId: string) => {
+  return useQuery({
+    queryKey: ["labels", "workspace", workspaceId],
+    queryFn: async () => await fetchWorkspaceLabels(workspaceId),
+    enabled: !!workspaceId,
   });
 };
 
@@ -90,6 +102,7 @@ export {
   useWorkspaces,
   useUser,
   useUsers,
-  useLabels,
+  useTeamLabels,
+  useWorkspaceLabels,
   useNotifications,
 };

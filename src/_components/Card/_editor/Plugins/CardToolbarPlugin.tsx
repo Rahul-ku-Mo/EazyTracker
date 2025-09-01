@@ -529,7 +529,7 @@ export const CardToolbarPlugin = ({
           <Tooltip>
             <TooltipTrigger>M</TooltipTrigger>
             <TooltipContent>
-              <p>Toggle Markdown View</p>
+              <div>Toggle Markdown View</div>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

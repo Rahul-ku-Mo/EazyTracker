@@ -1,9 +1,9 @@
 .link-editor {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 15;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    will-change: transform;
-  }
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  will-change: transform;
+}

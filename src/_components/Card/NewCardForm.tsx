@@ -12,7 +12,7 @@ import { Input } from "../../components/ui/input";
 import NewCardActions from "./_newCardComponentsAndActions/new-card-actions";
 import { useCardMutation } from "./_mutations/useCardMutations";
 import { Badge } from "../../components/ui/badge";
-import { NewCardDescriptionEditor } from "./NewCardDescriptionEditor";
+import { NewCardDescriptionEditor } from "./new-card-description-editor";
 import { cn } from "@/lib/utils";
 
 interface NewCardFormProps {
@@ -26,7 +26,7 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
   const [description, setDescription] = useState<string>("");
   const [dueDate, setDueDate] = useState<Date | undefined>();
   const [priority, setPriority] = useState<string>("none");
-  const [labels, setLabels] = useState<string[]>([]);
+  const [labels, setLabels] = useState<any>([]);
   const [assignee, setAssignee] = useState<string | null>(null);
   const [project, setProject] = useState<string | null>(null);  
 
@@ -70,7 +70,7 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className={cn(
-          "transition-all duration-300 ease-in-out gap-0 p-0 flex flex-col justify-between overflow-hidden dark:bg-zinc-800",
+          "transition-all duration-300 ease-in-out gap-0 p-0 flex flex-col justify-between overflow-hidden dark:bg-[#181818] bg-[#fafafa]",
           dimensions === "small" ? "max-w-[800px]" : "max-w-[900px]"
         )}
         style={{
@@ -104,7 +104,7 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
             ref={titleRef}
             name="title"
             placeholder="What's on your mind?"
-            className="px-4 placeholder:font-semibold font-semibold text-base border-0 shadow-none placeholder:text-muted-foreground/60 md:text-base focus-visible:ring-0"
+            className="px-4 placeholder:font-semibold font-semibold !text-base-large border-0 shadow-none placeholder:text-muted-foreground/60 md:text-base focus-visible:ring-0"
           />
           <NewCardDescriptionEditor
             description={description}

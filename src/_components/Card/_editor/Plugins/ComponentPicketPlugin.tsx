@@ -1,20 +1,20 @@
-import type {JSX} from 'react';
+import type { JSX } from "react";
 
-import {$createCodeNode} from '@lexical/code';
+import { $createCodeNode } from "@lexical/code";
 import {
   INSERT_CHECK_LIST_COMMAND,
   INSERT_ORDERED_LIST_COMMAND,
   INSERT_UNORDERED_LIST_COMMAND,
-} from '@lexical/list';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {INSERT_HORIZONTAL_RULE_COMMAND} from '@lexical/react/LexicalHorizontalRuleNode';
+} from "@lexical/list";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { INSERT_HORIZONTAL_RULE_COMMAND } from "@lexical/react/LexicalHorizontalRuleNode";
 import {
   LexicalTypeaheadMenuPlugin,
   MenuOption,
   useBasicTypeaheadTriggerMatch,
-} from '@lexical/react/LexicalTypeaheadMenuPlugin';
-import {$createHeadingNode, $createQuoteNode} from '@lexical/rich-text';
-import {$setBlocksType} from '@lexical/selection';
+} from "@lexical/react/LexicalTypeaheadMenuPlugin";
+import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text";
+import { $setBlocksType } from "@lexical/selection";
 import {
   $createParagraphNode,
   $getSelection,
@@ -22,12 +22,12 @@ import {
   FORMAT_ELEMENT_COMMAND,
   LexicalEditor,
   TextNode,
-} from 'lexical';
-import {useCallback, useMemo, useState} from 'react';
-import * as ReactDOM from 'react-dom';
-import { cn } from '@/lib/utils';
+} from "lexical";
+import { useCallback, useMemo, useState } from "react";
+import * as ReactDOM from "react-dom";
+import { cn } from "@/lib/utils";
 
-// Import icons from lucide-react
+// Icons
 import {
   Type,
   Heading1,
@@ -43,18 +43,13 @@ import {
   AlignCenter,
   AlignRight,
   AlignJustify,
-} from 'lucide-react';
+} from "lucide-react";
 
 class ComponentPickerOption extends MenuOption {
-  // What shows up in the editor
   title: string;
-  // Icon for display
   icon?: JSX.Element;
-  // For extra searching.
   keywords: Array<string>;
-  // TBD
   keyboardShortcut?: string;
-  // What happens when you select this option?
   onSelect: (queryString: string) => void;
 
   constructor(
@@ -64,7 +59,7 @@ class ComponentPickerOption extends MenuOption {
       keywords?: Array<string>;
       keyboardShortcut?: string;
       onSelect: (queryString: string) => void;
-    },
+    }
   ) {
     super(title);
     this.title = title;
@@ -88,41 +83,32 @@ function ComponentPickerMenuItem({
   onMouseEnter: () => void;
   option: ComponentPickerOption;
 }) {
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onClick();
-  }, [onClick]);
 
-  const handleMouseEnter = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    onMouseEnter();
-  }, [onMouseEnter]);
+
 
   return (
     <li
       key={option.key}
       tabIndex={-1}
       className={cn(
-        "flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors rounded-sm mx-1",
-        "hover:bg-accent hover:text-accent-foreground",
-        "focus:bg-accent focus:text-accent-foreground focus:outline-none",
+        "flex items-center gap-3 px-2 py-1.5 cursor-pointer transition-colors rounded-sm m-1",
+        "hover:bg-accent/60 hover:text-accent-foreground",
+        "focus:bg-accent/60 focus:text-accent-foreground focus:outline-none",
         "select-none user-select-none",
         isSelected && "bg-accent text-accent-foreground"
       )}
       ref={option.setRefElement}
       role="option"
       aria-selected={isSelected}
-      id={'typeahead-item-' + index}
-      onMouseEnter={handleMouseEnter}
-      onClick={handleClick}
-      onMouseDown={(e) => e.preventDefault()}
+      id={"typeahead-item-" + index}
+      onMouseEnter={onMouseEnter}
+      onClick={onClick}
       style={{
-        WebkitUserSelect: 'none',
-        MozUserSelect: 'none',
-        msUserSelect: 'none',
-        userSelect: 'none',
-        pointerEvents: 'auto',
+        WebkitUserSelect: "none",
+        MozUserSelect: "none",
+        msUserSelect: "none",
+        userSelect: "none",
+        pointerEvents: "auto",
       }}
     >
       <div className="flex-shrink-0 w-4 h-4 flex items-center justify-center pointer-events-none">
@@ -132,7 +118,7 @@ function ComponentPickerMenuItem({
         {option.title}
       </span>
       {option.keyboardShortcut && (
-        <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded pointer-events-none">
+        <span className="text-[10px] text-muted-foreground border border-border bg-transparent px-1.5 py-0.5 rounded pointer-events-none">
           {option.keyboardShortcut}
         </span>
       )}
@@ -142,10 +128,10 @@ function ComponentPickerMenuItem({
 
 function getBaseOptions(editor: LexicalEditor) {
   return [
-    new ComponentPickerOption('Paragraph', {
+    new ComponentPickerOption("Paragraph", {
       icon: <Type size={16} />,
-      keywords: ['normal', 'paragraph', 'p', 'text'],
-      keyboardShortcut: '⌘⌥0',
+      keywords: ["normal", "paragraph", "p", "text"],
+      keyboardShortcut: "⌘⌥0",
       onSelect: () =>
         editor.update(() => {
           const selection = $getSelection();
@@ -154,67 +140,67 @@ function getBaseOptions(editor: LexicalEditor) {
           }
         }),
     }),
-    new ComponentPickerOption('Heading 1', {
+    new ComponentPickerOption("Heading 1", {
       icon: <Heading1 size={16} />,
-      keywords: ['heading', 'header', 'h1'],
-      keyboardShortcut: '⌘⌥1',
+      keywords: ["heading", "header", "h1"],
+      keyboardShortcut: "⌘⌥1",
       onSelect: () =>
         editor.update(() => {
           const selection = $getSelection();
           if ($isRangeSelection(selection)) {
-            $setBlocksType(selection, () => $createHeadingNode('h1'));
+            $setBlocksType(selection, () => $createHeadingNode("h1"));
           }
         }),
     }),
-    new ComponentPickerOption('Heading 2', {
+    new ComponentPickerOption("Heading 2", {
       icon: <Heading2 size={16} />,
-      keywords: ['heading', 'header', 'h2'],
-      keyboardShortcut: '⌘⌥2',
+      keywords: ["heading", "header", "h2"],
+      keyboardShortcut: "⌘⌥2",
       onSelect: () =>
         editor.update(() => {
           const selection = $getSelection();
           if ($isRangeSelection(selection)) {
-            $setBlocksType(selection, () => $createHeadingNode('h2'));
+            $setBlocksType(selection, () => $createHeadingNode("h2"));
           }
         }),
     }),
-    new ComponentPickerOption('Heading 3', {
+    new ComponentPickerOption("Heading 3", {
       icon: <Heading3 size={16} />,
-      keywords: ['heading', 'header', 'h3'],
-      keyboardShortcut: '⌘⌥3',
+      keywords: ["heading", "header", "h3"],
+      keyboardShortcut: "⌘⌥3",
       onSelect: () =>
         editor.update(() => {
           const selection = $getSelection();
           if ($isRangeSelection(selection)) {
-            $setBlocksType(selection, () => $createHeadingNode('h3'));
+            $setBlocksType(selection, () => $createHeadingNode("h3"));
           }
         }),
     }),
-    new ComponentPickerOption('Numbered List', {
+    new ComponentPickerOption("Numbered List", {
       icon: <ListOrdered size={16} />,
-      keywords: ['numbered list', 'ordered list', 'ol'],
-      keyboardShortcut: '⌘⇧7',
+      keywords: ["numbered list", "ordered list", "ol"],
+      keyboardShortcut: "⌘⇧7",
       onSelect: () =>
         editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined),
     }),
-    new ComponentPickerOption('Bulleted List', {
+    new ComponentPickerOption("Bulleted List", {
       icon: <List size={16} />,
-      keywords: ['bulleted list', 'unordered list', 'ul'],
-      keyboardShortcut: '⌘⇧8',
+      keywords: ["bulleted list", "unordered list", "ul"],
+      keyboardShortcut: "⌘⇧8",
       onSelect: () =>
         editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined),
     }),
-    new ComponentPickerOption('Check List', {
+    new ComponentPickerOption("Check List", {
       icon: <CheckSquare size={16} />,
-      keywords: ['check list', 'todo list', 'task list'],
-      keyboardShortcut: '⌘⇧9',
+      keywords: ["check list", "todo list", "task list"],
+      keyboardShortcut: "⌘⇧9",
       onSelect: () =>
         editor.dispatchCommand(INSERT_CHECK_LIST_COMMAND, undefined),
     }),
-    new ComponentPickerOption('Quote', {
+    new ComponentPickerOption("Quote", {
       icon: <Quote size={16} />,
-      keywords: ['block quote', 'quotation'],
-      keyboardShortcut: '⌘⇧>',
+      keywords: ["block quote", "quotation"],
+      keyboardShortcut: "⌘⇧>",
       onSelect: () =>
         editor.update(() => {
           const selection = $getSelection();
@@ -223,10 +209,10 @@ function getBaseOptions(editor: LexicalEditor) {
           }
         }),
     }),
-    new ComponentPickerOption('Code Block', {
+    new ComponentPickerOption("Code Block", {
       icon: <Code size={16} />,
-      keywords: ['javascript', 'python', 'js', 'codeblock', 'code'],
-      keyboardShortcut: '⌘⌥C',
+      keywords: ["javascript", "python", "js", "codeblock", "code"],
+      keyboardShortcut: "⌘⌥C",
       onSelect: () =>
         editor.update(() => {
           const selection = $getSelection();
@@ -243,45 +229,41 @@ function getBaseOptions(editor: LexicalEditor) {
           }
         }),
     }),
-    new ComponentPickerOption('Divider', {
+    new ComponentPickerOption("Divider", {
       icon: <Minus size={16} />,
-      keywords: ['horizontal rule', 'divider', 'hr', 'separator'],
-      keyboardShortcut: '⌘⇧-',
+      keywords: ["horizontal rule", "divider", "hr", "separator"],
+      keyboardShortcut: "⌘⇧-",
       onSelect: () =>
         editor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined),
     }),
-    new ComponentPickerOption('Align Left', {
+    new ComponentPickerOption("Align Left", {
       icon: <AlignLeft size={16} />,
-      keywords: ['align', 'left'],
-      onSelect: () =>
-        editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left'),
+      keywords: ["align", "left"],
+      onSelect: () => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "left"),
     }),
-    new ComponentPickerOption('Align Center', {
+    new ComponentPickerOption("Align Center", {
       icon: <AlignCenter size={16} />,
-      keywords: ['align', 'center'],
-      onSelect: () =>
-        editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center'),
+      keywords: ["align", "center"],
+      onSelect: () => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "center"),
     }),
-    new ComponentPickerOption('Align Right', {
+    new ComponentPickerOption("Align Right", {
       icon: <AlignRight size={16} />,
-      keywords: ['align', 'right'],
-      onSelect: () =>
-        editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right'),
+      keywords: ["align", "right"],
+      onSelect: () => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "right"),
     }),
-    new ComponentPickerOption('Justify', {
+    new ComponentPickerOption("Justify", {
       icon: <AlignJustify size={16} />,
-      keywords: ['align', 'justify'],
-      onSelect: () =>
-        editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify'),
+      keywords: ["align", "justify"],
+      onSelect: () => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "justify"),
     }),
   ];
 }
 
-export default function ComponentPickerMenuPlugin(): JSX.Element {
+const ComponentPickerMenuPlugin = () => {
   const [editor] = useLexicalComposerContext();
   const [queryString, setQueryString] = useState<string | null>(null);
 
-  const checkForTriggerMatch = useBasicTypeaheadTriggerMatch('/', {
+  const checkForTriggerMatch = useBasicTypeaheadTriggerMatch("/", {
     allowWhitespace: true,
     minLength: 0,
   });
@@ -289,16 +271,13 @@ export default function ComponentPickerMenuPlugin(): JSX.Element {
   const options = useMemo(() => {
     const baseOptions = getBaseOptions(editor);
 
-    if (!queryString) {
-      return baseOptions;
-    }
+    if (!queryString) return baseOptions;
 
-    const regex = new RegExp(queryString, 'i');
-
+    const regex = new RegExp(queryString, "i");
     return baseOptions.filter(
       (option) =>
         regex.test(option.title) ||
-        option.keywords.some((keyword) => regex.test(keyword)),
+        option.keywords.some((keyword) => regex.test(keyword))
     );
   }, [editor, queryString]);
 
@@ -307,7 +286,7 @@ export default function ComponentPickerMenuPlugin(): JSX.Element {
       selectedOption: ComponentPickerOption,
       nodeToRemove: TextNode | null,
       closeMenu: () => void,
-      matchingString: string,
+      matchingString: string
     ) => {
       editor.update(() => {
         nodeToRemove?.remove();
@@ -315,10 +294,11 @@ export default function ComponentPickerMenuPlugin(): JSX.Element {
         closeMenu();
       });
     },
-    [editor],
+    [editor]
   );
 
   return (
+   <>
     <LexicalTypeaheadMenuPlugin<ComponentPickerOption>
       onQueryChange={setQueryString}
       onSelectOption={onSelectOption}
@@ -326,72 +306,54 @@ export default function ComponentPickerMenuPlugin(): JSX.Element {
       options={options}
       menuRenderFn={(
         anchorElementRef,
-        {selectedIndex, selectOptionAndCleanUp, setHighlightedIndex},
-      ) =>
-        anchorElementRef.current && options.length
+        { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex }
+      ) => {
+
+        console.log(anchorElementRef.current)
+
+        return anchorElementRef.current && options.length
           ? ReactDOM.createPortal(
-              <div 
+              <div
                 className={cn(
-                  "fixed min-w-[18rem] max-w-[24rem] max-h-[24rem]",
+                  "relative min-w-[10rem]",
                   "bg-popover text-popover-foreground",
                   "border border-border rounded-md shadow-lg",
-                  "animate-in fade-in-0 zoom-in-95 duration-200"
+                  "animate-in fade-in-0 duration-200",
+                  "z-50 w-64"
                 )}
-                style={{
-                  top: `${anchorElementRef.current.getBoundingClientRect().bottom + window.scrollY + 4}px`,
-                  left: `${anchorElementRef.current.getBoundingClientRect().left + window.scrollX}px`,
-                  zIndex: 9999,
-                  pointerEvents: 'auto',
-                  position: 'fixed',
-                }}
-                onMouseDown={(e) => e.preventDefault()}
               >
-                {/* Header */}
-               
-                
-                {/* Content */}
-                <div 
-                  className="py-1 max-h-64 overflow-y-auto overscroll-contain"
+                <ul
+                  className="p-0 m-0 list-none overflow-y-scroll max-h-[200px]"
+                  role="listbox"
                   style={{
-                    scrollbarWidth: 'thin',
-                    scrollbarColor: 'hsl(var(--muted-foreground)) transparent',
-                    pointerEvents: 'auto',
+                    scrollbarWidth: "thin",
+                    scrollbarColor: "hsl(var(--muted-foreground)) transparent",
                   }}
+                  onWheel={(e) => e.stopPropagation()}
+                  onTouchMove={(e) => e.stopPropagation()}
                 >
-                  <ul 
-                    className="focus:outline-none" 
-                    role="listbox"
-                    style={{ pointerEvents: 'auto' }}
-                  >
-                    {options.map((option, i: number) => (
-                      <ComponentPickerMenuItem
-                        key={option.key}
-                        index={i}
-                        isSelected={selectedIndex === i}
-                        onClick={() => {
-                          setHighlightedIndex(i);
-                          selectOptionAndCleanUp(option);
-                        }}
-                        onMouseEnter={() => {
-                          setHighlightedIndex(i);
-                        }}
-                        option={option}
-                      />
-                    ))}
-                  </ul>
-                </div>
-                
-                {/* Footer hint */}
-                <div className="px-3 py-2 border-t border-border bg-muted/30">
-                  <div className="text-xs text-muted-foreground">
-                    <kbd className="px-1 py-0.5 text-xs font-mono bg-background border rounded">↑↓</kbd> navigate • <kbd className="px-1 py-0.5 text-xs font-mono bg-background border rounded">Enter</kbd> select • <kbd className="px-1 py-0.5 text-xs font-mono bg-background border rounded">Esc</kbd> close
-                  </div>
-                </div>
+                  {options.map((option, i: number) => (
+                    <ComponentPickerMenuItem
+                      key={option.key}
+                      index={i}
+                      isSelected={selectedIndex === i}
+                      onClick={() => {
+                        setHighlightedIndex(i);
+                        selectOptionAndCleanUp(option);
+                      }}
+                      onMouseEnter={() => setHighlightedIndex(i)}
+                      option={option}
+                    />
+                  ))}
+                </ul>
               </div>,
-              document.body
+              anchorElementRef.current
             )
-          : null
-      }
+          : null;
+      }}
     />
+   </>
   );
-}
+};
+
+export default ComponentPickerMenuPlugin;

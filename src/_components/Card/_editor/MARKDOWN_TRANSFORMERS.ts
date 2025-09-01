@@ -50,7 +50,6 @@ export const HR: ElementTransformer = {
   replace: (parentNode, _1, _2, isImport) => {
     const line = $createHorizontalRuleNode();
 
-    // TODO: Get rid of isImport flag
     if (isImport || parentNode.getNextSibling() != null) {
       parentNode.replace(line);
     } else {
@@ -62,7 +61,7 @@ export const HR: ElementTransformer = {
   type: "element",
 };
 
-// Custom Code Block Transformer - Only handles triple backticks for code blocks
+// Improved Code Block Transformer
 export const CODE_BLOCK: ElementTransformer = {
   dependencies: [CodeNode],
   export: (node: LexicalNode) => {
@@ -83,45 +82,57 @@ export const CODE_BLOCK: ElementTransformer = {
   type: "element",
 };
 
-// Custom Inline Code Transformer - Only handles single backticks for inline code
+// Improved Inline Code Transformer
 export const INLINE_CODE: TextFormatTransformer = {
   format: ['code'],
   tag: '`',
-  intraword: true,
+  // Remove intraword to prevent conflicts
+  intraword: false,
   type: 'text-format',
 };
 
-// Filter out the default CODE transformer from TEXT_FORMAT_TRANSFORMERS
+// More robust filtering of default code transformer
 const FILTERED_TEXT_FORMAT_TRANSFORMERS = TEXT_FORMAT_TRANSFORMERS.filter(
   transformer => {
-    // Remove the default code transformer that uses backticks
-    if (transformer.type === 'text-format' && 
-        (transformer as TextFormatTransformer).format?.includes('code')) {
-      return false;
+    if (transformer.type === 'text-format') {
+      const textFormatter = transformer as TextFormatTransformer;
+      // Filter out any transformer that uses backticks
+      if (textFormatter.tag === '`' || textFormatter.format?.includes('code')) {
+        return false;
+      }
     }
     return true;
   }
 );
 
+// Improved transformer order - put inline code early to avoid conflicts
 export const MARKDOWN_TRANSFORMERS: Array<Transformer> = [
+  // Text match transformers first (they're more specific)
   IMAGE,
+  ...TEXT_MATCH_TRANSFORMERS,
+  
+  // Element transformers
   HR,
-  CODE_BLOCK, // Our custom code block transformer
-  INLINE_CODE, // Our custom inline code transformer
+  CODE_BLOCK,
   CHECK_LIST,
   ...ELEMENT_TRANSFORMERS,
   ...MULTILINE_ELEMENT_TRANSFORMERS,
-  ...FILTERED_TEXT_FORMAT_TRANSFORMERS, // Use filtered transformers
-  ...TEXT_MATCH_TRANSFORMERS,
+  
+  // Text format transformers last, with inline code early in this group
+  INLINE_CODE,
+  ...FILTERED_TEXT_FORMAT_TRANSFORMERS,
 ];
 
 export const AI_ONLY_TEXT_MARKDOWN_TRANSFORMERS: Array<Transformer> = [
+  // Same order but without IMAGE
+  ...TEXT_MATCH_TRANSFORMERS,
+  
   HR,
-  CODE_BLOCK, // Our custom code block transformer
-  INLINE_CODE, // Our custom inline code transformer
+  CODE_BLOCK,
   CHECK_LIST,
   ...ELEMENT_TRANSFORMERS,
   ...MULTILINE_ELEMENT_TRANSFORMERS,
-  ...FILTERED_TEXT_FORMAT_TRANSFORMERS, // Use filtered transformers
-  ...TEXT_MATCH_TRANSFORMERS,
+  
+  INLINE_CODE,
+  ...FILTERED_TEXT_FORMAT_TRANSFORMERS,
 ];

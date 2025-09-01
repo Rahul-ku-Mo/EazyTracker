@@ -344,19 +344,13 @@ export default function MentionsPlugin(): JSX.Element | null {
           ? ReactDOM.createPortal(
               <div
                 className={cn(
-                  "fixed min-w-[16rem] max-w-[20rem] max-h-[30rem]",
+                  "relative min-w-[16rem] max-w-[20rem] max-h-[30rem]",
                   "bg-popover text-popover-foreground",
                   "border border-border rounded-md shadow-lg",
-                  "animate-in fade-in-0 zoom-in-95 duration-200"
+                  "animate-in fade-in-0 duration-200 z-50"
                 )}
-                style={{
-                  top: `${anchorElementRef.current.getBoundingClientRect().bottom + window.scrollY + 4}px`,
-                  left: `${anchorElementRef.current.getBoundingClientRect().left + window.scrollX}px`,
-                  zIndex: 9999, // High z-index but reasonable
-                  pointerEvents: "auto", // Ensure the container accepts pointer events
-                  position: "fixed",
-                }}
-                onMouseDown={(e) => e.preventDefault()} // Prevent editor focus loss
+                onWheel={(e) => e.stopPropagation()}
+                onTouchMove={(e) => e.stopPropagation()}
               >
                 {/* Header */}
                 {queryString && queryString.length > 0 && (
@@ -369,11 +363,10 @@ export default function MentionsPlugin(): JSX.Element | null {
 
                 {/* Content */}
                 <div
-                  className="py-1 max-h-64 overflow-y-auto overscroll-contain"
+                  className="py-1 max-h-40 overflow-y-auto overscroll-contain"
                   style={{
                     scrollbarWidth: "thin",
                     scrollbarColor: "hsl(var(--muted-foreground)) transparent",
-                    pointerEvents: "auto",
                   }}
                 >
                   {isLoading ? (
@@ -401,7 +394,6 @@ export default function MentionsPlugin(): JSX.Element | null {
                       <div
                         role="listbox"
                         className="focus:outline-none"
-                        style={{ pointerEvents: "auto" }}
                       >
                         {options.map((option, i: number) => (
                           <MentionsTypeaheadMenuItem
@@ -422,7 +414,7 @@ export default function MentionsPlugin(): JSX.Element | null {
 
                       {/* Footer for overflow indicator */}
                       {results.length > 8 && (
-                        <div className="px-3 py-2 border-t border-border bg-muted/30 pointer-events-none">
+                        <div className="px-1.5 py-2 border-t border-border bg-muted/30 pointer-events-none m-1">
                           <div className="text-xs text-muted-foreground text-center">
                             Showing 8 of {results.length} results
                           </div>
@@ -432,7 +424,7 @@ export default function MentionsPlugin(): JSX.Element | null {
                   )}
                 </div>
               </div>,
-              document.body
+              anchorElementRef.current
             )
           : null
       }

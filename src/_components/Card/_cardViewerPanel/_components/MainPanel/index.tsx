@@ -7,6 +7,8 @@ import { TCardContext } from "@/types/cardTypes";
 import { useCardMutation } from "../../../_mutations/useCardMutations.ts";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input.tsx";
+import { CommentsSection } from "../../../_comments";
+import { Separator } from "@/components/ui/separator.tsx";
 
 // Simple Inline Title Editor
 const InlineEditableTitle = ({
@@ -67,7 +69,7 @@ const InlineEditableTitle = ({
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={handleSave}
-          className="!text-3xl my-1.5 font-bold !p-0 border-none focus:ring-0 focus-visible:ring-offset-0 focus-visible:ring-0 rounded-none"
+          className="!text-2xl my-1.5 font-bold !p-0 border-none focus:ring-0 focus-visible:ring-offset-0 focus-visible:ring-0 rounded-none"
         />
       </div>
     );
@@ -77,7 +79,7 @@ const InlineEditableTitle = ({
     <div className="group flex items-center gap-2 editor-readable-font">
       <div
         title={title}
-        className="text-3xl font-bold py-1.5 cursor-pointer hover:text-primary/80 transition-colors truncate max-w-2xl"
+        className="text-2xl font-bold py-1.5 cursor-pointer hover:text-primary/80 transition-colors truncate max-w-2xl"
         onClick={() => setIsEditing(true)}
       >
         {title}
@@ -164,27 +166,54 @@ const MainPanel = ({
 
   const { description, id: cardId, title } = cardDetails as TCardContext;
 
+  const cardDetailRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (cardDetailRef.current) {
+      cardDetailRef.current.scrollTo({
+        top: 0,
+        behavior: "instant",
+      });
+    }
+  }, []);
+
   return (
-    <div className="relative p-4 flex-1 pr-[20rem]">
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col">
-          <ColumnStatusIndicator columnName={columnName} />
-          <InlineEditableTitle title={title} cardId={cardId} />
+    <div
+      ref={cardDetailRef}
+      className="relative lg:mr-[20rem] flex flex-col container"
+    >
+      {/* Header Section */}
+      <div className="p-4 pb-2">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <ColumnStatusIndicator columnName={columnName} />
+            <InlineEditableTitle title={title} cardId={cardId} />
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsLocked(!isLocked)}
+          >
+            {isLocked ? (
+              <Lock className="w-4 h-4" />
+            ) : (
+              <Unlock className="w-4 h-4" />
+            )}
+          </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsLocked(!isLocked)}
-        >
-          {isLocked ? (
-            <Lock className="w-4 h-4" />
-          ) : (
-            <Unlock className="w-4 h-4" />
-          )}
-        </Button>
       </div>
 
-      <CardDetailsEditor cardId={cardId} description={description as string} />
+      {/* Content Section */}
+      <div className="flex-1 flex flex-col min-h-0 px-4 pt-2.5 overflow-y-auto">
+        {/* Card Description Editor */}
+        <CardDetailsEditor
+          cardId={cardId}
+          description={description as string}
+        />
+        {/* Comments Section */}
+        <Separator className="my-2" />
+        <CommentsSection cardId={cardId}/>
+      </div>
     </div>
   );
 };

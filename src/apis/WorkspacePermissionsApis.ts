@@ -9,18 +9,34 @@ export interface WorkspacePermission {
   updatedAt: string;
 }
 
-export const fetchWorkspacePermissions = async (workspaceId: string): Promise<WorkspacePermission[]> => {
+export const fetchWorkspacePermissions = async (workspaceIdentifier: string): Promise<WorkspacePermission[]> => {
   try {
-    const response = await apiClient.get(`/workspaces/${workspaceId}/permissions`);
+    let url: string;
+    if (workspaceIdentifier.includes('/')) {
+      const [teamId, slug] = workspaceIdentifier.split('/');
+      url = `/workspaces/${teamId}/${slug}/permissions`;
+    } else {
+      throw new Error("Workspace identifier must be in teamId/slug format");
+    }
+
+    const response = await apiClient.get(url);
     return response.data.data;
   } catch (error: any) {
     throw new Error(error?.response?.data?.message);
   }
 };
 
-export const grantWorkspacePermission = async (workspaceId: string, userId: string, permission: string): Promise<WorkspacePermission> => {
+export const grantWorkspacePermission = async (workspaceIdentifier: string, userId: string, permission: string): Promise<WorkspacePermission> => {
   try {
-    const response = await apiClient.post(`/workspaces/${workspaceId}/permissions`, {
+    let url: string;
+    if (workspaceIdentifier.includes('/')) {
+      const [teamId, slug] = workspaceIdentifier.split('/');
+      url = `/workspaces/${teamId}/${slug}/permissions`;
+    } else {
+      throw new Error("Workspace identifier must be in teamId/slug format");
+    }
+
+    const response = await apiClient.post(url, {
       userId: userId,
       permission: permission
     });
@@ -30,27 +46,5 @@ export const grantWorkspacePermission = async (workspaceId: string, userId: stri
   }
 };
 
-export const revokeWorkspacePermission = async (workspaceId: string, userId: string, permission: string): Promise<any> => {
-  try {
-    const response = await apiClient.delete(`/workspaces/${workspaceId}/permissions`, {
-      data: {
-        userId: userId,
-        permission: permission
-      }
-    });
-    return response.data;
-  } catch (error: any) {
-    throw new Error(error?.response?.data?.message);
-  }
-};
-
-export const checkWorkspacePermission = async (workspaceId: string, permission: string): Promise<boolean> => {
-  try {
-    const response = await apiClient.get(`/workspaces/${workspaceId}/permissions/check`, {
-      params: { permission }
-    });
-    return response.data.hasPermission;
-  } catch (error: any) {
-    return false;
-  }
-}; 
+// Note: revokeWorkspacePermission and checkWorkspacePermission methods 
+// removed as they don't have corresponding backend controller methods 

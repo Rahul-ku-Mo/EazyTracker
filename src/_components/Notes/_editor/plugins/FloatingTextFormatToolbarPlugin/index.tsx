@@ -2,9 +2,16 @@ import type { JSX } from "react";
 
 import "./index.css";
 
-import { $isCodeHighlightNode } from "@lexical/code";
+import { $createCodeNode, $isCodeHighlightNode } from "@lexical/code";
+import {
+  INSERT_ORDERED_LIST_COMMAND,
+  INSERT_UNORDERED_LIST_COMMAND,
+  INSERT_CHECK_LIST_COMMAND,
+  REMOVE_LIST_COMMAND,
+  ListNode,
+  $isListNode,
+} from "@lexical/list";
 import {$isLinkNode, TOGGLE_LINK_COMMAND} from '@lexical/link';
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { mergeRegister } from "@lexical/utils";
 import {
   $createParagraphNode,
@@ -18,12 +25,12 @@ import {
   LexicalEditor,
   SELECTION_CHANGE_COMMAND,
 } from "lexical";
+import { $getNearestNodeOfType } from "@lexical/utils";
 import { $setBlocksType } from "@lexical/selection";
-import { $createHeadingNode, $isHeadingNode, HeadingTagType } from "@lexical/rich-text";
-import { useCallback, useEffect, useRef, useState } from "react";
-
+import { $createHeadingNode, $isHeadingNode } from "@lexical/rich-text";
+import { useCallback, useEffect, useRef , useState } from "react";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { createPortal } from "react-dom";
-
 import {
   getDOMRangeRect,
   getSelectedNode,
@@ -31,15 +38,33 @@ import {
 } from "../../utils";
 import {
   BoldIcon,
-  CodeIcon,
+  InlineCodeIcon,
+  CodeBlockIcon,
   ItalicIcon,
   LinkIcon,
   StrikethroughIcon,
   SubscriptIcon,
   SuperscriptIcon,
   UnderlineIcon,
-} from "lucide-react";
+  OrderedListIcon,
+  UnorderedListIcon,
+  CheckListIcon,
+} from "@/_components/shared/svg/FormattingIcons";
 import { cn } from "@/lib/utils";
+//import { convertToMarkdown } from "@/_components/Card/_editor/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 // import {INSERT_INLINE_COMMAND} from '../CommentPlugin';
 
 function TextFormatFloatingToolbar({
@@ -49,15 +74,15 @@ function TextFormatFloatingToolbar({
   isBold,
   isItalic,
   isUnderline,
-  //   isUppercase,
-  //   isLowercase,
-  //   isCapitalize,
   isCode,
   isStrikethrough,
   isSubscript,
   isSuperscript,
   isHeading,
   isParagraph,
+  isBulletList,
+  isOrderedList,
+  isCheckList,
   setIsLinkEditMode,
 }: // setIsLinkEditMode,
 {
@@ -83,6 +108,9 @@ function TextFormatFloatingToolbar({
     h6: boolean;
   };
   isParagraph: boolean;
+  isBulletList: boolean;
+  isOrderedList: boolean;
+  isCheckList: boolean;
   setIsLinkEditMode: React.Dispatch<React.SetStateAction<boolean>>;
 }): JSX.Element {
   const popupCharStylesEditorRef = useRef<HTMLDivElement | null>(null);
@@ -216,229 +244,412 @@ function TextFormatFloatingToolbar({
     if (isParagraph) return 'P';
     const activeHeading = Object.keys(isHeading).find(key => isHeading[key as keyof typeof isHeading]);
     if (activeHeading) return activeHeading.toUpperCase();
-    return 'T';
+    return 'Text';
   };
 
   return (
-    <div ref={popupCharStylesEditorRef} className="floating-text-format-popup dark:bg-zinc-800 bg-white border border-border rounded-md h-fit">
-      {editor !== null && (
-        <>
-          <button
-            type="button"
-            onClick={() => {
-              editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold");
-            }}
-            className={"popup-item spaced " + (isBold ? "active" : "")}
-            title="Format text as bold"
-            aria-label="Format text as bold"
-          >
-            <BoldIcon
-              className={cn(
-                "w-4 h-4",
-                isBold ? "text-white" : "text-black dark:text-white"
-              )}
-            />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic");
-            }}
-            className={"popup-item spaced " + (isItalic ? "active" : "")}
-            title="Format text as italics"
-            aria-label="Format text as italics"
-          >
-            <ItalicIcon
-              className={cn(
-                "w-4 h-4",
-                isItalic ? "text-white" : "text-black dark:text-white"
-              )}
-            />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              editor.dispatchCommand(FORMAT_TEXT_COMMAND, "underline");
-            }}
-            className={"popup-item spaced " + (isUnderline ? "active" : "")}
-            title="Format text to underlined"
-            aria-label="Format text to underlined"
-          >
-            <UnderlineIcon
-              className={cn(
-                "w-4 h-4",
-                isUnderline ? "text-white" : "text-black dark:text-white"
-              )}
-            />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              editor.dispatchCommand(FORMAT_TEXT_COMMAND, "strikethrough");
-            }}
-            className={"popup-item spaced " + (isStrikethrough ? "active" : "")}
-            title="Format text with a strikethrough"
-            aria-label="Format text with a strikethrough"
-          >
-            <StrikethroughIcon
-              className={cn(
-                "w-4 h-4",
-                isStrikethrough ? "text-white" : "text-black dark:text-white"
-              )}
-            />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              editor.dispatchCommand(FORMAT_TEXT_COMMAND, "subscript");
-            }}
-            className={"popup-item spaced " + (isSubscript ? "active" : "")}
-            title="Format Subscript"
-            aria-label="Format Subscript"
-          >
-            <SubscriptIcon
-              className={cn(
-                "w-4 h-4",
-                isSubscript ? "text-white" : "text-black dark:text-white"
-              )}
-            />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              editor.dispatchCommand(FORMAT_TEXT_COMMAND, "superscript");
-            }}
-            className={"popup-item spaced " + (isSuperscript ? "active" : "")}
-            title="Format Superscript"
-            aria-label="Format Superscript"
-          >
-            <SuperscriptIcon
-              className={cn(
-                "w-4 h-4",
-                isSuperscript ? "text-white" : "text-black dark:text-white"
-              )}
-            />
-          </button>
-         <div className="flex border-r border-zinc-200 dark:border-zinc-800 pr-1">
-          {/* Text Style Dropdown */}
-          <div className="relative group">
-            <button
-              type="button"
-              className={`popup-item m-0.5 text-xs font-medium px-2 py-1 flex items-center gap-1 ${
-                Object.values(isHeading).some(Boolean) || isParagraph ? 'active' : ''
-              }`}
-              title="Text style options"
-              aria-label="Text style options"
-            >
-              {getCurrentTextStyle()}
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            
-            {/* Dropdown Menu */}
-            <div className="absolute top-full left-0 mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 min-w-[160px]">
-              {/* Paragraph Option */}
+    <TooltipProvider>
+      <div ref={popupCharStylesEditorRef} className="floating-text-format-popup dark:bg-black bg-white border border-border rounded-md h-fit">
+        {editor !== null && (
+          <>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => {
+                    editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold");
+                  }}
+                  className={"popup-item spaced " + (isBold ? "active" : "")}
+                  aria-label="Format text as bold"
+                >
+                  <BoldIcon 
+                   className={cn(
+                    "w-4 h-4",
+                    isBold ? "text-white" : "text-black dark:text-white"
+                   )}
+                  />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+                <p>Bold</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => {
+                    editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic");
+                  }}
+                  className={"popup-item spaced " + (isItalic ? "active" : "")}
+                  aria-label="Format text as italics"
+                >
+                  <ItalicIcon
+                    className={cn(
+                      "w-4 h-4",
+                      isItalic ? "text-white" : "text-black dark:text-white"
+                    )}
+                  />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+                <p>Italic</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => {
+                    editor.dispatchCommand(FORMAT_TEXT_COMMAND, "underline");
+                  }}
+                  className={"popup-item spaced " + (isUnderline ? "active" : "")}
+                  aria-label="Format text to underlined"
+                >
+                  <UnderlineIcon
+                    className={cn(
+                      "w-4 h-4",
+                      isUnderline ? "text-white" : "text-black dark:text-white"
+                    )}
+                  />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+                <p>Underline</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => {
+                    editor.dispatchCommand(FORMAT_TEXT_COMMAND, "strikethrough");
+                  }}
+                  className={"popup-item spaced " + (isStrikethrough ? "active" : "")}
+                  aria-label="Format text with a strikethrough"
+                >
+                  <StrikethroughIcon
+                    className={cn(
+                      "w-4 h-4",
+                      isStrikethrough ? "text-white" : "text-black dark:text-white"
+                    )}
+                  />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+                <p>Strikethrough</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => {
+                    editor.dispatchCommand(FORMAT_TEXT_COMMAND, "subscript");
+                  }}
+                  className={"popup-item spaced " + (isSubscript ? "active" : "")}
+                  aria-label="Format Subscript"
+                >
+                  <SubscriptIcon
+                    className={cn(
+                      "w-4 h-4",
+                      isSubscript ? "text-white" : "text-black dark:text-white"
+                    )}
+                  />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+                <p>Subscript</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => {
+                    editor.dispatchCommand(FORMAT_TEXT_COMMAND, "superscript");
+                  }}
+                  className={"popup-item spaced " + (isSuperscript ? "active" : "")}
+                  aria-label="Format Superscript"
+                >
+                  <SuperscriptIcon
+                    className={cn(
+                      "w-4 h-4",
+                      isSuperscript ? "text-white" : "text-black dark:text-white"
+                    )}
+                  />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+                <p>Superscript</p>
+              </TooltipContent>
+            </Tooltip>
+         <div className="flex border-r border-border pr-1">
+           <DropdownMenu>
+             <Tooltip>
+               <TooltipTrigger asChild>
+                 <DropdownMenuTrigger asChild>
+                   <button
+                     type="button"
+                     className={`popup-item text-xs font-medium px-2 py-1 flex items-center gap-1 ${
+                       (isHeading.h1 || isHeading.h2 || isHeading.h3 || isParagraph) ? 'active' : ''
+                     }`}
+                     aria-label="Text style options"
+                   >
+                     {getCurrentTextStyle()}
+                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                     </svg>
+                   </button>
+                 </DropdownMenuTrigger>
+               </TooltipTrigger>
+               <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+                 <p>Text Style</p>
+               </TooltipContent>
+             </Tooltip>
+             <DropdownMenuContent align="start" sideOffset={4} className="min-w-[160px]">
+               <DropdownMenuItem
+                 onClick={() => {
+                   editor.update(() => {
+                     const selection = $getSelection();
+                     if ($isRangeSelection(selection)) {
+                       $setBlocksType(selection, () => $createParagraphNode());
+                     }
+                   });
+                 }}
+                 className={cn(
+                   "text-sm",
+                   isParagraph && "bg-blue-500 text-white focus:bg-blue-500 focus:text-white"
+                 )}
+               >
+                 Paragraph
+               </DropdownMenuItem>
+               <DropdownMenuSeparator />
+               <DropdownMenuItem
+                 onClick={() => {
+                   editor.update(() => {
+                     const selection = $getSelection();
+                     if ($isRangeSelection(selection)) {
+                       $setBlocksType(selection, () => $createHeadingNode('h1'));
+                     }
+                   });
+                 }}
+                 className={cn(
+                   "font-bold text-sm",
+                   isHeading.h1 && "bg-blue-500 text-white focus:bg-blue-500 focus:text-white"
+                 )}
+               >
+                 Heading 1
+               </DropdownMenuItem>
+               <DropdownMenuItem
+                 onClick={() => {
+                   editor.update(() => {
+                     const selection = $getSelection();
+                     if ($isRangeSelection(selection)) {
+                       $setBlocksType(selection, () => $createHeadingNode('h2'));
+                     }
+                   });
+                 }}
+                 className={cn(
+                   "font-bold text-sm",
+                   isHeading.h2 && "bg-blue-500 text-white focus:bg-blue-500 focus:text-white"
+                 )}
+               >
+                 Heading 2
+               </DropdownMenuItem>
+               <DropdownMenuItem
+                 onClick={() => {
+                   editor.update(() => {
+                     const selection = $getSelection();
+                     if ($isRangeSelection(selection)) {
+                       $setBlocksType(selection, () => $createHeadingNode('h3'));
+                     }
+                   });
+                 }}
+                 className={cn(
+                   "font-bold text-sm",
+                   isHeading.h3 && "bg-blue-500 text-white focus:bg-blue-500 focus:text-white"
+                 )}
+               >
+                 Heading 3
+               </DropdownMenuItem>
+             </DropdownMenuContent>
+           </DropdownMenu>
+         </div>
+          {/* List buttons */}
+          <div className="flex border-r border-border pr-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isBulletList) {
+                      editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
+                    } else {
+                      editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
+                    }
+                  }}
+                  className={"popup-item  " + (isBulletList ? "active" : "")}
+                  aria-label="Toggle bulleted list"
+                >
+                  <UnorderedListIcon
+                    className={cn(
+                      "w-4 h-4",
+                      isBulletList ? "text-white" : "text-black dark:text-white"
+                    )}
+                  />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+                <p>Bullet List</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isOrderedList) {
+                      editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
+                    } else {
+                      editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
+                    }
+                  }}
+                  className={"popup-item " + (isOrderedList ? "active" : "")}
+                  aria-label="Toggle numbered list"
+                >
+                  <OrderedListIcon
+                    className={cn(
+                      "w-4 h-4",
+                      isOrderedList ? "text-white" : "text-black dark:text-white"
+                    )}
+                  />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+                <p>Numbered List</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isCheckList) {
+                      editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
+                    } else {
+                      editor.dispatchCommand(INSERT_CHECK_LIST_COMMAND, undefined);
+                    }
+                  }}
+                  className={"popup-item " + (isCheckList ? "active" : "")}
+                  aria-label="Toggle checklist"
+                >
+                  <CheckListIcon
+                    className={cn(
+                      "w-4 h-4",
+                      isCheckList ? "text-white" : "text-black dark:text-white"
+                    )}
+                  />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+                <p>Check List</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
               <button
                 type="button"
                 onClick={() => {
+                  // Insert a code block at current selection
                   editor.update(() => {
                     const selection = $getSelection();
                     if ($isRangeSelection(selection)) {
-                      $setBlocksType(selection, () => $createParagraphNode());
+                      if (selection.isCollapsed()) {
+                        $setBlocksType(selection, () => $createCodeNode());
+                      } else {
+                        const textContent = selection.getTextContent();
+                        const codeNode = $createCodeNode();
+                        selection.insertNodes([codeNode]);
+                        selection.insertRawText(textContent);
+                      }
                     }
                   });
                 }}
-                className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-700 ${
-                  isParagraph
-                    ? "bg-blue-500 text-white hover:bg-blue-600"
-                    : "text-zinc-700 dark:text-zinc-300"
-                }`}
-                title="Paragraph"
-                aria-label="Format as paragraph"
+                className="popup-item"
+                aria-label="Insert code block"
               >
-                <span className="flex items-center gap-2">
-                  <span style={{ fontSize: '14px', fontWeight: 'normal' }}>P</span>
-                  Paragraph
-                </span>
-                {isParagraph && (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
+                <CodeBlockIcon
+                  className={cn(
+                    "w-4 h-4",
+                    "text-black dark:text-white"
+                  )}
+                />
               </button>
-              
-              {/* Separator */}
-              <div className="border-t border-zinc-200 dark:border-zinc-700 my-1"></div>
-              
-              {/* Heading Options in Flex Layout */}
-              <div className="p-2">
-                <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-2 px-1">Headings</div>
-                <div className="grid grid-cols-3 gap-1">
-                  {['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].map((headingType) => {
-                    const isActive = isHeading[headingType as keyof typeof isHeading];
-                    const headingNum = headingType.charAt(1);
-                    return (
-                      <button
-                        key={headingType}
-                        type="button"
-                        onClick={() => {
-                          editor.update(() => {
-                            const selection = $getSelection();
-                            if ($isRangeSelection(selection)) {
-                              $setBlocksType(selection, () => $createHeadingNode(headingType as HeadingTagType));
-                            }
-                          });
-                        }}
-                        className={`px-2 py-1.5 text-xs font-bold rounded transition-colors ${
-                          isActive
-                            ? "bg-blue-500 text-white"
-                            : "bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-600"
-                        }`}
-                        title={`Heading ${headingNum}`}
-                        aria-label={`Format text as heading ${headingNum}`}
-                      >
-                        H{headingNum}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-         </div>
-          <button
-            type="button"
-            onClick={() => {
-              editor.dispatchCommand(FORMAT_TEXT_COMMAND, "code");
-            }}
-            className={"popup-item m-0.5 " + (isCode ? "active" : "")}
-            title="Insert code block"
-            aria-label="Insert code block"
-          >
-            <CodeIcon
-              className={cn(
-                "w-4 h-4",
-                isCode ? "text-white" : "text-black dark:text-white"
-              )}
-            />
-          </button>
-          <button
-            type="button"
-            onClick={insertLink}
-            className={`popup-item m-0.5 ${isLink ? 'active' : ''}`}
-            title="Insert link"
-            aria-label="Insert link">
-            <LinkIcon 
-              className={cn(
-                "w-4 h-4",
-                isLink ? "text-white" : "text-black dark:text-white"
-              )} 
-            />
-          </button>
+            </TooltipTrigger>
+            <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+              <p>Code Block</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={() => {
+                  editor.dispatchCommand(FORMAT_TEXT_COMMAND, "code");
+                }}
+                className={"popup-item " + (isCode ? "active" : "")}
+                aria-label="Toggle inline code"
+              >
+                <InlineCodeIcon
+                  className={cn(
+                    "w-4 h-4",
+                    isCode ? "text-white" : "text-black dark:text-white"
+                  )}
+                />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+              <p>Inline Code</p>
+            </TooltipContent>
+          </Tooltip>
+          {/* <div className="flex border-r border-border pr-1">
+            <button
+              type="button"
+              onClick={() => convertToMarkdown(editor)}
+              className={"popup-item m-0.5"}
+              title="Toggle Markdown view"
+              aria-label="Toggle Markdown view"
+            >
+              <span className="w-4 h-4 inline-flex items-center justify-center font-mono text-xs">M</span>
+            </button>
+          </div> */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={insertLink}
+                className={`popup-item ${isLink ? 'active' : ''}`}
+                aria-label="Insert link">
+                 <span className="text-xs mr-1">Link</span>
+                <LinkIcon 
+                  className={cn(
+                    "w-4 h-4 -rotate-45",
+                    isLink ? "text-white" : "text-black dark:text-white"
+                  )} 
+                />
+                
+              </button>
+            </TooltipTrigger>
+            <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+              <p>Link</p>
+            </TooltipContent>
+          </Tooltip>
         </>
       )}
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }
 
@@ -468,6 +679,9 @@ function useFloatingTextFormatToolbar(
     h6: false,
   });
   const [isParagraph, setIsParagraph] = useState(false);
+  const [isBulletList, setIsBulletList] = useState(false);
+  const [isOrderedList, setIsOrderedList] = useState(false);
+  const [isCheckList, setIsCheckList] = useState(false);
 
   const updatePopup = useCallback(() => {
     editor.getEditorState().read(() => {
@@ -529,12 +743,26 @@ function useFloatingTextFormatToolbar(
       setIsHeading(headingState);
       setIsParagraph(paragraphState);
 
-      // Update links - COMMENTED OUT
+      // Update links
       const parent = node.getParent();
       if ($isLinkNode(parent) || $isLinkNode(node)) {
         setIsLink(true);
       } else {
         setIsLink(false);
+      }
+
+      // Update list state
+      const anchorNode = selection.anchor.getNode();
+      const parentList = $getNearestNodeOfType(anchorNode, ListNode);
+      if (parentList && $isListNode(parentList)) {
+        const listType = parentList.getListType();
+        setIsBulletList(listType === 'bullet');
+        setIsOrderedList(listType === 'number');
+        setIsCheckList(listType === 'check');
+      } else {
+        setIsBulletList(false);
+        setIsOrderedList(false);
+        setIsCheckList(false);
       }
 
       if (
@@ -595,6 +823,9 @@ function useFloatingTextFormatToolbar(
       isCode={isCode}
       isHeading={isHeading}
       isParagraph={isParagraph}
+      isBulletList={isBulletList}
+      isOrderedList={isOrderedList}
+      isCheckList={isCheckList}
       setIsLinkEditMode={setIsLinkEditMode}
     />,
     anchorElem

@@ -26,7 +26,7 @@ const BoardViewBar: React.FC<BoardViewBarProps> = ({
   onOpenViewOptions,
 }) => {
   return (
-    <div className="flex items-center justify-between px-4 py-1.5 h-10 bg-white dark:bg-zinc-900 gap-4 shadow-sm">
+    <div className="flex items-center justify-between px-4 py-1.5 h-10 bg-white dark:bg-black gap-4 shadow-sm">
       {/* Left side - Search */}
       <div className="flex items-center gap-3 flex-1">
         {/* Search */}

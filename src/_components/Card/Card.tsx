@@ -19,6 +19,7 @@ import { useCardMutation } from "./_mutations/useCardMutations";
 import { ColumnContext } from "../../context/ColumnProvider";
 import { CardContext } from "../../context/CardProvider";
 import { TCardContext } from "../../types/cardTypes";
+import { Label } from "../../apis/LabelApis";
 import { DueDateDialog } from "./_dialog/DueDateDialog";
 import {
   Avatar,
@@ -37,7 +38,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "../../components/ui/popover";
-import { TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Calendar as CalendarComponent } from "../../components/ui/calendar";
 import { Button } from "../../components/ui/button";
 import { formatDistanceToNow, format } from "date-fns";
@@ -51,7 +52,6 @@ import {
   UrgentPriority,
 } from "@/_components/shared/svg/Priority";
 import { useTheme } from "@/context/ThemeProvider";
-import { Tooltip } from "@/components/ui/tooltip";
 import { getPriorityIcon } from "../Projects/utils";
 import { DateCreatedIcon, DueDateIcon } from "../shared/svg/ViewOptionsIcons";
 import { Assignee } from "../shared/svg/ListViewIcons";
@@ -66,12 +66,12 @@ interface CardProps {
 const CardTitle = ({
   title,
   isCompleted,
-  cardId,
+  cardSlug,
   showCardId,
 }: {
   title: string;
   isCompleted?: boolean;
-  cardId?: number;
+  cardSlug?: string;
   showCardId?: boolean;
 }) => (
   <div
@@ -80,9 +80,9 @@ const CardTitle = ({
       isCompleted && "line-through text-zinc-500 dark:text-zinc-400"
     )}
   >
-    {showCardId && cardId && (
-      <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400 mr-2">
-        #{cardId}
+    {showCardId && cardSlug && (
+      <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mr-2">
+        {cardSlug}
       </span>
     )}
     {title}
@@ -147,7 +147,7 @@ const CardFooter = ({
     imageUrl?: string;
   }>;
   priority?: string;
-  labels?: string[];
+  labels?: Label[];
   status?: {
     isCompleted: boolean;
     isOverdue: boolean;
@@ -182,15 +182,14 @@ const CardFooter = ({
     });
   };
 
-  const updateLabel = (label: string) => {
+  const updateLabel = (labelId: string) => {
     updateCardMutation.mutate({
       cardId,
-      label,
+      labelId,
     });
   };
 
   const [newLabel, setNewLabel] = useState("");
-  const predefinedLabels = ["Bug", "Feature", "Enhancement", "Documentation"];
 
   // Helper function to get due date display information
   const getDueDateDisplay = () => {
@@ -367,8 +366,8 @@ const CardFooter = ({
               {labels && labels.length > 0 ? (
                 <div className="flex items-center gap-1 flex-nowrap">
                   {labels.slice(0, 1).map((label, index) => (
-                    <div key={index} className="text-xs" title={label}>
-                      {label}
+                    <div key={index} className="text-xs" title={label.name}>
+                      {label.name}
                     </div>
                   ))}
                   {labels.length > 1 && (
@@ -396,38 +395,27 @@ const CardFooter = ({
               onKeyDown={(e) => {
                 if (e.key === "Enter" && newLabel.trim()) {
                   e.stopPropagation();
-                  updateLabel(newLabel.trim());
+                  // TODO: Implement creating new label with team label API
+                  console.log("Creating new label:", newLabel.trim());
                   setNewLabel("");
                 }
               }}
               className="!text-xs h-full border-0 focus-visible:ring-0 focus:ring-0 px-1 placeholder:text-xs py-2"
               onClick={(e) => e.stopPropagation()}
             />
-            <div className="border-t" />
-            {predefinedLabels.map((label) => (
-              <DropdownMenuItem
-                key={label}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  updateLabel(label);
-                }}
-              >
-                <Tag className="w-3 h-3 mr-2" />
-                {label}
-              </DropdownMenuItem>
-            ))}
+            {/* TODO: Implement team labels dropdown here */}
             {labels && labels.length > 0 && (
               <>
                 <div className="border-t" />
                 <div className="p-2 text-xs text-muted-foreground">
                   Current labels:
                 </div>
-                {labels.map((label, index) => (
+                {labels.map((label) => (
                   <DropdownMenuItem
-                    key={index}
+                    key={label.id}
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Remove label functionality could be added here
+                      updateLabel(label.id); // Toggle this label (remove it since it's already on the card)
                     }}
                     className="text-xs"
                   >
@@ -435,7 +423,7 @@ const CardFooter = ({
                       variant="secondary"
                       className="text-[9px] bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
                     >
-                      {label}
+                      {label.name}
                     </Badge>
                   </DropdownMenuItem>
                 ))}
@@ -664,6 +652,7 @@ const Card = ({ columnName, viewOptions, members }: CardProps) => {
     labels,
     completedAt,
     assignees,
+    slug,
   } = cardDetails as TCardContext;
 
   const columnId = useContext(ColumnContext);
@@ -810,10 +799,9 @@ const Card = ({ columnName, viewOptions, members }: CardProps) => {
             "flex flex-col ",
             "text-xs",
             "h-[200px]",
-            "shadow-md hover:shadow-lg dark:shadow-none dark:hover:shadow-zinc-900/20",
+            "shadow-md dark:shadow-none",
             "cursor-pointer relative",
             "group",
-            "hover:scale-[1.02] active:scale-[0.98] transform-gpu",
             status.isCompleted && "opacity-75 bg-zinc-50 dark:bg-zinc-800/50",
             status.isOverdue &&
               "border-red-200 dark:border-red-800/50 hover:border-red-300 dark:hover:border-red-700"
@@ -822,7 +810,7 @@ const Card = ({ columnName, viewOptions, members }: CardProps) => {
           <CardTitle
             title={title}
             isCompleted={status.isCompleted}
-            cardId={id}
+            cardSlug={slug}
             showCardId={viewOptions?.showCardIds || false}
           />
 
@@ -859,7 +847,7 @@ const Card = ({ columnName, viewOptions, members }: CardProps) => {
             onToggleCompletion={handleToggleCompletion}
           />
           <div
-            className="absolute top-2 right-2 bg-zinc-100 dark:bg-zinc-900/50 rounded-lg p-1.5 opacity-0 group-hover:opacity-100 transition-all ease-linear cursor-pointer"
+            className="absolute top-2 right-2 bg-zinc-100 dark:bg-zinc-900/50 rounded-lg p-1.5 opacity-0 group-hover:opacity-100 transition-all ease-linear cursor-pointer z-[60]"
             onClick={(e) => {
               handleEllipsisClick(e);
             }}

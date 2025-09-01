@@ -1,8 +1,8 @@
 import { TCardData } from "@/types/cardTypes";
-import { createCard, deleteCard, updateCard, markCardComplete, markCardIncomplete } from "@/apis/CardApis";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createCard, deleteCard, updateCard, markCardComplete, markCardIncomplete, toggleCardLabel } from "@/apis/CardApis";
+import { useMutation } from "@tanstack/react-query";
 import Cookies from "js-cookie";
-import { useParams } from "react-router-dom";
+
 import { useToast } from "../../../hooks/use-toast";
 import { useContext } from "react";
 import { ColumnContext } from "../../../context/ColumnProvider";
@@ -19,21 +19,17 @@ type TIssueUpdateCard = {
   createdAt?: Date;
   assigneeId?: string | null;
   updatedAt?: Date;
-  label?: string;
+  labelId?: string; // Changed from label to labelId for single label toggle
   order?: number;
   storyPoints?: number;
 };
 
 export const useCardMutation = () => {
-  const { teamId, slug } = useParams();
-  // Handle both new teamId + slug pattern and legacy slug pattern
-  const workspaceId = teamId && slug ? `${teamId}/${slug}` : slug || "";
 
   const accessToken: string = Cookies.get("accessToken") || "";
 
   const columnId = useContext(ColumnContext);
 
-  const queryClient = useQueryClient();
 
   const { toast } = useToast();
 
@@ -44,11 +40,6 @@ export const useCardMutation = () => {
         cardData,
         columnId,
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["columns", "workspaces", workspaceId],
-      });
-    },
   });
 
   const updateCardMutation = useMutation({
@@ -61,10 +52,15 @@ export const useCardMutation = () => {
         cardId,
         priority,
         assigneeId,
-        label,
+        labelId,
         order,
         storyPoints,
       } = data;
+
+      // If labelId is provided, use the toggle label function
+      if (labelId !== undefined) {
+        return await toggleCardLabel(accessToken, cardId, labelId);
+      }
 
       data.columnId = columnId;
 
@@ -76,12 +72,11 @@ export const useCardMutation = () => {
         ...(columnId !== undefined && { columnId }),
         ...(priority !== undefined && { priority }),
         ...(assigneeId !== undefined && { assigneeId }),
-        ...(label !== undefined && { label }),
         ...(order !== undefined && { order }),
         ...(storyPoints !== undefined && { storyPoints }),
       };
 
-      return await updateCard(accessToken, updatedData as TCardData, cardId);
+      return await updateCard(accessToken, updatedData, cardId);
     },
     onSuccess: () => {
       toast({
@@ -113,12 +108,7 @@ export const useCardMutation = () => {
         title: "Something wrong happened 🔥",
         description: "Please try again later",
         variant: "destructive",
-      }),
-    onSettled: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["columns", "workspaces", workspaceId],
-      });
-    },
+      })
   });
 
   const markCompleteCardMutation = useMutation({
@@ -135,11 +125,7 @@ export const useCardMutation = () => {
         description: "Please try again later",
         variant: "destructive",
       }),
-    onSettled: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["columns", "workspaces", workspaceId],
-      });
-    },
+
   });
 
   const markIncompleteCardMutation = useMutation({
@@ -156,11 +142,24 @@ export const useCardMutation = () => {
         description: "Please try again later",
         variant: "destructive",
       }),
-    onSettled: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["columns", "workspaces", workspaceId],
-      });
-    },
+
+  });
+
+  const toggleLabelMutation = useMutation({
+    mutationFn: ({ cardId, labelId }: { cardId: number; labelId: string }) => 
+      toggleCardLabel(accessToken, cardId, labelId),
+    onSuccess: () =>
+      toast({
+        title: "Label updated",
+        description: "Card label has been updated",
+        variant: "default",
+      }),
+    onError: () =>
+      toast({
+        title: "Something wrong happened 🔥",
+        description: "Failed to update label. Please try again later",
+        variant: "destructive",
+      }),
   });
 
   return {
@@ -169,5 +168,6 @@ export const useCardMutation = () => {
     createCardMutation,
     markCompleteCardMutation,
     markIncompleteCardMutation,
+    toggleLabelMutation,
   };
 };

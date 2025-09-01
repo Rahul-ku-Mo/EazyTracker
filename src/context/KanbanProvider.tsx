@@ -2,7 +2,7 @@ import { createContext, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useColumns } from "../hooks/useQueries";
 import LoadingScreen from "../_components/LoadingScreen";
-import Cookies from "js-cookie";
+
 import { useQueryClient } from "@tanstack/react-query";
 import pusherClient from "../services/pusherClient.service";
 import { useContext as useReactContext } from "react";
@@ -18,29 +18,28 @@ interface KanbanContextType {
 
 // Create a provider component
 const KanbanProvider = ({ children }: { children: React.ReactNode }) => {
-  const { teamId, slug } = useParams();
-  // Handle both new teamId + slug pattern and legacy slug pattern
-  const workspaceId = teamId && slug ? `${teamId}/${slug}` : slug || "";
-
-  const accessToken = Cookies.get("accessToken") as string;
+  const { slug } = useParams();
   const queryClient = useQueryClient();
+  const teamId = localStorage.getItem("teamId") as string;
+
+  const workspaceId = teamId && slug && `${teamId}/${slug}`;
+
   const { user } = useReactContext(UserContext);
 
-  const { data: columns, isPending } = useColumns(accessToken, workspaceId);
+  const { data: columns, isPending } = useColumns(workspaceId);
 
+  
   // Set up real-time workspace subscriptions
   useEffect(() => {
     if (!workspaceId || !user?.id) return;
 
     // Subscribe to workspace channel for real-time updates
-    const channel = pusherClient.subscribe(`workspace-${workspaceId}`);
-
+    const channel = pusherClient.subscribe(`workspace-${slug}`);
     // Handle card creation
     const handleCardCreated = () => {
-    
       // Invalidate queries to refresh the data
       queryClient.invalidateQueries({
-        queryKey: ["columns", "workspaces", workspaceId],
+        queryKey: ["columns", "workspaces", teamId],
       });
     };
 
@@ -48,7 +47,7 @@ const KanbanProvider = ({ children }: { children: React.ReactNode }) => {
     const handleCardUpdated = () => {
       // Invalidate queries to refresh the data
       queryClient.invalidateQueries({
-        queryKey: ["columns", "workspaces", workspaceId],
+        queryKey: ["columns", "workspaces", teamId],
       });
     };
 
@@ -56,7 +55,7 @@ const KanbanProvider = ({ children }: { children: React.ReactNode }) => {
     const handleCardDeleted = () => {
       // Invalidate queries to refresh the data
       queryClient.invalidateQueries({
-        queryKey: ["columns", "workspaces", workspaceId],
+        queryKey: ["columns", "workspaces", teamId],
       });
     };
 
@@ -70,16 +69,16 @@ const KanbanProvider = ({ children }: { children: React.ReactNode }) => {
       channel.unbind('card-created', handleCardCreated);
       channel.unbind('card-updated', handleCardUpdated);
       channel.unbind('card-deleted', handleCardDeleted);
-      pusherClient.unsubscribe(`workspace-${workspaceId}`);
+      pusherClient.unsubscribe(`workspace-${slug}`);
     };
-  }, [workspaceId, user?.id, queryClient]);
+  }, [user?.id, queryClient, workspaceId, slug, teamId]);
 
   if(isPending) return <LoadingScreen />
 
   return (
     <KanbanContext.Provider
       value={{
-        workspaceId: workspaceId,
+        workspaceId: workspaceId as string,
         columns: columns || [],
       }}
     >

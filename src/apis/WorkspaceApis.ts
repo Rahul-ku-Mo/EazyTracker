@@ -18,9 +18,9 @@ export interface Workspace {
   };
 }
 
-export const fetchWorkspaces = async (): Promise<Workspace[] | undefined> => {
+export const fetchWorkspaces = async (teamId: string): Promise<Workspace[] | undefined> => {
   try {
-    const response = await apiClient.get(`/workspaces`);
+    const response = await apiClient.get(`/workspaces/team/${teamId}`);
 
     if (response.status === 200) return response.data.data;
     return undefined;
@@ -32,16 +32,10 @@ export const fetchWorkspaces = async (): Promise<Workspace[] | undefined> => {
 
 export const fetchWorkspace = async (workspaceIdentifier: string): Promise<Workspace> => {
   try {
-    // Check if the identifier contains a slash (teamId/slug format)
-    if (workspaceIdentifier.includes('/')) {
-      const [teamId, slug] = workspaceIdentifier.split('/');
-      const response = await apiClient.get(`/workspaces/team/${teamId}/${slug}`);
-      return response.data.data;
-    } else {
-      // Legacy format - just slug or ID
-      const response = await apiClient.get(`/workspaces/${workspaceIdentifier}`);
-      return response.data.data;
-    }
+    const [teamId, slug] = workspaceIdentifier.split('/');
+
+    const response = await apiClient.get(`/workspaces/team/${teamId}/${slug}`);
+    return response.data.data;
   } catch (error: any) {
     throw new Error(error?.response?.data?.message);
   }
@@ -78,10 +72,17 @@ export const updateWorkspace = async (workspaceIdentifier: string, data: Partial
   }
 };
 
-export const toggleWorkspaceFavorite = async (workspaceId: string): Promise<any> => {
+export const toggleWorkspaceFavorite = async (workspaceIdentifier: string): Promise<any> => {
   try {
-    const response = await apiClient.post(`/workspaces/${workspaceId}/favorite`);
+    let url: string;
+    if (workspaceIdentifier.includes('/')) {
+      const [teamId, slug] = workspaceIdentifier.split('/');
+      url = `/workspaces/${teamId}/${slug}/favorite`;
+    } else {
+      throw new Error("Workspace identifier must be in teamId/slug format");
+    }
 
+    const response = await apiClient.post(url);
     return response.data;
   } catch (error: any) {
     throw new Error(error?.response?.data?.message);

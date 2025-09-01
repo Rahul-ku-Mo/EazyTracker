@@ -1,15 +1,14 @@
 import { Plus, X } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "../../../components/ui/badge";
 import { Input } from "../../../components/ui/input";
 import { cn } from "../../../lib/utils";
-
-interface Label {
-  id: string;
-  name: string;
-  color: string;
-}
+import { Label, fetchTeamLabels, createLabel } from "../../../apis/LabelApis";
+import { toggleCardLabel } from "../../../apis/CardApis";
+import { CardContext } from "../../../context/CardProvider";
+import { useAuthStore } from "../../../store/authStore";
+import { toast } from "../../../hooks/use-toast";
 
 const LABEL_COLORS = [
   {
@@ -35,33 +34,87 @@ const LABEL_COLORS = [
 ];
 
 export const CardLabels = () => {
-  const [labels, setLabels] = useState<Label[]>([
-    { id: "1", name: "Important", color: "emerald" },
-    { id: "2", name: "Feature", color: "blue" },
-  ]);
+  const cardContext = useContext(CardContext);
+  const { accessToken, user } = useAuthStore();
+  const [availableLabels, setAvailableLabels] = useState<Label[]>([]);
   const [isAddingLabel, setIsAddingLabel] = useState(false);
   const [newLabel, setNewLabel] = useState("");
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleAddLabel = () => {
-    if (newLabel.trim() !== "") {
-      const randomColor =
-        LABEL_COLORS[Math.floor(Math.random() * LABEL_COLORS.length)];
-      setLabels([
-        ...labels,
-        {
-          id: Date.now().toString(),
+  // Get labels attached to the current card
+  const cardLabels = cardContext?.labels || [];
+
+  // Load team labels
+  useEffect(() => {
+    const loadTeamLabels = async () => {
+      if (user?.teamId) {
+        try {
+          const labels = await fetchTeamLabels(user.teamId);
+          if (labels) {
+            setAvailableLabels(labels);
+          }
+        } catch (error) {
+          console.error("Failed to load team labels:", error);
+        }
+      }
+    };
+
+    loadTeamLabels();
+  }, [user?.teamId]);
+
+  const handleAddLabel = async () => {
+    if (newLabel.trim() !== "" && user?.teamId) {
+      setLoading(true);
+      try {
+        const randomColor = LABEL_COLORS[Math.floor(Math.random() * LABEL_COLORS.length)];
+        const createdLabel = await createLabel(user.teamId, {
           name: newLabel.trim(),
-          color: randomColor.bg.split("-")[1],
-        },
-      ]);
-      setNewLabel("");
-      setIsAddingLabel(false);
+          color: randomColor.bg.includes("emerald") ? "#10B981" : 
+                randomColor.bg.includes("blue") ? "#3B82F6" :
+                randomColor.bg.includes("purple") ? "#8B5CF6" : "#F59E0B"
+        });
+
+        if (createdLabel) {
+          setAvailableLabels(prev => [...prev, createdLabel]);
+          toast({
+            title: "Label created",
+            description: `Label "${createdLabel.name}" has been created successfully.`,
+          });
+        }
+        setNewLabel("");
+        setIsAddingLabel(false);
+      } catch (error) {
+        console.error("Failed to create label:", error);
+        toast({
+          title: "Error",
+          description: "Failed to create label. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  const handleRemoveLabel = (labelId: string) => {
-    setLabels(labels.filter((label) => label.id !== labelId));
+  const handleRemoveLabel = async (labelId: string) => {
+    if (!accessToken || !cardContext?.id) return;
+
+    try {
+      await toggleCardLabel(accessToken, cardContext.id, labelId);
+      // The card context should be updated by the parent component after the API call
+      toast({
+        title: "Label removed",
+        description: "Label has been removed from the card.",
+      });
+    } catch (error) {
+      console.error("Failed to remove label:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove label. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -85,9 +138,12 @@ export const CardLabels = () => {
       <h3 className="my-2 text-sm font-medium text-foreground">Labels</h3>
       <div className="flex flex-wrap gap-1.5">
         <AnimatePresence>
-          {labels.map((label) => {
-            const colorSet =
-              LABEL_COLORS[label.id.length % LABEL_COLORS.length];
+          {cardLabels.map((label) => {
+            // Use the label's color if available, otherwise use a default based on name
+            const labelStyle = label.color 
+              ? { backgroundColor: label.color + "20", color: label.color, borderColor: label.color + "40" }
+              : LABEL_COLORS[label.name.length % LABEL_COLORS.length];
+            
             return (
               <motion.div
                 key={label.id}
@@ -104,12 +160,12 @@ export const CardLabels = () => {
                 <Badge
                   variant="outline"
                   className={cn(
-                    "h-6 px-2 flex items-center gap-1 font-normal",
-                    colorSet.bg,
-                    colorSet.text,
-                    colorSet.border,
-                    "border"
+                    "h-6 px-2 flex items-center gap-1 font-normal border",
+                    !label.color && labelStyle.bg,
+                    !label.color && labelStyle.text,
+                    !label.color && labelStyle.border
                   )}
+                  style={label.color ? labelStyle : undefined}
                 >
                   <span className="text-xs">{label.name}</span>
                   <button
@@ -155,11 +211,13 @@ export const CardLabels = () => {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 onClick={handleAddLabel}
+                disabled={loading}
                 className={cn(
                   "absolute right-1 -translate-y-1/2",
                   "p-0.5 rounded-full",
                   "bg-primary text-primary-foreground",
                   "hover:bg-primary/90",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
                   "transition-colors"
                 )}
               >

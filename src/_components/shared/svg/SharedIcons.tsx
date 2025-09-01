@@ -761,3 +761,53 @@ export function NullIcon(props: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+
+
+export function EarthIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props}>{/* Icon from Tabler Icons by Paweł Kuna - https://github.com/tabler/tabler-icons/blob/master/LICENSE */}<g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0-18 0m.6-3h16.8M3.6 15h16.8" /><path d="M11.5 3a17 17 0 0 0 0 18m1-18a17 17 0 0 1 0 18" /></g></svg>
+  )
+}
+
+
+export function DeleteIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props}>{/* Icon from Material Symbols by Google - https://github.com/google/material-design-icons/blob/master/LICENSE */}<path fill="currentColor" d="M7 21q-.825 0-1.412-.587T5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413T17 21zM17 6H7v13h10zM9 17h2V8H9zm4 0h2V8h-2zM7 6v13z" /></svg>
+  )
+}
+
+
+export function LabelStartIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props}>{/* Icon from Material Symbols by Google - https://github.com/google/material-design-icons/blob/master/LICENSE */}<path fill="currentColor" d="M12.05 22q-1.425 0-2.525-.9T8.15 18.8q-1.325.425-2.675-.05T3.4 17.1q-.75-1.2-.55-2.662T4.15 12q-1.05-.95-1.263-2.35t.463-2.6t2.038-1.737T8.1 5.2q.275-1.4 1.375-2.3T12 2t2.525.9T15.9 5.2q1.4-.425 2.713.075T20.65 7.05q.675 1.25.488 2.613T19.85 12q1.1.975 1.313 2.413T20.7 17.1q-.725 1.275-2.037 1.7t-2.713 0q-.275 1.4-1.375 2.3t-2.525.9m0-2q1.175 0 1.763-1.012T13.8 17l-.7-1.15q-.275.075-.525.113T12.05 16q-.25 0-.513-.038T11 15.85L10.3 17q-.6.975-.012 1.988T12.05 20m-7-4q.6 1.025 1.763 1.025T8.55 16l.65-1.15q-.2-.2-.375-.425t-.3-.475q-.125-.225-.225-.463T8.125 13H6.8q-1.175 0-1.75.987t0 2.013m10.4 0q.575 1.025 1.738 1.025T18.95 16q.575-1.025 0-2.013T17.2 13h-1.325q-.05.25-.162.488t-.238.462q-.125.25-.3.475t-.375.425zm-7.325-5q.075-.275.188-.537t.237-.488t.288-.425t.362-.4L8.55 8q-.575-1.025-1.737-1.025T5.05 8q-.575 1.025 0 2.013T6.8 11zm9.075 0q1.175 0 1.75-.987t0-2.013q-.6-1.025-1.762-1.025T15.45 8l-.65 1.15q.2.2.363.4t.287.425t.238.488t.187.537zm-6.275-2.85q.275-.075.538-.112T12 8t.538.038t.537.112L13.75 7q.575-.975 0-1.987T12 4t-1.75 1t0 2zm0 0q.275-.075.538-.112T12 8t.538.038t.537.112q-.275-.075-.537-.112T12 8t-.537.038t-.538.112m-2.4 5.8q-.125-.225-.225-.462T8.125 13q.075.25.175.488t.225.462q.125.25.3.475t.375.425q-.2-.2-.375-.425t-.3-.475m-.4-2.95q.075-.275.188-.537t.237-.488t.288-.425t.362-.4q-.2.2-.362.4t-.288.425t-.238.488t-.187.537m3.925 5q-.25 0-.513-.038T11 15.85q.275.075.538.113t.512.037q.275 0 .525-.038t.525-.112q-.275.075-.525.113T12.05 16m2.75-1.15q.2-.2.375-.425t.3-.475q.125-.225.238-.462t.162-.488q-.05.25-.162.488t-.238.462q-.125.25-.3.475t-.375.425M15.875 11q-.075-.275-.187-.537t-.238-.488t-.287-.425t-.363-.4q.2.2.363.4t.287.425t.238.488t.187.537M12 14q.825 0 1.413-.587T14 12t-.587-1.412T12 10t-1.412.588T10 12t.588 1.413T12 14" /></svg>
+  )
+}
+
+
+
+export function StorypointIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 48 48" {...props}>{/* Icon from IconPark Outline by ByteDance - https://github.com/bytedance/IconPark/blob/master/LICENSE */}<path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M24 24V12m0 12l-10.5 6.062zm0 0l10.5 6.062zm-10-8a4 4 0 1 1-8 0a4 4 0 0 1 8 0m0 16a4 4 0 1 1-8 0a4 4 0 0 1 8 0m14 8a4 4 0 1 1-8 0a4 4 0 0 1 8 0m14-8a4 4 0 1 1-8 0a4 4 0 0 1 8 0m0-16a4 4 0 1 1-8 0a4 4 0 0 1 8 0M28 8a4 4 0 1 1-8 0a4 4 0 0 1 8 0" /></svg>
+  )
+}
+
+
+export function OpenIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props}>{/* Icon from Material Symbols by Google - https://github.com/google/material-design-icons/blob/master/LICENSE */}<path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h6q.425 0 .713.288T12 4t-.288.713T11 5H5v14h14v-6q0-.425.288-.712T20 12t.713.288T21 13v6q0 .825-.587 1.413T19 21zM19 6.4L10.4 15q-.275.275-.7.275T9 15t-.275-.7t.275-.7L17.6 5H15q-.425 0-.712-.288T14 4t.288-.712T15 3h5q.425 0 .713.288T21 4v5q0 .425-.288.713T20 10t-.712-.288T19 9z" /></svg>
+  )
+}
+
+export function UpDownIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props}>{/* Icon from Flowbite Icons by Themesberg - https://github.com/themesberg/flowbite-icons/blob/main/LICENSE */}<g fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2"><path d="M8 20V7m8-3v13" /><path strokeLinejoin="round" d="m4 16l4 4l4-4m8-8l-4-4l-4 4" /></g></svg>
+  )
+}
+
+
+export function SendIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props}>{/* Icon from Myna UI Icons by Praveen Juge - https://github.com/praveenjuge/mynaui-icons/blob/main/LICENSE */}<path fill="currentColor" d="M20.04 2.323c1.016-.355 1.992.621 1.637 1.637l-5.925 16.93c-.385 1.098-1.915 1.16-2.387.097l-2.859-6.432l4.024-4.025a.75.75 0 0 0-1.06-1.06l-4.025 4.024l-6.432-2.859c-1.063-.473-1-2.002.097-2.387z" /></svg>
+  )
+}

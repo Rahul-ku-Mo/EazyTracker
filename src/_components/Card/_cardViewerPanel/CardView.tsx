@@ -1,8 +1,8 @@
 import {
   Sheet,
   SheetContent,
-  SheetHeader,
   SheetTitle,
+  SheetDescription,
 } from "../../../components/ui/sheet";
 
 import { useState, useContext } from "react";
@@ -41,25 +41,24 @@ const CardView = ({ columnName, isOpen, closeModal }: CardViewProps) => {
 
   return (
     <Sheet open={isOpen} onOpenChange={handleModalClose}>
-      <SheetHeader>
-        <SheetTitle>
-          <div className="sr-only">{title}</div>
-        </SheetTitle>
-      </SheetHeader>
+      <SheetTitle className="sr-only">
+       {title}
+      </SheetTitle>
+      <SheetDescription className="sr-only">
+      Card details and comments for {title}
+      </SheetDescription>
       <SheetContent
         side="right"
-        className="!sm:max-w-[calc(100%-16rem)] !w-[calc(100%-16rem)] p-0 bg-white dark:bg-zinc-800 border-l border-gray-200 dark:border-gray-700"
+        className="!sm:max-w-[calc(100%-16rem)] !w-[calc(100%-16rem)] p-0 bg-white dark:bg-zinc-800 border-l border-gray-200 dark:border-border "
         isCloseButtonNotHidden={false}
       >
-        <div className="h-full flex flex-col overflow-hidden">
-          <div className="flex-1 flex overflow-hidden">
-            <MainPanel
-              columnName={columnName}
-              isLocked={isLocked}
-              setIsLocked={setIsLocked}
-            />
-            <RightPanel />
-          </div>
+        <div className="flex dark:bg-[#181818] bg-[#fafafa] h-full">
+          <MainPanel
+            columnName={columnName}
+            isLocked={isLocked}
+            setIsLocked={setIsLocked}
+          />
+          <RightPanel />
         </div>
       </SheetContent>
     </Sheet>

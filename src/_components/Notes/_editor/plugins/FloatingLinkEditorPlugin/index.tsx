@@ -15,15 +15,15 @@ import {
   $isLineBreakNode,
   $isNodeSelection,
   $isRangeSelection,
-  BaseSelection,
   CLICK_COMMAND,
-  COMMAND_PRIORITY_CRITICAL,
   COMMAND_PRIORITY_HIGH,
   COMMAND_PRIORITY_LOW,
   getDOMSelection,
+  $getNearestNodeFromDOMNode,
   KEY_ESCAPE_COMMAND,
   LexicalEditor,
   SELECTION_CHANGE_COMMAND,
+  $setSelection,
 } from "lexical";
 import { Dispatch, useCallback, useEffect, useRef, useState } from "react";
 import * as React from "react";
@@ -32,6 +32,14 @@ import { createPortal } from "react-dom";
 import { getSelectedNode } from "../../utils";
 import { sanitizeUrl } from "../../utils/url";
 import { setFloatingElemPositionForLinkEditor } from "../../utils/setFloatingElemPositionForLinkEditor";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  EarthIcon,
+  DeleteIcon,
+  OpenIcon,
+} from "@/_components/shared/svg/SharedIcons";
+import { LinkIcon } from "@/_components/shared/svg/FormattingIcons";
 
 function preventDefault(
   event: React.KeyboardEvent<HTMLInputElement> | React.MouseEvent<HTMLElement>
@@ -46,6 +54,11 @@ function FloatingLinkEditor({
   anchorElem,
   isLinkEditMode,
   setIsLinkEditMode,
+  hoveredAnchor,
+  hoveredLinkUrl,
+  setHoveredAnchor,
+  setIsHoveringLink,
+  setHoveredLinkUrl,
 }: {
   editor: LexicalEditor;
   isLink: boolean;
@@ -53,30 +66,41 @@ function FloatingLinkEditor({
   anchorElem: HTMLElement;
   isLinkEditMode: boolean;
   setIsLinkEditMode: Dispatch<boolean>;
+  hoveredAnchor?: HTMLAnchorElement | null;
+  hoveredLinkUrl?: string | null;
+  setHoveredAnchor: Dispatch<HTMLAnchorElement | null>;
+  setIsHoveringLink: Dispatch<boolean>;
+  setHoveredLinkUrl: Dispatch<string | null>;
 }): JSX.Element {
   const editorRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [linkUrl, setLinkUrl] = useState("");
   const [editedLinkUrl, setEditedLinkUrl] = useState("https://");
-  const [lastSelection, setLastSelection] = useState<BaseSelection | null>(
-    null
-  );
+  // No need to cache selection when editing via hover; rely on hover or current selection
 
   const $updateLinkEditor = useCallback(() => {
     const selection = $getSelection();
-    if ($isRangeSelection(selection)) {
+
+    let currenturl = "";
+    const hasHoverTarget = Boolean(hoveredAnchor && hoveredLinkUrl);
+    if (hasHoverTarget) {
+      currenturl = hoveredLinkUrl || "";
+      setLinkUrl(currenturl);
+    } else if ($isRangeSelection(selection)) {
       const node = getSelectedNode(selection);
       const linkParent = $findMatchingParent(node, $isLinkNode);
 
       if (linkParent) {
-        setLinkUrl(linkParent.getURL());
+        currenturl = linkParent.getURL();
       } else if ($isLinkNode(node)) {
-        setLinkUrl(node.getURL());
+        currenturl = node.getURL();
       } else {
-        setLinkUrl("");
+        currenturl = "";
       }
+
+      setLinkUrl(currenturl);
       if (isLinkEditMode) {
-        setEditedLinkUrl(linkUrl);
+        setEditedLinkUrl(currenturl);
       }
     } else if ($isNodeSelection(selection)) {
       const nodes = selection.getNodes();
@@ -84,14 +108,16 @@ function FloatingLinkEditor({
         const node = nodes[0];
         const parent = node.getParent();
         if ($isLinkNode(parent)) {
-          setLinkUrl(parent.getURL());
+          currenturl = parent.getURL();
         } else if ($isLinkNode(node)) {
-          setLinkUrl(node.getURL());
+          currenturl = node.getURL();
         } else {
-          setLinkUrl("");
+          currenturl = "";
         }
+
+        setLinkUrl(currenturl);
         if (isLinkEditMode) {
-          setEditedLinkUrl(linkUrl);
+          setEditedLinkUrl(currenturl);
         }
       }
     }
@@ -106,10 +132,16 @@ function FloatingLinkEditor({
 
     const rootElement = editor.getRootElement();
 
-    if (selection !== null && rootElement !== null && editor.isEditable()) {
+    if (
+      (selection !== null || hasHoverTarget) &&
+      rootElement !== null &&
+      editor.isEditable()
+    ) {
       let domRect: DOMRect | undefined;
 
-      if ($isNodeSelection(selection)) {
+      if (hasHoverTarget && hoveredAnchor) {
+        domRect = hoveredAnchor.getBoundingClientRect();
+      } else if ($isNodeSelection(selection)) {
         const nodes = selection.getNodes();
         if (nodes.length > 0) {
           const element = editor.getElementByKey(nodes[0].getKey());
@@ -129,18 +161,27 @@ function FloatingLinkEditor({
         domRect.y += 40;
         setFloatingElemPositionForLinkEditor(domRect, editorElem, anchorElem);
       }
-      setLastSelection(selection);
-    } else if (!activeElement || activeElement.className !== "link-input") {
+      // selection is used only for positioning; we no longer cache it for submission
+    } else if (
+      (!activeElement || activeElement.className !== "link-input") &&
+      !isLinkEditMode
+    ) {
       if (rootElement !== null) {
         setFloatingElemPositionForLinkEditor(null, editorElem, anchorElem);
       }
-      setLastSelection(null);
       setIsLinkEditMode(false);
       setLinkUrl("");
     }
 
     return true;
-  }, [anchorElem, editor, setIsLinkEditMode, isLinkEditMode, linkUrl]);
+  }, [
+    anchorElem,
+    editor,
+    setIsLinkEditMode,
+    isLinkEditMode,
+    hoveredAnchor,
+    hoveredLinkUrl,
+  ]);
 
   useEffect(() => {
     const scrollerElem = anchorElem.parentElement;
@@ -211,131 +252,148 @@ function FloatingLinkEditor({
   const monitorInputInteraction = (
     event: React.KeyboardEvent<HTMLInputElement>
   ) => {
-    if (event.key === "Enter") {
-      handleLinkSubmission(event);
-    } else if (event.key === "Escape") {
+    if (event.key === "Enter" || event.key === "Escape") {
       event.preventDefault();
+      event.stopPropagation();
       setIsLinkEditMode(false);
+
+      if (inputRef.current) {
+        inputRef.current.blur();
+      }
+
     }
   };
 
-  const handleLinkSubmission = (
-    event: React.KeyboardEvent<HTMLInputElement> | React.MouseEvent<HTMLElement>
-  ) => {
-    event.preventDefault();
-    if (lastSelection !== null) {
-      if (editedLinkUrl !== "" && editedLinkUrl !== "https://") {
-        editor.update(() => {
-          editor.dispatchCommand(
-            TOGGLE_LINK_COMMAND,
-            sanitizeUrl(editedLinkUrl)
-          );
-          const selection = $getSelection();
-          if ($isRangeSelection(selection)) {
-            const parent = getSelectedNode(selection).getParent();
-            if ($isAutoLinkNode(parent)) {
-              const linkNode = $createLinkNode(parent.getURL(), {
-                rel: parent.__rel,
-                target: parent.__target,
-                title: parent.__title,
-              });
-              parent.replace(linkNode, true);
-            }
+  const handleLinkSubmission = () => {
+    if (editedLinkUrl === "" || editedLinkUrl === "https://") {
+      setIsLinkEditMode(false);
+      return;
+    }
+
+    const sanitized = sanitizeUrl(editedLinkUrl);
+
+    // 1) If editing via hover, update that link directly (no selection restore)
+    if (hoveredAnchor) {
+      editor.update(() => {
+        const maybeNode = $getNearestNodeFromDOMNode(hoveredAnchor);
+        if (!maybeNode) return;
+
+        const linkNode = $isLinkNode(maybeNode)
+          ? maybeNode
+          : $isLinkNode(maybeNode.getParent())
+            ? (maybeNode.getParent() as any)
+            : null;
+
+        if (linkNode) {
+          if ($isAutoLinkNode(linkNode)) {
+            const newNode = $createLinkNode(sanitized, {
+              rel: (linkNode as any).__rel,
+              target: (linkNode as any).__target,
+              title: (linkNode as any).__title,
+            });
+            (linkNode as any).replace(newNode, true);
+          } else {
+            (linkNode as any).setURL(sanitized);
           }
-        });
-      }
+        }
+      });
+
       setEditedLinkUrl("https://");
       setIsLinkEditMode(false);
+      setIsHoveringLink(false);
+      setHoveredAnchor(null);
+      setHoveredLinkUrl(null);
+      return;
     }
+
+    // 2) Otherwise rely on current selection (if any) to toggle/update the link
+    // Defer until after blur so selection isn't in a frozen/read-only state
+    window.setTimeout(() => {
+      editor.dispatchCommand(TOGGLE_LINK_COMMAND, sanitized);
+    }, 0);
+    setEditedLinkUrl("https://");
+    setIsLinkEditMode(false);
+  };
+
+  const handleRemoveLink = () => {
+    // Remove the link at current selection (if any)
+    editor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
+    // Clear selection so the floating UI hides via normal logic
+    editor.update(() => {
+      $setSelection(null);
+    });
+    // Exit edit mode and clear hover refs
+    setIsLinkEditMode(false);
+    setIsHoveringLink(false);
+    setHoveredAnchor(null);
+    setHoveredLinkUrl(null);
   };
 
   return (
     <div ref={editorRef} className="link-editor">
       {!isLink ? null : isLinkEditMode ? (
-        <div className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg p-1 flex items-center gap-2 min-w-[280px]">
-          <input
-            ref={inputRef}
-            className="flex-1 px-3 py-2 text-xs border border-zinc-200 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            value={editedLinkUrl}
-            placeholder="Enter URL..."
-            onChange={(event) => {
-              setEditedLinkUrl(event.target.value);
-            }}
-            onKeyDown={(event) => {
-              monitorInputInteraction(event);
-            }}
-          />
-          <div className="flex items-center gap-1">
-            <button
-              className="p-1.5 text-zinc-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-              role="button"
-              tabIndex={0}
-              onMouseDown={preventDefault}
-              onClick={() => {
-                setIsLinkEditMode(false);
+        <div className="bg-popover text-popover-foreground border border-border rounded-sm shadow-sm px-2 py-0.5 flex items-center gap-2 min-w-[320px] h-9">
+          <EarthIcon className="size-4" />
+          <div className="flex-1">
+            <label htmlFor="link-input" className="sr-only">
+              URL
+            </label>
+            <Input
+              id="link-input"
+              ref={inputRef}
+              value={editedLinkUrl}
+              placeholder="Enter URL"
+              className="link-input h-6 text-xs bg-transparent shadow-none border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 px-0 placeholder:text-xs"
+              onBlur={() => {
+                handleLinkSubmission();
               }}
-              title="Cancel"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            <button
-              className="p-1.5 text-zinc-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
-              role="button"
-              tabIndex={0}
+              onChange={(event) => setEditedLinkUrl(event.target.value)}
+              onKeyDown={(event) => monitorInputInteraction(event)}
+            />
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="p-0.5 text-xs h-6 rounded-[2px] w-fit"
               onMouseDown={preventDefault}
-              onClick={handleLinkSubmission}
-              title="Save"
+              onClick={handleRemoveLink}
+              title="Remove link"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </button>
+              <DeleteIcon className="size-3" />
+            </Button>
           </div>
         </div>
       ) : (
-        <div className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg p-2 flex items-center gap-2 min-w-[200px]">
-          <a
-            href={sanitizeUrl(linkUrl)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline truncate"
+        <div className="bg-popover text-popover-foreground border border-border rounded-sm shadow-sm py-0.5 px-2 h-9 flex items-center gap-2 min-w-[260px]">
+          <div
+            className="flex-1 text-xs text-muted-foreground hover:underline truncate inline-flex items-center gap-1"
             title={linkUrl}
+            onClick={() => {
+              setEditedLinkUrl(linkUrl);
+              setIsLinkEditMode(true);
+            }}
           >
-            {linkUrl}
-          </a>
+            <LinkIcon className="w-3.5 h-3.5 shrink-0 opacity-70 -rotate-45" />
+            <span className="truncate">{linkUrl}</span>
+          </div>
           <div className="flex items-center gap-1">
-            <button
-              className="p-1.5 text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 dark:hover:text-zinc-300 rounded transition-colors"
-              role="button"
-              tabIndex={0}
-              onMouseDown={preventDefault}
-              onClick={(event) => {
-                event.preventDefault();
+            <Button
+              variant="ghost"
+              size="icon"
+              className="p-0.5 text-xs h-6 rounded-[2px]"
+              onClick={() => {
                 setEditedLinkUrl(linkUrl);
                 setIsLinkEditMode(true);
               }}
               title="Edit link"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-            </button>
-            <button
-              className="p-1.5 text-zinc-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-              role="button"
-              tabIndex={0}
-              onMouseDown={preventDefault}
-              onClick={() => {
-                editor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
-              }}
-              title="Remove link"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
+              Edit
+            </Button>
+            <OpenIcon
+              className="size-4"
+              onClick={() => window.open(sanitizeUrl(linkUrl), "_blank")}
+            />
           </div>
         </div>
       )}
@@ -351,10 +409,26 @@ function useFloatingLinkEditorToolbar(
 ): JSX.Element | null {
   const [activeEditor, setActiveEditor] = useState(editor);
   const [isLink, setIsLink] = useState(false);
+  const [hoveredAnchor, setHoveredAnchor] = useState<HTMLAnchorElement | null>(
+    null
+  );
+  const [hoveredLinkUrl, setHoveredLinkUrl] = useState<string | null>(null);
+  const [isHoveringLink, setIsHoveringLink] = useState(false);
+  const hoverTimerRef = useRef<number | null>(null);
+  const pendingAnchorRef = useRef<HTMLAnchorElement | null>(null);
 
   useEffect(() => {
     function $updateToolbar() {
       const selection = $getSelection();
+      // Keep toolbar visible during edit mode regardless of hover/selection
+      if (isLinkEditMode) {
+        setIsLink(true);
+        return;
+      }
+      if (isHoveringLink) {
+        setIsLink(true);
+        return;
+      }
       if ($isRangeSelection(selection)) {
         const focusNode = getSelectedNode(selection);
         const focusLinkNode = $findMatchingParent(focusNode, $isLinkNode);
@@ -401,6 +475,7 @@ function useFloatingLinkEditorToolbar(
         }
       }
     }
+
     return mergeRegister(
       editor.registerUpdateListener(({ editorState }) => {
         editorState.read(() => {
@@ -414,7 +489,7 @@ function useFloatingLinkEditorToolbar(
           setActiveEditor(newEditor);
           return false;
         },
-        COMMAND_PRIORITY_CRITICAL
+        COMMAND_PRIORITY_LOW
       ),
       editor.registerCommand(
         CLICK_COMMAND,
@@ -433,7 +508,170 @@ function useFloatingLinkEditorToolbar(
         COMMAND_PRIORITY_LOW
       )
     );
-  }, [editor]);
+  }, [editor, isHoveringLink, isLinkEditMode]);
+
+  useEffect(() => {
+    const root = editor.getRootElement();
+    if (!root) return;
+
+    const handleMouseEnter = (e: MouseEvent) => {
+      const target = e.target as Element | null;
+      const anchor = target?.closest?.("a") as HTMLAnchorElement | null;
+      if (!anchor || !root.contains(anchor)) return;
+
+      // Start 300ms timer to show panel; cancel any previous
+      if (hoverTimerRef.current !== null) {
+        window.clearTimeout(hoverTimerRef.current);
+      }
+      pendingAnchorRef.current = anchor;
+      hoverTimerRef.current = window.setTimeout(() => {
+        if (pendingAnchorRef.current === anchor && !isLinkEditMode) {
+          setIsHoveringLink(true);
+          setIsLink(true);
+          setHoveredAnchor(anchor);
+          setHoveredLinkUrl(anchor.getAttribute("href"));
+        }
+      }, 300);
+    };
+
+    const handleMouseLeave = (e: MouseEvent) => {
+      // While editing, do not clear hover/panel state
+      if (isLinkEditMode) return;
+      const target = e.target as Element | null;
+      const anchor = target?.closest?.("a") as HTMLAnchorElement | null;
+      const relatedTarget = e.relatedTarget as Element | null;
+      const floatingEl = anchorElem.querySelector(
+        ".link-editor"
+      ) as HTMLElement | null;
+
+      // If leaving a link element
+      if (anchor && root.contains(anchor)) {
+        // Cancel pending timer if any
+        if (hoverTimerRef.current !== null) {
+          window.clearTimeout(hoverTimerRef.current);
+          hoverTimerRef.current = null;
+        }
+        if (pendingAnchorRef.current === anchor) {
+          pendingAnchorRef.current = null;
+        }
+        // Check if we're moving to the floating panel
+        const movingToFloatingPanel =
+          floatingEl && relatedTarget && floatingEl.contains(relatedTarget);
+        // Check if we're moving to another part of the same link
+        const movingWithinSameLink = relatedTarget?.closest?.("a") === anchor;
+
+        if (!movingToFloatingPanel && !movingWithinSameLink) {
+          setIsHoveringLink(false);
+          setHoveredAnchor(null);
+          setHoveredLinkUrl(null);
+
+          // Re-evaluate link state based on current selection
+          editor.getEditorState().read(() => {
+            const selection = $getSelection();
+            if ($isRangeSelection(selection)) {
+              const focusNode = getSelectedNode(selection);
+              const focusLinkNode = $findMatchingParent(focusNode, $isLinkNode);
+              const focusAutoLinkNode = $findMatchingParent(
+                focusNode,
+                $isAutoLinkNode
+              );
+              setIsLink(Boolean(focusLinkNode || focusAutoLinkNode));
+            } else if ($isNodeSelection(selection)) {
+              const nodes = selection.getNodes();
+              if (nodes.length === 0) {
+                setIsLink(false);
+              } else {
+                const node = nodes[0];
+                const parent = node.getParent();
+                setIsLink(Boolean($isLinkNode(parent) || $isLinkNode(node)));
+              }
+            } else {
+              setIsLink(false);
+            }
+          });
+        }
+      }
+    };
+
+    // Handle leaving the floating panel
+    const handleFloatingPanelLeave = (e: MouseEvent) => {
+      // While editing, keep panel visible until blur
+      if (isLinkEditMode) return;
+      const relatedTarget = e.relatedTarget as Element | null;
+      const anchor = relatedTarget?.closest?.("a") as HTMLAnchorElement | null;
+
+      // If not moving back to the original hovered anchor, clear hover state
+      if (!anchor || anchor !== hoveredAnchor) {
+        // Cancel pending timer if any
+        if (hoverTimerRef.current !== null) {
+          window.clearTimeout(hoverTimerRef.current);
+          hoverTimerRef.current = null;
+        }
+        pendingAnchorRef.current = null;
+        setIsHoveringLink(false);
+        setHoveredAnchor(null);
+        setHoveredLinkUrl(null);
+
+        editor.getEditorState().read(() => {
+          const selection = $getSelection();
+          if ($isRangeSelection(selection)) {
+            const focusNode = getSelectedNode(selection);
+            const focusLinkNode = $findMatchingParent(focusNode, $isLinkNode);
+            const focusAutoLinkNode = $findMatchingParent(
+              focusNode,
+              $isAutoLinkNode
+            );
+            setIsLink(Boolean(focusLinkNode || focusAutoLinkNode));
+          } else if ($isNodeSelection(selection)) {
+            const nodes = selection.getNodes();
+            if (nodes.length === 0) {
+              setIsLink(false);
+            } else {
+              const node = nodes[0];
+              const parent = node.getParent();
+              setIsLink(Boolean($isLinkNode(parent) || $isLinkNode(node)));
+            }
+          } else {
+            setIsLink(false);
+          }
+        });
+      }
+    };
+
+    root.addEventListener("mouseenter", handleMouseEnter, true);
+    root.addEventListener("mouseleave", handleMouseLeave, true);
+
+    // Add listener to floating panel when it exists
+    const observer = new MutationObserver(() => {
+      const floatingEl = anchorElem.querySelector(
+        ".link-editor"
+      ) as HTMLElement | null;
+      if (floatingEl) {
+        floatingEl.addEventListener("mouseleave", handleFloatingPanelLeave);
+      }
+    });
+
+    observer.observe(anchorElem, { childList: true, subtree: true });
+
+    return () => {
+      root.removeEventListener("mouseenter", handleMouseEnter, true);
+      root.removeEventListener("mouseleave", handleMouseLeave, true);
+
+      const floatingEl = anchorElem.querySelector(
+        ".link-editor"
+      ) as HTMLElement | null;
+      if (floatingEl) {
+        floatingEl.removeEventListener("mouseleave", handleFloatingPanelLeave);
+      }
+
+      if (hoverTimerRef.current !== null) {
+        window.clearTimeout(hoverTimerRef.current);
+        hoverTimerRef.current = null;
+      }
+      pendingAnchorRef.current = null;
+      observer.disconnect();
+    };
+  }, [editor, anchorElem, isHoveringLink, hoveredAnchor, isLinkEditMode]);
 
   return createPortal(
     <FloatingLinkEditor
@@ -443,6 +681,11 @@ function useFloatingLinkEditorToolbar(
       setIsLink={setIsLink}
       isLinkEditMode={isLinkEditMode}
       setIsLinkEditMode={setIsLinkEditMode}
+      hoveredAnchor={hoveredAnchor}
+      hoveredLinkUrl={hoveredLinkUrl}
+      setHoveredAnchor={setHoveredAnchor}
+      setIsHoveringLink={setIsHoveringLink}
+      setHoveredLinkUrl={setHoveredLinkUrl}
     />,
     anchorElem
   );

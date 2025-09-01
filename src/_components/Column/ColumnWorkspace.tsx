@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import Cookies from "js-cookie";
 import { cn } from "../../lib/utils";
 import Container from "../../layouts/Container";
 import NewColumnForm from "./NewColumnForm";
@@ -19,7 +18,7 @@ import { useStore } from "zustand";
 import useToggleViewStore from "@/store/toggleViewStore";
 import { useViewOptionsStore } from "@/store/useViewOptionsStore";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
-import { updateCardColumn, updateCardOrder } from "../../apis/CardApis";
+import { updateCardColumn } from "../../apis/CardApis";
 import ViewOptionsPanel from "@/_components/ViewOptions/ViewOptionsPanel";
 import { groupCards, filterCards, orderCards } from "@/utils/viewOptionsUtils";
 import { useMembers } from "../../hooks/useMembers";
@@ -87,9 +86,10 @@ const ExpandAddColumnButton = ({ onClick }: ExpandAddColumnButtonProps) => {
 };
 
 const ColumnWorkspace = ({ title, headerChildren }: ColumnWorkspaceProps) => {
-  const { teamId, slug } = useParams();
+  const { slug } = useParams();
+  const teamId = localStorage.getItem("teamId");
   // Handle both new teamId + slug pattern and legacy slug pattern
-  const workspaceId = teamId && slug ? `${teamId}/${slug}` : slug || "";
+  const workspaceId = teamId && slug && `${teamId}/${slug}`;
   const { columns } = useContext(KanbanContext);
   const { view, toggleView } = useStore(useToggleViewStore);
   const { viewOptions, isPanelOpen, updateViewOptions, openPanel, closePanel } =
@@ -97,7 +97,7 @@ const ColumnWorkspace = ({ title, headerChildren }: ColumnWorkspaceProps) => {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
-  const accessToken = Cookies.get("accessToken") as string;
+
   const [columnName, setColumnName] = useState("");
   const [showListInput, setShowListInput] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -106,8 +106,7 @@ const ColumnWorkspace = ({ title, headerChildren }: ColumnWorkspaceProps) => {
   const { members } = useMembers();
 
   const createColumnMutation = useMutation({
-    mutationFn: (title: string) =>
-      createColumn(accessToken, title, workspaceId),
+    mutationFn: (title: string) => createColumn(title, workspaceId as string),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["columns", "workspaces", workspaceId],
@@ -130,8 +129,8 @@ const ColumnWorkspace = ({ title, headerChildren }: ColumnWorkspaceProps) => {
       columnId: number;
       order: number;
     }) => {
-      await updateCardColumn(accessToken, cardId, columnId);
-      await updateCardOrder(accessToken, cardId, order);
+      await updateCardColumn( cardId, columnId, order);
+      
     },
     onMutate: async ({ cardId, columnId, order }) => {
       // Cancel any outgoing refetches to prevent race conditions
@@ -205,20 +204,13 @@ const ColumnWorkspace = ({ title, headerChildren }: ColumnWorkspaceProps) => {
           context.previousColumns
         );
       }
-    },
-    onSettled: () => {
-      // Refetch after a short delay to ensure server state is synced
-      setTimeout(() => {
-        queryClient.invalidateQueries({
-          queryKey: ["columns", "workspaces", workspaceId],
-        });
-      }, 500);
-    },
+    }
   });
 
   // Apply view options to columns for Kanban view - Enhanced logic
   const processedColumns = useMemo(() => {
     const columnsData = columns || [];
+
     if (!columnsData) return [];
 
     let filteredColumns = [...columnsData].sort(
