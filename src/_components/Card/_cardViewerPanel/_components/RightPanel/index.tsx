@@ -157,7 +157,7 @@ const RightPanel = () => {
         <TableOfContentsSection cardId={cardId}/>
 
         {/* Attachments Section */}
-        <AttachmentsSection cardId={cardId} />
+        <AttachmentsSection slug={slug} />
       </div>
     </div>
   );

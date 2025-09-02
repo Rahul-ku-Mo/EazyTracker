@@ -1,39 +1,43 @@
 import { 
-
   X, 
   Download, 
   Eye, 
   FileText, 
   Image, 
   File,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import { UploadIcon } from "@/_components/shared/svg/SharedIcons";
-import { useState, useRef } from "react";
-import { useCardMutation } from "../../../_mutations/useCardMutations";
-
-interface Attachment {
-  id: string;
-  name: string;
-  url: string;
-  size: number;
-  type: string;
-  uploadedAt: Date;
-  uploadedBy?: string;
-}
+import { useState, useRef } from "react"; 
+import { useCardAttachments, useUploadAttachment, useDeleteAttachment, Attachment } from "@/hooks/useAttachments";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface AttachmentsSectionProps {
-  cardId: number;
-  attachments?: Attachment[];
+  slug: string;
 }
 
-export const AttachmentsSection = ({ 
-  cardId, 
-  attachments = [] 
-}: AttachmentsSectionProps) => {
+interface UploadingFile {
+  file: File;
+  progress: number;
+  status: 'uploading' | 'success' | 'error';
+  id: string;
+}
+
+export const AttachmentsSection = ({ slug }: AttachmentsSectionProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { updateCardMutation } = useCardMutation();
+
+  // TanStack Query hooks
+  const { data: attachments = [], isLoading, error, refetch } = useCardAttachments(slug);
+  const uploadMutation = useUploadAttachment(slug);
+  const deleteMutation = useDeleteAttachment(slug);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -47,35 +51,71 @@ export const AttachmentsSection = ({
     if (type.startsWith('image/')) {
       return <Image className="size-4 text-blue-500" />;
     } else if (type.includes('pdf') || type.includes('document')) {
-      return <FileText className="size-4 text-red-500" />;
+      return <FileText className="size-4 text-emerald-500" />;
     } else {
       return <File className="size-4 text-gray-500" />;
     }
   };
 
-  const handleFileSelect = (files: FileList | null) => {
+  const handleFileSelect = async (files: FileList | null) => {
     if (!files) return;
 
-    // Convert FileList to Array and process each file
-    Array.from(files).forEach(file => {
-      // In a real implementation, you would upload the file to your server
-      // For now, we'll create a mock attachment
-      const newAttachment: Attachment = {
-        id: `temp-${Date.now()}-${Math.random()}`,
-        name: file.name,
-        url: URL.createObjectURL(file), // Temporary URL for preview
-        size: file.size,
-        type: file.type,
-        uploadedAt: new Date(),
-      };
-
-      // Update the card with new attachment
-      // This would need to be implemented in your API
-      console.log('New attachment:', newAttachment);
+    for (const file of Array.from(files)) {
+      const uploadId = `${Date.now()}-${Math.random()}`;
       
-      // For demo purposes, you might want to update local state
-      // In real implementation, trigger mutation to save to server
-    });
+      // Add file to uploading list
+      setUploadingFiles(prev => [...prev, {
+        file,
+        progress: 0,
+        status: 'uploading',
+        id: uploadId
+      }]);
+
+      try {
+        // Start upload with progress simulation
+        const progressInterval = setInterval(() => {
+          setUploadingFiles(prev => prev.map(f => 
+            f.id === uploadId 
+              ? { ...f, progress: Math.min(f.progress + Math.random() * 20, 90) }
+              : f
+          ));
+        }, 200);
+
+        // Perform actual upload
+        await uploadMutation.mutateAsync(file);
+
+        // Complete progress and mark as success
+        clearInterval(progressInterval);
+        setUploadingFiles(prev => prev.map(f => 
+          f.id === uploadId 
+            ? { ...f, progress: 100, status: 'success' }
+            : f
+        ));
+
+        // Remove from uploading list after delay
+        setTimeout(() => {
+          setUploadingFiles(prev => prev.filter(f => f.id !== uploadId));
+        }, 2000);
+
+        toast.success(`${file.name} uploaded successfully!`);
+        
+      } catch (error) {
+        // Mark as error
+        setUploadingFiles(prev => prev.map(f => 
+          f.id === uploadId 
+            ? { ...f, status: 'error' }
+            : f
+        ));
+
+        toast.error(`Failed to upload ${file.name}`);
+        console.error("Error uploading attachment:", error);
+
+        // Remove from uploading list after delay
+        setTimeout(() => {
+          setUploadingFiles(prev => prev.filter(f => f.id !== uploadId));
+        }, 3000);
+      }
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -94,21 +134,20 @@ export const AttachmentsSection = ({
     setIsDragOver(false);
   };
 
-  const handleRemoveAttachment = (attachmentId: string) => {
-    // In real implementation, call API to remove attachment
-    console.log('Remove attachment:', attachmentId);
-    
-    // Update card attachments
-    // updateCardMutation.mutate({ 
-    //   cardId, 
-    //   attachments: attachments.filter(a => a.id !== attachmentId).map(a => a.id)
-    // });
+  const handleRemoveAttachment = async (attachmentId: string) => {
+    try {
+      await deleteMutation.mutateAsync(attachmentId);
+      toast.success("Attachment deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete attachment");
+      console.error('Error removing attachment:', error);
+    }
   };
 
   const handleDownload = (attachment: Attachment) => {
     const link = document.createElement('a');
     link.href = attachment.url;
-    link.download = attachment.name;
+    link.download = attachment.fileName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -119,6 +158,30 @@ export const AttachmentsSection = ({
   };
 
   const displayAttachments = isExpanded ? attachments : attachments.slice(0, 2);
+  const hasUploading = uploadingFiles.length > 0;
+
+  if (error) {
+    return (
+      <div className="space-y-3 rounded-md p-2 dark:bg-[#101010]">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="size-4 text-red-500" />
+            <span className="text-xs font-medium text-red-500">
+              Error loading attachments
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => refetch()}
+            className="text-xs"
+          >
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3 rounded-md p-2 dark:bg-[#101010]">
@@ -136,6 +199,14 @@ export const AttachmentsSection = ({
               {attachments.length}
             </span>
           )}
+          {hasUploading && (
+            <div className="flex items-center gap-1">
+              <Loader2 className="size-3 animate-spin text-blue-500" />
+              <span className="text-xs text-blue-500">
+                {uploadingFiles.length} uploading
+              </span>
+            </div>
+          )}
         </div>
         {attachments.length > 2 && (
           <button
@@ -149,13 +220,13 @@ export const AttachmentsSection = ({
 
       {/* File Upload Area */}
       <div
-        className={`
-          border-2 border-dashed rounded-md p-3 text-center transition-colors cursor-pointer
-          ${isDragOver 
-            ? 'border-primary bg-primary/5' 
-            : 'border-muted-foreground/30 hover:border-primary/50'
-          }
-        `}
+        className={cn(
+          "border-2 border-dashed rounded-md p-3 text-center transition-all cursor-pointer",
+          isDragOver 
+            ? 'border-primary bg-primary/5 scale-[1.02]' 
+            : 'border-muted-foreground/30 hover:border-primary/50',
+          uploadMutation.isPending && "opacity-50 pointer-events-none"
+        )}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -168,19 +239,80 @@ export const AttachmentsSection = ({
           className="hidden"
           onChange={(e) => handleFileSelect(e.target.files)}
           accept="*/*"
+          disabled={uploadMutation.isPending}
         />
         <div className="flex flex-col items-center gap-2">
-          <UploadIcon className="size-5 text-muted-foreground" />
+          {uploadMutation.isPending ? (
+            <Loader2 className="size-5 animate-spin text-primary" />
+          ) : (
+            <UploadIcon className="size-5 text-muted-foreground" />
+          )}
           <div className="text-xs">
-            <span className="text-primary font-medium">Click to upload</span>
-            <span className="text-muted-foreground"> or drag files here</span>
+            {uploadMutation.isPending ? (
+              <span className="text-primary font-medium">Uploading...</span>
+            ) : (
+              <>
+                <span className="text-primary font-medium">Click to upload</span>
+                <span className="text-muted-foreground"> or drag files here</span>
+              </>
+            )}
           </div>
         </div>
       </div>
 
+      {/* Uploading Files Progress */}
+      {hasUploading && (
+        <div className="space-y-2">
+          <div className="text-xs font-medium text-muted-foreground">
+            Uploading files...
+          </div>
+          {uploadingFiles.map((uploadingFile) => (
+            <div
+              key={uploadingFile.id}
+              className="flex items-center gap-2 p-2 rounded-md bg-muted/20 border"
+            >
+              {uploadingFile.status === 'uploading' && (
+                <Loader2 className="size-3 animate-spin text-blue-500" />
+              )}
+              {uploadingFile.status === 'success' && (
+                <CheckCircle className="size-3 text-green-500" />
+              )}
+              {uploadingFile.status === 'error' && (
+                <AlertCircle className="size-3 text-red-500" />
+              )}
+              
+              <div className="flex-1 min-w-0 space-y-1">
+                <div className="text-xs font-medium truncate" title={uploadingFile.file.name}>
+                  {uploadingFile.file.name}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {formatFileSize(uploadingFile.file.size)}
+                </div>
+                {uploadingFile.status === 'uploading' && (
+                  <Progress value={uploadingFile.progress} className="h-1" />
+                )}
+                {uploadingFile.status === 'success' && (
+                  <div className="text-xs text-green-600">Upload complete!</div>
+                )}
+                {uploadingFile.status === 'error' && (
+                  <div className="text-xs text-red-600">Upload failed</div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Attachments List */}
       <div className="space-y-2">
-        {attachments.length === 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="size-4 animate-spin text-muted-foreground" />
+            <span className="ml-2 text-xs text-muted-foreground">
+              Loading attachments...
+            </span>
+          </div>
+        ) : attachments.length === 0 ? (
           <div className="text-xs text-muted-foreground py-2 text-center">
             No attachments yet
           </div>
@@ -190,46 +322,58 @@ export const AttachmentsSection = ({
               key={attachment.id}
               className="flex items-center gap-2 p-2 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors group"
             >
-              {getFileIcon(attachment.type)}
+              {getFileIcon(attachment.mimeType)}
               
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-medium truncate" title={attachment.name}>
-                  {attachment.name}
+                <div className="text-xs font-medium truncate" title={attachment.fileName}>
+                  {attachment.fileName}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {formatFileSize(attachment.size)}
+                  {formatFileSize(attachment.fileSize)}
+                  {attachment.user && (
+                    <span className="ml-1">• Uploaded by {attachment.user.name || attachment.user.username}</span>
+                  )}
                 </div>
               </div>
 
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => handlePreview(attachment)}
-                  className="p-1 hover:bg-primary/10 rounded transition-colors"
+                  className="h-6 w-6 p-0 hover:bg-primary/10"
                   title="Preview"
                 >
                   <Eye className="size-3 text-muted-foreground hover:text-primary" />
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => handleDownload(attachment)}
-                  className="p-1 hover:bg-primary/10 rounded transition-colors"
+                  className="h-6 w-6 p-0 hover:bg-primary/10"
                   title="Download"
                 >
                   <Download className="size-3 text-muted-foreground hover:text-primary" />
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => handleRemoveAttachment(attachment.id)}
-                  className="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors"
+                  disabled={deleteMutation.isPending}
+                  className="h-6 w-6 p-0 hover:bg-red-100 dark:hover:bg-red-900/30"
                   title="Remove"
                 >
-                  <X className="size-3 text-muted-foreground hover:text-red-500" />
-                </button>
+                  {deleteMutation.isPending ? (
+                    <Loader2 className="size-3 animate-spin text-muted-foreground" />
+                  ) : (
+                    <X className="size-3 text-muted-foreground hover:text-red-500" />
+                  )}
+                </Button>
               </div>
             </div>
           ))
         )}
       </div>
-
-      
     </div>
   );
 };
