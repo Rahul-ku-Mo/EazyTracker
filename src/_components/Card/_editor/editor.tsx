@@ -39,6 +39,7 @@ import { FloatingLinkEditorPlugin } from "@/_components/Notes/_editor/plugins/Fl
 import { ImagesPlugin } from "./Plugins/ImagePlugin.tsx";
 import MentionsPlugin from "./Plugins/MentionsPlugin.tsx";
 import { KeyboardShortcutsPlugin } from "@/_components/Notes/_editor/plugins/KeyboardShortcutsPlugin";
+
 import { ImageNode } from "./ImageNode";
 import { MentionNode } from "./MentionNode";
 import { cn } from "../../../lib/utils";
@@ -51,14 +52,30 @@ import ComponentPickerPlugin from "./Plugins/ComponentPicketPlugin.tsx";
 import { theme } from "@/_components/shared/Editor/editor-theme";
 
 function onError(error: Error): void {
-  console.error(error);
+  console.error("Lexical Editor Error:", error);
+  
+  // Check if it's a CodeNode related error
+  if (error.message.includes('CodeNode') || error.message.includes('code') || error.stack?.includes('CodeNode')) {
+    console.error("CodeNode specific error detected:", error);
+    // Don't crash the entire editor for CodeNode errors
+    return;
+  }
+  
+  // Log error details for debugging
+  console.error("Error stack:", error.stack);
 }
 
 export const CodeHighlightPlugin = () => {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
-    return registerCodeHighlighting(editor);
+    try {
+      return registerCodeHighlighting(editor);
+    } catch (error) {
+      console.error("Error registering code highlighting:", error);
+      // Return a no-op cleanup function if registration fails
+      return () => {};
+    }
   }, [editor]);
 
   return null;
@@ -230,56 +247,62 @@ export const CardDetailsEditor = ({
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
-      <RichTextPlugin
-        contentEditable={
-          <div ref={onRef} className="relative">
-            <ContentEditable
-              id={`editor-${cardId}`}
-              className={cn(
-                "editor-root",
-                "w-full !p-0",
-                "dark:text-zinc-100 focus:outline-none",
-                "min-h-fit",
-                "h-full"
-              )}
+      <div className="relative block bg-transparent">
+        <RichTextPlugin
+          contentEditable={
+            <div className="min-h-[100px] max-w-full resize-y outline-0 border-0 z-0 flex">
+              <div
+                ref={onRef}
+                className="relative flex-auto max-w-full resize-y"
+              >
+                <ContentEditable
+                  id={`editor-${cardId}`}
+                  className={cn(
+                    "editor-root",
+                    "w-full !p-0",
+                    "dark:text-zinc-100 focus:outline-none",
+                    "h-full"
+                  )}
+                />
+              </div>
+            </div>
+          }
+          ErrorBoundary={LexicalErrorBoundary}
+        />
+        <HistoryPlugin />
+        <AutoFocusPlugin />
+        <LinkPlugin />
+        <CodeHighlightPlugin />
+        <TabIndentationPlugin />
+        <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+        <KeyboardShortcutsPlugin />
+        <CustomTransformHTMLToLexical description={description} />
+        <CustomTransformLexicalToHTML setEditorState={setEditorState} />
+        <ImagesPlugin />
+        <EditorRefPlugin editorRef={editorRef} />
+        <CopyImagePlugin ref={editorRef} />
+        <MentionsPlugin />
+        <ComponentPickerPlugin />
+        {floatingAnchorElem && (
+          <>
+            <FloatingTextFormatToolbarPlugin
+              anchorElem={floatingAnchorElem ?? undefined}
+              setIsLinkEditMode={setIsLinkEditMode}
             />
-          </div>
-        }
-        ErrorBoundary={LexicalErrorBoundary}
-      />
-      <HistoryPlugin />
-      <AutoFocusPlugin />
-      <LinkPlugin />
-      <CodeHighlightPlugin />
-      <TabIndentationPlugin />
-      <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-      <KeyboardShortcutsPlugin />
-      <CustomTransformHTMLToLexical description={description} />
-      <CustomTransformLexicalToHTML setEditorState={setEditorState} />
-      <ImagesPlugin />
-      <EditorRefPlugin editorRef={editorRef} />
-      <CopyImagePlugin ref={editorRef} />
-      <MentionsPlugin />
-      <ComponentPickerPlugin />
-      {floatingAnchorElem && (
-        <>
-          <FloatingTextFormatToolbarPlugin
+          </>
+        )}
+        {
+          <FloatingLinkEditorPlugin
             anchorElem={floatingAnchorElem ?? undefined}
+            isLinkEditMode={isLinkEditMode}
             setIsLinkEditMode={setIsLinkEditMode}
           />
-        </>
-      )}
-      {
-        <FloatingLinkEditorPlugin
-          anchorElem={floatingAnchorElem ?? undefined}
-          isLinkEditMode={isLinkEditMode}
-          setIsLinkEditMode={setIsLinkEditMode}
-        />
-      }
-      {/* <DraggableBlockPlugin anchorElem={floatingAnchorElem ?? undefined} /> */}
+        }
+        {/* <DraggableBlockPlugin anchorElem={floatingAnchorElem ?? undefined} /> */}
 
-      <ListPlugin />
-      <CheckListPlugin />
+        <ListPlugin />
+        <CheckListPlugin />
+      </div>
     </LexicalComposer>
   );
 };

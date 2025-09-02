@@ -61,7 +61,7 @@ export const HR: ElementTransformer = {
   type: "element",
 };
 
-// Improved Code Block Transformer
+// Enhanced Code Block Transformer with better React content handling
 export const CODE_BLOCK: ElementTransformer = {
   dependencies: [CodeNode],
   export: (node: LexicalNode) => {

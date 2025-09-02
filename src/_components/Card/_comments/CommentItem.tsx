@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Comment } from "@/apis/commentApis";
-import { CommentLexicalEditor } from "./CommentLexicalEditor";
+import { CommentLexicalEditor } from "./comment-editor";
 import { CommentRenderer } from "./CommentRenderer";
 import { useReplyEditor, useEditEditor } from "@/store/commentReplyStore";
 

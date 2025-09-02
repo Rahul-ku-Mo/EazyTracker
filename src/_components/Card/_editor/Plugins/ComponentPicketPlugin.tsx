@@ -11,7 +11,9 @@ import { INSERT_HORIZONTAL_RULE_COMMAND } from "@lexical/react/LexicalHorizontal
 import {
   LexicalTypeaheadMenuPlugin,
   MenuOption,
+  MenuResolution,
   useBasicTypeaheadTriggerMatch,
+  useDynamicPositioning,
 } from "@lexical/react/LexicalTypeaheadMenuPlugin";
 import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text";
 import { $setBlocksType } from "@lexical/selection";
@@ -23,7 +25,7 @@ import {
   LexicalEditor,
   TextNode,
 } from "lexical";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import * as ReactDOM from "react-dom";
 import { cn } from "@/lib/utils";
 
@@ -83,9 +85,6 @@ function ComponentPickerMenuItem({
   onMouseEnter: () => void;
   option: ComponentPickerOption;
 }) {
-
-
-
   return (
     <li
       key={option.key}
@@ -262,7 +261,23 @@ function getBaseOptions(editor: LexicalEditor) {
 const ComponentPickerMenuPlugin = () => {
   const [editor] = useLexicalComposerContext();
   const [queryString, setQueryString] = useState<string | null>(null);
+  const [resolution, setResolution] = useState<MenuResolution | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
+  // Use Lexical's dynamic positioning
+  useDynamicPositioning(
+    resolution,
+    menuRef.current,
+    () => {
+      // Reposition callback - called when position needs updating
+      console.log('Menu repositioned');
+    },
+    (isInView) => {
+      // Visibility change callback
+      console.log('Menu visibility changed:', isInView);
+    }
+  );
+ 
   const checkForTriggerMatch = useBasicTypeaheadTriggerMatch("/", {
     allowWhitespace: true,
     minLength: 0,
@@ -298,62 +313,65 @@ const ComponentPickerMenuPlugin = () => {
   );
 
   return (
-   <>
-    <LexicalTypeaheadMenuPlugin<ComponentPickerOption>
-      onQueryChange={setQueryString}
-      onSelectOption={onSelectOption}
-      triggerFn={checkForTriggerMatch}
-      options={options}
-      menuRenderFn={(
-        anchorElementRef,
-        { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex }
-      ) => {
-
-        console.log(anchorElementRef.current)
-
-        return anchorElementRef.current && options.length
-          ? ReactDOM.createPortal(
-              <div
-                className={cn(
-                  "relative min-w-[10rem]",
-                  "bg-popover text-popover-foreground",
-                  "border border-border rounded-md shadow-lg",
-                  "animate-in fade-in-0 duration-200",
-                  "z-50 w-64"
-                )}
-              >
-                <ul
-                  className="p-0 m-0 list-none overflow-y-scroll max-h-[200px]"
-                  role="listbox"
-                  style={{
-                    scrollbarWidth: "thin",
-                    scrollbarColor: "hsl(var(--muted-foreground)) transparent",
-                  }}
-                  onWheel={(e) => e.stopPropagation()}
-                  onTouchMove={(e) => e.stopPropagation()}
+    <>
+      <LexicalTypeaheadMenuPlugin<ComponentPickerOption>
+        onQueryChange={setQueryString}
+        onSelectOption={onSelectOption}
+        triggerFn={checkForTriggerMatch}
+        options={options}
+        onOpen={setResolution}
+        onClose={() => setResolution(null)}
+        menuRenderFn={(
+          anchorElementRef,
+          { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex }
+        ) => {
+          
+          return anchorElementRef.current && options.length
+            ? ReactDOM.createPortal(
+                <div
+                  ref={menuRef}
+                  className={cn(
+                    "relative min-w-[10rem]",
+                    "bg-popover text-popover-foreground",
+                    "border border-border rounded-md shadow-lg",
+                    "animate-in fade-in-0 duration-200",
+                    "z-50 w-64"
+                  )}
                 >
-                  {options.map((option, i: number) => (
-                    <ComponentPickerMenuItem
-                      key={option.key}
-                      index={i}
-                      isSelected={selectedIndex === i}
-                      onClick={() => {
-                        setHighlightedIndex(i);
-                        selectOptionAndCleanUp(option);
-                      }}
-                      onMouseEnter={() => setHighlightedIndex(i)}
-                      option={option}
-                    />
-                  ))}
-                </ul>
-              </div>,
-              anchorElementRef.current
-            )
-          : null;
-      }}
-    />
-   </>
+                  <ul
+                    className="p-0 m-0 list-none overflow-y-auto max-h-[200px]"
+                    role="listbox"
+                    style={{
+                      scrollbarWidth: "thin",
+                      scrollbarColor:
+                        "hsl(var(--muted-foreground)) transparent",
+                    }}
+                    onWheel={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
+                  >
+                    {options.map((option, i: number) => (
+                      <ComponentPickerMenuItem
+                        key={option.key}
+                        index={i}
+                        isSelected={selectedIndex === i}
+                        onClick={() => {
+                          setHighlightedIndex(i);
+                          selectOptionAndCleanUp(option);
+                        }}
+                        onMouseEnter={() => setHighlightedIndex(i)}
+                        option={option}
+                      />
+                    ))}
+                  </ul>
+                </div>,
+                anchorElementRef.current
+              )
+            : null;
+        }}
+      />
+    </>
   );
 };
 
 export default ComponentPickerMenuPlugin;
+

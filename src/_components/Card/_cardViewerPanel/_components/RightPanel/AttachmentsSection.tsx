@@ -1,16 +1,14 @@
 import { 
-  Paperclip, 
-  Plus, 
+
   X, 
   Download, 
   Eye, 
   FileText, 
   Image, 
   File,
-  Upload
 } from "lucide-react";
+import { UploadIcon } from "@/_components/shared/svg/SharedIcons";
 import { useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
 import { useCardMutation } from "../../../_mutations/useCardMutations";
 
 interface Attachment {
@@ -126,7 +124,7 @@ export const AttachmentsSection = ({
     <div className="space-y-3 rounded-md p-2 dark:bg-[#101010]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Paperclip
+          <UploadIcon
             strokeWidth={3}
             className="size-4 text-primary"
           />
@@ -172,7 +170,7 @@ export const AttachmentsSection = ({
           accept="*/*"
         />
         <div className="flex flex-col items-center gap-2">
-          <Upload className="size-5 text-muted-foreground" />
+          <UploadIcon className="size-5 text-muted-foreground" />
           <div className="text-xs">
             <span className="text-primary font-medium">Click to upload</span>
             <span className="text-muted-foreground"> or drag files here</span>
@@ -231,13 +229,7 @@ export const AttachmentsSection = ({
         )}
       </div>
 
-      {attachments.length > 0 && (
-        <div className="pt-2 border-t border-border">
-          <div className="text-xs text-muted-foreground">
-            Total: {attachments.reduce((sum, att) => sum + att.size, 0)} bytes
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 };

@@ -32,16 +32,16 @@ import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
 import { MARKDOWN_TRANSFORMERS as TRANSFORMERS } from "../_editor/MARKDOWN_TRANSFORMERS.ts";
 
 // Custom nodes
-import { ImageNode } from "../_editor/ImageNode";
-import { MentionNode } from "../_editor/MentionNode";
+import { ImageNode } from "../_editor/ImageNode/index.tsx";
+import { MentionNode } from "../_editor/MentionNode/index.tsx";
 
 // Plugins
-import { ImagesPlugin } from "../_editor/Plugins/ImagePlugin";
-import { CopyImagePlugin } from "../_editor/Plugins/CopyImagePlugin";
+import { ImagesPlugin } from "../_editor/Plugins/ImagePlugin.tsx";
+import { CopyImagePlugin } from "../_editor/Plugins/CopyImagePlugin.tsx";
 import ComponentPickerPlugin from "../_editor/Plugins/ComponentPicketPlugin.tsx";
 import { FloatingLinkEditorPlugin } from "@/_components/Notes/_editor/plugins/FloatingLinkEditorPlugin";
 import { FloatingTextFormatToolbarPlugin } from "@/_components/Notes/_editor/plugins/FloatingTextFormatToolbarPlugin";
-import MentionsPlugin from "../_editor/Plugins/MentionsPlugin";
+import MentionsPlugin from "../_editor/Plugins/MentionsPlugin.tsx";
 
 import "../_editor/ImageNode/styles.css";
 import "@/styles/editor.styles.css";
@@ -293,37 +293,44 @@ export const CommentLexicalEditor = ({
 
         <div className="flex-1 min-w-0">
           <LexicalComposer initialConfig={initialConfig}>
-            <div className="relative" ref={onRef}>
-              <RichTextPlugin
-                contentEditable={
-                  <ContentEditable
-                    id={isReply ? `reply-editor-${id}` : `comment-editor-${id}`}
-                    className={cn(
-                      "h-full editor-root",
-                      "focus:outline-none focus-visible:outline-none",
-                      "px-3 py-2",
-                      // Styles for the placeholder
-                      "[&[data-empty-text]]:before:content-[attr(data-empty-text)]",
-                      "[&[data-empty-text]]:before:text-muted-foreground/60",
-                      "[&[data-empty-text]]:before:absolute",
-                      "[&[data-empty-text]]:before:left-3",
-                      "[&[data-empty-text]]:before:top-2",
-                      "[&[data-empty-text]]:before:pt-2",
-                      "[&[data-empty-text]]:before:pointer-events-none",
+            <RichTextPlugin
+              contentEditable={
+                <div className="min-h-[60px] max-w-full resize-y outline-0 border-0 z-0 flex">
+                  <div
+                    className="relative flex-auto max-w-full resize-y"
+                    ref={onRef}
+                  >
+                    <ContentEditable
+                      id={
+                        isReply ? `reply-editor-${id}` : `comment-editor-${id}`
+                      }
+                      className={cn(
+                        "h-full editor-root",
+                        "focus:outline-none focus-visible:outline-none",
+                        "px-3 py-2",
+                        // Styles for the placeholder
+                        "[&[data-empty-text]]:before:content-[attr(data-empty-text)]",
+                        "[&[data-empty-text]]:before:text-muted-foreground/60",
+                        "[&[data-empty-text]]:before:absolute",
+                        "[&[data-empty-text]]:before:left-3",
+                        "[&[data-empty-text]]:before:top-2",
+                        "[&[data-empty-text]]:before:pt-2",
+                        "[&[data-empty-text]]:before:pointer-events-none",
 
-                      "[&[data-empty-text]]:before:opacity-100",
-                      "[&[data-empty-text]]:before:text-sm",
-                      isReply &&
-                        "!p-0 !pt-0.5 [&[data-empty-text]]:before:left-0 [&[data-empty-text]]:before:top-0",
-                      isReply &&
-                        isEditing &&
-                        "!p-0 [&[data-empty-text]]:before:left-0 [&[data-empty-text]]:before:top-0"
-                    )}
-                  />
-                }
-                ErrorBoundary={LexicalErrorBoundary}
-              />
-            </div>
+                        "[&[data-empty-text]]:before:opacity-100",
+                        "[&[data-empty-text]]:before:text-sm",
+                        isReply &&
+                          "!p-0 !pt-0.5 [&[data-empty-text]]:before:left-0 [&[data-empty-text]]:before:top-0",
+                        isReply &&
+                          isEditing &&
+                          "!p-0 [&[data-empty-text]]:before:left-0 [&[data-empty-text]]:before:top-0"
+                      )}
+                    />
+                  </div>
+                </div>
+              }
+              ErrorBoundary={LexicalErrorBoundary}
+            />
             <HistoryPlugin />
             <LinkPlugin />
             <MarkdownShortcutPlugin transformers={TRANSFORMERS} />

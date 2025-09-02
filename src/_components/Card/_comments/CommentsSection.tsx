@@ -10,7 +10,7 @@ import {
   resolveComment,
   unresolveComment,
 } from "@/apis/commentApis";
-import { CommentLexicalEditor } from "./CommentLexicalEditor";
+import { CommentLexicalEditor } from "./comment-editor";
 import { CommentItem } from "./CommentItem";
 import { UserContext } from "@/context/UserContext";
 
@@ -170,7 +170,7 @@ export const CommentsSection = ({
         </div>
       )}
       {/* Comment Composer */}
-      <div className="py-2 flex-1 flex flex-col pb-40">
+      <div className="py-2 flex-1 flex flex-col pb-36">
         <CommentLexicalEditor
           onSubmit={handleCreateComment}
           userAvatar={user?.imageUrl}

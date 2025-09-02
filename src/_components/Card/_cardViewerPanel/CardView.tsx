@@ -49,6 +49,7 @@ const CardView = ({ columnName, isOpen, closeModal }: CardViewProps) => {
       </SheetDescription>
       <SheetContent
         side="right"
+        id="editor-wrapper"
         className="!sm:max-w-[calc(100%-16rem)] !w-[calc(100%-16rem)] p-0 bg-white dark:bg-zinc-800 border-l border-gray-200 dark:border-border "
         isCloseButtonNotHidden={false}
       >
