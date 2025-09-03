@@ -8,6 +8,16 @@ import {
 } from "../../components/ui/dialog";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../components/ui/alert-dialog";
 
 import NewCardActions from "./_newCardComponentsAndActions/new-card-actions";
 import { useCardMutation } from "./_mutations/useCardMutations";
@@ -29,6 +39,7 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
   const [labels, setLabels] = useState<any>([]);
   const [assignee, setAssignee] = useState<string | null>(null);
   const [project, setProject] = useState<string | null>(null);  
+  const [showConfirmClose, setShowConfirmClose] = useState(false);
 
   const { createCardMutation } = useCardMutation();
 
@@ -66,8 +77,19 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
 
   const [dimensions, setDimensions] = useState<"small" | "large">("small");
 
+  const handleClose = () => {
+    onClose();
+    setDimensions("small");
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      setShowConfirmClose(true);
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
       <DialogContent
         className={cn(
           "transition-all duration-300 ease-in-out gap-0 p-0 flex flex-col justify-between overflow-hidden dark:bg-[#181818] bg-[#fafafa]",
@@ -94,7 +116,7 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
             >
               <Maximize2 className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={onClose}>
+            <Button variant="ghost" size="icon" onClick={() => setShowConfirmClose(true)}>
               <X className="w-4 h-4" />
             </Button>
           </div>
@@ -137,6 +159,27 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
           </div>
         </form>
       </DialogContent>
+      <AlertDialog open={showConfirmClose} onOpenChange={setShowConfirmClose}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard changes</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved changes. Are you sure you want to discard them?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep changes</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowConfirmClose(false);
+                handleClose();
+              }}
+            >
+              Discard changes
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };
