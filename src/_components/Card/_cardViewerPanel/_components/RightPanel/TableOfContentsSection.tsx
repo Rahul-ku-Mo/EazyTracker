@@ -135,17 +135,7 @@ export const TableOfContentsSection = ({
     }
   };
 
-  const getIndentationClass = (level: number) => {
-    switch (level) {
-      case 1: return "ml-0";
-      case 2: return "ml-3";
-      case 3: return "ml-6";
-      case 4: return "ml-9";
-      case 5: return "ml-12";
-      case 6: return "ml-15";
-      default: return "ml-0";
-    }
-  };
+
 
   const displayItems = isExpanded ? tocItems : tocItems.slice(0, 3);
 
@@ -186,11 +176,10 @@ export const TableOfContentsSection = ({
               className={`
                 flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer
                 hover:bg-muted/50 transition-colors group
-                ${getIndentationClass(item.level)}
               `}
               onClick={() => handleHeadingClick(item)}
             >
-              <Hash className="size-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Hash className="size-3 text-muted-foreground" />
               <span 
                 className={`
                   text-xs flex-1 truncate
@@ -202,21 +191,10 @@ export const TableOfContentsSection = ({
               >
                 {item.title}
               </span>
-              <span className="text-xs text-muted-foreground">
-                H{item.level}
-              </span>
             </div>
           ))
         )}
       </div>
-
-      {tocItems.length > 0 && (
-        <div className="pt-2 border-t border-border">
-          <div className="text-xs text-muted-foreground">
-            {tocItems.length} heading{tocItems.length !== 1 ? 's' : ''} found
-          </div>
-        </div>
-      )}
     </div>
   );
 };

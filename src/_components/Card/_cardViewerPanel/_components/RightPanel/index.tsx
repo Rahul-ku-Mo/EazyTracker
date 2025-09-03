@@ -1,11 +1,5 @@
 import { Calendar } from "@/components/ui/calendar";
-import {
-  X,
-  Share,
-  Copy,
-  Link,
-  MoreHorizontal,
-} from "lucide-react";
+import { X, Share, Copy, Link } from "lucide-react";
 
 import { CardContext } from "@/context/CardProvider";
 import { TCardContext } from "@/types/cardTypes";
@@ -20,8 +14,6 @@ import { LabelsSection } from "./LabelsSection";
 import { AdditionalInfoSection } from "./AdditionalInfoSection";
 import { TableOfContentsSection } from "./TableOfContentsSection";
 import { AttachmentsSection } from "./AttachmentsSection";
-
-
 
 const isToday = (date?: Date | string | null) => {
   if (!date) return false;
@@ -101,7 +93,7 @@ const RightPanel = () => {
             <DateCreatedIcon />
             <span className="text-xs font-medium text-primary">Due Date</span>
           </div>
-          
+
           {dueDate ? (
             <div className="flex items-center gap-2">
               <div
@@ -128,16 +120,13 @@ const RightPanel = () => {
               />
             </div>
           ) : (
-            <DueDateDropdown>
-              <div className="p-2 hover:bg-muted/50 rounded-md cursor-pointer transition-colors">
-                <MoreHorizontal className="size-4 text-muted-foreground" />
-              </div>
+            <DueDateDropdown cardId={cardId} currentDueDate={dueDate}>
               <Calendar
                 mode="single"
                 selected={dueDate ? new Date(dueDate) : undefined}
-                onSelect={(date) =>
-                  updateCardMutation.mutate({ cardId, dueDate: date })
-                }
+                onSelect={(date) => {
+                  updateCardMutation.mutate({ cardId, dueDate: date });
+                }}
                 className="bg-white rounded-md dark:bg-zinc-900"
               />
             </DueDateDropdown>
@@ -150,14 +139,13 @@ const RightPanel = () => {
         {/* Assignees Section */}
         <AssigneesDropdown cardId={cardId} assignees={assignedMembers} />
 
-        {/* Additional Info Section */}
-        <AdditionalInfoSection cardId={cardId} storyPoints={storyPoints} />
-
         {/* Table of Contents Section */}
-        <TableOfContentsSection cardId={cardId}/>
+        <TableOfContentsSection cardId={cardId} />
 
         {/* Attachments Section */}
         <AttachmentsSection slug={slug} />
+        {/* Additional Info Section */}
+        <AdditionalInfoSection cardId={cardId} storyPoints={storyPoints} />
       </div>
     </div>
   );

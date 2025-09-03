@@ -1,5 +1,8 @@
 import { X, MoreHorizontal } from "lucide-react";
-import { LabelIcon, LabelStartIcon } from "@/_components/shared/svg/SharedIcons";
+import {
+  LabelIcon,
+  LabelStartIcon,
+} from "@/_components/shared/svg/SharedIcons";
 import { LabelDropdown } from "@/_components/shared/LabelDropdown";
 import { useCardMutation } from "../../../_mutations/useCardMutations";
 import { Label } from "@/apis/LabelApis";
@@ -11,7 +14,11 @@ interface LabelsSectionProps {
   teamId: string;
 }
 
-export const LabelsSection = ({ cardId, labels, teamId }: LabelsSectionProps) => {
+export const LabelsSection = ({
+  cardId,
+  labels,
+  teamId,
+}: LabelsSectionProps) => {
   const { updateCardMutation } = useCardMutation();
 
   const handleRemoveLabel = (labelId: string) => {
@@ -34,14 +41,13 @@ export const LabelsSection = ({ cardId, labels, teamId }: LabelsSectionProps) =>
           action={updateCardMutation}
           cardId={cardId}
         >
-          
           <Button variant="ghost" className="w-fit h-fit p-1.5">
-          <MoreHorizontal />
+            <MoreHorizontal />
           </Button>
         </LabelDropdown>
       </div>
 
-      <div className="space-y-2">
+      {labels.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {labels?.map((label) => (
             <div
@@ -58,12 +64,7 @@ export const LabelsSection = ({ cardId, labels, teamId }: LabelsSectionProps) =>
             </div>
           ))}
         </div>
-        {(!labels || labels.length === 0) && (
-          <div className="text-xs text-muted-foreground py-2">
-            No labels assigned
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 };

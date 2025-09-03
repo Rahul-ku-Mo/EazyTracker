@@ -1,21 +1,20 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 
+import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import Cookies from "js-cookie";
+import { MoreHorizontal, X } from "lucide-react";
 import { MemberIcon } from "@/_components/shared/svg/SharedIcons";
 import { useCardMutation } from "../../../_mutations/useCardMutations";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
+
 import { useNewCardMutation } from "@/_components/Card/_newCardComponentsAndActions/new-card-mutations";
+import { useState } from "react";
 
 // Types
 interface TeamMember {
@@ -37,14 +36,11 @@ export const AssigneesDropdown = ({
   cardId,
   assignees,
 }: AssigneesDropdownProps) => {
-
+  const [open, setOpen] = useState(false);
   const { updateCardMutation } = useCardMutation();
-  
-  const { teamData } = useNewCardMutation()
+  const { teamData } = useNewCardMutation();
 
   const teamMembers = teamData?.members || [];
-
-  // Find assigned members - use assignees array if available
   const assignedMembers = assignees || [];
 
   const handleAssignMember = (memberId: string) => {
@@ -52,69 +48,105 @@ export const AssigneesDropdown = ({
       cardId,
       assigneeId: memberId,
     });
+    setOpen(false);
   };
 
-  const handleUnassign = (memberId?: string) => {
-    console.log("Unassigning member:", memberId, "from card:", cardId);
-    if (memberId) {
-      updateCardMutation.mutate({
-        cardId,
-        assigneeId: null,
-      });
-    } 
+  const handleUnassign = () => {
+    updateCardMutation.mutate({
+      cardId,
+      assigneeId: null,
+    });
+    setOpen(false);
   };
 
   return (
-    <div className="space-y-3 rounded-md p-2 dark:bg-[#101010]">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <MemberIcon strokeWidth={3} className="size-4 text-primary" />
-          <span className="text-xs font-medium text-primary">Assignee</span>
-        </div>
-        <DropdownMenu>
+    <div className="flex justify-between items-center rounded-md p-2 dark:bg-[#101010]">
+      <div className="flex items-center gap-2">
+        <MemberIcon strokeWidth={3} className="size-4 text-primary" />
+        <span className="text-xs font-medium text-primary">Assignee</span>
+      </div>
+      
+      {assignedMembers.length > 0 ? (
+        <DropdownMenu open={open} onOpenChange={setOpen}>
           <DropdownMenuTrigger asChild>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-7 text-xs rounded-sm dark:bg-black dark:border-[#1b1d1c]  font-normal flex items-center"
-            >
-              <MemberIcon className="w-3 h-3" />
-              <span className="text-xs">Assignee</span>
-            </Button>
+            <div className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium cursor-pointer hover:bg-muted-foreground/10 rounded-sm transition-all ease-in">
+              <Avatar className="size-4">
+                <AvatarImage src={assignedMembers[0].imageUrl} />
+                <AvatarFallback className="text-xs">
+                  {(assignedMembers[0].name || assignedMembers[0].email)?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="truncate max-w-20">
+                {assignedMembers[0].name || assignedMembers[0].username || assignedMembers[0].email}
+              </span>
+            </div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="h-52 overflow-auto">
-            {teamMembers.map((member : any ) => {
-              const isSelected = assignedMembers.some(
-                (m) => m.id === member.id
-              );
-              return (
+          <DropdownMenuContent align="end" className="w-[220px] max-h-80 overflow-y-auto relative">
+           
+            <DropdownMenuItem 
+              onClick={handleUnassign}
+              className="text-red-600 focus:text-red-600"
+            >
+              <X className="size-4 mr-2" />
+              Remove assignee
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            {teamMembers
+              .filter((member: any) => member.id !== assignedMembers[0].id)
+              .map((member: any) => (
                 <DropdownMenuItem
                   key={member.id}
                   onClick={() => handleAssignMember(member.id)}
-                  className={cn(
-                    "flex items-center gap-2 p-2 rounded-sm cursor-pointer transition-colors",
-                    isSelected
-                      ? "bg-primary/10 border border-primary/20"
-                      : "hover:bg-accent"
-                  )}
+                  disabled={updateCardMutation.isPending}
+                  className="flex items-center gap-2 p-2"
                 >
-                  <Avatar className="size-4">
+                  <Avatar className="size-5">
                     <AvatarImage src={member.imageUrl} />
                     <AvatarFallback className="text-xs">
                       {(member.name || member.email)?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="text-xs font-medium truncate flex-1 min-w-0">
+                  <div className="text-xs font-medium truncate flex-1">
                     {member.name || member.username || member.email}
                   </div>
-                  {isSelected && <Check className="w-3 h-3 text-primary" />}
                 </DropdownMenuItem>
-              );
-            })}
+              ))}
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
+      ) : (
+        <DropdownMenu open={open} onOpenChange={setOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="w-fit h-fit p-1.5">
+              <MoreHorizontal />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[220px]">
+            <DropdownMenuLabel className="flex items-center gap-2">
+              <MemberIcon className="size-4" />
+              Assign to member
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {teamMembers.map((member: any) => (
+              <DropdownMenuItem
+                key={member.id}
+                onClick={() => handleAssignMember(member.id)}
+                disabled={updateCardMutation.isPending}
+                className="flex items-center gap-2 p-2"
+              >
+                <Avatar className="size-5">
+                  <AvatarImage src={member.imageUrl} />
+                  <AvatarFallback className="text-xs">
+                    {(member.name || member.email)?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="text-xs font-medium truncate flex-1">
+                  {member.name || member.username || member.email}
+                </div>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </div>
   );
 };

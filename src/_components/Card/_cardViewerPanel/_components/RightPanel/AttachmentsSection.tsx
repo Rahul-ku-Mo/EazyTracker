@@ -1,7 +1,6 @@
 import { 
   X, 
   Download, 
-  Eye, 
   FileText, 
   Image, 
   File,
@@ -153,9 +152,7 @@ export const AttachmentsSection = ({ slug }: AttachmentsSectionProps) => {
     document.body.removeChild(link);
   };
 
-  const handlePreview = (attachment: Attachment) => {
-    window.open(attachment.url, '_blank');
-  };
+
 
   const displayAttachments = isExpanded ? attachments : attachments.slice(0, 2);
   const hasUploading = uploadingFiles.length > 0;
@@ -340,28 +337,27 @@ export const AttachmentsSection = ({ slug }: AttachmentsSectionProps) => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handlePreview(attachment)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDownload(attachment);
+                  }}
                   className="h-6 w-6 p-0 hover:bg-primary/10"
-                  title="Preview"
-                >
-                  <Eye className="size-3 text-muted-foreground hover:text-primary" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDownload(attachment)}
-                  className="h-6 w-6 p-0 hover:bg-primary/10"
-                  title="Download"
+                  title="Download file"
                 >
                   <Download className="size-3 text-muted-foreground hover:text-primary" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleRemoveAttachment(attachment.id)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleRemoveAttachment(attachment.id);
+                  }}
                   disabled={deleteMutation.isPending}
                   className="h-6 w-6 p-0 hover:bg-red-100 dark:hover:bg-red-900/30"
-                  title="Remove"
+                  title="Remove file"
                 >
                   {deleteMutation.isPending ? (
                     <Loader2 className="size-3 animate-spin text-muted-foreground" />
