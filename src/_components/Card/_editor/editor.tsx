@@ -50,6 +50,7 @@ import "../../../styles/editor.styles.css";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 import ComponentPickerPlugin from "./Plugins/ComponentPicketPlugin.tsx";
 import { theme } from "@/_components/shared/Editor/editor-theme";
+import { HorizontalRulePlugin } from "@lexical/react/LexicalHorizontalRulePlugin";
 
 function onError(error: Error): void {
   console.error("Lexical Editor Error:", error);
@@ -283,6 +284,7 @@ export const CardDetailsEditor = ({
         <CopyImagePlugin ref={editorRef} />
         <MentionsPlugin />
         <ComponentPickerPlugin />
+        <HorizontalRulePlugin />
         {floatingAnchorElem && (
           <>
             <FloatingTextFormatToolbarPlugin
