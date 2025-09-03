@@ -32,11 +32,17 @@ import { MARKDOWN_TRANSFORMERS } from "./_editor/MARKDOWN_TRANSFORMERS";
 
 // Import image styles
 import "./_editor/ImageNode/styles.css";
-import { CodeHighlightNode, CodeNode, registerCodeHighlighting } from "@lexical/code";
+import {
+  CodeHighlightNode,
+  CodeNode,
+  registerCodeHighlighting,
+} from "@lexical/code";
 import MentionsPlugin from "./_editor/Plugins/MentionsPlugin";
 import { MentionNode } from "./_editor/MentionNode";
 
 import { theme, EditorTheme } from "@/_components/shared/Editor/editor-theme";
+import { HorizontalRulePlugin } from "@lexical/react/LexicalHorizontalRulePlugin";
+import ComponentPickerMenuPlugin from "./_editor/Plugins/ComponentPicketPlugin";
 
 const ExtendedTheme: EditorTheme = {
   ...theme,
@@ -63,13 +69,14 @@ export function PlaceholderPlugin({ placeholder }: PlaceholderPluginProps) {
         editorState.read(() => {
           const root = $getRoot();
           const children = root.getChildren();
-          
+
           // Check if the editor is truly empty
-          const isEditorEmpty = children.length === 0 || 
-            (children.length === 1 && 
-             children[0].getType() === 'paragraph' && 
-             children[0].getTextContent().trim() === '');
-          
+          const isEditorEmpty =
+            children.length === 0 ||
+            (children.length === 1 &&
+              children[0].getType() === "paragraph" &&
+              children[0].getTextContent().trim() === "");
+
           setIsEmpty(isEditorEmpty);
         });
       }
@@ -118,8 +125,7 @@ export function CustomTransformLexicalToHTML({
   return null;
 }
 
-
-export function CodeHighlightNodePlugin(){
+export function CodeHighlightNodePlugin() {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
@@ -158,40 +164,47 @@ export const NewCardDescriptionEditor = ({
       HeadingNode,
       QuoteNode,
       ImageNode,
-      MentionNode
+      MentionNode,
     ] as any,
   };
 
   return (
     <div className="relative px-4 flex-1">
       <LexicalComposer initialConfig={initialConfig}>
-        <div className="editor-container" ref={anchorElemRef}>
+        <div className="editor-container h-full" ref={anchorElemRef}>
           <div className="relative">
             <RichTextPlugin
               contentEditable={
-                <ContentEditable
-                  id="card-description-editor"
+                <div
                   className={cn(
-                    "min-h-[150px] w-full overflow-y-auto",
-                    dimensions === "small" ? "max-h-[160px]" : "max-h-[456px]",
-                    "text-foreground",
-                    "focus:outline-none border-none",
-                    "relative",
-                    "px-0 py-0 !p-0",
-                    // Styles for the placeholder
-                    "[&[data-empty-text]]:before:content-[attr(data-empty-text)]",
-                    "[&[data-empty-text]]:before:text-muted-foreground/60",
-                    "[&[data-empty-text]]:before:absolute",
-                    "[&[data-empty-text]]:before:left-[1px]",
-                    "[&[data-empty-text]]:before:top-[1px]",
-                    "[&[data-empty-text]]:before:pointer-events-none",
-                    "[&[data-empty-text]]:before:leading-6",
-                    "[&[data-empty-text]]:before:transition-opacity",
-                    "[&[data-empty-text]]:before:duration-100",
-                    "[&[data-empty-text]]:before:opacity-100",
-                    "[&[data-empty-text]]:before:empty:opacity-0"
+                    "min-h-[150px] w-full",
+                    dimensions === "small" ? "max-h-[350px]" : "max-h-[650px]",
+                    "overflow-y-auto"
                   )}
-                />
+                >
+                  <ContentEditable
+                    id="card-description-editor"
+                    className={cn(
+                      "w-full",
+                      "text-foreground",
+                      "focus:outline-none border-none",
+                      "relative",
+                      "px-0 py-0 !p-0",
+                      // Styles for the placeholder
+                      "[&[data-empty-text]]:before:content-[attr(data-empty-text)]",
+                      "[&[data-empty-text]]:before:text-muted-foreground/60",
+                      "[&[data-empty-text]]:before:absolute",
+                      "[&[data-empty-text]]:before:left-[1px]",
+                      "[&[data-empty-text]]:before:top-[1px]",
+                      "[&[data-empty-text]]:before:pointer-events-none",
+                      "[&[data-empty-text]]:before:leading-6",
+                      "[&[data-empty-text]]:before:transition-opacity",
+                      "[&[data-empty-text]]:before:duration-100",
+                      "[&[data-empty-text]]:before:opacity-100",
+                      "[&[data-empty-text]]:before:empty:opacity-0"
+                    )}
+                  />
+                </div>
               }
               ErrorBoundary={LexicalErrorBoundary}
             />
@@ -201,8 +214,10 @@ export const NewCardDescriptionEditor = ({
             <CheckListPlugin />
             <MarkdownShortcutPlugin transformers={MARKDOWN_TRANSFORMERS} />
             <LinkPlugin />
-            <ImagesPlugin />
+            <ComponentPickerMenuPlugin />
             <MentionsPlugin />
+            <ImagesPlugin />
+            <HorizontalRulePlugin />
             <EditorRefPlugin editorRef={editorRef} />
             <CopyImagePlugin ref={editorRef} />
             {anchorElemRef.current && (

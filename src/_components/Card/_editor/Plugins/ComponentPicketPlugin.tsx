@@ -11,9 +11,7 @@ import { INSERT_HORIZONTAL_RULE_COMMAND } from "@lexical/react/LexicalHorizontal
 import {
   LexicalTypeaheadMenuPlugin,
   MenuOption,
-  MenuResolution,
   useBasicTypeaheadTriggerMatch,
-  useDynamicPositioning,
 } from "@lexical/react/LexicalTypeaheadMenuPlugin";
 import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text";
 import { $setBlocksType } from "@lexical/selection";
@@ -25,7 +23,7 @@ import {
   LexicalEditor,
   TextNode,
 } from "lexical";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import * as ReactDOM from "react-dom";
 import { cn } from "@/lib/utils";
 
@@ -261,23 +259,7 @@ function getBaseOptions(editor: LexicalEditor) {
 const ComponentPickerMenuPlugin = () => {
   const [editor] = useLexicalComposerContext();
   const [queryString, setQueryString] = useState<string | null>(null);
-  const [resolution, setResolution] = useState<MenuResolution | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null);
 
-  // Use Lexical's dynamic positioning
-  useDynamicPositioning(
-    resolution,
-    menuRef.current,
-    () => {
-      // Reposition callback - called when position needs updating
-      console.log('Menu repositioned');
-    },
-    (isInView) => {
-      // Visibility change callback
-      console.log('Menu visibility changed:', isInView);
-    }
-  );
- 
   const checkForTriggerMatch = useBasicTypeaheadTriggerMatch("/", {
     allowWhitespace: true,
     minLength: 0,
@@ -319,17 +301,13 @@ const ComponentPickerMenuPlugin = () => {
         onSelectOption={onSelectOption}
         triggerFn={checkForTriggerMatch}
         options={options}
-        onOpen={setResolution}
-        onClose={() => setResolution(null)}
         menuRenderFn={(
           anchorElementRef,
           { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex }
         ) => {
-          
           return anchorElementRef.current && options.length
             ? ReactDOM.createPortal(
                 <div
-                  ref={menuRef}
                   className={cn(
                     "relative min-w-[10rem]",
                     "bg-popover text-popover-foreground",
@@ -374,4 +352,3 @@ const ComponentPickerMenuPlugin = () => {
 };
 
 export default ComponentPickerMenuPlugin;
-

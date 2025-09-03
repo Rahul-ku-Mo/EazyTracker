@@ -7,7 +7,7 @@ import Cookies from "js-cookie";
 import { cn } from "../../lib/utils";
 import { deleteColumn } from "../../apis/ColumnApis";
 import DeleteDialog from "../../_components/Dialog/DeleteDialog";
-import NewCardForm from "../../_components/Card/NewCardForm";
+import NewCardForm from "../Card/new-card-form";
 import ColumnActionTooltipWrapper from "./ColumnActionTooltipWrapper";
 import CardsInColumn from "../Card/CardsInColumn";
 import {

@@ -74,8 +74,8 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
           dimensions === "small" ? "max-w-[800px]" : "max-w-[900px]"
         )}
         style={{
-          maxHeight: dimensions === "small" ? "350px" : "650px",
-          height: dimensions === "small" ? "350px" : "650px",
+          maxHeight: dimensions === "small" ? "650px" : "950px",
+          minHeight: dimensions === "small" ? "350px" : "650px",
         }}
         isCloseButtonRequired={false}
       >
