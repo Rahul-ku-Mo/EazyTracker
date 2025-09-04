@@ -317,8 +317,7 @@ const ListView = ({
                         "min-h-[100px] transition-all duration-300 ease-in-out",
                         snapshot.isDraggingOver &&
                           "bg-emerald-50 dark:bg-emerald-900/20 border-2 border-dashed border-emerald-300 dark:border-emerald-500 rounded-lg p-3 shadow-inner",
-                        items.length === 0 &&
-                          "border-2 border-dashed border-emerald-300/50 dark:border-emerald-500/50 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/10"
+                      
                       )}
                     >
                       {items.map((item, index) => {
@@ -368,7 +367,7 @@ const ListView = ({
                                       <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                           <div
-                                            className="flex items-center gap-1 cursor-pointer"
+                                            className="flex items-center gap-1 cursor-pointer w-4"
                                             onClick={(e) => e.stopPropagation()}
                                           >
                                             {item.priority ? (
@@ -453,12 +452,12 @@ const ListView = ({
                                       </DropdownMenu>
                                     )}
                                     {viewOptions?.showCardIds !== false && (
-                                      <span className="text-sm text-zinc-500 dark:text-zinc-100/90 font-light font-id uppercase">
+                                      <span className="text-sm text-zinc-500 dark:text-zinc-100/90 font-bold tracking-wider font-id uppercase">
                                         {item.slug}
                                       </span>
                                     )}
 
-                                    <div className="flex-grow truncate font-medium text-xs text-zinc-900 dark:text-zinc-100 ">
+                                    <div className="flex-grow truncate font-normal text-sm text-zinc-900 dark:text-zinc-100 ">
                                       {item.title}
                                     </div>
 
@@ -637,17 +636,6 @@ const ListView = ({
                         );
                       })}
                       {provided.placeholder}
-
-                      {/* Empty state for each column */}
-                      {items.length === 0 && (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="flex flex-col items-center justify-center h-16 text-zinc-500 dark:text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-md"
-                        >
-                          <p className="text-sm">No items in {columnTitle}</p>
-                        </motion.div>
-                      )}
                     </div>
                   )}
                 </Droppable>
