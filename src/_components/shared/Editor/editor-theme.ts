@@ -21,15 +21,15 @@ export interface EditorTheme {
     };
     list: {
       ul: string;
-      ol: string;
       checklist: string;
       listitem: string;
       listitemChecked: string;
       listitemUnchecked: string;
       nested: {
-        list: string;
+   
         listitem: string;
       };
+      olDepth: string[]
     };
     link: string;
     quote: string;
@@ -90,15 +90,20 @@ export interface EditorTheme {
     },
     list: {
       ul: "editor-list-ul",
-      ol: "editor-list-ol",
       checklist: "editor-list-checklist",
-      listitem: "editor-list-item text-base",
+      listitem: "editor-list-item",
       listitemChecked: "editor-list-item-checked",
       listitemUnchecked: "editor-list-item-unchecked",
       nested: {
-        list: "editor-nested-list",
         listitem: "editor-nested-list-item",
       },
+      olDepth: [
+        'editor-list-ol1',
+        'editor-list-ol2',
+        'editor-list-ol3',
+        'editor-list-ol4',
+        'editor-list-ol5',
+      ],
     },
     link: "editor-link",
     quote: "editor-quote",

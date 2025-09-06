@@ -171,7 +171,7 @@ export const NewCardDescriptionEditor = ({
   return (
     <div className="relative px-4 flex-1">
       <LexicalComposer initialConfig={initialConfig}>
-        <div className="editor-container h-full" ref={anchorElemRef}>
+        <div className="h-full" ref={anchorElemRef}>
           <div className="relative">
             <RichTextPlugin
               contentEditable={

@@ -1,27 +1,19 @@
+import { api } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import Cookies from "js-cookie";
-import {  useParams } from "react-router-dom";
+
+import { useParams } from "react-router-dom";
 
 export const useMembers = () => {
-  const accessToken = Cookies.get("accessToken") || "";
 
   const teamId = localStorage.getItem("teamId");
 
-  const {slug} = useParams();
+  const { slug } = useParams();
 
   const { data: members, isPending } = useQuery({
     queryKey: ["members", teamId],
     queryFn: async () => {
       try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/workspaces/${teamId}/${slug}/members`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
+        const response = await api.get(`/workspaces/${teamId}/${slug}/members`)
         // Transform the data to flatten the user object
         const membersData = response.data.data;
         return membersData
@@ -42,3 +34,18 @@ export const useMembers = () => {
 
   return { members, isPending };
 };
+
+
+export const useTeamMemberAndDetails = () => {
+
+  const { data, isPending } = useQuery({
+    queryKey: ["teams", "members"],
+    queryFn: async () => {
+      const response = await api.get(`/teams/members`)
+      return response.data.data
+    }
+  })
+
+
+  return { data, isPending }
+}

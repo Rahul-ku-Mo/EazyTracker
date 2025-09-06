@@ -10,6 +10,9 @@ import {
   EllipsisVerticalIcon,
   CheckCircle2,
   Circle,
+  User,
+  AtSign,
+  Mail,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Badge } from "../../components/ui/badge";
@@ -449,25 +452,66 @@ const CardFooter = ({
                     .filter((assignee) => assignee && assignee.id)
                     .slice(0, 3)
                     .map((assignee, index) => (
-                      <Avatar
-                        key={assignee.id}
-                        className="w-4 h-4 border border-white dark:border-zinc-800 relative "
-                        style={{ zIndex: assignees.length - index }}
-                      >
-                        <AvatarImage
-                          src={assignee.imageUrl}
-                          className="object-cover object-top"
-                        />
-                        <AvatarFallback className="text-[8px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                          {(
-                            assignee.name ||
-                            assignee.username ||
-                            assignee.email
-                          )
-                            ?.slice(0, 2)
-                            .toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
+                      <Tooltip key={assignee.id}>
+                        <TooltipTrigger asChild>
+                          <Avatar
+                            className="w-4 h-4 border border-white dark:border-zinc-800 relative "
+                            style={{ zIndex: assignees.length - index }}
+                          >
+                            <AvatarImage
+                              src={assignee.imageUrl}
+                              className="object-cover object-top"
+                            />
+                            <AvatarFallback className="text-[8px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                              {(assignee.name || assignee.username || assignee.email)
+                                ?.slice(0, 2)
+                                .toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-popover text-popover-foreground border border-border p-0">
+                          <div className="p-3 w-[240px]">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="size-8">
+                                <AvatarImage src={assignee.imageUrl} />
+                                <AvatarFallback className="text-sm">
+                                  {(assignee.name || assignee.username || assignee.email)
+                                    ?.charAt(0)
+                                    .toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="min-w-0">
+                                <div className="text-sm font-medium truncate">
+                                  {assignee.name || assignee.username || assignee.email}
+                                </div>
+                                {assignee.username && (
+                                  <div className="text-xs text-muted-foreground truncate">@{assignee.username}</div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="mt-3 space-y-2 text-xs">
+                              {assignee.name && (
+                                <div className="flex items-center gap-2">
+                                  <User className="size-3 text-muted-foreground" />
+                                  <span className="truncate">{assignee.name}</span>
+                                </div>
+                              )}
+                              {assignee.username && (
+                                <div className="flex items-center gap-2">
+                                  <AtSign className="size-3 text-muted-foreground" />
+                                  <span className="truncate">@{assignee.username}</span>
+                                </div>
+                              )}
+                              {assignee.email && (
+                                <div className="flex items-center gap-2">
+                                  <Mail className="size-3 text-muted-foreground" />
+                                  <span className="truncate">{assignee.email}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
                     ))}
                   {assignees.length > 3 && (
                     <div className="w-4 h-4 bg-zinc-200 dark:bg-zinc-700 rounded-full flex items-center justify-center text-[8px] text-zinc-600 dark:text-zinc-300 border border-white dark:border-zinc-800">

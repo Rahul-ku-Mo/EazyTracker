@@ -60,14 +60,45 @@
 
 /* Fixed list styling - no more wrapping issues */
 .editor-list-ul {
-  list-style: none;
-  padding-left: 0;
+  list-style-position: outside;
+  padding: 0;
+  margin: 0;
+  list-style-type: disc;
 }
 
-.editor-list-ol {
-  list-style: none;
-  padding-left: 0;
-  counter-reset: list-counter;
+.editor-list-ol1 {
+  padding: 0;
+  margin: 0;
+  list-style-position: outside;
+  list-style-type: decimal;
+}
+
+.editor-list-ol2 {
+  padding: 0;
+  margin: 0;
+  list-style-type: upper-alpha;
+  list-style-position: outside;
+}
+
+.editor-list-ol3 {
+  padding: 0;
+  margin: 0;
+  list-style-type: lower-alpha;
+  list-style-position: outside;
+}
+
+.editor-list-ol4 {
+  padding: 0;
+  margin: 0;
+  list-style-type: upper-roman;
+  list-style-position: outside;
+}
+
+.editor-list-ol5 {
+  padding: 0;
+  margin: 0;
+  list-style-type: lower-roman;
+  list-style-position: outside;
 }
 
 .editor-list-checklist {
@@ -84,52 +115,14 @@
 /* Regular list items */
 .editor-list-item {
   position: relative;
-  padding-left: 1.25rem;
-  line-height: 1.6;
-  user-select: text;
-}
-
-/* Bullet list bullets - Only for non-checkbox items */
-.editor-list-ul
-  .editor-list-item:not(.editor-list-item-checked):not(
-    .editor-list-item-unchecked
-  ):not(.editor-nested-list-item)::before {
-  content: "•";
-  position: absolute;
-  left: 0.5rem;
-  top: 0;
-  color: var(--muted-foreground);
-  font-weight: bold;
-  font-size: 1.1em;
-  pointer-events: none;
-  user-select: none;
-}
-
-/* Numbered list numbers */
-.editor-list-ol .editor-list-item {
-  counter-increment: list-counter;
-}
-
-.editor-list-item .editor-nested-list-item {
-  counter-increment: customLowerAlpha;
-}
-
-.editor-list-ol
-  .editor-list-item:not(.editor-list-item-checked):not(
-    .editor-list-item-unchecked
-  )::before {
-  content: counter(list-counter) ".";
-  position: absolute;
-  left: 0;
-  top: 0;
-  color: var(--muted-foreground);
-  font-weight: 500;
-  min-width: 0.5rem;
-  text-align: right;
-  pointer-events: none;
+  margin: 0 20px;
   font-size: 14px;
-  user-select: none;
-  font-family: monospace;
+}
+
+.editor-list-item::marker {
+  color: #000000;
+  background-color: transparent;
+  font-size: 14px;
 }
 
 /* UPDATED: Checklist items using marker approach like Lexical */
@@ -137,13 +130,16 @@
 .editor-list-item-unchecked {
   position: relative;
   margin-bottom: 6px;
-  /* margin-left: 0.5em;
-  margin-right: 0.5em; */
   padding-left: 1.45em;
   list-style-type: none;
   outline: none;
   display: block;
   min-height: 1.5em;
+}
+
+.editor-list-item.editor-list-item-checked,
+.editor-list-item.editor-list-item-unchecked {
+  margin: 0px;
 }
 
 .editor-list-item-checked > *,
@@ -216,18 +212,6 @@
 
 /* Checkmark for checked items */
 .editor-list-item-checked::after {
-  /* content: '';
-  cursor: pointer;
-  border-color: #000;
-  border-style: solid;
-  position: absolute;
-  display: block;
-  top: 50%;
-  width: 3px;
-  left: 0.35em;
-  height: 6px;
-  transform: translateY(-50%) rotate(45deg);
-  border-width: 0 0.1em 0.1em 0; */
   content: "";
   position: absolute;
   display: block;
@@ -254,42 +238,9 @@
   content: none !important;
 }
 
-.editor-nested-list-item::marker {
-  display: none !important;
-  content: none !important;
-}
-
-.editor-nested-list {
-  margin-left: 1rem;
-}
-
-.editor-nested-list-item {
-  margin: 0.25rem 0;
-  padding-left: 1.5rem;
-}
-
-/* For regular bullet points in nested lists (non-checkbox) */
-.editor-nested-list
-  .editor-list-ul
-  .editor-list-item:not(.editor-list-item-checked):not(
-    .editor-list-item-unchecked
-  )::before {
-  content: "◦";
-  position: absolute;
-  left: 0.5rem;
-  top: 0;
-  color: var(--muted-foreground);
-  font-weight: bold;
-  font-size: 1.1em;
-  pointer-events: none;
-  user-select: none;
-}
-
 /* Ensure nested checkbox items maintain proper spacing and styling */
-.editor-nested-list .editor-list-item-checked,
-.editor-nested-list .editor-list-item-unchecked {
-  /* margin-left: 0.5em;
-  margin-right: 0.5em; */
+.editor-list-item-checked,
+.editor-list-item-unchecked {
   padding-left: 1.5em;
   padding-right: 1.5em;
 }
@@ -703,13 +654,21 @@ code:not(.editor-code),
 }
 
 @keyframes fadeHighlight {
-  0% { background-color: rgb(254 240 138 / 0.5); }
-  100% { background-color: transparent; }
+  0% {
+    background-color: rgb(254 240 138 / 0.5);
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
   @keyframes fadeHighlight {
-    0% { background-color: rgb(113 63 18 / 0.3); }
-    100% { background-color: transparent; }
+    0% {
+      background-color: rgb(113 63 18 / 0.3);
+    }
+    100% {
+      background-color: transparent;
+    }
   }
 }

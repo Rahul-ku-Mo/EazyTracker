@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MoreHorizontal, X } from "lucide-react";
+import { MoreHorizontal, X, User, AtSign, Mail } from "lucide-react";
 import { MemberIcon } from "@/_components/shared/svg/SharedIcons";
 import { useCardMutation } from "../../../_mutations/useCardMutations";
 import {
@@ -15,6 +15,12 @@ import {
 
 import { useNewCardMutation } from "@/_components/Card/_newCardComponentsAndActions/new-card-mutations";
 import { useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Types
 interface TeamMember {
@@ -68,21 +74,67 @@ export const AssigneesDropdown = ({
       
       {assignedMembers.length > 0 ? (
         <DropdownMenu open={open} onOpenChange={setOpen}>
-          <DropdownMenuTrigger asChild>
-            <div className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium cursor-pointer hover:bg-muted-foreground/10 rounded-sm transition-all ease-in">
-              <Avatar className="size-4">
-                <AvatarImage src={assignedMembers[0].imageUrl} />
-                <AvatarFallback className="text-xs">
-                  {(assignedMembers[0].name || assignedMembers[0].email)?.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <span className="truncate max-w-20">
-                {assignedMembers[0].name || assignedMembers[0].username || assignedMembers[0].email}
-              </span>
-            </div>
-          </DropdownMenuTrigger>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <div className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium cursor-pointer hover:bg-muted-foreground/10 rounded-sm transition-all ease-in">
+                    <Avatar className="size-4">
+                      <AvatarImage src={assignedMembers[0].imageUrl} />
+                      <AvatarFallback className="text-xs">
+                        {(assignedMembers[0].name || assignedMembers[0].email)?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="truncate max-w-20">
+                      {assignedMembers[0].name || assignedMembers[0].username || assignedMembers[0].email}
+                    </span>
+                  </div>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent side="left" className="bg-popover text-popover-foreground border border-border p-0">
+                <div className="p-3 w-[260px]">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="size-8">
+                      <AvatarImage src={assignedMembers[0].imageUrl} />
+                      <AvatarFallback className="text-sm">
+                        {(assignedMembers[0].name || assignedMembers[0].email)?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium truncate">
+                        {assignedMembers[0].name || assignedMembers[0].username || assignedMembers[0].email}
+                      </div>
+                      {assignedMembers[0].username && (
+                        <div className="text-xs text-muted-foreground truncate">@{assignedMembers[0].username}</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-3 space-y-2 text-xs">
+                    {assignedMembers[0].name && (
+                      <div className="flex items-center gap-2">
+                        <User className="size-3 text-muted-foreground" />
+                        <span className="truncate">{assignedMembers[0].name}</span>
+                      </div>
+                    )}
+                    {assignedMembers[0].username && (
+                      <div className="flex items-center gap-2">
+                        <AtSign className="size-3 text-muted-foreground" />
+                        <span className="truncate">@{assignedMembers[0].username}</span>
+                      </div>
+                    )}
+                    {assignedMembers[0].email && (
+                      <div className="flex items-center gap-2">
+                        <Mail className="size-3 text-muted-foreground" />
+                        <span className="truncate">{assignedMembers[0].email}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <DropdownMenuContent align="end" className="w-[220px] max-h-80 overflow-y-auto relative">
-           
             <DropdownMenuItem 
               onClick={handleUnassign}
               className="text-red-600 focus:text-red-600"

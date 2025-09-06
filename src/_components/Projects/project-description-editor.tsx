@@ -172,10 +172,10 @@ export const ProjectDescriptionEditor = ({
   const [isLinkEditMode, setIsLinkEditMode] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // Debounce the current content for IndexedDB saving
   const debouncedContent = useDebounce(currentContent, 500);
-  
+
   // Refs to track state
   const initialDescriptionRef = useRef(initialDescription);
   const lastSavedToCloudRef = useRef(initialDescription);
@@ -205,8 +205,10 @@ export const ProjectDescriptionEditor = ({
   useEffect(() => {
     const initializeEditor = async () => {
       try {
-        const savedContent = await indexedDBService.getProjectDescription(project.slug);
-        
+        const savedContent = await indexedDBService.getProjectDescription(
+          project.slug
+        );
+
         if (savedContent && savedContent !== initialDescription) {
           setCurrentContent(savedContent);
           setLoadedContent(savedContent);
@@ -214,10 +216,10 @@ export const ProjectDescriptionEditor = ({
           setCurrentContent(initialDescription);
           setLoadedContent(initialDescription);
         }
-        
+
         setIsInitialized(true);
       } catch (error) {
-        console.error('Failed to initialize editor with IndexedDB:', error);
+        console.error("Failed to initialize editor with IndexedDB:", error);
         setCurrentContent(initialDescription);
         setLoadedContent(initialDescription);
         setIsInitialized(true);
@@ -242,9 +244,12 @@ export const ProjectDescriptionEditor = ({
     if (isInitialized && debouncedContent !== initialDescriptionRef.current) {
       const saveToIndexedDB = async () => {
         try {
-          await indexedDBService.saveProjectDescription(project.slug, debouncedContent);
+          await indexedDBService.saveProjectDescription(
+            project.slug,
+            debouncedContent
+          );
         } catch (error) {
-          console.error('Failed to save to IndexedDB:', error);
+          console.error("Failed to save to IndexedDB:", error);
         }
       };
       saveToIndexedDB();
@@ -259,12 +264,14 @@ export const ProjectDescriptionEditor = ({
     if (currentContent !== lastSavedToCloudRef.current) {
       setIsLoadingSave(true);
       try {
-        await updateProjectMutation.mutateAsync({ description: currentContent });
-        
+        await updateProjectMutation.mutateAsync({
+          description: currentContent,
+        });
+
         // Clear from IndexedDB after successful save
         await indexedDBService.deleteProjectDescription(project.slug);
       } catch (error) {
-        console.error('Failed to save project description:', error);
+        console.error("Failed to save project description:", error);
       } finally {
         setIsLoadingSave(false);
       }
@@ -279,7 +286,10 @@ export const ProjectDescriptionEditor = ({
   // Save to cloud on unmount only
   useEffect(() => {
     return () => {
-      if (currentContentRef.current !== lastSavedToCloudRef.current && handleSaveToCloudRef.current) {
+      if (
+        currentContentRef.current !== lastSavedToCloudRef.current &&
+        handleSaveToCloudRef.current
+      ) {
         handleSaveToCloudRef.current();
       }
     };
@@ -299,7 +309,7 @@ export const ProjectDescriptionEditor = ({
       LinkNode,
       HeadingNode,
       QuoteNode,
-      ImageNode
+      ImageNode,
     ] as any,
   };
 
@@ -361,39 +371,42 @@ export const ProjectDescriptionEditor = ({
         </div>
       </div>
 
-      <div className="min-h-[120px] max-h-full overflow-y-auto bg-background">
+      <div className="min-h-[120px] max-h-[420px] overflow-y-auto bg-background">
         <LexicalComposer initialConfig={initialConfig}>
-          <div className="editor-container" ref={anchorElemRef}>
-            <div className="relative editor-inner">
-              <RichTextPlugin
-                contentEditable={
-                  <ContentEditable
-                    id="project-description-editor"
-                    className={cn(
-                      "min-h-[100px] w-full overflow-y-auto",
-                      "text-sm text-foreground",
-                      "focus:outline-none border-none",
-                      "relative px-0 py-0"
-                    )}
-                  />
-                }
-                ErrorBoundary={LexicalErrorBoundary}
+          <div className="relative" ref={anchorElemRef}>
+            <RichTextPlugin
+              contentEditable={
+                <ContentEditable
+                  id="project-description-editor"
+                  className={cn(
+                    "min-h-[100px] w-full max-h-full overflow-y-auto",
+                    "text-foreground",
+                    "focus:outline-none border-none",
+                    "relative px-0 py-0 resize-y"
+                  )}
+                />
+              }
+              ErrorBoundary={LexicalErrorBoundary}
+            />
+            <PlaceholderPlugin placeholder="Add project description..." />
+            <InitialContentPlugin initialContent={loadedContent} />
+            <TransformToHTMLPlugin setCurrentContent={setCurrentContent} />
+            <HistoryPlugin />
+            <ListPlugin />
+            <CheckListPlugin />
+            <MarkdownShortcutPlugin transformers={transformers} />
+            <LinkPlugin />
+            <CopyImagePlugin />
+            <ComponentPickerPlugin />
+            <EditorRefPlugin editorRef={editorRef} />
+            {anchorElemRef.current && (
+              <FloatingLinkEditorPlugin
+                anchorElem={anchorElemRef.current}
+                isLinkEditMode={isLinkEditMode}
+                setIsLinkEditMode={setIsLinkEditMode}
               />
-              <PlaceholderPlugin placeholder="Add project description..." />
-              <InitialContentPlugin initialContent={loadedContent} />
-              <TransformToHTMLPlugin setCurrentContent={setCurrentContent} />
-              <HistoryPlugin />
-              <ListPlugin />
-              <CheckListPlugin />
-              <MarkdownShortcutPlugin transformers={transformers} />
-              <LinkPlugin />
-              <CopyImagePlugin />
-              <EditorRefPlugin editorRef={editorRef} />
-              {anchorElemRef.current && (
-                <FloatingLinkEditorPlugin anchorElem={anchorElemRef.current} isLinkEditMode={isLinkEditMode} setIsLinkEditMode={setIsLinkEditMode} />
-              )}
-              <ComponentPickerPlugin /> 
-            </div>
+            )}
+            <ComponentPickerPlugin />
           </div>
         </LexicalComposer>
       </div>

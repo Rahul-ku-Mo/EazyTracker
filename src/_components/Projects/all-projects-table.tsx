@@ -61,7 +61,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { NewProjectDialog } from "./NewProjectDialog";
+import { NewProjectDialog } from "./new-project-dialog";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -100,7 +100,7 @@ import MembersCommandDropdown from "./contextMenu/MembersCommandDropdown";
 import { updateProjectPriority } from "@/apis/project";
 import { useTheme } from "@/context/ThemeProvider";
 import { TargetIcon } from "../shared/svg/SharedIcons";
-import { WorkspaceIcon } from "../shared/svg/SidebarIcons";
+import { ProjectIcon, WorkspaceIcon } from "../shared/svg/SidebarIcons";
 
 export interface ProjectTableRow {
   id: string;
@@ -291,7 +291,7 @@ export function DataTable({
     onSuccess: () => {
       // Only invalidate the projects query
       queryClient.invalidateQueries({
-        queryKey: ["projects", teamId]
+        queryKey: ["projects", teamId],
       });
     },
   });
@@ -307,7 +307,7 @@ export function DataTable({
     onSuccess: () => {
       // Only invalidate the projects query
       queryClient.invalidateQueries({
-        queryKey: ["projects", teamId]
+        queryKey: ["projects", teamId],
       });
     },
   });
@@ -323,7 +323,7 @@ export function DataTable({
     onSuccess: () => {
       // Only invalidate the projects query
       queryClient.invalidateQueries({
-        queryKey: ["projects", teamId]
+        queryKey: ["projects", teamId],
       });
     },
   });
@@ -339,7 +339,7 @@ export function DataTable({
     onSuccess: () => {
       // Only invalidate the projects query
       queryClient.invalidateQueries({
-        queryKey: ["projects", teamId]
+        queryKey: ["projects", teamId],
       });
     },
   });
@@ -368,9 +368,7 @@ export function DataTable({
     {
       accessorKey: "status",
       header: () => (
-        <div className="flex items-center justify-center">
-          Status
-        </div>
+        <div className="flex items-center justify-center">Status</div>
       ),
       cell: ({ row }) => (
         <div className="flex items-center justify-center">
@@ -386,14 +384,12 @@ export function DataTable({
     {
       accessorKey: "priority",
       header: () => (
-        <div className="flex items-center justify-center">
-          Priority
-        </div>
+        <div className="flex items-center justify-center">Priority</div>
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-1 text-xs justify-center">
           <PriorityDropdown
-          isDark={theme==="dark"}
+            isDark={theme === "dark"}
             priority={row.original.priority}
             onChange={(priority) => {
               updatePriorityMutation.mutate({
@@ -408,9 +404,7 @@ export function DataTable({
     {
       accessorKey: "lead",
       header: () => (
-        <div className="flex items-center justify-center">
-          Lead
-        </div>
+        <div className="flex items-center justify-center">Lead</div>
       ),
       cell: ({ row }) => (
         <LeadCommandDropdown
@@ -505,7 +499,7 @@ export function DataTable({
         if (workspaces.length === 0) {
           return (
             <div className="flex items-center justify-center w-full text-xs">
-               N/A        
+              N/A
             </div>
           );
         }
@@ -565,9 +559,11 @@ export function DataTable({
       ),
     },
   ];
-  
+
   // Only use local state for drag operations, otherwise use prop data directly
-  const [dragData, setDragData] = React.useState<ProjectTableRow[] | null>(null);
+  const [dragData, setDragData] = React.useState<ProjectTableRow[] | null>(
+    null
+  );
   const [searchValue, setSearchValue] = React.useState("");
   const [debouncedSearchValue, setDebouncedSearchValue] = React.useState("");
   const [rowSelection, setRowSelection] = React.useState({});
@@ -662,7 +658,7 @@ export function DataTable({
       const newIndex = dataIds.indexOf(over.id);
       const newData = arrayMove(currentData, oldIndex, newIndex);
       setDragData(newData);
-      
+
       // TODO: Implement actual drag-and-drop persistence to server here
       // For now, reset after a short delay to show the change
       setTimeout(() => {
@@ -766,12 +762,16 @@ export function DataTable({
                     ))}
                   </SortableContext>
                 ) : (
-                  <TableRow>
+                  <TableRow className="hover:bg-[rgb(9 9 11)]">
                     <TableCell
                       colSpan={columnsWithTeamId.length}
-                      className="h-24 text-center"
+                      rowSpan={2}
+                      className="h-[200px] w-full align-vertical text-center "
                     >
-                      No results.
+                      <div className="flex flex-col h-full w-full gap-2 items-center justify-center">
+                        <ProjectIcon className="size-8" />
+                       <span className="text-muted-foreground text-base"> No Projects yet.</span>
+                      </div>
                     </TableCell>
                   </TableRow>
                 )}

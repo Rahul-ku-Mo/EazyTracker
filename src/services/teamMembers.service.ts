@@ -22,7 +22,7 @@ const getAuthHeaders = () => {
  * Fetch team members for mentions
  * @returns Promise<TeamMember[]>
  */
-export const getTeamMembersForMentions = async (): Promise<TeamMember[]> => {
+export const getTeamMembers = async (): Promise<TeamMember[]> => {
   try {
     const response = await axios.get(
       `${import.meta.env.VITE_API_URL}/teams/members`,

@@ -45,6 +45,7 @@ import MainLayout from "@/layouts/Container";
 import { InboxIcon } from "@/_components/shared/svg/SidebarIcons";
 import { formatTimeAgo } from "@/utils";
 import { useNavigate } from "react-router-dom";
+import { MemberIcon } from "@/_components/shared/svg/SharedIcons";
 
 interface Notification {
   id: number;
@@ -459,7 +460,7 @@ const InboxPage = () => {
                   Mentions
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setFilterType("assignments")}>
-                  <Users className="h-4 w-4 mr-2" />
+                  <MemberIcon className="h-4 w-4 mr-2" />
                   Assignments
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -512,7 +513,7 @@ const InboxPage = () => {
               value="assignments"
               className="flex items-center gap-2"
             >
-              <Users className="h-4 w-4" />
+              <MemberIcon className="h-4 w-4" />
               Assignments
             </TabsTrigger>
           </TabsList>

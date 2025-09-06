@@ -175,11 +175,10 @@ const NewProjectForm = ({ isOpen, onClose, teamId }: NewProjectFormProps) => {
             setMilestones={setMilestones}
             lead={lead}
             setLead={setLead}
-            members={members}
-            setMembers={setMembers}
+           
           />
 
-          <div className="flex items-center justify-end p-2 border-t border-[#e3e3e3b5] dark:border-border">
+          <div className="flex items-center justify-end p-3 px-4 border-t border-[#e3e3e3b5] dark:border-border">
             <div className="flex items-center gap-2">
               <Button
                 type="submit"
