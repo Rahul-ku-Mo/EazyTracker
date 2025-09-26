@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { Hash, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -164,16 +165,15 @@ export const TableOfContentsSection = ({
           displayItems.map((item, index) => (
             <div
               key={`${item.id}-${index}`}
-              className={`
-                flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer
-                hover:bg-muted/50 transition-colors group
-              `}
+              className={clsx(
+                "flex items-center gap-2 py-1.5 rounded-md cursor-pointer"
+              )}
               onClick={() => handleHeadingClick(item)}
             >
               <Hash className="size-3 text-muted-foreground" />
               <span
                 className={`
-                  text-xs flex-1 truncate
+                  text-xs flex-1 truncate hover:opacity-70 transition-all
                   ${
                     item.level === 1
                       ? "font-semibold"
