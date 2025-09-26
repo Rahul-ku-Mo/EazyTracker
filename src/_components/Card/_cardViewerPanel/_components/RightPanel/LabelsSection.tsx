@@ -31,7 +31,7 @@ export const LabelsSection = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
      
-          <span className="text-xs font-medium text-primary">Labels</span>
+          <span className="text-sm font-medium text-primary">Labels</span>
         </div>
 
         <LabelDropdown

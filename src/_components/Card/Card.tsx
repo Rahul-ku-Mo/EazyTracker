@@ -10,8 +10,6 @@ import {
   EllipsisVerticalIcon,
   CheckCircle2,
   Circle,
-  User,
-  AtSign,
   Mail,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
@@ -58,7 +56,7 @@ import { useTheme } from "@/context/ThemeProvider";
 import { getPriorityIcon } from "../Projects/utils";
 import { DateCreatedIcon, DueDateIcon } from "../shared/svg/ViewOptionsIcons";
 import { Assignee } from "../shared/svg/ListViewIcons";
-import { LabelIcon } from "../shared/svg/SharedIcons";
+import { LabelIcon, MemberIcon } from "../shared/svg/SharedIcons";
 
 interface CardProps {
   columnName: string;
@@ -111,7 +109,6 @@ const CardDescription = ({
         className={cn(
           "relative z-10 dark:text-muted-foreground w-full max-h-[153px]",
           "px-2 py-2",
-          "card-editor-view",
           "editor-readable-font !text-xs",
           "overflow-hidden",
           "line-clamp-8",
@@ -492,16 +489,11 @@ const CardFooter = ({
                             <div className="mt-3 space-y-2 text-xs">
                               {assignee.name && (
                                 <div className="flex items-center gap-2">
-                                  <User className="size-3 text-muted-foreground" />
+                                  <MemberIcon className="size-3 text-muted-foreground" />
                                   <span className="truncate">{assignee.name}</span>
                                 </div>
                               )}
-                              {assignee.username && (
-                                <div className="flex items-center gap-2">
-                                  <AtSign className="size-3 text-muted-foreground" />
-                                  <span className="truncate">@{assignee.username}</span>
-                                </div>
-                              )}
+                             
                               {assignee.email && (
                                 <div className="flex items-center gap-2">
                                   <Mail className="size-3 text-muted-foreground" />

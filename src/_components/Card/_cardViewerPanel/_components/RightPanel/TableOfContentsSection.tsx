@@ -138,7 +138,7 @@ export const TableOfContentsSection = ({
     <div className="p-2 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-primary">
+          <span className="text-sm font-medium text-primary">
             Table of Contents
           </span>
         </div>

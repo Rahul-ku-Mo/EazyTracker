@@ -49,8 +49,8 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { User, AtSign, Mail } from "lucide-react";
-import { StorypointIcon } from "@/_components/shared/svg/SharedIcons";
+import {  AtSign, Mail } from "lucide-react";
+import { MemberIcon, StorypointIcon } from "@/_components/shared/svg/SharedIcons";
 import { DateCreatedIcon } from "../shared/svg/ViewOptionsIcons";
 import { ViewOptions } from "@/store/useViewOptionsStore";
 import { EmptyIcon } from "../shared/svg/SharedIcons";
@@ -572,7 +572,7 @@ const ListView = ({
                                                             <div className="mt-3 space-y-2 text-xs">
                                                               {a.name && (
                                                                 <div className="flex items-center gap-2">
-                                                                  <User className="size-3 text-muted-foreground" />
+                                                                  <MemberIcon className="size-3 text-muted-foreground" />
                                                                   <span className="truncate">
                                                                     {a.name}
                                                                   </span>
