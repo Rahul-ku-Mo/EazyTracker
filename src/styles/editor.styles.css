@@ -125,6 +125,10 @@
   font-size: 14px;
 }
 
+ .dark .editor-list-item::marker {
+  color: #f0fdf4
+ }
+
 /* UPDATED: Checklist items using marker approach like Lexical */
 .editor-list-item-checked,
 .editor-list-item-unchecked {

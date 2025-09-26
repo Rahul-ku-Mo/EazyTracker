@@ -46,24 +46,24 @@ export const AdditionalInfoSection = ({
   const storyPointOptions = [0, 1, 2, 4, 8, 16];
 
   return (
-    <div className="space-y-3 rounded-md p-2 dark:bg-[#101010]">
+    <div className="p-2 space-y-3">
       <div className="flex items-center gap-2">
         <AdditionalInfoIcon className="size-4 text-primary" />
-        <span className="text-xs font-medium text-primary">
+        <span className="text-sm font-medium text-primary">
           Additional Info
         </span>
       </div>
 
-      <div className="space-y-3 text-xs">
+      <div className="space-y-3 text-sm">
         <div className="flex justify-between items-center">
-          <span className="text-muted-foreground text-xs">Created</span>
-          <span className="text-xs font-medium">
+          <span className="text-muted-foreground text-sm">Created</span>
+          <span className="text-sm font-medium">
             {formatDate(new Date()) || "Mar 24, 2025"}
           </span>
         </div>
 
         <div className="flex justify-between items-center">
-          <span className="text-muted-foreground text-xs">
+          <span className="text-muted-foreground text-sm">
             Story Points
           </span>
           <DropdownMenu>
@@ -71,7 +71,7 @@ export const AdditionalInfoSection = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-auto p-1 text-xs font-medium hover:bg-muted flex items-center gap-1"
+                className="h-auto p-1 text-sm font-medium hover:bg-muted flex items-center gap-1"
               >
                 <StorypointIcon className="w-3 h-3 fill-current" />
                 {storyPoints === 0
@@ -82,7 +82,7 @@ export const AdditionalInfoSection = ({
             <DropdownMenuContent align="end" className="w-40">
               <DropdownMenuItem
                 onClick={() => handleStoryPointsChange(0)}
-                className="flex items-center justify-between px-3 py-2 text-xs"
+                className="flex items-center justify-between px-3 py-2 text-sm"
               >
                 <div className="flex items-center gap-2">
                   <Triangle
@@ -105,7 +105,7 @@ export const AdditionalInfoSection = ({
                 <DropdownMenuItem
                   key={points}
                   onClick={() => handleStoryPointsChange(points)}
-                  className="flex items-center justify-between px-3 py-2 text-xs"
+                  className="flex items-center justify-between px-3 py-2 text-sm"
                 >
                   <div className="flex items-center gap-2">
                     <StorypointIcon

@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { TagIcon } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+// import { formatDistanceToNow } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import {
   Popover,
@@ -43,9 +43,14 @@ import {
 } from "../shared/svg/Priority";
 import { getPriorityIcon } from "../Projects/utils";
 import { Assignee } from "../shared/svg/ListViewIcons";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { User, AtSign, Mail } from "lucide-react";
+import { StorypointIcon } from "@/_components/shared/svg/SharedIcons";
 import { DateCreatedIcon } from "../shared/svg/ViewOptionsIcons";
 import { ViewOptions } from "@/store/useViewOptionsStore";
 import { EmptyIcon } from "../shared/svg/SharedIcons";
@@ -57,7 +62,7 @@ interface CardItem {
   order: number;
   description: string;
   columnId: number;
-  labels: string[];
+  labels: any[];
   attachments: any[];
   priority: "low" | "medium" | "high" | "urgent" | null;
   createdAt: string;
@@ -65,6 +70,9 @@ interface CardItem {
   updatedAt: string;
   creatorId: number | null;
   slug?: string;
+  storyPoints?: number;
+  project?: { id: string; title: string } | null;
+  projectTitle?: string | null;
 }
 
 interface ListViewProps {
@@ -108,6 +116,29 @@ const ListView = ({
   const { updateCardMutation } = useCardMutation();
   const queryClient = useQueryClient();
   const { theme } = useTheme();
+
+  const formatShortDate = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return "";
+      return d.toLocaleString("en-US", { month: "short", day: "numeric" });
+    } catch {
+      return "";
+    }
+  };
+
+  const formatDDMMYYYY = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return "";
+      const dd = String(d.getDate()).padStart(2, "0");
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const yyyy = d.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    } catch {
+      return "";
+    }
+  };
 
   // Use prop members if provided, otherwise fall back to hook
   const effectiveMembers = members || hookMembers;
@@ -319,8 +350,7 @@ const ListView = ({
                       className={cn(
                         "min-h-[100px] transition-all duration-300 ease-in-out",
                         snapshot.isDraggingOver &&
-                          "bg-emerald-50 dark:bg-emerald-900/20 border-2 border-dashed border-emerald-300 dark:border-emerald-500 rounded-lg p-3 shadow-inner",
-                      
+                          "bg-emerald-50 dark:bg-emerald-900/20 border-2 border-dashed border-emerald-300 dark:border-emerald-500 rounded-lg p-3 shadow-inner"
                       )}
                     >
                       {items.map((item, index) => {
@@ -475,56 +505,102 @@ const ListView = ({
                                             className="flex items-center gap-1 hover:bg-muted rounded p-1 transition-colors"
                                             onClick={(e) => e.stopPropagation()}
                                           >
-                                            {item as any && (item as any).assignees && (item as any).assignees.length > 0 ? (
+                                            {(item as any) &&
+                                            (item as any).assignees &&
+                                            (item as any).assignees.length >
+                                              0 ? (
                                               <div className="flex items-center -space-x-1">
-                                                {(item as any).assignees.slice(0, 2).map((a: any, idx: number) => (
-                                                  <Tooltip key={a.id}>
-                                                    <TooltipTrigger asChild>
-                                                      <Avatar className="w-4 h-4 border border-white dark:border-zinc-800 relative" style={{ zIndex: 10 - idx }}>
-                                                        <AvatarImage src={a.imageUrl} />
-                                                        <AvatarFallback className="text-[8px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                                                          {(a.name || a.username || a.email)?.slice(0,2).toUpperCase()}
-                                                        </AvatarFallback>
-                                                      </Avatar>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent className="bg-popover text-popover-foreground border border-border p-0">
-                                                      <div className="p-3 w-[240px]">
-                                                        <div className="flex items-center gap-3">
-                                                          <Avatar className="size-8">
-                                                            <AvatarImage src={a.imageUrl} />
-                                                            <AvatarFallback className="text-sm">
-                                                              {(a.name || a.username || a.email)?.charAt(0).toUpperCase()}
+                                                {(item as any).assignees
+                                                  .slice(0, 2)
+                                                  .map(
+                                                    (a: any, idx: number) => (
+                                                      <Tooltip key={a.id}>
+                                                        <TooltipTrigger asChild>
+                                                          <Avatar
+                                                            className="w-4 h-4 border border-white dark:border-zinc-800 relative"
+                                                            style={{
+                                                              zIndex: 10 - idx,
+                                                            }}
+                                                          >
+                                                            <AvatarImage
+                                                              src={a.imageUrl}
+                                                            />
+                                                            <AvatarFallback className="text-[8px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                                                              {(
+                                                                a.name ||
+                                                                a.username ||
+                                                                a.email
+                                                              )
+                                                                ?.slice(0, 2)
+                                                                .toUpperCase()}
                                                             </AvatarFallback>
                                                           </Avatar>
-                                                          <div className="min-w-0">
-                                                            <div className="text-sm font-medium truncate">{a.name || a.username || a.email}</div>
-                                                            {a.username && <div className="text-xs text-muted-foreground truncate">@{a.username}</div>}
+                                                        </TooltipTrigger>
+                                                        <TooltipContent className="bg-popover text-popover-foreground border border-border p-0">
+                                                          <div className="p-3 w-[240px]">
+                                                            <div className="flex items-center gap-3">
+                                                              <Avatar className="size-8">
+                                                                <AvatarImage
+                                                                  src={
+                                                                    a.imageUrl
+                                                                  }
+                                                                />
+                                                                <AvatarFallback className="text-sm">
+                                                                  {(
+                                                                    a.name ||
+                                                                    a.username ||
+                                                                    a.email
+                                                                  )
+                                                                    ?.charAt(0)
+                                                                    .toUpperCase()}
+                                                                </AvatarFallback>
+                                                              </Avatar>
+                                                              <div className="min-w-0">
+                                                                <div className="text-sm font-medium truncate">
+                                                                  {a.name ||
+                                                                    a.username ||
+                                                                    a.email}
+                                                                </div>
+                                                                {a.username && (
+                                                                  <div className="text-xs text-muted-foreground truncate">
+                                                                    @
+                                                                    {a.username}
+                                                                  </div>
+                                                                )}
+                                                              </div>
+                                                            </div>
+                                                            <div className="mt-3 space-y-2 text-xs">
+                                                              {a.name && (
+                                                                <div className="flex items-center gap-2">
+                                                                  <User className="size-3 text-muted-foreground" />
+                                                                  <span className="truncate">
+                                                                    {a.name}
+                                                                  </span>
+                                                                </div>
+                                                              )}
+                                                              {a.username && (
+                                                                <div className="flex items-center gap-2">
+                                                                  <AtSign className="size-3 text-muted-foreground" />
+                                                                  <span className="truncate">
+                                                                    @
+                                                                    {a.username}
+                                                                  </span>
+                                                                </div>
+                                                              )}
+                                                              {a.email && (
+                                                                <div className="flex items-center gap-2">
+                                                                  <Mail className="size-3 text-muted-foreground" />
+                                                                  <span className="truncate">
+                                                                    {a.email}
+                                                                  </span>
+                                                                </div>
+                                                              )}
+                                                            </div>
                                                           </div>
-                                                        </div>
-                                                        <div className="mt-3 space-y-2 text-xs">
-                                                          {a.name && (
-                                                            <div className="flex items-center gap-2">
-                                                              <User className="size-3 text-muted-foreground" />
-                                                              <span className="truncate">{a.name}</span>
-                                                            </div>
-                                                          )}
-                                                          {a.username && (
-                                                            <div className="flex items-center gap-2">
-                                                              <AtSign className="size-3 text-muted-foreground" />
-                                                              <span className="truncate">@{a.username}</span>
-                                                            </div>
-                                                          )}
-                                                          {a.email && (
-                                                            <div className="flex items-center gap-2">
-                                                              <Mail className="size-3 text-muted-foreground" />
-                                                              <span className="truncate">{a.email}</span>
-                                                            </div>
-                                                          )}
-                                                        </div>
-                                                      </div>
-                                                    </TooltipContent>
-                                                  </Tooltip>
-                                                ))}
+                                                        </TooltipContent>
+                                                      </Tooltip>
+                                                    )
+                                                  )}
                                               </div>
                                             ) : (
                                               <Assignee className="size-5" />
@@ -600,19 +676,44 @@ const ListView = ({
                                           <div className="flex gap-1">
                                             {item.labels
                                               .slice(0, 1)
-                                              .map((tag, index) => (
-                                                <Badge
-                                                  key={index}
-                                                  variant="secondary"
-                                                  className="text-xs px-1.5 py-0.5 font-medium border transition-colors hover:opacity-80 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700"
-                                                >
-                                                  {tag}
-                                                </Badge>
-                                              ))}
+                                              .map(
+                                                (label: any, index: number) => {
+                                                  const name =
+                                                    typeof label === "string"
+                                                      ? label
+                                                      : (label?.name ?? "");
+                                                  const color =
+                                                    typeof label === "object"
+                                                      ? label?.color
+                                                      : undefined;
+                                                  const key =
+                                                    typeof label === "object"
+                                                      ? (label?.id ?? index)
+                                                      : index;
+                                                  return (
+                                                    <Badge
+                                                      key={key}
+                                                      variant="secondary"
+                                                      className="text-xs px-1.5 py-0.5 font-medium border"
+                                                    >
+                                                      {color && (
+                                                        <span
+                                                          className="w-1.5 h-1.5 rounded-full mr-1.5 inline-block"
+                                                          style={{
+                                                            backgroundColor:
+                                                              color,
+                                                          }}
+                                                        />
+                                                      )}
+                                                      {name}
+                                                    </Badge>
+                                                  );
+                                                }
+                                              )}
                                             {item.labels.length > 1 && (
                                               <Badge
                                                 variant="outline"
-                                                className="text-xs px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-600"
+                                                className="text-xs px-1.5 py-0.5"
                                               >
                                                 +{item.labels.length - 1}
                                               </Badge>
@@ -620,29 +721,87 @@ const ListView = ({
                                           </div>
                                         </div>
                                       )}
+
+                                    {/* Project (if available) */}
+                                    {(() => {
+                                      const projectTitle =
+                                        (item as any)?.project?.title ||
+                                        (item as any)?.projectTitle;
+                                      if (!projectTitle) return null;
+                                      return (
+                                        <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
+                                          <ProjectIcon className="h-3 w-3" />
+                                          <span className="truncate max-w-28">
+                                            {projectTitle}
+                                          </span>
+                                        </div>
+                                      );
+                                    })()}
                                   </div>
 
                                   <div className="flex items-center gap-2 flex-shrink-0 ml-1.5">
+                                    {/* Story Points - fixed width */}
+                                    {viewOptions?.displayProperties.estimate !==
+                                      false && (
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <div className="min-w-[48px] flex items-center justify-end gap-1 text-xs text-muted-foreground">
+                                            <StorypointIcon className="w-3 h-3" />
+                                            <span className="tabular-nums">
+                                              {typeof item.storyPoints ===
+                                              "number"
+                                                ? item.storyPoints
+                                                : 0}
+                                            </span>
+                                          </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <span className="text-xs">
+                                            Story points:{" "}
+                                            {typeof item.storyPoints ===
+                                            "number"
+                                              ? item.storyPoints
+                                              : 0}
+                                          </span>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    )}
                                     {/* Due date - Inline editable */}
                                     {viewOptions?.displayProperties.dueDate !==
                                       false && (
                                       <Popover>
-                                        <PopoverTrigger asChild>
-                                          <div
-                                            className="flex items-center gap-1 hover:bg-muted rounded p-1 transition-colors cursor-pointer min-w-fit"
-                                            onClick={(e) => e.stopPropagation()}
-                                          >
-                                            <DateCreatedIcon className="size-5 text-zinc-500 dark:text-zinc-400" />
-                                            {item.dueDate && (
-                                              <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                                                {formatDistanceToNow(
-                                                  new Date(item.dueDate),
-                                                  { addSuffix: true }
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <PopoverTrigger asChild>
+                                              <div
+                                                className="flex items-center gap-1 rounded p-1 transition-colors cursor-pointer w-[78px] justify-start"
+                                                onClick={(e) =>
+                                                  e.stopPropagation()
+                                                }
+                                              >
+                                                <DateCreatedIcon className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                                                {item.dueDate ? (
+                                                  <span className="text-xs text-zinc-600 dark:text-zinc-300 tabular-nums">
+                                                    {formatShortDate(
+                                                      item.dueDate
+                                                    )}
+                                                  </span>
+                                                ) : (
+                                                  <span className="text-xs text-zinc-600 dark:text-zinc-300 tabular-nums">
+                                                    Set Date
+                                                  </span>
                                                 )}
+                                              </div>
+                                            </PopoverTrigger>
+                                          </TooltipTrigger>
+                                          {item.dueDate && (
+                                            <TooltipContent className="p-1 rounded-sm">
+                                              <span className="text-[10px]">
+                                                created {formatDDMMYYYY(item.dueDate)}
                                               </span>
-                                            )}
-                                          </div>
-                                        </PopoverTrigger>
+                                            </TooltipContent>
+                                          )}
+                                        </Tooltip>
                                         <PopoverContent
                                           className="w-auto p-0"
                                           align="start"

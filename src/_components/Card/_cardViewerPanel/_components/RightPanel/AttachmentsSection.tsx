@@ -159,11 +159,11 @@ export const AttachmentsSection = ({ slug }: AttachmentsSectionProps) => {
 
   if (error) {
     return (
-      <div className="space-y-3 rounded-md p-2 dark:bg-[#101010]">
+      <div className="p-2 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <AlertCircle className="size-4 text-red-500" />
-            <span className="text-xs font-medium text-red-500">
+            <span className="text-sm font-medium text-red-500">
               Error loading attachments
             </span>
           </div>
@@ -171,7 +171,7 @@ export const AttachmentsSection = ({ slug }: AttachmentsSectionProps) => {
             variant="ghost"
             size="sm"
             onClick={() => refetch()}
-            className="text-xs"
+            className="text-sm"
           >
             Retry
           </Button>
@@ -181,25 +181,22 @@ export const AttachmentsSection = ({ slug }: AttachmentsSectionProps) => {
   }
 
   return (
-    <div className="space-y-3 rounded-md p-2 dark:bg-[#101010]">
+    <div className="p-2 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <UploadIcon
-            strokeWidth={3}
-            className="size-4 text-primary"
-          />
-          <span className="text-xs font-medium text-primary">
+      
+          <span className="text-sm font-medium text-primary">
             Attachments
           </span>
           {attachments.length > 0 && (
-            <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+            <span className="text-sm text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
               {attachments.length}
             </span>
           )}
           {hasUploading && (
             <div className="flex items-center gap-1">
               <Loader2 className="size-3 animate-spin text-blue-500" />
-              <span className="text-xs text-blue-500">
+              <span className="text-sm text-blue-500">
                 {uploadingFiles.length} uploading
               </span>
             </div>
@@ -208,7 +205,7 @@ export const AttachmentsSection = ({ slug }: AttachmentsSectionProps) => {
         {attachments.length > 2 && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-xs text-muted-foreground hover:text-primary transition-colors"
+            className="text-sm text-muted-foreground hover:text-primary transition-colors"
           >
             {isExpanded ? 'Show less' : `+${attachments.length - 2} more`}
           </button>
@@ -260,7 +257,7 @@ export const AttachmentsSection = ({ slug }: AttachmentsSectionProps) => {
       {/* Uploading Files Progress */}
       {hasUploading && (
         <div className="space-y-2">
-          <div className="text-xs font-medium text-muted-foreground">
+          <div className="text-sm font-medium text-muted-foreground">
             Uploading files...
           </div>
           {uploadingFiles.map((uploadingFile) => (
@@ -279,20 +276,20 @@ export const AttachmentsSection = ({ slug }: AttachmentsSectionProps) => {
               )}
               
               <div className="flex-1 min-w-0 space-y-1">
-                <div className="text-xs font-medium truncate" title={uploadingFile.file.name}>
+                <div className="text-sm font-medium truncate" title={uploadingFile.file.name}>
                   {uploadingFile.file.name}
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-sm text-muted-foreground">
                   {formatFileSize(uploadingFile.file.size)}
                 </div>
                 {uploadingFile.status === 'uploading' && (
                   <Progress value={uploadingFile.progress} className="h-1" />
                 )}
                 {uploadingFile.status === 'success' && (
-                  <div className="text-xs text-green-600">Upload complete!</div>
+                  <div className="text-sm text-green-600">Upload complete!</div>
                 )}
                 {uploadingFile.status === 'error' && (
-                  <div className="text-xs text-red-600">Upload failed</div>
+                  <div className="text-sm text-red-600">Upload failed</div>
                 )}
               </div>
             </div>
@@ -305,12 +302,12 @@ export const AttachmentsSection = ({ slug }: AttachmentsSectionProps) => {
         {isLoading ? (
           <div className="flex items-center justify-center py-4">
             <Loader2 className="size-4 animate-spin text-muted-foreground" />
-            <span className="ml-2 text-xs text-muted-foreground">
+            <span className="ml-2 text-sm text-muted-foreground">
               Loading attachments...
             </span>
           </div>
         ) : attachments.length === 0 ? (
-          <div className="text-xs text-muted-foreground py-2 text-center">
+          <div className="text-xs text-muted-foreground text-left">
             No attachments yet
           </div>
         ) : (
@@ -322,7 +319,7 @@ export const AttachmentsSection = ({ slug }: AttachmentsSectionProps) => {
               {getFileIcon(attachment.mimeType)}
               
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-medium truncate" title={attachment.fileName}>
+                <div className="text-sm font-medium truncate" title={attachment.fileName}>
                   {attachment.fileName}
                 </div>
                 <div className="text-xs text-muted-foreground">

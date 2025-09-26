@@ -20,7 +20,7 @@ export const TimeTrackingSection = ({
   };
 
   return (
-    <div className="space-y-3 rounded-md p-2 dark:bg-[#101010]">
+    <div className="p-2 dark:bg-[#101010]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <TimeTrackingIcon

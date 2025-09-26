@@ -1,8 +1,6 @@
+import { ReactNode, useState } from "react";
+import { MoreHorizontal, Calendar, X } from "lucide-react";
 
-import { ReactNode, useState} from "react"
-import { MoreHorizontal, Calendar, X } from "lucide-react"
-
-import { Button } from "@/components/ui/button"
 import { useCardMutation } from "../../../_mutations/useCardMutations";
 
 import {
@@ -16,7 +14,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 
 interface DueDateDropdownProps {
   children: ReactNode;
@@ -24,7 +22,11 @@ interface DueDateDropdownProps {
   currentDueDate?: Date | null;
 }
 
-export const DueDateDropdown = ({ children, cardId, currentDueDate }: DueDateDropdownProps) => {
+export const DueDateDropdown = ({
+  children,
+  cardId,
+  currentDueDate,
+}: DueDateDropdownProps) => {
   const [open, setOpen] = useState(false);
   const { updateCardMutation } = useCardMutation();
 
@@ -58,35 +60,33 @@ export const DueDateDropdown = ({ children, cardId, currentDueDate }: DueDateDro
   };
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
   return (
     <>
-     <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="w-fit h-fit p-1.5">
-            <MoreHorizontal />
-          </Button>
+          <MoreHorizontal className="size-4 cursor-pointer" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[220px]">
           <DropdownMenuLabel className="flex items-center gap-2">
             <Calendar className="size-4" />
             Set due date
           </DropdownMenuLabel>
-          
+
           {currentDueDate && (
             <>
               <DropdownMenuSeparator />
-              <div className="px-2 py-1 text-xs text-muted-foreground">
+              <div className="px-2 py-1 text-sm text-muted-foreground">
                 Current: {formatDate(new Date(currentDueDate))}
               </div>
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={handleRemoveDueDate}
                 className="text-red-600 focus:text-red-600"
               >
@@ -95,16 +95,16 @@ export const DueDateDropdown = ({ children, cardId, currentDueDate }: DueDateDro
               </DropdownMenuItem>
             </>
           )}
-          
+
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={() => handleSetDueDate(getTomorrowDate())}
               disabled={updateCardMutation.isPending}
             >
-              Tomorrow 
+              Tomorrow
             </DropdownMenuItem>
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={() => handleSetDueDate(getEndOfWeekDate())}
               disabled={updateCardMutation.isPending}
             >
@@ -121,5 +121,5 @@ export const DueDateDropdown = ({ children, cardId, currentDueDate }: DueDateDro
         </DropdownMenuContent>
       </DropdownMenu>
     </>
-  )
-}
+  );
+};

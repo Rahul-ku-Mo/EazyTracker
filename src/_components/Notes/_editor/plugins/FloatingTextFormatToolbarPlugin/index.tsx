@@ -270,7 +270,7 @@ function TextFormatFloatingToolbar({
                   />
                 </button>
               </TooltipTrigger>
-              <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+              <TooltipContent className="mb-0.5">
                 <p>Bold</p>
               </TooltipContent>
             </Tooltip>
@@ -292,7 +292,7 @@ function TextFormatFloatingToolbar({
                   />
                 </button>
               </TooltipTrigger>
-              <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+              <TooltipContent className="mb-0.5">
                 <p>Italic</p>
               </TooltipContent>
             </Tooltip>
@@ -314,7 +314,7 @@ function TextFormatFloatingToolbar({
                   />
                 </button>
               </TooltipTrigger>
-              <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+              <TooltipContent className="mb-0.5">
                 <p>Underline</p>
               </TooltipContent>
             </Tooltip>
@@ -336,7 +336,7 @@ function TextFormatFloatingToolbar({
                   />
                 </button>
               </TooltipTrigger>
-              <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+              <TooltipContent className="mb-0.5">
                 <p>Strikethrough</p>
               </TooltipContent>
             </Tooltip>
@@ -358,7 +358,7 @@ function TextFormatFloatingToolbar({
                   />
                 </button>
               </TooltipTrigger>
-              <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+              <TooltipContent className="mb-0.5">
                 <p>Subscript</p>
               </TooltipContent>
             </Tooltip>
@@ -380,7 +380,7 @@ function TextFormatFloatingToolbar({
                   />
                 </button>
               </TooltipTrigger>
-              <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+              <TooltipContent className="mb-0.5">
                 <p>Superscript</p>
               </TooltipContent>
             </Tooltip>
@@ -403,7 +403,7 @@ function TextFormatFloatingToolbar({
                    </button>
                  </DropdownMenuTrigger>
                </TooltipTrigger>
-               <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+               <TooltipContent className="mb-0.5">
                  <p>Text Style</p>
                </TooltipContent>
              </Tooltip>
@@ -500,7 +500,7 @@ function TextFormatFloatingToolbar({
                   />
                 </button>
               </TooltipTrigger>
-              <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+              <TooltipContent className="mb-0.5">
                 <p>Bullet List</p>
               </TooltipContent>
             </Tooltip>
@@ -526,7 +526,7 @@ function TextFormatFloatingToolbar({
                   />
                 </button>
               </TooltipTrigger>
-              <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+              <TooltipContent className="mb-0.5">
                 <p>Numbered List</p>
               </TooltipContent>
             </Tooltip>
@@ -552,7 +552,7 @@ function TextFormatFloatingToolbar({
                   />
                 </button>
               </TooltipTrigger>
-              <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+              <TooltipContent className="mb-0.5">
                 <p>Check List</p>
               </TooltipContent>
             </Tooltip>
@@ -588,7 +588,7 @@ function TextFormatFloatingToolbar({
                 />
               </button>
             </TooltipTrigger>
-            <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+            <TooltipContent className="mb-0.5">
               <p>Code Block</p>
             </TooltipContent>
           </Tooltip>
@@ -610,7 +610,7 @@ function TextFormatFloatingToolbar({
                 />
               </button>
             </TooltipTrigger>
-            <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+            <TooltipContent className="mb-0.5">
               <p>Inline Code</p>
             </TooltipContent>
           </Tooltip>
@@ -642,7 +642,7 @@ function TextFormatFloatingToolbar({
                 
               </button>
             </TooltipTrigger>
-            <TooltipContent className="dark:bg-black mb-0.5 dark:text-white">
+            <TooltipContent className="mb-0.5">
               <p>Link</p>
             </TooltipContent>
           </Tooltip>

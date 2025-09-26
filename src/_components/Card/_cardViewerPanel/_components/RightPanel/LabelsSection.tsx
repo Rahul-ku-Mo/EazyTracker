@@ -1,12 +1,10 @@
 import { X, MoreHorizontal } from "lucide-react";
 import {
-  LabelIcon,
-  LabelStartIcon,
+  LabelIcon
 } from "@/_components/shared/svg/SharedIcons";
 import { LabelDropdown } from "@/_components/shared/LabelDropdown";
 import { useCardMutation } from "../../../_mutations/useCardMutations";
 import { Label } from "@/apis/LabelApis";
-import { Button } from "@/components/ui/button";
 
 interface LabelsSectionProps {
   cardId: number;
@@ -29,10 +27,10 @@ export const LabelsSection = ({
   };
 
   return (
-    <div className="space-y-3 rounded-md p-2 dark:bg-[#101010]">
+    <div className="p-2 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <LabelIcon className="size-4 text-primary" />
+     
           <span className="text-xs font-medium text-primary">Labels</span>
         </div>
 
@@ -41,9 +39,7 @@ export const LabelsSection = ({
           action={updateCardMutation}
           cardId={cardId}
         >
-          <Button variant="ghost" className="w-fit h-fit p-1.5">
-            <MoreHorizontal />
-          </Button>
+          <MoreHorizontal className="size-4 cursor-pointer" />
         </LabelDropdown>
       </div>
 
@@ -54,7 +50,7 @@ export const LabelsSection = ({
               key={label.id}
               className="flex items-center gap-1 px-1.5 py-0.5 text-xs bg-muted/50 hover:bg-muted rounded-sm border border-border transition-colors dark:border-zinc-600 group"
             >
-              <LabelStartIcon className="size-3.5" color={label.color} />
+              <LabelIcon className="size-3.5" color={label.color} />
               <span className="text-xs font-medium">{label.name}</span>
               <X
                 strokeWidth={3}

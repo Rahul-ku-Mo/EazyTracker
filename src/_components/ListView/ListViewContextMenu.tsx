@@ -64,7 +64,7 @@ const ListViewContextMenu = ({
   const updateLabelForATicket = (label: string) => {
     updateCardMutation.mutate({
       cardId,
-      label,
+      labelId: label,
     });
   };
 

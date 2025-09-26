@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MoreHorizontal, X, User, AtSign, Mail } from "lucide-react";
+import { MoreHorizontal, X, AtSign, Mail } from "lucide-react";
 import { MemberIcon } from "@/_components/shared/svg/SharedIcons";
 import { useCardMutation } from "../../../_mutations/useCardMutations";
 import {
@@ -66,9 +66,9 @@ export const AssigneesDropdown = ({
   };
 
   return (
-    <div className="flex justify-between items-center rounded-md p-2 dark:bg-[#101010]">
+    <div className="flex justify-between items-center rounded-md p-2">
       <div className="flex items-center gap-2">
-        <MemberIcon strokeWidth={3} className="size-4 text-primary" />
+       
         <span className="text-xs font-medium text-primary">Assignee</span>
       </div>
       
@@ -112,7 +112,7 @@ export const AssigneesDropdown = ({
                   <div className="mt-3 space-y-2 text-xs">
                     {assignedMembers[0].name && (
                       <div className="flex items-center gap-2">
-                        <User className="size-3 text-muted-foreground" />
+                        <MemberIcon className="size-3 text-muted-foreground" />
                         <span className="truncate">{assignedMembers[0].name}</span>
                       </div>
                     )}

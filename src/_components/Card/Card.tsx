@@ -114,7 +114,7 @@ const CardDescription = ({
           "card-editor-view",
           "editor-readable-font !text-xs",
           "overflow-hidden",
-          "line-clamp-6",
+          "line-clamp-8",
           isCompleted && "line-through text-zinc-500 dark:text-zinc-400",
           "pointer-events-none"
         )}
@@ -288,7 +288,7 @@ const CardFooter = ({
                       {getPriorityIcon(priority, theme)}
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent className="rounded-sm bg-[#606060] dark:bg-black text-white dark:text-white">
+                  <TooltipContent>
                     <p className="capitalize text-xs">
                       {priority || "No priority"}
                     </p>
@@ -642,7 +642,7 @@ const CardFooter = ({
                 </div>
               </PopoverContent>
             </Popover>
-            <TooltipContent className="rounded-sm bg-[#606060] dark:bg-black text-white dark:text-white">
+            <TooltipContent>
               <p className="text-xs">{getDueDateDisplay().tooltipText}</p>
             </TooltipContent>
           </Tooltip>
@@ -668,7 +668,7 @@ const CardFooter = ({
                 )}
               </div>
             </TooltipTrigger>
-            <TooltipContent className="rounded-sm bg-[#606060] dark:bg-black text-white dark:text-white">
+            <TooltipContent>
               <p className="text-xs">
                 {status?.isCompleted ? "Mark incomplete" : "Mark complete"}
               </p>
