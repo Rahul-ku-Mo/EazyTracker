@@ -4,11 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "../../../components/ui/badge";
 import { Input } from "../../../components/ui/input";
 import { cn } from "../../../lib/utils";
-import { Label, fetchTeamLabels, createLabel } from "../../../apis/LabelApis";
 import { toggleCardLabel } from "../../../apis/CardApis";
 import { CardContext } from "../../../context/CardProvider";
-import { useAuthStore } from "../../../store/authStore";
 import { toast } from "../../../hooks/use-toast";
+import Cookies from "js-cookie";
 
 const LABEL_COLORS = [
   {
@@ -35,8 +34,7 @@ const LABEL_COLORS = [
 
 export const CardLabels = () => {
   const cardContext = useContext(CardContext);
-  const { accessToken, user } = useAuthStore();
-  const [availableLabels, setAvailableLabels] = useState<Label[]>([]);
+  const accessToken = Cookies.get("accessToken") || "";
   const [isAddingLabel, setIsAddingLabel] = useState(false);
   const [newLabel, setNewLabel] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,43 +43,16 @@ export const CardLabels = () => {
   // Get labels attached to the current card
   const cardLabels = cardContext?.labels || [];
 
-  // Load team labels
-  useEffect(() => {
-    const loadTeamLabels = async () => {
-      if (user?.teamId) {
-        try {
-          const labels = await fetchTeamLabels(user.teamId);
-          if (labels) {
-            setAvailableLabels(labels);
-          }
-        } catch (error) {
-          console.error("Failed to load team labels:", error);
-        }
-      }
-    };
-
-    loadTeamLabels();
-  }, [user?.teamId]);
-
   const handleAddLabel = async () => {
-    if (newLabel.trim() !== "" && user?.teamId) {
+    if (newLabel.trim() !== "" && cardContext?.id) {
       setLoading(true);
       try {
-        const randomColor = LABEL_COLORS[Math.floor(Math.random() * LABEL_COLORS.length)];
-        const createdLabel = await createLabel(user.teamId, {
-          name: newLabel.trim(),
-          color: randomColor.bg.includes("emerald") ? "#10B981" : 
-                randomColor.bg.includes("blue") ? "#3B82F6" :
-                randomColor.bg.includes("purple") ? "#8B5CF6" : "#F59E0B"
+        // Note: This would need a workspace ID. For now, we'll skip actual creation
+        // and just show a toast that this feature needs implementation
+        toast({
+          title: "Feature note",
+          description: "Label creation needs workspace context. Please use the label dropdown in the card panel.",
         });
-
-        if (createdLabel) {
-          setAvailableLabels(prev => [...prev, createdLabel]);
-          toast({
-            title: "Label created",
-            description: `Label "${createdLabel.name}" has been created successfully.`,
-          });
-        }
         setNewLabel("");
         setIsAddingLabel(false);
       } catch (error) {
@@ -140,9 +111,10 @@ export const CardLabels = () => {
         <AnimatePresence>
           {cardLabels.map((label) => {
             // Use the label's color if available, otherwise use a default based on name
+            const defaultStyle = LABEL_COLORS[label.name.length % LABEL_COLORS.length];
             const labelStyle = label.color 
               ? { backgroundColor: label.color + "20", color: label.color, borderColor: label.color + "40" }
-              : LABEL_COLORS[label.name.length % LABEL_COLORS.length];
+              : defaultStyle;
             
             return (
               <motion.div
@@ -161,9 +133,9 @@ export const CardLabels = () => {
                   variant="outline"
                   className={cn(
                     "h-6 px-2 flex items-center gap-1 font-normal border",
-                    !label.color && labelStyle.bg,
-                    !label.color && labelStyle.text,
-                    !label.color && labelStyle.border
+                    !label.color && defaultStyle.bg,
+                    !label.color && defaultStyle.text,
+                    !label.color && defaultStyle.border
                   )}
                   style={label.color ? labelStyle : undefined}
                 >

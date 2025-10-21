@@ -60,10 +60,10 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
     });
   };
 
-  const updateLabelForATicket = (label: string) => {
+  const updateLabelForATicket = (labelId: string) => {
     updateCardMutation.mutate({
       cardId: parseInt(cardId),
-      label,
+      labelId,
     });
   };
 

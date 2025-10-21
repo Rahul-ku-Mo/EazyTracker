@@ -36,6 +36,12 @@ type TNewProjectActionsProps = {
   setPriority: React.Dispatch<React.SetStateAction<string>>;
   status: string;
   setStatus: React.Dispatch<React.SetStateAction<string>>;
+  milestones?: any;
+  setMilestones?: (milestones: any) => void;
+  lead?: any;
+  setLead?: (lead: any) => void;
+  members?: any;
+  setMembers?: (members: any) => void;
 };
 
 // interface TeamMember {

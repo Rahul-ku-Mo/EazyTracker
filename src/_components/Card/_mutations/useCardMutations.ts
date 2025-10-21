@@ -64,7 +64,7 @@ export const useCardMutation = () => {
 
       data.columnId = columnId;
 
-      const updatedData = {
+      const updatedData: any = {
         ...(title !== undefined && { title }),
         ...(cardDescription !== undefined && { description: cardDescription }),
         ...(attachments !== undefined && { attachments }),

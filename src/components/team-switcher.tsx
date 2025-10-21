@@ -62,7 +62,7 @@ export function TeamSwitcher({ team }: { team?: Team }) {
   // Form states
   const [teamName, setTeamName] = React.useState(activeTeam?.name || "");
   const [isEditingName, setIsEditingName] = React.useState(false);
-  const [copied, setCopied] = React.useState(false);
+  const [, setCopied] = React.useState(false);
   const [teamPhoto, setTeamPhoto] = React.useState(
     activeTeam?.teamImageUrl || ""
   );
