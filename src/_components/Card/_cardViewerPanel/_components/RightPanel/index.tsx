@@ -2,6 +2,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { X, Share, Copy, Link } from "lucide-react";
 
 import { CardContext } from "@/context/CardProvider";
+import { KanbanContext } from "@/context/KanbanProvider";
 import { TCardContext } from "@/types/cardTypes";
 import { useContext } from "react";
 
@@ -45,7 +46,8 @@ const formatDate = (date?: Date | string | null) => {
 
 const RightPanel = () => {
   const cardDetails = useContext(CardContext);
-  const teamId = localStorage.getItem("teamId") || "";
+  const { workspace } = useContext(KanbanContext);
+  const workspaceId = workspace?.id;
   const {
     priority = "low",
     dueDate,
@@ -135,7 +137,7 @@ const RightPanel = () => {
           </div>
 
           {/* Labels Section */}
-          <LabelsSection cardId={cardId} labels={labels} teamId={teamId} />
+          <LabelsSection cardId={cardId} labels={labels} workspaceId={workspaceId} />
 
           {/* Assignees Section */}
           <AssigneesDropdown cardId={cardId} assignees={assignedMembers} />

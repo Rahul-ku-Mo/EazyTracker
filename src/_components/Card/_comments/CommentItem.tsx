@@ -140,7 +140,7 @@ export const CommentItem = ({
                       size="sm"
                       className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <MoreHorizontal className="w-3.5 h-3.5" />
+                      <MoreHorizontal className="size-3" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-36">
@@ -150,7 +150,7 @@ export const CommentItem = ({
                         onClick={handleReplyClick}
                         className="text-xs"
                       >
-                        <Reply className="w-3.5 h-3.5 mr-2" />
+                        <Reply className="size-3 mr-2" />
                         Reply
                       </DropdownMenuItem>
                     )}
@@ -162,7 +162,7 @@ export const CommentItem = ({
                         disabled={isSubmitting}
                         className="text-xs text-green-600 focus:text-green-600"
                       >
-                        <Check className="w-3.5 h-3.5 mr-2" />
+                        <Check className="size-3 mr-2" />
                         Resolve
                       </DropdownMenuItem>
                     ) : (
@@ -171,7 +171,7 @@ export const CommentItem = ({
                         disabled={isSubmitting}
                         className="text-xs text-orange-600 focus:text-orange-600"
                       >
-                        <RotateCcw className="w-3.5 h-3.5 mr-2" />
+                        <RotateCcw className="size-3 mr-2" />
                         Unresolve
                       </DropdownMenuItem>
                     )}
@@ -183,14 +183,14 @@ export const CommentItem = ({
                           onClick={handleEditClick}
                           className="text-xs"
                         >
-                          <Edit2 className="w-3.5 h-3.5 mr-2" />
+                          <Edit2 className="size-3 mr-2" />
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => onDelete(comment.id)}
                           className="text-xs text-destructive focus:text-destructive"
                         >
-                          <Trash2 className="w-3.5 h-3.5 mr-2" />
+                          <Trash2 className="size-3 mr-2" />
                           Delete
                         </DropdownMenuItem>
                       </>

@@ -102,16 +102,16 @@ const getNavigationData = (
 ) => {
   const baseNavigation = [
     {
-      title: "Workspaces",
-      url: `/workspace/${teamName || ""}`,
-      icon: WorkspaceIcon,
-      isActive: pathname.includes("/workspace"),
-    },
-    {
       title: "Projects",
       url: "/projects",
       icon: ProjectIcon,
       isActive: pathname.includes("/projects"),
+    },
+    {
+      title: "Workspaces",
+      url: `/workspace/${teamName || ""}`,
+      icon: WorkspaceIcon,
+      isActive: pathname.includes("/workspace"),
     },
     {
       title: "Inbox",

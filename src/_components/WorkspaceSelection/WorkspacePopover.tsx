@@ -8,7 +8,13 @@ import { useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { useFeatureGating } from "@/hooks/useFeatureGating";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import clsx from "clsx";
@@ -21,10 +27,10 @@ interface WorkspacePopoverProps {
 const WorkspacePopover = ({ count }: WorkspacePopoverProps) => {
   const { role } = useContext(AuthContext);
   const { getUpgradeMessage } = useFeatureGating();
-  
+
   const canCreateWorkspaces = count > 0;
   const isUnlimited = count === -1; // -1 indicates unlimited for Pro/Enterprise plans
-  
+
   // If user can't create more workspaces, show upgrade prompt instead of popover
   if (!canCreateWorkspaces && !isUnlimited) {
     return (
@@ -40,10 +46,13 @@ const WorkspacePopover = ({ count }: WorkspacePopoverProps) => {
         <CardContent className="pt-0 text-center">
           <CardTitle className="text-sm mb-1">Project Limit Reached</CardTitle>
           <CardDescription className="text-xs mb-3">
-            {getUpgradeMessage('projects')}
+            {getUpgradeMessage("projects")}
           </CardDescription>
           <Link to="/billing">
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-xs h-7">
+            <Button
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700 text-xs h-7"
+            >
               Upgrade
               <ArrowRight className="w-3 h-3 ml-1" />
             </Button>
@@ -52,34 +61,41 @@ const WorkspacePopover = ({ count }: WorkspacePopoverProps) => {
       </Card>
     );
   }
-  
+
   return (
     <Popover>
-      <PopoverTrigger asChild disabled={role !== "ADMIN" || (!canCreateWorkspaces && !isUnlimited)}>
-        <button 
+      <PopoverTrigger
+        asChild
+        disabled={role !== "ADMIN" || (!canCreateWorkspaces && !isUnlimited)}
+      >
+        <button
           className={clsx(
-            `relative flex flex-col items-center justify-center p-2 rounded-md cursor-pointer w-52 h-36 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-600 border border-zinc-200 dark:border-zinc-700 transition-all duration-200 ease-in-out`, 
-            role === "ADMIN" && canCreateWorkspaces && "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700",
-            (!canCreateWorkspaces && !isUnlimited) && "cursor-not-allowed opacity-50"
+            `relative flex flex-col items-center justify-center p-2 rounded-md cursor-pointer w-52 h-36 bg-zinc-100 dark:bg-[#18181b] hover:bg-zinc-200 dark:hover:bg-[#111211] border border-border transition-all duration-200 ease-in-out`,
+            role === "ADMIN" &&
+              canCreateWorkspaces &&
+              "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700",
+            !canCreateWorkspaces &&
+              !isUnlimited &&
+              "cursor-not-allowed opacity-50"
           )}
         >
           <PlusIcon className="w-8 h-8 mb-2 text-zinc-900 dark:text-white" />
-          <span className="text-sm font-bold text-zinc-900 dark:text-white">Create New Workspace</span>
-          <span className="text-xs font-medium text-zinc-600 dark:text-white">
+          <span className="text-sm font-bold text-zinc-900 dark:text-white">
+            New Workspace
+          </span>
+          <span className="text-xs font-medium tracking-wide text-muted-foreground dark:text-muted-foreground">
             {isUnlimited ? "Unlimited" : `${count} Remaining`}
           </span>
-          
+
           {role !== "ADMIN" && (
-            <div 
-              className="absolute inset-0 flex items-center justify-center dark:bg-black/80 bg-white/80 rounded-md opacity-0 hover:opacity-100 transition-opacity duration-200"
-            >
+            <div className="absolute inset-0 flex items-center justify-center dark:bg-black/80 bg-white/80 rounded-md opacity-0 hover:opacity-100 transition-opacity duration-200">
               <LockIcon className="w-8 h-8 dark:text-white text-black" />
             </div>
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent 
-        className="w-[20rem] p-2 bg-zinc-50 dark:bg-zinc-900 transition-colors duration-200" 
+      <PopoverContent
+        className="w-[20rem] transition-colors duration-200 p-0 rounded-md"
         align="start"
         side="right"
         sideOffset={5}
@@ -90,4 +106,4 @@ const WorkspacePopover = ({ count }: WorkspacePopoverProps) => {
   );
 };
 
-export default WorkspacePopover; 
+export default WorkspacePopover;

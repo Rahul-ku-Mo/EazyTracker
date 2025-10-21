@@ -298,7 +298,7 @@ export const AttachmentsSection = ({ slug }: AttachmentsSectionProps) => {
       )}
 
       {/* Attachments List */}
-      <div className="space-y-2">
+      <div className="space-y-2 max-h-[72px] overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center py-4">
             <Loader2 className="size-4 animate-spin text-muted-foreground" />

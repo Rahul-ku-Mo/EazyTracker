@@ -374,7 +374,7 @@ function FloatingLinkEditor({
               setIsLinkEditMode(true);
             }}
           >
-            <LinkIcon className="w-3.5 h-3.5 shrink-0 opacity-70 -rotate-45" />
+            <LinkIcon className="size-3 shrink-0 opacity-70 -rotate-45" />
             <span className="truncate">{linkUrl}</span>
           </div>
           <div className="flex items-center gap-1">

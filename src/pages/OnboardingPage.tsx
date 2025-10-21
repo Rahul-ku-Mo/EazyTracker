@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+
 import Cookies from "js-cookie";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AuthContext } from "@/context/AuthContext";
@@ -27,7 +27,8 @@ import {
   LogOut,
 } from "lucide-react";
 import clsx from "clsx";
-import { generateCapitalizedDashedSlug } from "@/utils";
+import { generateCapitalizedDashedSlug, setInLocalStorage } from "@/utils";
+import { api } from "@/lib/api";
 
 // Animation variants
 const containerVariants = {
@@ -61,8 +62,6 @@ const Onboarding = () => {
   const queryClient = useQueryClient();
   const { setIsLoggedIn } = useContext(AuthContext);
 
-  const token = Cookies.get("accessToken");
-
   const handleLogout = (): void => {
     Cookies.remove("accessToken");
     setIsLoggedIn(false);
@@ -73,21 +72,12 @@ const Onboarding = () => {
   const { isLoading: isCheckingOnboarding } = useQuery({
     queryKey: ["onboarding"],
     queryFn: async () => {
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/auth/onboarding`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await api.get("/auth/onboarding");
 
-      const { needsOnboarding, isAdmin, team } = response.data;
+      const { needsOnboarding, isAdmin } = response.data;
 
       if (!needsOnboarding) {
-        // Already onboarded, redirect to workspaces
-        const generalizedTeamName = generateCapitalizedDashedSlug(team.name);
-        navigate(`/workspace/${generalizedTeamName}`);
+        navigate(`/projects`);
         return null;
       }
 
@@ -98,15 +88,7 @@ const Onboarding = () => {
 
   const createTeamMutation = useMutation({
     mutationFn: async () => {
-      return axios.post(
-        `${import.meta.env.VITE_API_URL}/teams`,
-        { name: teamName },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      return api.post("/teams", { name: teamName });
     },
     onSuccess: (response) => {
       // Redirect to workspace after team creation
@@ -114,7 +96,11 @@ const Onboarding = () => {
         const generalizedTeamName = generateCapitalizedDashedSlug(
           response.data.data.name
         );
-        window.location.href = `/workspace/${generalizedTeamName}`;
+
+        setInLocalStorage("teamName", generalizedTeamName);
+        setInLocalStorage("teamId", response.data.data.id);
+
+        window.location.href = `/projects`;
       }
     },
     onError: (error) => {
@@ -125,15 +111,7 @@ const Onboarding = () => {
 
   const joinTeamMutation = useMutation({
     mutationFn: async () => {
-      return axios.post(
-        `${import.meta.env.VITE_API_URL}/teams/join`,
-        { code: joinCode },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      return api.post("/teams/join", { code: joinCode });
     },
     onSuccess: (response) => {
       // Redirect to workspace after joining team
@@ -141,8 +119,12 @@ const Onboarding = () => {
         const generalizedTeamName = generateCapitalizedDashedSlug(
           response.data.data.name
         );
+
+        setInLocalStorage("teamName", generalizedTeamName);
+        setInLocalStorage("teamId", response.data.data.id);
+
         console.log("Team joined:", response.data.data.id);
-        window.location.href = `/workspace/${generalizedTeamName}`;
+        window.location.href = `/projects`;
       }
     },
     onError: (error) => {

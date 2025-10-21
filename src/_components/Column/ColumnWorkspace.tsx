@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useContext, useMemo } from "react";
-import { useParams } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -86,14 +85,13 @@ const ExpandAddColumnButton = ({ onClick }: ExpandAddColumnButtonProps) => {
 };
 
 const ColumnWorkspace = ({ title, headerChildren }: ColumnWorkspaceProps) => {
-  const { slug } = useParams();
-  const teamId = localStorage.getItem("teamId");
-  // Handle both new teamId + slug pattern and legacy slug pattern
-  const workspaceId = teamId && slug && `${teamId}/${slug}`;
-  const { columns } = useContext(KanbanContext);
+  const { columns, workspaceId } = useContext(KanbanContext);
   const { view, toggleView } = useStore(useToggleViewStore);
   const { viewOptions, isPanelOpen, updateViewOptions, openPanel, closePanel } =
     useViewOptionsStore();
+
+  // Extract teamId from workspaceId (format: "teamId/slug")
+  const teamId = workspaceId?.split("/")?.[0];
 
   const inputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
@@ -107,12 +105,6 @@ const ColumnWorkspace = ({ title, headerChildren }: ColumnWorkspaceProps) => {
 
   const createColumnMutation = useMutation({
     mutationFn: (title: string) => createColumn(title, workspaceId as string),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["columns", "workspaces", workspaceId],
-      });
-      toast.success("Column created successfully!");
-    },
     onError: () => {
       toast.error("Something went wrong while creating the column");
     },
@@ -129,25 +121,24 @@ const ColumnWorkspace = ({ title, headerChildren }: ColumnWorkspaceProps) => {
       columnId: number;
       order: number;
     }) => {
-      await updateCardColumn( cardId, columnId, order);
-      
+      await updateCardColumn(cardId, columnId, order);
     },
     onMutate: async ({ cardId, columnId, order }) => {
       // Cancel any outgoing refetches to prevent race conditions
       await queryClient.cancelQueries({
-        queryKey: ["columns", "workspaces", workspaceId],
+        queryKey: ["columns", "workspaces", teamId],
       });
 
       // Snapshot the previous value for rollback
       const previousColumns = queryClient.getQueryData([
         "columns",
         "workspaces",
-        workspaceId,
+        teamId,
       ]);
 
       // Optimistically update the cache for immediate UI feedback
       queryClient.setQueryData(
-        ["columns", "workspaces", workspaceId],
+        ["columns", "workspaces", teamId],
         (old: any) => {
           if (!old || !Array.isArray(old)) return old;
 
@@ -200,11 +191,11 @@ const ColumnWorkspace = ({ title, headerChildren }: ColumnWorkspaceProps) => {
       // Rollback to previous state on error
       if (context?.previousColumns) {
         queryClient.setQueryData(
-          ["columns", "workspaces", workspaceId],
+          ["columns", "workspaces", teamId],
           context.previousColumns
         );
       }
-    }
+    },
   });
 
   // Apply view options to columns for Kanban view - Enhanced logic

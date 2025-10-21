@@ -13,8 +13,9 @@ export interface Plan {
   features: string[];
   limits: {
     projects: number;
+    workspacesPerProject: number;
     members: number;
-    tasksPerProject: number;
+    cardsPerWorkspace: number;
     storageGB: number;
     activityHistoryDays: number;
   };
@@ -143,7 +144,8 @@ export const getUsageStatistics = async (): Promise<any> => {
     return {
       members: { current: 0, limit: null },
       projects: { current: 0, limit: null },
-      tasksPerProject: { current: 0, limit: null },
+      workspacesPerProject: { current: null, limit: null },
+      cardsPerWorkspace: { current: 0, limit: null },
       storageUsed: { current: 0, limit: null },
     };
   }

@@ -4,28 +4,14 @@ export interface Label {
   id: string;
   name: string;
   color?: string;
-  teamId: string;
+  workspaceId: number;
   createdAt?: string;
   updatedAt?: string;
 }
 
-// Fetch labels for a team
-export const fetchTeamLabels = async (
-  teamId: string
-): Promise<Label[] | undefined> => {
-  try {
-    const response = await api.get(`/labels/team/${teamId}`);
-
-    return response.data.data;
-  } catch (err) {
-    console.log(err);
-    return undefined;
-  }
-};
-
-// Fetch labels used in a workspace
+// Fetch labels for a workspace
 export const fetchWorkspaceLabels = async (
-  workspaceId: string
+  workspaceId: string | number
 ): Promise<Label[] | undefined> => {
   try {
     const response = await api.get(`/labels/workspace/${workspaceId}`);
@@ -37,13 +23,13 @@ export const fetchWorkspaceLabels = async (
   }
 };
 
-// Create a new label for a team
+// Create a new label for a workspace
 export const createLabel = async (
-  teamId: string,
+  workspaceId: string | number,
   data: { name: string; color?: string }
 ): Promise<Label | undefined> => {
   try {
-    const response = await api.post(`/labels/team/${teamId}`, data);
+    const response = await api.post(`/labels/workspace/${workspaceId}`, data);
 
     return response.data.data;
   } catch (e) {

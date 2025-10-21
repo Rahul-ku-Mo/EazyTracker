@@ -10,9 +10,9 @@ import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Lock, Eye, Info, MoreHorizontal } from "lucide-react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { getTeamWorkspaces } from "@/apis/TeamApis";
+import { toggleWorkspaceFavorite } from "@/apis/WorkspaceApis";
 
 import { WorkspaceContextMenu } from "./WorkspaceContextMenu";
 import { useState } from "react";
@@ -22,15 +22,22 @@ import InviteWorkspaceDialog from "./InviteWorkspaceDialog";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { WorkspaceIcon } from "../shared/svg/SidebarIcons";
 import { AccessLevelIcon } from "../shared/svg/SharedIcons";
+import useProjectSlugStore from "@/store/projectSlugStore";
 
 interface Workspace {
-  id: string;
+  id: number;
   title: string;
   slug?: string;
   colorId: string;
   colorValue: string;
   colorName: string;
   isFavorite?: boolean;
+  project: {
+    id: string;
+    title: string;
+    slug: string;
+  };
+  projectId: string;
 }
 
 interface TeamWorkspace {
@@ -43,13 +50,22 @@ interface TeamWorkspace {
   userRole: string | null;
   isOwner: boolean;
   createdBy: string;
+  projectId: string;
+  project: {
+    id: string;
+    title: string;
+    slug: string;
+  };
 }
 
 const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const accessToken = Cookies.get("accessToken");
+
+  const teamId = localStorage.getItem("teamId") || "";
+
+  const { updateCurrentProjectSlug} = useProjectSlugStore();
 
   const [isOpenDeleteWorkspaceDialog, setIsOpenDeleteWorkspaceDialog] =
     useState(false);
@@ -68,19 +84,13 @@ const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
 
   // Favorite mutation with optimistic updates
   const favoriteMutation = useMutation({
-    mutationFn: async (workspaceId: string) => {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/workspaces/${workspaceId}/favorite`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      return response.data;
+    mutationFn: async (workspaceIdentifier: string) => {
+      return await toggleWorkspaceFavorite(workspaceIdentifier);
     },
-    onMutate: async (workspaceId: string) => {
+    onMutate: async () => {
+      // Extract workspaceId from identifier for optimistic update
+      const workspaceId = workspace.id;
+      
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["workspaces"] });
       await queryClient.cancelQueries({ queryKey: ["favoriteWorkspaces"] });
@@ -111,7 +121,7 @@ const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
       queryClient.invalidateQueries({ queryKey: ["favoriteWorkspaces"] });
     },
-    onError: (error: any, _workspaceId: string, context: any) => {
+    onError: (error: any, _variables, context: any) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       queryClient.setQueryData(["workspaces"], context?.previousWorkspaces);
       queryClient.setQueryData(
@@ -122,7 +132,7 @@ const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
       toast({
         title: "Error",
         description:
-          error.response?.data?.message || "Failed to update favorite status",
+          error.message || "Failed to update favorite status",
         variant: "destructive",
       });
     },
@@ -146,6 +156,8 @@ const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
     if (workspace.slug) {
       const teamName = localStorage.getItem("teamName");
 
+      updateCurrentProjectSlug(workspace?.project.slug);
+
       navigate(`/workspace/${teamName}/${workspace.slug}`);
     }
   };
@@ -160,7 +172,9 @@ const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
 
   const handleToggleFavorite = (e?: React.MouseEvent) => {
     e?.stopPropagation(); // Prevent opening the workspace
-    favoriteMutation.mutate(workspace.id);
+    if (workspace.slug) {
+      favoriteMutation.mutate(`${teamId}/${workspace.slug}`);
+    }
   };
 
   return (
@@ -218,8 +232,8 @@ const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
                 </button>
               </div>
               <CardFooter className="p-0">
-                <span className="text-xs font-medium text-white/20">
-                  {workspace.colorName}
+                <span className="text-xs font-medium text-white/20 line-clamp-1">
+                  {workspace.project.title}
                 </span>
               </CardFooter>
             </div>
@@ -230,15 +244,15 @@ const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
       <InviteWorkspaceDialog
         isOpen={isOpenInviteWorkspaceDialog}
         onClose={closeInviteWorkspaceDialog}
-        id={workspace.id}
+        workspaceSlug={workspace.slug || ""}
       />
 
-      <DeleteDialog
+      <DeleteDialog<string>
         closeModal={closeDeleteWorkspaceDialog}
         isOpen={isOpenDeleteWorkspaceDialog}
         deleteItem={deleteWorkspaceMutation}
         title={workspace.title}
-        id={workspace.id}
+        id={`${teamId}/${workspace.slug}`}
       />
     </>
   );
@@ -418,13 +432,15 @@ const WorkspaceSelection = () => {
                   <WorkspaceCard
                     key={`team-${workspace.id}`}
                     workspace={{
-                      id: workspace.id.toString(),
+                      id: workspace.id,
                       title: workspace.title,
-                      slug: workspace.slug, // Include slug for navigation
-                      colorId: "", // Team workspaces don't have colorId
+                      slug: workspace.slug,
+                      colorId: "",
                       colorValue: workspace.colorValue,
                       colorName: workspace.colorName,
                       isFavorite: false,
+                      project: workspace.project,
+                      projectId: workspace.projectId,
                     }}
                   />
                 ))}

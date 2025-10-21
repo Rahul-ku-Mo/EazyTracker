@@ -1,3 +1,4 @@
+import { api } from "@/lib/api";
 import axios from "axios";
 import Cookies from "js-cookie";
 
@@ -142,11 +143,7 @@ export const toggleUserStatus = async (userId: string, isActive: boolean) => {
 // Get team workspaces (both accessible and locked)
 export const getTeamWorkspaces = async () => {
   try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/teams/workspaces`,
-      {
-        headers: getAuthHeaders(),
-      }
+    const response = await api.get(`/teams/workspaces`
     );
 
     if (response.status === 200) {

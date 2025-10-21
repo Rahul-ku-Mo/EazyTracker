@@ -4,7 +4,7 @@ import { fetchColumn, fetchColumns } from "../apis/ColumnApis";
 
 import { fetchWorkspaces, fetchWorkspace } from "../apis/WorkspaceApis";
 import { fetchUserProfile, fetchUsers } from "../apis/userApis";
-import { fetchTeamLabels, fetchWorkspaceLabels } from "../apis/LabelApis";
+import {  fetchWorkspaceLabels } from "@/apis/LabelApis";
 
 import { fetchNotifications } from "../apis/NotificationApis";
 
@@ -68,13 +68,6 @@ const useUsers = (accessToken: string) => {
   });
 };
 
-const useTeamLabels = (teamId: string) => {
-  return useQuery({
-    queryKey: ["labels", "team", teamId],
-    queryFn: async () => await fetchTeamLabels(teamId),
-    enabled: !!teamId,
-  });
-};
 
 const useWorkspaceLabels = (workspaceId: string) => {
   return useQuery({
@@ -102,7 +95,6 @@ export {
   useWorkspaces,
   useUser,
   useUsers,
-  useTeamLabels,
   useWorkspaceLabels,
   useNotifications,
 };

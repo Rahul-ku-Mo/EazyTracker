@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createLabel, fetchTeamLabels } from "@/apis/LabelApis";
+import { createLabel, fetchWorkspaceLabels } from "@/apis/LabelApis";
 import { LabelIcon, LabelStartIcon } from "./svg/SharedIcons";
 import { Plus, Check, ArrowLeft } from "lucide-react";
 
@@ -45,12 +45,12 @@ type ViewState = "list" | "create" | "colorPicker";
 
 export function LabelDropdown({
   children,
-  teamId,
+  workspaceId,
   action,
   cardId,
 }: {
   children: ReactNode;
-  teamId: string;
+  workspaceId: string | number;
   action: any;
   cardId?: number;
 }) {
@@ -60,21 +60,21 @@ export function LabelDropdown({
   const [selectedColor, setSelectedColor] = useState(LABEL_COLORS[0]);
   const [searchValue, setSearchValue] = useState("");
 
-  const { data: labels } = useQuery({
-    queryKey: ["Labels", teamId],
-    queryFn: async () => fetchTeamLabels(teamId),
-    enabled: !!teamId,
+  const { data: labels, refetch } = useQuery({
+    queryKey: ["Labels", workspaceId],
+    queryFn: async () => fetchWorkspaceLabels(workspaceId),
+    enabled: !!workspaceId,
   });
-
 
   const createLabelMutation = useMutation({
     mutationFn: async (labelData: { name: string; color: string }) =>
-      await createLabel(teamId, labelData),
+      await createLabel(workspaceId, labelData),
     onSuccess: () => {
       setViewState("list");
       setNewLabelName("");
       setSelectedColor(LABEL_COLORS[0]);
       setSearchValue("");
+      refetch()
     },
   });
 
@@ -126,47 +126,49 @@ export function LabelDropdown({
             </Button>
           </div>
         </CommandEmpty>
-        <CommandGroup>
-          {filteredLabels?.map((label) => (
-            <CommandItem
-              key={label.id}
-              value={label.name}
-              onSelect={() => {
-                if (cardId && action) {
-                  action.mutate({
-                    cardId,
-                    labelId: label.id,
-                  });
-                } else {
-                  action((prev: any) => [...prev, label]); // action is a setState function
-                }
+        {filteredLabels && filteredLabels.length > 0 && (
+          <CommandGroup>
+            {filteredLabels?.map((label) => (
+              <CommandItem
+                key={label.id}
+                value={label.name}
+                onSelect={() => {
+                  if (cardId && action) {
+                    action.mutate({
+                      cardId,
+                      labelId: label.id,
+                    });
+                  } else {
+                    action((prev: any) => [...prev, label]); // action is a setState function
+                  }
 
-                setOpen(false);
-                resetToList();
-              }}
-              className="flex items-center gap-2 px-3 py-2 text-xs"
-            >
-              <LabelStartIcon color={label.color} />
-              {label.name}
-            </CommandItem>
-          ))}
-          {labels && labels.length > 0 && (
-            <CommandItem
-              onSelect={() => setViewState("create")}
-              className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground"
-            >
-              <Plus className="h-3 w-3" />
-              Create new label
-            </CommandItem>
-          )}
-        </CommandGroup>
+                  setOpen(false);
+                  resetToList();
+                }}
+                className="flex items-center gap-2 px-3 py-2 text-xs"
+              >
+                <LabelStartIcon color={label.color} />
+                {label.name}
+              </CommandItem>
+            ))}
+            {labels && labels.length > 0 && (
+              <CommandItem
+                onSelect={() => setViewState("create")}
+                className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground"
+              >
+                <Plus className="h-3 w-3" />
+                Create new label
+              </CommandItem>
+            )}
+          </CommandGroup>
+        )}
       </CommandList>
     </>
   );
 
   const renderCreateView = () => (
     <div className="p-1.5">
-      <div className="flex items-center gap-2 pb-2 border-b border-border">
+      <div className="flex items-center gap-2 pb-0.5 border-b border-border">
         <Button
           variant="ghost"
           size="sm"

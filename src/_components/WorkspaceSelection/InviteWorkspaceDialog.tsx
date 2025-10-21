@@ -15,14 +15,15 @@ import { Input } from "@/components/ui/input";
 interface InviteWorkspaceDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  id: string;
+  workspaceSlug: string;
 }
 
-const InviteWorkspaceDialog = ({ isOpen, onClose, id }: InviteWorkspaceDialogProps) => {
+const InviteWorkspaceDialog = ({ isOpen, onClose, workspaceSlug }: InviteWorkspaceDialogProps) => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const accessToken = Cookies.get("accessToken") || "";
+  const teamId = localStorage.getItem("teamId") || "";
 
   const handleInvite = async () => {
     if (!email) {
@@ -39,7 +40,7 @@ const InviteWorkspaceDialog = ({ isOpen, onClose, id }: InviteWorkspaceDialogPro
       // Replace this with your actual API call
 
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/workspaces/${id}/members`,
+        `${import.meta.env.VITE_API_URL}/workspaces/${teamId}/${workspaceSlug}/members`,
         {
           email,
         },

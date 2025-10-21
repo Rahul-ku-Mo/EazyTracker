@@ -24,13 +24,8 @@ import {
 } from "@/_components/shared/svg/SharedIcons";
 import { updateMilestoneCompletion } from "@/apis/project";
 import { cn } from "@/lib/utils";
+import { MilestoneItem } from "@/apis/project";
 
-// Interface for milestone item
-interface MilestoneItem {
-  id: string;
-  milestoneValue: string;
-  isCompletedMilestone: boolean;
-}
 
 // Props for external state management
 interface MilestoneProps {
@@ -56,7 +51,7 @@ const SortableMilestoneItem = ({
   readOnly?: boolean;
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(item.milestoneValue);
+  const [editValue, setEditValue] = useState(item.title);
 
   const {
     attributes,
@@ -74,7 +69,7 @@ const SortableMilestoneItem = ({
   };
 
   const handleEdit = () => {
-    if (onEdit && editValue.trim() !== item.milestoneValue) {
+    if (onEdit && editValue.trim() !== item.title) {
       onEdit(item.id, editValue.trim());
     }
     setIsEditing(false);
@@ -84,14 +79,14 @@ const SortableMilestoneItem = ({
     if (e.key === "Enter") {
       handleEdit();
     } else if (e.key === "Escape") {
-      setEditValue(item.milestoneValue);
+      setEditValue(item.title);
       setIsEditing(false);
     }
   };
 
   const handleToggleComplete = () => {
     if (onToggleComplete && !readOnly) {
-      onToggleComplete(item.id, !item.isCompletedMilestone);
+      onToggleComplete(item.id, item.status === 'COMPLETE');
     }
   };
 
@@ -115,7 +110,7 @@ const SortableMilestoneItem = ({
           className="cursor-pointer" 
           onClick={handleToggleComplete}
         >
-          {item.isCompletedMilestone ? (
+          {item.status === 'COMPLETE' ? (
             <TargetCompleteIcon className="size-2.5 text-emerald-500" />
           ) : (
             <TargetIcon className="size-2.5" />
@@ -132,10 +127,10 @@ const SortableMilestoneItem = ({
           />
         ) : (
           <span
-            className={`text-xs font-semibold cursor-pointer hover:bg-accent/20 px-1 py-0.5 rounded ${item.isCompletedMilestone ? 'line-through text-muted-foreground !text-emerald-500' : ''}`}
+            className={`text-xs font-semibold cursor-pointer hover:bg-accent/20 px-1 py-0.5 rounded ${item.status === 'COMPLETE' ? 'line-through text-muted-foreground !text-emerald-500' : ''}`}
             onClick={() => !readOnly && onEdit && setIsEditing(true)}
           >
-            {item.milestoneValue}
+            {item.title}
           </span>
         )}
       </div>
@@ -162,9 +157,9 @@ const Milestone = ({
   // Internal state for standalone mode
   const [internalMilestones, setInternalMilestones] = useState<MilestoneItem[]>(
     [
-      { id: "1", milestoneValue: "Initial milestone", isCompletedMilestone: false },
-      { id: "2", milestoneValue: "Development phase", isCompletedMilestone: false },
-      { id: "3", milestoneValue: "Testing phase", isCompletedMilestone: false },
+      { id: "1", title: "Initial milestone", status: 'INCOMPLETE' },
+      { id: "2", title: "Development phase", status: 'INCOMPLETE' },
+      { id: "3", title: "Testing phase", status: 'INCOMPLETE' },
     ]
   );
 
@@ -204,8 +199,8 @@ const Milestone = ({
 
     const newMilestone: MilestoneItem = {
       id: `milestone-${Date.now()}`,
-      milestoneValue: `New milestone ${milestones.length + 1}`,
-      isCompletedMilestone: false,
+      title: `New milestone ${milestones.length + 1}`,
+      status: 'INCOMPLETE',
     };
     setMilestones([...milestones, newMilestone]);
   };
@@ -221,7 +216,7 @@ const Milestone = ({
 
     setMilestones(
       milestones.map((milestone) =>
-        milestone.id === id ? { ...milestone, milestoneValue: newName } : milestone
+        milestone.id === id ? { ...milestone, title: newName } : milestone
       )
     );
   };
@@ -232,7 +227,7 @@ const Milestone = ({
     // Update local state immediately for optimistic UI
     setMilestones(
       milestones.map((milestone) =>
-        milestone.id === id ? { ...milestone, isCompletedMilestone: isCompleted } : milestone
+        milestone.id === id ? { ...milestone, status: isCompleted ? 'COMPLETE' : 'INCOMPLETE' } : milestone
       )
     );
 
@@ -245,7 +240,7 @@ const Milestone = ({
         // Revert the optimistic update on error
         setMilestones(
           milestones.map((milestone) =>
-            milestone.id === id ? { ...milestone, isCompletedMilestone: !isCompleted } : milestone
+            milestone.id === id ? { ...milestone, status: isCompleted ? 'COMPLETE' : 'INCOMPLETE' } : milestone
           )
         );
       }

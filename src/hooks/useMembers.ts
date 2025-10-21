@@ -1,23 +1,22 @@
 import { api } from "@/lib/api";
+import useProjectSlugStore from "@/store/projectSlugStore";
 import { useQuery } from "@tanstack/react-query";
 
-import { useParams } from "react-router-dom";
-
 export const useMembers = () => {
-
   const teamId = localStorage.getItem("teamId");
 
-  const { slug } = useParams();
+  const { currentProjectSlug: projectSlug } = useProjectSlugStore();
+
 
   const { data: members, isPending } = useQuery({
     queryKey: ["members", teamId],
     queryFn: async () => {
       try {
-        const response = await api.get(`/workspaces/${teamId}/${slug}/members`)
+        const response = await api.get(`/projects/${projectSlug}`)
         // Transform the data to flatten the user object
-        const membersData = response.data.data;
+        const membersData = response.data.data.members;
+
         return membersData
-          .filter((member: any) => member && member.user) // Filter out invalid members
           .map((member: any) => ({
             id: member.user.id,
             name: member.user.name || 'Unknown User',
@@ -30,22 +29,10 @@ export const useMembers = () => {
         throw new Error(err.response.data.message);
       }
     },
+    enabled: !!projectSlug
   });
 
   return { members, isPending };
 };
 
 
-export const useTeamMemberAndDetails = () => {
-
-  const { data, isPending } = useQuery({
-    queryKey: ["teams", "members"],
-    queryFn: async () => {
-      const response = await api.get(`/teams/members`)
-      return response.data.data
-    }
-  })
-
-
-  return { data, isPending }
-}

@@ -8,7 +8,7 @@ import {
 
 export const MemberAvatars = ({ members }: { members: any[] }) => (
   <div className="flex -space-x-2">
-    {members.map((member, i) => (
+    {members?.map((member, i) => (
       <div
         key={i}
         className="w-7 h-7 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-bold"

@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MoreHorizontal, X, Mail } from "lucide-react";
 import { MemberIcon } from "@/_components/shared/svg/SharedIcons";
@@ -178,9 +178,8 @@ export const AssigneesDropdown = ({
       ) : (
         <DropdownMenu open={open} onOpenChange={setOpen}>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="w-fit h-fit p-1.5">
-              <MoreHorizontal />
-            </Button>
+              <MoreHorizontal className="size-4 cursor-pointer" />
+           
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[220px]">
             <DropdownMenuLabel className="flex items-center gap-2">

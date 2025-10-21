@@ -404,7 +404,7 @@ export const CommentLexicalEditor = ({
                 )}
               >
                 {isSubmitting ? (
-                  <div className="w-3.5 h-3.5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                  <div className="size-3 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                 ) : (
                   <SendIcon className="size-3.5" />
                 )}

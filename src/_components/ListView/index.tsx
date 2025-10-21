@@ -55,6 +55,7 @@ import { DateCreatedIcon } from "../shared/svg/ViewOptionsIcons";
 import { ViewOptions } from "@/store/useViewOptionsStore";
 import { EmptyIcon } from "../shared/svg/SharedIcons";
 import { ProjectIcon } from "../shared/svg/SidebarIcons";
+import useProjectSlugStore from "@/store/projectSlugStore";
 
 interface CardItem {
   id: number;
@@ -112,7 +113,8 @@ const ListView = ({
   const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { slug } = useParams();
-  const { members: hookMembers } = useMembers();
+  const { currentProjectSlug } = useProjectSlugStore();
+  const { members: hookMembers } = useMembers(currentProjectSlug);
   const { updateCardMutation } = useCardMutation();
   const queryClient = useQueryClient();
   const { theme } = useTheme();

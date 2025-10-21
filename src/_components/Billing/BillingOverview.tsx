@@ -41,12 +41,14 @@ import {
 const planIcons = {
   free: Zap,
   pro: ProBillingIcon,
+  team: CrownBillingIcon,
   enterprise: CrownBillingIcon,
 };
 
 const planColors = {
   free: "text-gray-500 dark:text-gray-400",
   pro: "text-blue-500 dark:text-blue-400",
+  team: "text-indigo-500 dark:text-indigo-400",
   enterprise: "text-purple-500 dark:text-purple-400",
 };
 
@@ -132,9 +134,11 @@ export const BillingOverview: React.FC = () => {
                   "w-10 h-10 rounded-lg flex items-center justify-center",
                   currentPlan === "pro"
                     ? "bg-blue-100 dark:bg-blue-900/30"
-                    : currentPlan === "enterprise"
-                      ? "bg-purple-100 dark:bg-purple-900/30"
-                      : "bg-gray-100 dark:bg-gray-800"
+                    : currentPlan === "team"
+                      ? "bg-indigo-100 dark:bg-indigo-900/30"
+                      : currentPlan === "enterprise"
+                        ? "bg-purple-100 dark:bg-purple-900/30"
+                        : "bg-gray-100 dark:bg-gray-800"
                 )}
               >
                 <PlanIcon
@@ -147,7 +151,9 @@ export const BillingOverview: React.FC = () => {
                     ? "Free Trial"
                     : currentPlan === "pro"
                       ? "Professional"
-                      : "Enterprise"}{" "}
+                      : currentPlan === "team"
+                        ? "Team"
+                        : "Enterprise"}{" "}
                   Plan
                 </CardTitle>
                 <CardDescription className="text-gray-600 dark:text-gray-400">
@@ -168,7 +174,7 @@ export const BillingOverview: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <TotalWorkspaceIcon className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                 <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">
-                  Workspaces
+                  Projects
                 </CardTitle>
               </div>
               {usageStats.usage.projects.limit !== null &&
@@ -264,12 +270,12 @@ export const BillingOverview: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <MaxTaskIcon className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
                 <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">
-                  Max Tasks/Workspace
+                  Max Cards/Workspace
                 </CardTitle>
               </div>
-              {usageStats.usage.tasksPerProject?.limit !== null &&
-                usageStats.usage.tasksPerProject?.current >=
-                  usageStats.usage.tasksPerProject?.limit && (
+              {usageStats.usage.cardsPerWorkspace?.limit !== null &&
+                usageStats.usage.cardsPerWorkspace?.current >=
+                  usageStats.usage.cardsPerWorkspace?.limit && (
                   <AlertTriangle className="w-4 h-4 text-red-500" />
                 )}
             </div>
@@ -281,23 +287,23 @@ export const BillingOverview: React.FC = () => {
                   className={cn(
                     "text-2xl font-bold",
                     getUsageColor(
-                      usageStats.usage.tasksPerProject?.current || 0,
-                      usageStats.usage.tasksPerProject?.limit || null
+                      usageStats.usage.cardsPerWorkspace?.current || 0,
+                      usageStats.usage.cardsPerWorkspace?.limit || null
                     )
                   )}
                 >
-                  {usageStats.usage.tasksPerProject?.current || 0}
+                  {usageStats.usage.cardsPerWorkspace?.current || 0}
                 </span>
                 <span className="text-sm text-gray-500 dark:text-gray-400">
                   of{" "}
-                  {formatLimit(usageStats.usage.tasksPerProject?.limit || null)}
+                  {formatLimit(usageStats.usage.cardsPerWorkspace?.limit || null)}
                 </span>
               </div>
-              {usageStats.usage.tasksPerProject?.limit !== null && (
+              {usageStats.usage.cardsPerWorkspace?.limit !== null && (
                 <Progress
                   value={getUsagePercentage(
-                    usageStats.usage.tasksPerProject?.current || 0,
-                    usageStats.usage.tasksPerProject?.limit || null
+                    usageStats.usage.cardsPerWorkspace?.current || 0,
+                    usageStats.usage.cardsPerWorkspace?.limit || null
                   )}
                   className="h-2"
                 />
@@ -365,10 +371,10 @@ export const BillingOverview: React.FC = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {usageStats.usage.totalTasks?.current || 0}
+                  {usageStats.usage.totalCards?.current || 0}
                 </span>
                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                  tasks created
+                  cards created
                 </span>
               </div>
             </div>

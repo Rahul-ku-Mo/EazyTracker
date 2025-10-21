@@ -52,11 +52,11 @@ const BillingPage: React.FC = () => {
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
-          <TabsTrigger value="overview" className="flex items-center space-x-2">
+          <TabsTrigger value="overview" className="flex items-center gap-2">
             <CreditCard className="w-4 h-4" />
             <span>Billing</span>
           </TabsTrigger>
-          <TabsTrigger value="plans" className="flex items-center space-x-2">
+          <TabsTrigger value="plans" className="flex items-center gap-2">
             <Package className="w-4 h-4" />
             <span>Plans</span>
           </TabsTrigger>

@@ -25,8 +25,9 @@ export const createColumn = async (
       title: title,
     })
 
+
     if (response.data.data && response.status === 201) {
-      toast.success(`${title} created successfully`);
+
       return response.data.data;
     }
     return undefined;
@@ -42,7 +43,7 @@ export const fetchColumns = async (
 ): Promise<Column[] | undefined> => {
   try {
     const [teamId, slug] = workspaceId.split('/');
- 
+
     const response = await api.get(`/columns/${teamId}/${slug}`)
 
     if (response.data.data && response.status === 200) {

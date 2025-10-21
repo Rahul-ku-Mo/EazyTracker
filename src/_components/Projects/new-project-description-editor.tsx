@@ -114,7 +114,7 @@ export const NewProjectDescriptionEditor = ({
   };
 
   return (
-    <div className="relative px-4 flex-1">
+    <div className="relative px-4 flex-1 overflow-y-auto">
       <LexicalComposer initialConfig={initialConfig}>
         <div ref={anchorElemRef} className="h-full">
           <div className="relative">
@@ -122,9 +122,8 @@ export const NewProjectDescriptionEditor = ({
               contentEditable={
                 <div
                   className={cn(
-                    "min-h-[120px] w-full",
+                    "",
                     dimensions === "small" ? "max-h-[350px]" : "max-h-[650px]",
-                    "overflow-y-auto"
                   )}
                 >
                   <ContentEditable

@@ -126,11 +126,11 @@ export const useFeatureAccess = () => {
   const { data: subscription } = useGetSubscriptionStatus();
   const { data: plans } = useGetPlans();
 
-  const checkFeatureAccess = (requiredPlan: 'free' | 'pro' | 'enterprise') => {
+  const checkFeatureAccess = (requiredPlan: 'free' | 'pro' | 'team' | 'enterprise') => {
     if (!subscription || !plans) return false;
 
     const currentPlan = subscription.plan;
-    const planHierarchy = ['free', 'pro', 'enterprise'];
+    const planHierarchy = ['free', 'pro', 'team', 'enterprise'];
     
     const currentPlanIndex = planHierarchy.indexOf(currentPlan);
     const requiredPlanIndex = planHierarchy.indexOf(requiredPlan);
@@ -145,7 +145,7 @@ export const useFeatureAccess = () => {
     return currentPlan?.limits || null;
   };
 
-  const isWithinLimits = (type: 'projects' | 'members' | 'tasksPerProject', current: number) => {
+  const isWithinLimits = (type: 'projects' | 'workspacesPerProject' | 'members' | 'cardsPerWorkspace', current: number) => {
     const limits = getCurrentPlanLimits();
     if (!limits) return false;
 
@@ -161,6 +161,7 @@ export const useFeatureAccess = () => {
     isWithinLimits,
     isFreePlan: subscription?.plan === 'free',
     isProPlan: subscription?.plan === 'pro',
+    isTeamPlan: subscription?.plan === 'team',
     isEnterprisePlan: subscription?.plan === 'enterprise',
   };
 }; 

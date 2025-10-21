@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Cookies from "js-cookie";
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createWorkspace } from "../apis/WorkspaceApis";
 import { useToast } from "../hooks/use-toast";
@@ -9,23 +9,21 @@ import { useFeatureGating } from "./useFeatureGating";
 interface IWorkspaceForm {
   workspaceTitle: string;
   selectedColor: string;
+  projectId: string;
 }
 
 const useWorkspaceForm = (count: number) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const accessToken = Cookies.get("accessToken");
   const { toast } = useToast();
   const { getUpgradeMessage } = useFeatureGating();
+  const teamId = localStorage.getItem("teamId");
 
   const [currentWorkspaceInput, setCurrentWorkspaceInput] = useState("");
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
 
   const createWorkspaceMutation = useMutation({
     mutationFn: async (data: IWorkspaceForm) => {
-      if (!accessToken) {
-        throw new Error("No access token found");
-      }
 
       const [colorId, colorValue, colorName] = data.selectedColor.split("|");
 
@@ -33,11 +31,12 @@ const useWorkspaceForm = (count: number) => {
         title: data.workspaceTitle,
         colorId,
         colorValue,
-        colorName
+        colorName,
+        projectId: data.projectId,
       };
 
 
-      const response = await createWorkspace(kanbanWorkspaceData);
+      const response = await createWorkspace(kanbanWorkspaceData, teamId as string);
       return response;
     },
     onSuccess: (data) => {
@@ -69,10 +68,12 @@ const useWorkspaceForm = (count: number) => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    
+
     const form = event.target as HTMLFormElement;
+
     const workspaceTitle = (form.elements.namedItem('title') as HTMLInputElement).value;
     const selectedColor = (form.elements.namedItem('color') as HTMLInputElement).value;
+    const projectId = (form.elements.namedItem("project") as HTMLSelectElement).value
 
     if (workspaceTitle === "") {
       toast({
@@ -114,6 +115,7 @@ const useWorkspaceForm = (count: number) => {
     createWorkspaceMutation.mutate({
       workspaceTitle,
       selectedColor,
+      projectId: projectId as string
     });
   };
 

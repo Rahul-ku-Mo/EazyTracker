@@ -2,8 +2,6 @@ import * as React from "react";
 import {
   Settings,
   Camera,
-  Copy,
-  EllipsisVerticalIcon,
   X,
   ZoomIn,
   Settings2,
@@ -22,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { useUser } from "../hooks/useQueries";
 import { uploadImageToS3 } from "../_components/Card/_editor/Plugins/CopyImagePlugin";
 import { useTeam } from "@/context/TeamContext";
+import { LabelIcon } from "@/_components/shared/svg/SharedIcons";
 
 type Team = {
   id: string;
@@ -49,13 +48,15 @@ type Team = {
 export function TeamSwitcher({ team }: { team?: Team }) {
   const accessToken = Cookies.get("accessToken") || "";
   const { data: userData } = useUser(accessToken);
-  
+
   // Get current team from context
   const { currentTeam } = useTeam();
 
   // Use the current team from context or fall back to the provided team
-  const [activeTeam, setActiveTeam] = React.useState<Team | null>(currentTeam || team || null);
-  
+  const [activeTeam, setActiveTeam] = React.useState<Team | null>(
+    currentTeam || team || null
+  );
+
   const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   // Form states
@@ -65,8 +66,6 @@ export function TeamSwitcher({ team }: { team?: Team }) {
   const [teamPhoto, setTeamPhoto] = React.useState(
     activeTeam?.teamImageUrl || ""
   );
-  
- 
 
   //Image Viewing States
   const [isImageModalOpen, setIsImageModalOpen] = React.useState(false);
@@ -136,7 +135,7 @@ export function TeamSwitcher({ team }: { team?: Team }) {
       if (response.ok) {
         const data = await response.json();
         // Update the activeTeam state with the new name
-        setActiveTeam((prev: Team | null) => 
+        setActiveTeam((prev: Team | null) =>
           prev ? { ...prev, name: data.data.name } : null
         );
         setIsEditingName(false);
@@ -204,7 +203,6 @@ export function TeamSwitcher({ team }: { team?: Team }) {
                   </span>
                   <span className="text-xs truncate">Free Plan</span>
                 </div>
-                <EllipsisVerticalIcon className="ml-auto size-4" />
               </SidebarMenuButton>
             </DialogTrigger>
 
@@ -275,17 +273,7 @@ export function TeamSwitcher({ team }: { team?: Team }) {
 
                     {/* Action Buttons */}
                     <div className="flex gap-2 absolute -bottom-8 right-0">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={copyTeamLink}
-                        className="border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-200"
-                      >
-                        <Copy className="size-4" />
-                        <span className="text-xs font-semibold">
-                          {copied ? "Copied!" : "Team Link"}
-                        </span>
-                      </Button>
+                      <LabelIcon onClick={copyTeamLink} className="size-4 cursor-pointer" />
                     </div>
                   </div>
 

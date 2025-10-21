@@ -7,7 +7,7 @@ import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { useLexicalIsTextContentEmpty } from "@lexical/react/useLexicalIsTextContentEmpty";
+
 import { ListItemNode, ListNode } from "@lexical/list";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
@@ -50,62 +50,58 @@ import { Button } from "@/components/ui/button";
 import { Cloud, Copy } from "lucide-react";
 import ComponentPickerPlugin from "../Card/_editor/Plugins/ComponentPicketPlugin";
 import { FloatingLinkEditorPlugin } from "@/_components/Notes/_editor/plugins/FloatingLinkEditorPlugin";
+import { EditorTheme, theme } from "@/_components/shared/Editor/editor-theme";
+import { FloatingTextFormatToolbarPlugin } from "../Notes/_editor/plugins/FloatingTextFormatToolbarPlugin";
 
+const ProjectTheme: EditorTheme = {
+  ...theme,
+  root: "!p-0",
+};
 interface ProjectDescriptionEditorProps {
   project: any;
   initialDescription?: string;
 }
 
-const theme = {
-  root: "relative overflow-hidden",
-  paragraph: "mb-1 text-sm text-foreground leading-relaxed",
-  list: {
-    listitem: "text-sm text-foreground",
-    nested: { listitem: "list-none" },
-    ol: "ml-4 list-decimal flex flex-col gap-0.5",
-    ul: "ml-4 list-disc flex flex-col gap-0.5",
-    checklist: "ml-4 list-none",
-  },
-  text: {
-    bold: "font-semibold",
-    italic: "italic",
-    strikethrough: "line-through",
-    underline: "underline",
-    code: "bg-muted px-1 py-0.5 rounded text-sm font-mono",
-  },
-  code: "bg-muted p-3 rounded-md text-sm font-mono overflow-x-auto",
-  heading: {
-    h1: "text-2xl font-bold mb-2",
-    h2: "text-xl font-bold mb-2",
-    h3: "text-lg font-bold mb-1",
-    h4: "text-base font-bold mb-1",
-    h5: "text-sm font-bold mb-1",
-    h6: "text-xs font-bold mb-1",
-  },
-  quote:
-    "border-l-4 border-muted-foreground/20 pl-4 italic text-muted-foreground",
-  link: "text-primary underline hover:text-primary/80",
-  hr: "editor-hr",
-};
-
 function onError(error: Error) {
   console.error("Lexical editor error:", error);
 }
 
-function PlaceholderPlugin({ placeholder }: { placeholder: string }) {
+export function PlaceholderPlugin({ placeholder }: { placeholder: string }) {
   const [editor] = useLexicalComposerContext();
-  const isEmpty = useLexicalIsTextContentEmpty(editor);
+  const [isEmpty, setIsEmpty] = useState(true);
 
-  return (
-    <div
-      className={cn(
-        "absolute left-[1px] top-[1px] pointer-events-none select-none text-muted-foreground/60 text-sm",
-        !isEmpty && "hidden"
-      )}
-    >
-      {placeholder}
-    </div>
-  );
+  useEffect(() => {
+    return editor.registerUpdateListener(
+      ({ editorState }: { editorState: EditorState }) => {
+        editorState.read(() => {
+          const root = $getRoot();
+          const children = root.getChildren();
+
+          // Check if the editor is truly empty
+          const isEditorEmpty =
+            children.length === 0 ||
+            (children.length === 1 &&
+              children[0].getType() === "paragraph" &&
+              children[0].getTextContent().trim() === "");
+
+          setIsEmpty(isEditorEmpty);
+        });
+      }
+    );
+  }, [editor]);
+
+  useEffect(() => {
+    const rootElement = editor.getRootElement() as HTMLElement;
+    if (rootElement) {
+      if (isEmpty) {
+        rootElement.setAttribute("data-empty-text", placeholder);
+      } else {
+        rootElement.removeAttribute("data-empty-text");
+      }
+    }
+  }, [editor, isEmpty, placeholder]);
+
+  return null;
 }
 
 function TransformToHTMLPlugin({
@@ -297,7 +293,7 @@ export const ProjectDescriptionEditor = ({
 
   const initialConfig = {
     namespace: "ProjectDescriptionEditor",
-    theme,
+    theme: ProjectTheme,
     onError,
     nodes: [
       ListNode,
@@ -371,7 +367,7 @@ export const ProjectDescriptionEditor = ({
         </div>
       </div>
 
-      <div className="min-h-[120px] max-h-[420px] overflow-y-auto bg-background">
+      <div className="min-h-[120px] overflow-y-auto bg-background">
         <LexicalComposer initialConfig={initialConfig}>
           <div className="relative" ref={anchorElemRef}>
             <RichTextPlugin
@@ -382,7 +378,18 @@ export const ProjectDescriptionEditor = ({
                     "min-h-[100px] w-full max-h-full overflow-y-auto",
                     "text-foreground",
                     "focus:outline-none border-none",
-                    "relative px-0 py-0 resize-y"
+                    "relative px-0 py-0 resize-y",
+                    "[&[data-empty-text]]:before:content-[attr(data-empty-text)]",
+                    "[&[data-empty-text]]:before:text-muted-foreground/60",
+                    "[&[data-empty-text]]:before:absolute",
+                    "[&[data-empty-text]]:before:left-[1px]",
+                    "[&[data-empty-text]]:before:top-[1px]",
+                    "[&[data-empty-text]]:before:pointer-events-none",
+                    "[&[data-empty-text]]:before:leading-6",
+                    "[&[data-empty-text]]:before:transition-opacity",
+                    "[&[data-empty-text]]:before:duration-100",
+                    "[&[data-empty-text]]:before:opacity-100",
+                    "[&[data-empty-text]]:before:empty:opacity-0"
                   )}
                 />
               }
@@ -403,6 +410,13 @@ export const ProjectDescriptionEditor = ({
               <FloatingLinkEditorPlugin
                 anchorElem={anchorElemRef.current}
                 isLinkEditMode={isLinkEditMode}
+                setIsLinkEditMode={setIsLinkEditMode}
+              />
+            )}
+
+            {anchorElemRef.current && (
+              <FloatingTextFormatToolbarPlugin
+                anchorElem={anchorElemRef.current}
                 setIsLinkEditMode={setIsLinkEditMode}
               />
             )}

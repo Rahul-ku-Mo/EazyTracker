@@ -11,7 +11,6 @@ export const useWorkspaceMutation = () => {
 
   const teamName = localStorage.getItem("teamName")
 
-
   const deleteWorkspaceMutation = useMutation({
     mutationFn: async (workspaceIdentifier: string) => {
       await deleteWorkspace(workspaceIdentifier);

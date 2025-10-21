@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import NewProjectForm from "./new-project-form";
 
@@ -12,13 +12,8 @@ export function NewProjectDialog({ teamId }: NewProjectDialogProps) {
 
   return (
     <>
-      <Button 
-        variant="outline" 
-        size="sm"
-        onClick={() => setIsOpen(true)}
-      >
-        <Plus />
-        <span className="hidden lg:inline">Add Project</span>
+      <Button variant="default" size="sm" onClick={() => setIsOpen(true)}>
+        <span className="hidden lg:inline">New Project</span>
       </Button>
       <NewProjectForm
         isOpen={isOpen}
@@ -27,4 +22,4 @@ export function NewProjectDialog({ teamId }: NewProjectDialogProps) {
       />
     </>
   );
-} 
+}

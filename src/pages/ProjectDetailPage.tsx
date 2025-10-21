@@ -66,7 +66,7 @@ const ProjectDetailPage = () => {
               <span className="flex items-center gap-1">
                 <MemberAvatars members={project.members} />
                 <span className="text-xs">
-                  {project.members.length} members
+                  {project?.members?.length || 0} members
                 </span>
               </span>
               {project.targetDate && (

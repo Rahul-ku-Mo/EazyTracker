@@ -100,3 +100,12 @@ export function timeAgoShort(date: Date) {
   return `${years}y ago`;
 }
 
+
+
+export const setInLocalStorage = (key: string, item: string) => {
+  localStorage.setItem(key, item)
+}
+
+export const getFromLocalStorage = (key: string) => {
+  return localStorage.getItem(key)
+}

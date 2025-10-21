@@ -13,55 +13,27 @@ import {
 } from "@/components/ui/command";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Check } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import Cookies from "js-cookie";
-import { useState } from "react";
 
-interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  imageUrl?: string;
-}
+import { useState } from "react";
+import { useMembers } from "@/hooks/useMembers";
 
 export default function MembersCommandDropdown({
   currentMembers,
   onMembersChange,
-  teamId,
 }: {
   currentMembers: { id: string; name: string; imageUrl?: string }[];
   onMembersChange: (
     members: { id: string; name: string; imageUrl?: string }[]
   ) => void;
-  teamId: string;
 }) {
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
   // Fetch team members
-  const { data: teamData } = useQuery({
-    queryKey: ["team-members", teamId],
-    queryFn: async () => {
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/teams/${teamId}/members`,
-        {
-          headers: {
-            Authorization: `Bearer ${Cookies.get("accessToken")}`,
-          },
-        }
-      );
-      return response.data.data;
-    },
-    enabled: !!teamId && !!Cookies.get("accessToken"),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-  });
-
-  const teamMembers: TeamMember[] = teamData?.members || [];
+  const { members: teamMembers } = useMembers();
 
   const handleMemberSelect = (memberId: string) => {
-    const member = teamMembers.find((m) => m.id === memberId);
+      const member = teamMembers?.find((m: any) => m.id === memberId);
     if (!member) return;
 
     const isSelected = currentMembers.some((m) => m.id === member.id);
@@ -77,7 +49,7 @@ export default function MembersCommandDropdown({
   };
 
   const isSelected = (memberId: string) => {
-    const member = teamMembers.find((m) => m.id === memberId);
+    const member = teamMembers?.find((m : any) => m.id === memberId);
     return member ? currentMembers.some((m) => m.id === member.id) : false;
   };
 
@@ -109,7 +81,6 @@ export default function MembersCommandDropdown({
           <div className="flex items-center justify-center gap-2 w-full">
             <div className="size-6 rounded-sm hover:bg-[#ebebeb] dark:hover:bg-[#2b2b2b] flex items-center justify-center transition-all-linear">
               <svg
-                
                 width="16"
                 height="16"
                 viewBox="0 0 16 16"
@@ -118,7 +89,11 @@ export default function MembersCommandDropdown({
                 focusable="false"
                 aria-hidden="true"
                 xmlns="http://www.w3.org/2000/svg"
-                style={{ "--icon-color": "lch(62.6% 1.35 272 / 1)" } as React.CSSProperties}
+                style={
+                  {
+                    "--icon-color": "lch(62.6% 1.35 272 / 1)",
+                  } as React.CSSProperties
+                }
               >
                 <path
                   fillRule="evenodd"
@@ -158,9 +133,9 @@ export default function MembersCommandDropdown({
               No members found.
             </CommandEmpty>
             <CommandGroup>
-              {teamMembers
+              {(teamMembers || [])
                 .filter(
-                  (member) =>
+                  (member : any) =>
                     member.name
                       .toLowerCase()
                       .includes(searchValue.toLowerCase()) ||
@@ -168,7 +143,7 @@ export default function MembersCommandDropdown({
                       .toLowerCase()
                       .includes(searchValue.toLowerCase())
                 )
-                .map((member) => {
+                .map((member : any) => {
                   const selected = isSelected(member.id);
                   return (
                     <CommandItem

@@ -55,7 +55,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import {
   updateProjectTargetDate,
-  updateProjectLead,
+  // updateProjectLead,
   updateProjectMembers,
 } from "@/apis/project";
 
@@ -95,12 +95,13 @@ import {
 } from "@/components/ui/popover";
 
 import PriorityDropdown from "./contextMenu/PriorityDropdown";
-import LeadCommandDropdown from "./contextMenu/LeadCommandDropdown";
+//import LeadCommandDropdown from "./contextMenu/LeadCommandDropdown";
 import MembersCommandDropdown from "./contextMenu/MembersCommandDropdown";
 import { updateProjectPriority } from "@/apis/project";
 import { useTheme } from "@/context/ThemeProvider";
 import { TargetIcon } from "../shared/svg/SharedIcons";
 import { ProjectIcon, WorkspaceIcon } from "../shared/svg/SidebarIcons";
+import useProjectSlugStore from "@/store/projectSlugStore";
 
 export interface ProjectTableRow {
   id: string;
@@ -312,21 +313,21 @@ export function DataTable({
     },
   });
 
-  const updateLeadMutation = useMutation({
-    mutationFn: ({
-      projectSlug,
-      leadId,
-    }: {
-      projectSlug: string;
-      leadId: string | null;
-    }) => updateProjectLead(projectSlug, leadId),
-    onSuccess: () => {
-      // Only invalidate the projects query
-      queryClient.invalidateQueries({
-        queryKey: ["projects", teamId],
-      });
-    },
-  });
+  // const updateLeadMutation = useMutation({
+  //   mutationFn: ({
+  //     projectSlug,
+  //     leadId,
+  //   }: {
+  //     projectSlug: string;
+  //     leadId: string | null;
+  //   }) => updateProjectLead(projectSlug, leadId),
+  //   onSuccess: () => {
+  //     // Only invalidate the projects query
+  //     queryClient.invalidateQueries({
+  //       queryKey: ["projects", teamId],
+  //     });
+  //   },
+  // });
 
   const updateMembersMutation = useMutation({
     mutationFn: ({
@@ -401,31 +402,31 @@ export function DataTable({
         </div>
       ),
     },
-    {
-      accessorKey: "lead",
-      header: () => (
-        <div className="flex items-center justify-center">Lead</div>
-      ),
-      cell: ({ row }) => (
-        <LeadCommandDropdown
-          currentLead={row.original.lead}
-          onLeadChange={(leadId) => {
-            updateLeadMutation.mutate(
-              { projectSlug: row.original.slug, leadId },
-              {
-                onSuccess: () => {
-                  toast.success("Lead updated successfully");
-                },
-                onError: () => {
-                  toast.error("Failed to update lead");
-                },
-              }
-            );
-          }}
-          teamId={teamId}
-        />
-      ),
-    },
+    // {
+    //   accessorKey: "lead",
+    //   header: () => (
+    //     <div className="flex items-center justify-center">Lead</div>
+    //   ),
+    //   cell: ({ row }) => (
+    //     <LeadCommandDropdown
+    //       currentLead={row.original.lead}
+    //       onLeadChange={(leadId) => {
+    //         updateLeadMutation.mutate(
+    //           { projectSlug: row.original.slug, leadId },
+    //           {
+    //             onSuccess: () => {
+    //               toast.success("Lead updated successfully");
+    //             },
+    //             onError: () => {
+    //               toast.error("Failed to update lead");
+    //             },
+    //           }
+    //         );
+    //       }}
+    //       teamId={teamId}
+    //     />
+    //   ),
+    // },
     {
       accessorKey: "members",
       header: () => {
@@ -452,7 +453,6 @@ export function DataTable({
               }
             );
           }}
-          teamId={teamId}
         />
       ),
     },
@@ -719,155 +719,176 @@ export function DataTable({
           <NewProjectDialog teamId={teamId} />
         </div>
       </div>
-      <div className="relative flex flex-col gap-4 overflow-auto px-4 flex-1">
-        <div className="overflow-hidden rounded-lg border flex-1">
-          <DndContext
-            collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
-            onDragEnd={handleDragEnd}
-            sensors={sensors}
-            id={sortableId}
-          >
-            <Table>
-              <TableHeader className="bg-muted sticky top-0 z-10">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <TableHead
-                          key={header.id}
-                          colSpan={header.colSpan}
-                          className="text-sm"
-                        >
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </TableHead>
-                      );
-                    })}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody className="**:data-[slot=table-cell]:first:w-8">
-                {table.getRowModel().rows?.length ? (
-                  <SortableContext
-                    items={dataIds}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    {table.getRowModel().rows.map((row) => (
-                      <DraggableRow key={row.id} row={row} />
-                    ))}
-                  </SortableContext>
-                ) : (
-                  <TableRow className="hover:bg-[rgb(9 9 11)]">
-                    <TableCell
-                      colSpan={columnsWithTeamId.length}
-                      rowSpan={2}
-                      className="h-[200px] w-full align-vertical text-center "
-                    >
-                      <div className="flex flex-col h-full w-full gap-2 items-center justify-center">
-                        <ProjectIcon className="size-8" />
-                       <span className="text-muted-foreground text-base"> No Projects yet.</span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </DndContext>
-        </div>
-        <div className="flex items-center justify-between px-4">
-          <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-            {table.getFilteredRowModel().rows.length} project(s) found.
-          </div>
-          <div className="flex w-full items-center gap-8 lg:w-fit">
-            <div className="hidden items-center gap-2 lg:flex">
-              <Label htmlFor="rows-per-page" className="text-sm font-medium">
-                Rows per page
-              </Label>
-              <Select
-                value={`${table.getState().pagination.pageSize}`}
-                onValueChange={(value) => {
-                  table.setPageSize(Number(value));
-                }}
-              >
-                <SelectTrigger className="w-20" id="rows-per-page">
-                  <SelectValue
-                    placeholder={table.getState().pagination.pageSize}
-                  />
-                </SelectTrigger>
-                <SelectContent side="top">
-                  {[10, 20, 30, 40, 50].map((pageSize) => (
-                    <SelectItem key={pageSize} value={`${pageSize}`}>
-                      {pageSize}
-                    </SelectItem>
+      {data.length > 0 ? (
+        <div className="relative flex flex-col gap-4 overflow-auto px-4 flex-1">
+          <div className="overflow-hidden rounded-lg border flex-1">
+            <DndContext
+              collisionDetection={closestCenter}
+              modifiers={[restrictToVerticalAxis]}
+              onDragEnd={handleDragEnd}
+              sensors={sensors}
+              id={sortableId}
+            >
+              <Table>
+                <TableHeader className="bg-muted sticky top-0 z-10">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => {
+                        return (
+                          <TableHead
+                            key={header.id}
+                            colSpan={header.colSpan}
+                            className="text-sm"
+                          >
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                          </TableHead>
+                        );
+                      })}
+                    </TableRow>
                   ))}
-                </SelectContent>
-              </Select>
+                </TableHeader>
+                <TableBody className="**:data-[slot=table-cell]:first:w-8">
+                  {table.getRowModel().rows?.length ? (
+                    <SortableContext
+                      items={dataIds}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {table.getRowModel().rows.map((row) => (
+                        <DraggableRow key={row.id} row={row} />
+                      ))}
+                    </SortableContext>
+                  ) : (
+                    <TableRow className="hover:bg-[rgb(9 9 11)]">
+                      <TableCell
+                        colSpan={columnsWithTeamId.length}
+                        rowSpan={2}
+                        className="h-[200px] w-full align-vertical text-center"
+                      >
+                        <div className="flex flex-col h-full w-full gap-2 items-center justify-center">
+                          <ProjectIcon className="size-8" />
+                          <span className="text-muted-foreground text-base">
+                            {" "}
+                            No Projects yet.
+                          </span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </DndContext>
+          </div>
+          <div className="flex items-center justify-between px-4">
+            <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
+              {table.getFilteredRowModel().rows.length} project(s) found.
             </div>
-            <div className="flex w-fit items-center justify-center text-sm font-medium">
-              Page {table.getState().pagination.pageIndex + 1} of{" "}
-              {table.getPageCount()}
-            </div>
-            <div className="ml-auto flex items-center gap-2 lg:ml-0">
-              <Button
-                variant="outline"
-                className="hidden h-8 w-8 p-0 lg:flex"
-                onClick={() => table.setPageIndex(0)}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">Go to first page</span>
-                <ChevronsLeft />
-              </Button>
-              <Button
-                variant="outline"
-                className="size-8"
-                size="icon"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">Go to previous page</span>
-                <ChevronLeft />
-              </Button>
-              <Button
-                variant="outline"
-                className="size-8"
-                size="icon"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">Go to next page</span>
-                <ChevronRight />
-              </Button>
-              <Button
-                variant="outline"
-                className="hidden size-8 lg:flex"
-                size="icon"
-                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">Go to last page</span>
-                <ChevronsRight />
-              </Button>
+            <div className="flex w-full items-center gap-8 lg:w-fit">
+              <div className="hidden items-center gap-2 lg:flex">
+                <Label htmlFor="rows-per-page" className="text-sm font-medium">
+                  Rows per page
+                </Label>
+                <Select
+                  value={`${table.getState().pagination.pageSize}`}
+                  onValueChange={(value) => {
+                    table.setPageSize(Number(value));
+                  }}
+                >
+                  <SelectTrigger className="w-20" id="rows-per-page">
+                    <SelectValue
+                      placeholder={table.getState().pagination.pageSize}
+                    />
+                  </SelectTrigger>
+                  <SelectContent side="top">
+                    {[10, 20, 30, 40, 50].map((pageSize) => (
+                      <SelectItem key={pageSize} value={`${pageSize}`}>
+                        {pageSize}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex w-fit items-center justify-center text-sm font-medium">
+                Page {table.getState().pagination.pageIndex + 1} of{" "}
+                {table.getPageCount()}
+              </div>
+              <div className="ml-auto flex items-center gap-2 lg:ml-0">
+                <Button
+                  variant="outline"
+                  className="hidden h-8 w-8 p-0 lg:flex"
+                  onClick={() => table.setPageIndex(0)}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <span className="sr-only">Go to first page</span>
+                  <ChevronsLeft />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="size-8"
+                  size="icon"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <span className="sr-only">Go to previous page</span>
+                  <ChevronLeft />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="size-8"
+                  size="icon"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                >
+                  <span className="sr-only">Go to next page</span>
+                  <ChevronRight />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="hidden size-8 lg:flex"
+                  size="icon"
+                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                  disabled={!table.getCanNextPage()}
+                >
+                  <span className="sr-only">Go to last page</span>
+                  <ChevronsRight />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
+          <div className="border-0 bg-background/50">
+            <div className="text-2xl font-bold text-center geist-font">
+              Start your journey
+            </div>
+            <div className="text-sm max-w-xs text-muted-foreground text-center">
+              ✨ Create your first client to get started. 🚀
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
 
 function TableCellViewer({ item }: { item: ProjectTableRow }) {
   const navigate = useNavigate();
+  const { updateCurrentProjectSlug } = useProjectSlugStore();
 
   return (
     <Button
       variant="link"
       className="text-foreground w-fit px-0 text-left hover:underline"
-      onClick={() => navigate(`/projects/${item.slug}`)}
+      onClick={() => {
+        updateCurrentProjectSlug(item.slug);
+
+        navigate(`/projects/${item.slug}`);
+      }}
     >
       {item.title}
     </Button>

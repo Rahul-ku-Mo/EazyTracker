@@ -1,10 +1,9 @@
 import { apiClient } from "./config";
 
 export interface Workspace {
-  id: string;
+  id: number;
   title: string;
   slug?: string;
-  userId: string;
   colorId: string;
   colorValue: string;
   colorName: string;
@@ -12,7 +11,13 @@ export interface Workspace {
   updatedAt: string;
   userRole?: string;
   isFavorite?: boolean;
-  user?: {
+  projectId: string;
+  project?: {
+    id: string;
+    title: string;
+    slug: string;
+  };
+  creator?: {
     name: string;
     email: string;
   };
@@ -41,9 +46,9 @@ export const fetchWorkspace = async (workspaceIdentifier: string): Promise<Works
   }
 };
 
-export const createWorkspace = async (data: Partial<Workspace>): Promise<Workspace> => {
+export const createWorkspace = async (data: Partial<Workspace>, teamId: string): Promise<Workspace> => {
   try {
-    const response = await apiClient.post(`/workspaces`, data);
+    const response = await apiClient.post(`/workspaces/team/${teamId}`, data);
 
     if (response.status === 201) return response.data.data;
     throw new Error("Failed to create workspace");
@@ -54,7 +59,7 @@ export const createWorkspace = async (data: Partial<Workspace>): Promise<Workspa
 
 export const deleteWorkspace = async (workspaceIdentifier: string): Promise<any> => {
   try {
-    const response = await apiClient.delete(`/workspaces/${workspaceIdentifier}`);
+    const response = await apiClient.delete(`/workspaces/team/${workspaceIdentifier}`);
 
     return response;
   } catch (error: any) {
@@ -64,7 +69,7 @@ export const deleteWorkspace = async (workspaceIdentifier: string): Promise<any>
 
 export const updateWorkspace = async (workspaceIdentifier: string, data: Partial<Workspace>): Promise<Workspace> => {
   try {
-    const response = await apiClient.put(`/workspaces/${workspaceIdentifier}`, data);
+    const response = await apiClient.put(`/workspaces/team/${workspaceIdentifier}`, data);
 
     return response.data.data;
   } catch (error: any) {

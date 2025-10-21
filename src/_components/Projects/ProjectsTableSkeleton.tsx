@@ -10,7 +10,7 @@ import {
 
 const ProjectsTableSkeleton = () => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 px-4">
       {/* Header with New Project button skeleton */}
       <div className="flex items-center justify-between px-4">
         <div className="flex items-center space-x-2">

@@ -75,7 +75,7 @@ export default function ProjectsPage() {
             <div>
               <h1 className="text-2xl font-bold hidden md:block">My Projects</h1>
               <p className="text-sm text-muted-foreground">
-                Manage your projects and create new ones
+                Manage your client projects
               </p>
             </div>
           </div>
@@ -95,7 +95,7 @@ export default function ProjectsPage() {
           <div>
             <h1 className="text-2xl font-bold hidden md:block">My Projects</h1>
             <p className="text-sm text-muted-foreground">
-              Manage your projects and create new ones
+              Keep track of all your client projects
             </p>
           </div>
         </div>

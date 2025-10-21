@@ -2,8 +2,12 @@ import { apiClient } from "./config";
 
 export interface MilestoneItem {
   id: string;
-  milestoneValue: string;
-  isCompletedMilestone: boolean;
+  title: string;
+  description?: string;
+  status: 'INCOMPLETE' | 'COMPLETE';
+  targetDate?: Date;
+  notes?: string; // For budget info, tasks, etc.
+  order?: number;
 }
 
 export interface Project {
@@ -79,11 +83,10 @@ export interface ProjectWorkspace {
   colorValue?: string;
 }
 
-export const getProjects = async (teamId: string, boardId?: number): Promise<Project[]> => {
+export const getProjects = async (teamId: string): Promise<Project[]> => {
   try {
     const params = new URLSearchParams();
     params.append('teamId', teamId);
-    if (boardId) params.append('boardId', boardId.toString());
 
     const response = await apiClient.get(`/projects?${params.toString()}`);
     return response.data;
@@ -178,8 +181,8 @@ export const updateProjectMembers = async (projectSlug: string, memberIds: strin
 };
 
 export const updateMilestoneCompletion = async (
-  projectSlug: string, 
-  milestoneId: string, 
+  projectSlug: string,
+  milestoneId: string,
   isCompleted: boolean
 ): Promise<Project> => {
   try {
@@ -199,6 +202,81 @@ export const deleteProject = async (projectSlug: string): Promise<void> => {
     await apiClient.delete(`/projects/${projectSlug}`);
   } catch (error) {
     console.error('Error deleting project:', error);
+    throw error;
+  }
+};
+
+// New milestone API functions
+export const getProjectMilestones = async (projectSlug: string): Promise<{ milestones: MilestoneItem[] }> => {
+  try {
+    const response = await apiClient.get(`/milestones/project/${projectSlug}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching project milestones:', error);
+    throw error;
+  }
+};
+
+export const createMilestone = async (projectSlug: string, milestoneData: Partial<MilestoneItem>): Promise<MilestoneItem> => {
+  try {
+    const response = await apiClient.post(`/milestones/project/${projectSlug}`, milestoneData);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating milestone:', error);
+    throw error;
+  }
+};
+
+export const updateMilestone = async (projectSlug: string, milestoneId: string, milestoneData: Partial<MilestoneItem>): Promise<MilestoneItem> => {
+  try {
+    const response = await apiClient.put(`/milestones/${milestoneId}/project/${projectSlug}`, milestoneData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating milestone:', error);
+    throw error;
+  }
+};
+
+export const deleteMilestone = async (projectSlug: string, milestoneId: string): Promise<void> => {
+  try {
+    await apiClient.delete(`/milestones/${milestoneId}/project/${projectSlug}`);
+  } catch (error) {
+    console.error('Error deleting milestone:', error);
+    throw error;
+  }
+};
+
+export const updateMilestoneStatus = async (projectSlug: string, milestoneId: string, isCompleted: boolean): Promise<MilestoneItem> => {
+  try {
+    const response = await apiClient.patch(`/milestones/${milestoneId}/project/${projectSlug}/completion`, {
+      isCompleted
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating milestone status:', error);
+    throw error;
+  }
+};
+
+export const reorderMilestones = async (projectSlug: string, milestoneIds: string[]): Promise<void> => {
+  try {
+    await apiClient.post(`/milestones/project/${projectSlug}/reorder`, {
+      milestoneIds
+    });
+  } catch (error) {
+    console.error('Error reordering milestones:', error);
+    throw error;
+  }
+};
+
+export const bulkUpdateMilestones = async (projectSlug: string, milestones: MilestoneItem[]): Promise<{ milestones: MilestoneItem[] }> => {
+  try {
+    const response = await apiClient.put(`/milestones/project/${projectSlug}/bulk`, {
+      milestones
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error bulk updating milestones:', error);
     throw error;
   }
 }; 

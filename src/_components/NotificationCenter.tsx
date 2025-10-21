@@ -266,8 +266,7 @@ export const NotificationCenter = () => {
   const { data: notifications = [], refetch } = useQuery({
     queryKey: ["notifications"],
     queryFn: () => fetchNotifications(accessToken || ""),
-    enabled: !!accessToken,
-    refetchInterval: 30000,
+    enabled: !!accessToken
   });
 
   const markAsReadMutation = useMutation({

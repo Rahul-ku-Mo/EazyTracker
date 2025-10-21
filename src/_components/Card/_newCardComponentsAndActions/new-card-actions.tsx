@@ -18,6 +18,8 @@ import {
   UrgentPriority,
 } from "../../shared/svg/Priority";
 import { useTheme } from "@/context/ThemeProvider";
+import { KanbanContext } from "@/context/KanbanProvider";
+import { useContext } from "react";
 import { getPriorityIcon } from "@/_components/Projects/utils";
 import {
   DropdownMenu,
@@ -76,6 +78,8 @@ const NewCardActions = ({
   setProject,
 }: TNewCardActionsProps) => {
   const { theme } = useTheme();
+  const { workspace } = useContext(KanbanContext);
+  const workspaceId = workspace?.id;
 
   const { teamData, allProjects } = useNewCardMutation();
 
@@ -261,24 +265,26 @@ const NewCardActions = ({
       <StoryDropdown />
 
       {/* Labels Dropdown */}
-      <LabelDropdown teamId={teamData?.team?.id} action={setLabels}>
-        <Button
-          variant="outline"
-          size="sm"
-          className={cn(
-            "h-7 px-2 border rounded-sm text-xs font-medium flex items-center gap-1.5 transition-colors",
-            "dark:border-[#1b1d1c] dark:hover:bg-black",
-          )}
-        >
-          <LabelIcon className="w-3 h-3" />
-          <span>Labels</span>
-          {labels.length > 0 && (
-            <Badge variant="secondary" className="h-4 px-1 text-[10px] min-w-4">
-              {labels.length}
-            </Badge>
-          )}
-        </Button>
-      </LabelDropdown>
+      {workspaceId && (
+        <LabelDropdown workspaceId={workspaceId} action={setLabels}>
+          <Button
+            variant="outline"
+            size="sm"
+            className={cn(
+              "h-7 px-2 border rounded-sm text-xs font-medium flex items-center gap-1.5 transition-colors",
+              "dark:border-[#1b1d1c] dark:hover:bg-black",
+            )}
+          >
+            <LabelIcon className="w-3 h-3" />
+            <span>Labels</span>
+            {labels.length > 0 && (
+              <Badge variant="secondary" className="h-4 px-1 text-[10px] min-w-4">
+                {labels.length}
+              </Badge>
+            )}
+          </Button>
+        </LabelDropdown>
+      )}
 
       {/* Project Dropdown */}
       <DropdownMenu>

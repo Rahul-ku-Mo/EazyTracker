@@ -156,7 +156,7 @@ export const TableOfContentsSection = ({
         )}
       </div>
 
-      <div className="space-y-1">
+      <div className="space-y-1 max-h-[200px] overflow-y-auto">
         {tocItems.length === 0 ? (
           <div className="text-xs text-muted-foreground text-left">
             No headings found in content

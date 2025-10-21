@@ -7,7 +7,7 @@ import {
   DialogHeader,
 } from "../../components/ui/dialog";
 import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,7 +38,7 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
   const [priority, setPriority] = useState<string>("none");
   const [labels, setLabels] = useState<any>([]);
   const [assignee, setAssignee] = useState<string | null>(null);
-  const [project, setProject] = useState<string | null>(null);  
+  const [project, setProject] = useState<string | null>(null);
   const [showConfirmClose, setShowConfirmClose] = useState(false);
 
   const { createCardMutation } = useCardMutation();
@@ -116,17 +116,24 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
             >
               <Maximize2 className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => setShowConfirmClose(true)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowConfirmClose(true)}
+            >
               <X className="w-4 h-4" />
             </Button>
           </div>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-0.5 flex-1 min-h-0">
-          <Input
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-0.5 flex-1 min-h-0"
+        >
+          <input
             ref={titleRef}
             name="title"
             placeholder="What's on your mind?"
-            className="px-4 placeholder:font-semibold font-semibold !text-base-large border-0 shadow-none placeholder:text-muted-foreground/60 md:text-base focus-visible:ring-0"
+            className="px-4 placeholder:font-semibold font-semibold text-lg bg-transparent border-0 outline-none focus:outline-none py-0.5"
           />
           <NewCardDescriptionEditor
             description={description}
@@ -168,15 +175,15 @@ const NewCardForm = ({ columnName, isOpen, onClose }: NewCardFormProps) => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep changes</AlertDialogCancel>
-            <AlertDialogAction
+            <AlertDialogAction>Keep Changes</AlertDialogAction>
+            <AlertDialogCancel
               onClick={() => {
                 setShowConfirmClose(false);
                 handleClose();
               }}
             >
-              Discard changes
-            </AlertDialogAction>
+              Discard Changes
+            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

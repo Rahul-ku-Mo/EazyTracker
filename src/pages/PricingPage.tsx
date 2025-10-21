@@ -19,9 +19,10 @@ const staticPlans = [
     "interval": "month",
     "trialDays": 14,
     "features": [
-      "5 workspaces",
+      "2 projects",
+      "5 workspaces per project",
       "15 team members",
-      "100 tasks per workspace",
+      "100 cards per workspace",
       "1GB storage",
       "Basic task management",
       "7-day activity history",
@@ -37,38 +38,62 @@ const staticPlans = [
     "currency": "usd",
     "interval": "month",
     "features": [
-      "15 workspaces",
+      "10 projects",
+      "15 workspaces per project",
       "100 team members",
-      "Unlimited tasks",
+      "Unlimited cards per workspace",
       "10GB storage",
       "Advanced task management",
       "Team collaboration features",
       "30-day activity history",
       "Priority email support",
       "Advanced analytics",
-      "Custom workspace templates"
+      "Time tracking",
+      "AI Features"
+    ]
+  },
+  {
+    "id": "team",
+    "name": "Team",
+    "description": "For growing teams with scaling needs",
+    "price": 24.99,
+    "currency": "usd",
+    "interval": "month",
+    "features": [
+      "25 projects",
+      "30 workspaces per project",
+      "250 team members",
+      "Unlimited cards per workspace",
+      "50GB storage",
+      "Advanced task management",
+      "Team collaboration features",
+      "90-day activity history",
+      "Priority email support",
+      "Advanced analytics",
+      "Time tracking",
+      "AI Features"
     ]
   },
   {
     "id": "enterprise",
-    "name": "Business",
-    "description": "For larger teams with advanced needs",
-    "price": 29.99,
+    "name": "Enterprise",
+    "description": "For large organizations with advanced needs",
+    "price": 99.99,
     "currency": "usd",
     "interval": "month",
     "features": [
-      "Unlimited workspaces",
+      "Unlimited projects",
+      "Unlimited workspaces per project",
       "Unlimited team members",
-      "Unlimited tasks",
+      "Unlimited cards per workspace",
       "100GB storage",
       "Full feature access",
       "Advanced team collaboration",
       "Unlimited activity history",
       "24/7 phone & email support",
       "Advanced analytics & reporting",
-      "Custom integrations",
-      "SSO & advanced security",
-      "Dedicated account manager"
+      "Custom integrations (Coming Soon)",
+      "SSO & advanced security (Coming Soon)"
     ]
   }
 ];
@@ -76,12 +101,14 @@ const staticPlans = [
 const planIcons = {
   free: Zap,
   pro: Sparkles,
+  team: Crown,
   enterprise: Crown,
 };
 
 const planColors = {
   free: 'bg-gray-50 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700',
   pro: 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800',
+  team: 'bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border-indigo-200 dark:border-indigo-800',
   enterprise: 'bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800',
 };
 
@@ -215,18 +242,19 @@ const PricingPage: React.FC = () => {
         "py-12 sm:py-16 px-4 sm:px-6",
         isDark ? "bg-zinc-800/50" : "bg-gray-50"
       )}>
-        <div className="container max-w-6xl mx-auto">
-          <div className="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+        <div className="container max-w-7xl mx-auto">
+          <div className="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto">
             {staticPlans.map((plan) => {
               const Icon = planIcons[plan.id as keyof typeof planIcons] || Zap;
               const isPro = plan.id === 'pro';
+              const isTeam = plan.id === 'team';
               const isEnterprise = plan.id === 'enterprise';
 
               return (
                 <Card
                   key={plan.id}
                   className={cn(
-                    'relative transition-all duration-300 hover:shadow-lg',
+                    'relative transition-all duration-300 hover:shadow-lg flex flex-col',
                     planColors[plan.id as keyof typeof planColors],
                     isPro ? 'ring-2 ring-emerald-500 shadow-lg scale-105' : ''
                   )}
@@ -239,24 +267,28 @@ const PricingPage: React.FC = () => {
                     </div>
                   )}
 
-                  <CardHeader className="text-center pb-6 sm:pb-8">
-                    <div className="flex items-center justify-center space-x-2 mb-4">
+                  <CardHeader className="text-center pb-4 sm:pb-6">
+                    <div className="flex items-center justify-center space-x-2 mb-3">
                       <div className={cn(
-                        'w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center',
+                        'w-10 h-10 rounded-xl flex items-center justify-center',
                         isPro 
-                          ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' 
+                          ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                          : isTeam
+                          ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                          : isEnterprise
+                          ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
                           : 'bg-gray-100 dark:bg-zinc-700 text-gray-600 dark:text-zinc-300'
                       )}>
-                        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <Icon className="w-5 h-5" />
                       </div>
                     </div>
                     
                     <CardTitle className={cn(
-                      "text-xl sm:text-2xl mb-2",
+                      "text-lg sm:text-xl mb-1",
                       isDark ? "text-white" : "text-zinc-900"
                     )}>{plan.name}</CardTitle>
                     <CardDescription className={cn(
-                      "mb-4 sm:mb-6 text-sm sm:text-base",
+                      "mb-3 sm:mb-4 text-xs sm:text-sm",
                       isDark ? "text-zinc-400" : "text-zinc-600"
                     )}>
                       {plan.description}
@@ -265,35 +297,36 @@ const PricingPage: React.FC = () => {
                     <div className="space-y-1">
                       <div className="flex items-baseline justify-center space-x-1">
                         <span className={cn(
-                          "text-3xl sm:text-4xl font-bold",
+                          "text-2xl sm:text-3xl font-bold",
                           isDark ? "text-white" : "text-zinc-900"
                         )}>
                           {plan.price === 0 ? 'Free' : formatPrice(plan.price, plan.currency)}
                         </span>
                         {plan.price > 0 && (
                           <span className={cn(
-                            "text-sm sm:text-base",
+                            "text-xs sm:text-sm",
                             isDark ? "text-zinc-400" : "text-zinc-500"
                           )}>/{plan.interval}</span>
                         )}
                       </div>
                       {plan.price > 0 && (
                         <p className={cn(
-                          "text-xs sm:text-sm",
+                          "text-xs",
                           isDark ? "text-zinc-400" : "text-zinc-500"
                         )}>
-                          Billed monthly, cancel anytime
+                          per user per month
                         </p>
                       )}
                     </div>
                   </CardHeader>
 
-                  <CardContent className="space-y-6">
-                    <div className="space-y-4">
+                  <CardContent className="space-y-4 flex flex-col flex-1">
+                    <div className="space-y-2 overflow-y-auto max-h-[280px] pr-2">
                       {plan.features.map((feature, index) => (
-                        <div key={index} className="flex items-start space-x-3">
-                          <Check className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                        <div key={index} className="flex items-start space-x-2">
+                          <Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
                           <span className={cn(
+                            "text-sm",
                             isDark ? "text-zinc-300" : "text-zinc-700"
                           )}>{feature}</span>
                         </div>
@@ -301,36 +334,40 @@ const PricingPage: React.FC = () => {
                     </div>
 
                     <div className={cn(
-                      "pt-6 border-t",
+                      "pt-4 border-t mt-auto",
                       isDark ? "border-zinc-700" : "border-gray-200"
                     )}>
                       {plan.id === 'free' ? (
                         <Link to="/auth" className="block">
-                          <Button className="w-full h-10 sm:h-12 text-sm sm:text-lg" variant="outline">
+                          <Button className="w-full h-10 text-sm" variant="outline">
                             Start Free Trial
                           </Button>
                         </Link>
                       ) : (
                         <Link to="/auth" className="block">
                           <Button className={cn(
-                            "w-full h-10 sm:h-12 text-sm sm:text-lg",
+                            "w-full h-10 text-sm",
                             isPro 
-                              ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
+                              ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                              : isTeam
+                              ? "bg-indigo-600 hover:bg-indigo-700 text-white"
                               : isEnterprise
                               ? "bg-purple-600 hover:bg-purple-700 text-white"
                               : "bg-gray-900 hover:bg-gray-800 text-white"
                           )}>
                             Get Started
-                            <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                            <ArrowRight className="w-3 h-3 ml-2" />
                           </Button>
                         </Link>
                       )}
+                     {plan.id === 'free' && (
                       <p className={cn(
-                        "text-xs text-center mt-3",
+                        "text-xs text-center mt-2",
                         isDark ? "text-zinc-400" : "text-zinc-500"
                       )}>
-                        14-day free trial • No credit card required
+                        14-day free trial
                       </p>
+                     )}
                     </div>
                   </CardContent>
                 </Card>

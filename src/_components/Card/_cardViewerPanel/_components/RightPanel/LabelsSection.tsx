@@ -1,7 +1,5 @@
 import { X, MoreHorizontal } from "lucide-react";
-import {
-  LabelIcon
-} from "@/_components/shared/svg/SharedIcons";
+import { LabelIcon } from "@/_components/shared/svg/SharedIcons";
 import { LabelDropdown } from "@/_components/shared/LabelDropdown";
 import { useCardMutation } from "../../../_mutations/useCardMutations";
 import { Label } from "@/apis/LabelApis";
@@ -9,13 +7,13 @@ import { Label } from "@/apis/LabelApis";
 interface LabelsSectionProps {
   cardId: number;
   labels: Label[];
-  teamId: string;
+  workspaceId: string | number;
 }
 
 export const LabelsSection = ({
   cardId,
   labels,
-  teamId,
+  workspaceId,
 }: LabelsSectionProps) => {
   const { updateCardMutation } = useCardMutation();
 
@@ -30,12 +28,11 @@ export const LabelsSection = ({
     <div className="p-2 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-     
           <span className="text-sm font-medium text-primary">Labels</span>
         </div>
 
         <LabelDropdown
-          teamId={teamId}
+          workspaceId={workspaceId}
           action={updateCardMutation}
           cardId={cardId}
         >

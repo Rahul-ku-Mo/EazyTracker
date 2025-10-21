@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,6 +9,7 @@ import {
 import { Triangle, Check } from "lucide-react";
 import { AdditionalInfoIcon, StorypointIcon } from "@/_components/shared/svg/SharedIcons";
 import { useCardMutation } from "../../../_mutations/useCardMutations";
+import { KanbanContext } from "@/context/KanbanProvider";
 
 interface AdditionalInfoSectionProps {
   cardId: number;
@@ -28,10 +29,12 @@ const formatDate = (date?: Date | string | null) => {
 
 export const AdditionalInfoSection = ({ 
   cardId, 
-  storyPoints: initialStoryPoints
+  storyPoints: initialStoryPoints, 
 }: AdditionalInfoSectionProps) => {
   const { updateCardMutation } = useCardMutation();
   const [storyPoints, setStoryPoints] = useState(initialStoryPoints);
+  
+  const { project } = useContext(KanbanContext);
 
   // Sync storyPoints state with props
   useEffect(() => {
@@ -55,6 +58,15 @@ export const AdditionalInfoSection = ({
       </div>
 
       <div className="space-y-3 text-sm">
+
+      <div className="flex justify-between items-start">
+          <span className="text-muted-foreground text-base">
+            Project
+          </span>
+            <span className="text-right">
+              {project?.title}
+            </span>
+          </div>
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground text-sm">Created</span>
           <span className="text-sm font-medium">
