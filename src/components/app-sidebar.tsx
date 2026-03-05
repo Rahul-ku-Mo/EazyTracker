@@ -30,9 +30,8 @@ import { useTeam } from "@/context/TeamContext";
 import {
   BillingIcon,
   TeamManagementIcon,
-  WorkspaceIcon,
-  ProjectIcon,
   InboxIcon,
+  ProjectIcon,
 } from "@/_components/shared/svg/SidebarIcons";
 import { getFavoriteWorkspaces } from "@/apis/WorkspaceApis";
 
@@ -44,8 +43,6 @@ const NavFavorites = ({
 }) => {
   const navigate = useNavigate();
   const { state } = useSidebar();
-
-  const teamName = localStorage.getItem("teamName");
 
   if (!favoriteWorkspaces || favoriteWorkspaces.length === 0) {
     return (
@@ -70,7 +67,7 @@ const NavFavorites = ({
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="flex items-center gap-2">
-        <Star className="h-4 w-4" />
+        <Star className="h-4 w-4 shrink-0" />
         Favorites
       </SidebarGroupLabel>
       <SidebarMenu>
@@ -78,12 +75,12 @@ const NavFavorites = ({
           <SidebarMenuItem key={workspace.slug}>
             <SidebarMenuButton
               onClick={() =>
-                navigate(`/workspace/${teamName}/${workspace.slug}`)
+                navigate(`/projects/${workspace.project?.slug ?? ""}/workspace/${workspace.slug}`)
               }
               className="flex items-center gap-2 text-sm"
             >
               <div
-                className="w-4 h-4 rounded-sm"
+                className="h-4 w-4 rounded-sm flex-shrink-0"
                 style={{ backgroundColor: workspace.colorValue }}
               />
               <span className="truncate">{workspace.title}</span>
@@ -98,7 +95,6 @@ const NavFavorites = ({
 const getNavigationData = (
   isAdmin: boolean,
   pathname: string,
-  teamName?: string
 ) => {
   const baseNavigation = [
     {
@@ -108,12 +104,6 @@ const getNavigationData = (
       isActive: pathname.includes("/projects"),
     },
     {
-      title: "Workspaces",
-      url: `/workspace/${teamName || ""}`,
-      icon: WorkspaceIcon,
-      isActive: pathname.includes("/workspace"),
-    },
-    {
       title: "Inbox",
       url: "/inbox",
       icon: InboxIcon,
@@ -121,7 +111,7 @@ const getNavigationData = (
     },
   ];
 
-  // Only add billing section for admin users
+  // Only add billing and team management sections for admin users
   if (isAdmin) {
     baseNavigation.push({
       title: "Billing & Plans",
@@ -129,14 +119,14 @@ const getNavigationData = (
       icon: BillingIcon,
       isActive: pathname.includes("/billing"),
     });
-  }
 
-  baseNavigation.push({
-    title: "Manage Team",
-    url: "/team/management",
-    icon: TeamManagementIcon,
-    isActive: pathname.includes("/team/management"),
-  });
+    baseNavigation.push({
+      title: "Manage Team",
+      url: "/team/management",
+      icon: TeamManagementIcon,
+      isActive: pathname.includes("/team/management"),
+    });
+  }
 
   return {
     navMain: baseNavigation,
@@ -150,13 +140,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const { currentTeam } = useTeam();
 
-  const teamName = localStorage.getItem("teamName") as string;
   const { state } = useSidebar();
 
   // Check if user is admin
   const isAdmin = role === "ADMIN";
   const pathname = useLocation().pathname;
-  const navigationData = getNavigationData(isAdmin, pathname, teamName);
+  const navigationData = getNavigationData(isAdmin, pathname);
 
   // Fetch favorite workspaces
   const { data: favoriteWorkspaces } = useQuery({
@@ -179,9 +168,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={navigationData.navMain} />
         <NavFavorites favoriteWorkspaces={favoriteWorkspaces || []} />
-        <div className={cn(state === "collapsed" ? "hidden" : "block px-3")}>
-          <TrialStatusIndicator />
-        </div>
+        {/* Only show trial status indicator for admin users */}
+        {isAdmin && (
+          <div className={cn(state === "collapsed" ? "hidden" : "block px-3")}>
+            <TrialStatusIndicator />
+          </div>
+        )}
       </SidebarContent>
 
       <SidebarFooter>

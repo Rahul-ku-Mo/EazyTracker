@@ -265,17 +265,20 @@ export const ProjectSidebar = ({ project }: ProjectSidebarProps) => {
       )}
 
       {/* Workspaces */}
-      {project.workspaces && project.workspaces.length > 0 && (
+      {(project.workspaces ?? []).length > 0 && (
         <div className="flex items-start justify-between text-sm pt-2">
           <span className="text-muted-foreground font-medium inline-flex items-center gap-1.5 pt-1">
             Boards
           </span>
           <div className="flex-1 flex flex-wrap gap-1">
-            {project.workspaces.map(({ workspace }: any) => (
-              <Badge key={workspace.id} variant="secondary" className="text-xs">
-                {workspace.title}
-              </Badge>
-            ))}
+            {(project.workspaces ?? []).map((item: any) => {
+              const workspace = item.workspace ?? item;
+              return (
+                <Badge key={workspace.id} variant="secondary" className="text-xs">
+                  {workspace.title}
+                </Badge>
+              );
+            })}
           </div>
         </div>
       )}

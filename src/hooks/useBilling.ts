@@ -11,6 +11,8 @@ import {
   type Plan,
   type SubscriptionStatus,
 } from '../apis/billing';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 
 // Query keys
 export const BILLING_QUERY_KEYS = {
@@ -31,11 +33,15 @@ export const useGetPlans = () => {
 
 // Hook to get subscription status
 export const useGetSubscriptionStatus = () => {
+  const { role } = useContext(AuthContext);
+  const isAdmin = role === 'ADMIN';
+
   return useQuery<SubscriptionStatus>({
     queryKey: BILLING_QUERY_KEYS.SUBSCRIPTION,
     queryFn: getSubscriptionStatus,
     staleTime: 1000 * 60 * 2, // 2 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes
+    enabled: isAdmin
   });
 };
 

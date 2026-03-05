@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { useNewCardMutation } from "@/_components/Card/_newCardComponentsAndActions/new-card-mutations";
+import { useFetchTeamMemberOrProject } from "@/_components/Card/_newCardComponentsAndActions/fetch-team-member-project";
 import { useState } from "react";
 import {
   Tooltip,
@@ -41,7 +41,7 @@ export const AssigneesDropdown = ({
 }: AssigneesDropdownProps) => {
   const [open, setOpen] = useState(false);
   const { updateCardMutation } = useCardMutation();
-  const { teamData } = useNewCardMutation();
+  const { teamData } = useFetchTeamMemberOrProject();
 
   const teamMembers = teamData?.members || [];
   const assignedMembers = assignees || [];

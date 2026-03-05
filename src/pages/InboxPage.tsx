@@ -250,7 +250,9 @@ const InboxPage = () => {
             }
 
             navigate(
-              `/workspace/${localStorage.getItem("teamName")}/${metadata.workspaceSlug}`
+              metadata.projectSlug
+                ? `/projects/${metadata.projectSlug}/workspace/${metadata.workspaceSlug}`
+                : "/projects"
             );
           }}
         >

@@ -46,9 +46,9 @@ export const fetchWorkspace = async (workspaceIdentifier: string): Promise<Works
   }
 };
 
-export const createWorkspace = async (data: Partial<Workspace>, teamId: string): Promise<Workspace> => {
+export const createWorkspace = async (data: Partial<Omit<Workspace, 'projectId'>>, projectSlug: string): Promise<Workspace> => {
   try {
-    const response = await apiClient.post(`/workspaces/team/${teamId}`, data);
+    const response = await apiClient.post(`/workspaces/project/${projectSlug}`, data);
 
     if (response.status === 201) return response.data.data;
     throw new Error("Failed to create workspace");

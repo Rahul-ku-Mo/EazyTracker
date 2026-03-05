@@ -7,7 +7,6 @@ export const useMembers = () => {
 
   const { currentProjectSlug: projectSlug } = useProjectSlugStore();
 
-
   const { data: members, isPending } = useQuery({
     queryKey: ["members", teamId],
     queryFn: async () => {

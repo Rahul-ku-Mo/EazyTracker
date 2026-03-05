@@ -17,6 +17,7 @@ import {
   Zap,
   DatabaseIcon,
 } from "lucide-react";
+import { useSubscription } from "@/context/SubscriptionContext";
 import {
   useGetSubscriptionStatus,
   useGetUsageStatistics,
@@ -58,6 +59,25 @@ export const BillingOverview: React.FC = () => {
     useGetUsageStatistics();
   const { currentPlan, canUseAnalytics, canUseTimeTracking, canUseAI } =
     useFeatureGating();
+  const { isAdmin } = useSubscription();
+
+  // Only show billing information to admins
+  if (!isAdmin) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-2">Access Restricted</h3>
+              <p className="text-muted-foreground">
+                Only team administrators can view billing and subscription information.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const getUsageColor = (current: number, limit: number | null) => {
     if (limit === null) return "text-green-600"; // Unlimited

@@ -110,7 +110,7 @@ const useAuthProvider = () => {
         localStorage.setItem("teamId", response.data.data.teamId);
         localStorage.setItem("teamName", generateCapitalizedDashedSlug(response?.data?.data?.team?.name));
 
-        navigate(`/workspace/${localStorage.getItem("teamName")}`);
+        navigate("/projects");
       }
     } catch (err : any) {
       console.error("Login error:", err);

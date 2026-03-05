@@ -5,11 +5,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createWorkspace } from "../apis/WorkspaceApis";
 import { useToast } from "../hooks/use-toast";
 import { useFeatureGating } from "./useFeatureGating";
+import useProjectSlugStore from "@/store/projectSlugStore";
 
 interface IWorkspaceForm {
   workspaceTitle: string;
   selectedColor: string;
-  projectId: string;
 }
 
 const useWorkspaceForm = (count: number) => {
@@ -17,14 +17,13 @@ const useWorkspaceForm = (count: number) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { getUpgradeMessage } = useFeatureGating();
-  const teamId = localStorage.getItem("teamId");
+  const { currentProjectSlug } = useProjectSlugStore();
 
   const [currentWorkspaceInput, setCurrentWorkspaceInput] = useState("");
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
 
   const createWorkspaceMutation = useMutation({
     mutationFn: async (data: IWorkspaceForm) => {
-
       const [colorId, colorValue, colorName] = data.selectedColor.split("|");
 
       const kanbanWorkspaceData = {
@@ -32,11 +31,9 @@ const useWorkspaceForm = (count: number) => {
         colorId,
         colorValue,
         colorName,
-        projectId: data.projectId,
       };
 
-
-      const response = await createWorkspace(kanbanWorkspaceData, teamId as string);
+      const response = await createWorkspace(kanbanWorkspaceData, currentProjectSlug);
       return response;
     },
     onSuccess: (data) => {
@@ -46,8 +43,7 @@ const useWorkspaceForm = (count: number) => {
           variant: "default",
         });
 
-        const teamName = localStorage.getItem("teamName");
-        navigate(`/workspace/${teamName}/${data.slug}`);
+        navigate(`/projects/${currentProjectSlug}/workspace/${data.slug}`);
         setCurrentWorkspaceInput("");
         setSelectedImageId(null);
       }
@@ -73,7 +69,6 @@ const useWorkspaceForm = (count: number) => {
 
     const workspaceTitle = (form.elements.namedItem('title') as HTMLInputElement).value;
     const selectedColor = (form.elements.namedItem('color') as HTMLInputElement).value;
-    const projectId = (form.elements.namedItem("project") as HTMLSelectElement).value
 
     if (workspaceTitle === "") {
       toast({
@@ -115,7 +110,6 @@ const useWorkspaceForm = (count: number) => {
     createWorkspaceMutation.mutate({
       workspaceTitle,
       selectedColor,
-      projectId: projectId as string
     });
   };
 

@@ -7,7 +7,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { ModeToggle } from "./mode-toggle";
 import { NotificationCenter } from "../_components/NotificationCenter";
 import { ReactNode } from "react";
@@ -42,8 +42,10 @@ const AppHeader = ({ children }: AppHeaderProps) => {
               <BreadcrumbItem key={index} className="inline-flex items-center font-semibold text-xs">
                 {index > 0 && <BreadcrumbSeparator />}
                 {link ? (
-                  <BreadcrumbLink href={link as string} className="">
-                    {label.charAt(0).toUpperCase() + label.slice(1).toLowerCase()}
+                  <BreadcrumbLink asChild>
+                    <Link to={link} className="">
+                      {label.charAt(0).toUpperCase() + label.slice(1).toLowerCase()}
+                    </Link>
                   </BreadcrumbLink>
                 ) : (
                   <span className="capitalize">{label}</span>

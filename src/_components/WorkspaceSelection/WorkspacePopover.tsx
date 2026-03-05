@@ -34,12 +34,12 @@ const WorkspacePopover = ({ count }: WorkspacePopoverProps) => {
   // If user can't create more workspaces, show upgrade prompt instead of popover
   if (!canCreateWorkspaces && !isUnlimited) {
     return (
-      <Card className="w-52 h-36 border-dashed border-2 border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 flex flex-col justify-center">
+      <Card className="w-52 h-36 border-dashed border-2 dark:bg-[#18181b] flex flex-col justify-center">
         <CardHeader className="text-center pb-2 pt-4">
-          <div className="w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900/30">
-            <Crown className="w-4 h-4 text-blue-500" />
+          <div className="w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center bg-emerald-100 dark:bg-emerald-900/30">
+            <Crown className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <Badge className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 mx-auto">
+          <Badge className="text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 mx-auto">
             Professional Required
           </Badge>
         </CardHeader>
@@ -51,7 +51,7 @@ const WorkspacePopover = ({ count }: WorkspacePopoverProps) => {
           <Link to="/billing">
             <Button
               size="sm"
-              className="bg-blue-600 hover:bg-blue-700 text-xs h-7"
+              className="text-xs h-7"
             >
               Upgrade
               <ArrowRight className="w-3 h-3 ml-1" />
@@ -71,9 +71,6 @@ const WorkspacePopover = ({ count }: WorkspacePopoverProps) => {
         <button
           className={clsx(
             `relative flex flex-col items-center justify-center p-2 rounded-md cursor-pointer w-52 h-36 bg-zinc-100 dark:bg-[#18181b] hover:bg-zinc-200 dark:hover:bg-[#111211] border border-border transition-all duration-200 ease-in-out`,
-            role === "ADMIN" &&
-              canCreateWorkspaces &&
-              "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700",
             !canCreateWorkspaces &&
               !isUnlimited &&
               "cursor-not-allowed opacity-50"

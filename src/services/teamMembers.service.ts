@@ -1,3 +1,4 @@
+import { api } from '@/lib/api';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
@@ -23,18 +24,18 @@ const getAuthHeaders = () => {
  * @returns Promise<TeamMember[]>
  */
 export const getTeamMembers = async (): Promise<TeamMember[]> => {
+
+  const teamId = localStorage.getItem("teamId");
+
   try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/teams/members`,
-      {
-        headers: getAuthHeaders(),
-      }
+    const response = await api.get(
+      `/teams/${teamId}/members`
     );
 
     if (response.status === 200 && response.data.data) {
       // Transform the data to match the expected format
       const teamData = response.data.data;
-      
+
       if (teamData.members && Array.isArray(teamData.members)) {
         return teamData.members.map((member: any) => ({
           id: member.id,
@@ -46,7 +47,7 @@ export const getTeamMembers = async (): Promise<TeamMember[]> => {
           role: member.role || 'USER'
         }));
       }
-      
+
       // If it's a direct array of members
       if (Array.isArray(teamData)) {
         return teamData.map((member: any) => ({
@@ -60,7 +61,7 @@ export const getTeamMembers = async (): Promise<TeamMember[]> => {
         }));
       }
     }
-    
+
     return [];
   } catch (error) {
     console.error("Error fetching team members for mentions:", error);
@@ -93,7 +94,7 @@ export const getWorkspaceMembersForMentions = async (workspaceId: string): Promi
         role: member.role || 'MEMBER'
       }));
     }
-    
+
     return [];
   } catch (error) {
     console.error("Error fetching workspace members for mentions:", error);
@@ -113,8 +114,8 @@ export const searchTeamMembers = (query: string, members: TeamMember[]): TeamMem
   }
 
   const searchTerm = query.toLowerCase();
-  
-  return members.filter(member => 
+
+  return members.filter(member =>
     member.name.toLowerCase().includes(searchTerm) ||
     member.username?.toLowerCase().includes(searchTerm) ||
     member.email.toLowerCase().includes(searchTerm) ||

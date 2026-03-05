@@ -88,11 +88,6 @@ const NewProjectActions = ({
 }: TNewProjectActionsProps) => {
   const { theme } = useTheme();
 
-  // Fetch team members
-  // const { data } = useTeamMemberAndDetails();
-
-  // const teamMembers: TeamMember[] = data?.members || [];
-
   const handlePriorityClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();

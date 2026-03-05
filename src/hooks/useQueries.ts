@@ -39,7 +39,6 @@ const useColumn = (accessToken: string, columnId: string) => {
 };
 
 
-
 const useWorkspace = (workspaceIdentifier: string) => {
   return useQuery({
     queryKey: ["workspaces", workspaceIdentifier],
@@ -47,10 +46,11 @@ const useWorkspace = (workspaceIdentifier: string) => {
   });
 };
 
-const useWorkspaces = (teamId: string) => {
+const useWorkspaces = (teamId: string, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ["workspaces", teamId],
     queryFn: async () => await fetchWorkspaces(teamId),
+    enabled: options?.enabled !== undefined ? options.enabled : !!teamId,
   });
 };
 

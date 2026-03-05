@@ -168,7 +168,11 @@ ${user?.username}`);
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="w-8 h-8 rounded-lg">
-                <AvatarImage src={user?.imageUrl || ""} alt={user?.username} className="object-cover object-top" />
+                <AvatarImage
+                  src={user?.imageUrl || ""}
+                  alt={user?.username}
+                  className="object-cover object-top"
+                />
                 <AvatarFallback className="rounded-lg">
                   {user?.username.charAt(0)}
                 </AvatarFallback>
@@ -208,7 +212,10 @@ ${user?.username}`);
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               {upgradeOption.show && (
-                <DropdownMenuItem onClick={handleUpgradeClick} className="text-sm">
+                <DropdownMenuItem
+                  onClick={handleUpgradeClick}
+                  className="text-sm"
+                >
                   <upgradeOption.icon className="h-4 w-4" />
                   {upgradeOption.text}
                 </DropdownMenuItem>
@@ -216,7 +223,10 @@ ${user?.username}`);
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => navigate("/setting/account")} className="text-sm">
+              <DropdownMenuItem
+                onClick={() => navigate("/setting/account")}
+                className="text-sm"
+              >
                 <BadgeCheck className="h-4 w-4" />
                 Settings
               </DropdownMenuItem>

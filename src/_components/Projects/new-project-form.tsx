@@ -39,7 +39,7 @@ interface NewProjectFormProps {
   teamId: string;
 }
 
-const NewProjectForm = ({ isOpen, onClose, teamId }: NewProjectFormProps) => {
+export const NewProjectForm = ({ isOpen, onClose, teamId }: NewProjectFormProps) => {
   const titleRef = useRef<HTMLInputElement>(null);
   const [description, setDescription] = useState<string>("");
   const [targetDate, setTargetDate] = useState<Date | undefined>();
@@ -146,7 +146,7 @@ const NewProjectForm = ({ isOpen, onClose, teamId }: NewProjectFormProps) => {
           }}
           isCloseButtonRequired={false}
         >
-          <DialogHeader className="flex flex-row items-center justify-between px-4 py-2 !space-y-0">
+          <DialogHeader className="flex flex-row items-center justify-between px-4 pb-2 pt-4 !space-y-0">
             <DialogTitle className="sr-only">New Project</DialogTitle>
             <DialogDescription className="sr-only">
               Create a new project to organize your work and collaborate with
@@ -206,7 +206,7 @@ const NewProjectForm = ({ isOpen, onClose, teamId }: NewProjectFormProps) => {
              
             />
 
-            <div className="flex items-center justify-end p-3 px-4 border-t border-border shrink-0">
+            <div className="flex items-center justify-end p-4 border-t border-border shrink-0">
               <div className="flex items-center gap-2">
                 <Button
                   type="submit"
@@ -248,4 +248,3 @@ const NewProjectForm = ({ isOpen, onClose, teamId }: NewProjectFormProps) => {
   );
 };
 
-export default NewProjectForm;

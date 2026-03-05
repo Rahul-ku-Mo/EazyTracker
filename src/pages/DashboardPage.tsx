@@ -17,10 +17,9 @@ const DashboardPage: React.FC = () => {
       return;
     }
 
-    // If team data is loaded and we have a current team, redirect to workspace
+    // If team data is loaded and we have a current team, redirect to projects
     if (!isLoading && currentTeam) {
-      const teamName = localStorage.getItem("teamName")
-      navigate(`/workspace/${teamName}`);
+      navigate("/projects");
       return;
     }
 

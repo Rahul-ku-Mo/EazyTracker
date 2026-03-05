@@ -23,13 +23,12 @@ const KanbanContext = createContext<KanbanContextType>({} as KanbanContextType);
 
 // Create a provider component
 const KanbanProvider = ({ children }: { children: React.ReactNode }) => {
-  const { slug } = useParams();
+  const { slug, projectSlug } = useParams();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { updateCurrentProjectSlug } = useProjectSlugStore();
   
   const teamId = localStorage.getItem("teamId") as string;
-  const teamName = localStorage.getItem("teamName") as string;
 
   const workspaceId = teamId && slug && `${teamId}/${slug}`;
   const workspaceIdentifier = teamId && slug ? `${teamId}/${slug}` : slug || "";
@@ -100,7 +99,7 @@ const KanbanProvider = ({ children }: { children: React.ReactNode }) => {
   // Handle error state
   if (isWorkspaceError) {
     const handleGoBack = () => {
-      navigate(`/workspace/${teamName}`);
+      navigate(projectSlug ? `/projects/${projectSlug}` : "/projects");
     };
 
     return (

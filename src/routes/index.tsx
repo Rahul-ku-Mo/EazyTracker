@@ -106,33 +106,33 @@ const authenticatedRoutes = [
     element: <WithContexts Component={OnboardingPage} />,
   },
   {
-    path: "/workspace/:teamName",
-    children: [
-      {
-        index: true,
-        element: <WithContexts Component={WorkspaceSelectionPage} />,
-      },
-      {
-        path: ":slug",
-        element: <WithContexts Component={KanbanPage} includeKanban={true} />,
-      },
-      {
-        path: "settings/:slug",
-        element: <WithContexts Component={WorkspaceSettingsPage} />,
-      },
-      {
-        path: "analytics",
-        element: <WithContexts Component={AnalyticsPage} />,
-      },
-    ],
-  },
-  {
     path: "/projects",
     element: <WithContexts Component={ProjectsPage} />,
   },
   {
     path: "/projects/:projectSlug",
-    element: <ProjectDetailPage />,
+    children: [
+      {
+        index: true,
+        element: <ProjectDetailPage />,
+      },
+      {
+        path: "workspace",
+        element: <WithContexts Component={WorkspaceSelectionPage} />,
+      },
+      {
+        path: "workspace/:slug",
+        element: <WithContexts Component={KanbanPage} includeKanban={true} />,
+      },
+      {
+        path: "workspace/settings/:slug",
+        element: <WithContexts Component={WorkspaceSettingsPage} />,
+      },
+      {
+        path: "workspace/analytics",
+        element: <WithContexts Component={AnalyticsPage} />,
+      },
+    ],
   },
   {
     path: "billing",

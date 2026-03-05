@@ -55,6 +55,13 @@ export interface Project {
     imageUrl?: string;
   };
   cards: any[]; // Type this based on your Card type
+  userAccess?: {
+    hasAccess: boolean;
+    isLead: boolean;
+    isMember: boolean;
+    isTeamAdmin: boolean;
+    role: 'MEMBER' | 'ADMIN' | null;
+  };
 }
 
 export interface CreateProjectInput {
@@ -79,8 +86,25 @@ export interface UpdateProjectInput extends Partial<CreateProjectInput> {
 export interface ProjectWorkspace {
   id: number;
   title: string;
+  slug: string;
   colorName?: string;
   colorValue?: string;
+}
+
+export interface TeamProject {
+  id: string;
+  title: string;
+  slug: string;
+  status: string;
+  priority?: string;
+  targetDate?: Date;
+  leadId?: string;
+  createdBy: string;
+  hasAccess: boolean;
+  isOwner: boolean;
+  userRole: 'MEMBER' | 'ADMIN' | null;
+  members: any[];
+  lead: any;
 }
 
 export const getProjects = async (teamId: string): Promise<Project[]> => {
@@ -95,6 +119,7 @@ export const getProjects = async (teamId: string): Promise<Project[]> => {
     throw error;
   }
 };
+
 
 export const getProject = async (projectSlug: string): Promise<Project> => {
   try {

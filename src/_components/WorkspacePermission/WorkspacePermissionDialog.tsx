@@ -19,10 +19,12 @@ import {
   Crown,
   Clock,
   CheckCircle,
-  XCircle
+  XCircle,
+  Briefcase,
+  FolderKanban
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -31,15 +33,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MemberIcon } from "../shared/svg/SharedIcons";
+import { Badge } from "@/components/ui/badge";
 
 interface BoardPermissionsDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  workspaceId: string;
+  teamId: string;
+  workspaceSlug: string;
   workspaceTitle: string;
 }
 
-interface TeamMember {
+interface ProjectMember {
   id: string;
   name: string;
   email: string;
@@ -51,22 +55,41 @@ interface TeamMember {
   } | null;
 }
 
+interface PermissionsData {
+  members: ProjectMember[];
+  workspace: {
+    id: number;
+    title: string;
+    slug: string;
+  };
+  project: {
+    id: string;
+    title: string;
+    slug: string;
+  };
+  team: {
+    id: string;
+    name: string;
+  };
+}
+
 const WorkspacePermissionsDialog = ({ 
   isOpen, 
   onClose, 
-  workspaceId, 
+  teamId,
+  workspaceSlug,
   workspaceTitle 
 }: BoardPermissionsDialogProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const accessToken = Cookies.get("accessToken") || "";
 
-  // Fetch team members with workspace access status
-  const { data: permissionsData, isLoading } = useQuery({
-    queryKey: ["workspace-permissions", workspaceId],
+  // Fetch project members with workspace access status
+  const { data: permissionsData, isLoading } = useQuery<PermissionsData>({
+    queryKey: ["workspace-permissions", teamId, workspaceSlug],
     queryFn: async () => {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/workspaces/${workspaceId}/permissions`,
+        `${import.meta.env.VITE_API_URL}/workspaces/${teamId}/${workspaceSlug}/permissions`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -75,14 +98,14 @@ const WorkspacePermissionsDialog = ({
       );
       return response.data.data;
     },
-    enabled: isOpen && !!workspaceId,
+    enabled: isOpen && !!teamId && !!workspaceSlug,
   });
 
   // Grant workspace access mutation
   const grantAccessMutation = useMutation({
     mutationFn: async ({ memberId, role }: { memberId: string; role: string }) => {
       return axios.post(
-        `${import.meta.env.VITE_API_URL}/workspaces/${workspaceId}/permissions/grant`,
+        `${import.meta.env.VITE_API_URL}/workspaces/${teamId}/${workspaceSlug}/permissions`,
         { memberId, role },
         {
           headers: {
@@ -95,14 +118,14 @@ const WorkspacePermissionsDialog = ({
       toast({
         title: "Access granted",
         description: `Workspace access has been granted successfully`,
-        variant: "default",
       });
-      queryClient.invalidateQueries({ queryKey: ["workspace-permissions", workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ["workspace-permissions", teamId, workspaceSlug] });
     },
     onError: (error: any) => {
+      const errorMessage = error.response?.data?.message || "An error occurred";
       toast({
         title: "Failed to grant access",
-        description: error.response?.data?.message || "An error occurred",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -112,7 +135,7 @@ const WorkspacePermissionsDialog = ({
   const revokeAccessMutation = useMutation({
     mutationFn: async (memberId: string) => {
       return axios.delete(
-        `${import.meta.env.VITE_API_URL}/workspaces/${workspaceId}/permissions/${memberId}`,
+        `${import.meta.env.VITE_API_URL}/workspaces/${teamId}/${workspaceSlug}/permissions/${memberId}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -124,9 +147,8 @@ const WorkspacePermissionsDialog = ({
       toast({
         title: "Access revoked",
         description: "Workspace access has been revoked successfully",
-        variant: "default",
       });
-      queryClient.invalidateQueries({ queryKey: ["workspace-permissions", workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ["workspace-permissions", teamId, workspaceSlug] });
     },
     onError: (error: any) => {
       toast({
@@ -169,8 +191,11 @@ const WorkspacePermissionsDialog = ({
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Board Permissions</DialogTitle>
-            <DialogDescription>Loading team members...</DialogDescription>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Workspace Access Control
+            </DialogTitle>
+            <DialogDescription>Loading project members...</DialogDescription>
           </DialogHeader>
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -180,7 +205,7 @@ const WorkspacePermissionsDialog = ({
     );
   }
 
-  const members: TeamMember[] = permissionsData?.members || [];
+  const members: ProjectMember[] = permissionsData?.members || [];
   const membersWithAccess = members.filter(m => m.boardAccess);
   const membersWithoutAccess = members.filter(m => !m.boardAccess);
 
@@ -190,36 +215,62 @@ const WorkspacePermissionsDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            Workspace Permissions
+            Workspace Access Control
           </DialogTitle>
           <DialogDescription>
-            Manage team member access to <strong>{workspaceTitle}</strong>
+            Control which project members can access <strong>{workspaceTitle}</strong>
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Board Info */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <MemberIcon className="h-5 w-5" />
-                Team: {permissionsData?.team?.name}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span>{members.length} total members</span>
-                <span>•</span>
-                <span>{membersWithAccess.length} have workspace access</span>
+          {/* Context Information */}
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="pt-6">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex flex-col gap-2 flex-1">
+                    <div className="flex items-center gap-2 text-sm">
+                      <MemberIcon className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">Team:</span>
+                      <span className="text-muted-foreground">{permissionsData?.team?.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Briefcase className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">Project:</span>
+                      <span className="text-muted-foreground">{permissionsData?.project?.title}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <FolderKanban className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">Workspace:</span>
+                      <span className="text-muted-foreground">{workspaceTitle}</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1 items-end">
+                    <Badge variant="outline" className="gap-1">
+                      <CheckCircle className="h-3 w-3" />
+                      {membersWithAccess.length} with access
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      of {members.length} project members
+                    </span>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
 
+          <div className="bg-muted/30 p-3 rounded-lg border border-border/50">
+            <p className="text-sm text-muted-foreground">
+              <strong>Note:</strong> Only project members can be granted workspace access. 
+              To add new people, first add them to the project "{permissionsData?.project?.title}".
+            </p>
+          </div>
+
           {/* Members with Access */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              <h3 className="text-lg font-semibold">Members with Workspace Access ({membersWithAccess.length})</h3>
+              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-500" />
+              <h3 className="text-lg font-semibold">Project Members with Workspace Access ({membersWithAccess.length})</h3>
             </div>
             
             {membersWithAccess.length > 0 ? (
@@ -286,7 +337,7 @@ const WorkspacePermissionsDialog = ({
               </div>
             ) : (
               <p className="text-muted-foreground text-center py-4">
-                No team members have access to this board yet.
+                No project members have access to this workspace yet.
               </p>
             )}
           </div>
@@ -296,8 +347,8 @@ const WorkspacePermissionsDialog = ({
           {/* Members without Access */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <XCircle className="h-5 w-5 text-gray-500" />
-              <h3 className="text-lg font-semibold">Team Members without Access ({membersWithoutAccess.length})</h3>
+              <XCircle className="h-5 w-5 text-muted-foreground" />
+              <h3 className="text-lg font-semibold">Project Members without Access ({membersWithoutAccess.length})</h3>
             </div>
             
             {membersWithoutAccess.length > 0 ? (
@@ -357,13 +408,13 @@ const WorkspacePermissionsDialog = ({
               </div>
             ) : (
               <p className="text-muted-foreground text-center py-4">
-                All team members have access to this board.
+                All project members have access to this workspace.
               </p>
             )}
           </div>
         </div>
 
-        <div className="flex justify-end pt-4">
+        <div className="flex justify-end gap-2 pt-4">
           <Button variant="outline" onClick={onClose}>
             Close
           </Button>

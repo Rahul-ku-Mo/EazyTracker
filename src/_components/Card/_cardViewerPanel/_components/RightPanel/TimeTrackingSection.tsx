@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { TimeTrackingIcon } from "@/_components/shared/svg/SharedIcons";
 
 interface TimeTrackingSectionProps {
@@ -14,9 +14,14 @@ export const TimeTrackingSection = ({
   progressPercentage = 45 
 }: TimeTrackingSectionProps) => {
   const navigate = useNavigate();
+  const { projectSlug, slug: workspaceSlug } = useParams<{ projectSlug?: string; slug?: string }>();
 
   const handleViewDetails = () => {
-    navigate(`analytics?task=${cardId}`);
+    if (projectSlug) {
+      navigate(`/projects/${projectSlug}/workspace/analytics?task=${cardId}`);
+    } else {
+      navigate("/projects");
+    }
   };
 
   return (

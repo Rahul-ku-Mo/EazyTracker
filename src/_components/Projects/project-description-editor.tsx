@@ -20,9 +20,7 @@ import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
 import { CodeNode, CodeHighlightNode } from "@lexical/code";
 
 import { cn } from "@/lib/utils";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateProject } from "@/apis/project";
-import { useToast } from "@/hooks/use-toast";
 import { indexedDBService } from "@/services/indexedDB.service";
 import { useDebounce } from "@/hooks/use-debounce";
 
@@ -46,8 +44,7 @@ import {
 } from "@lexical/markdown";
 import { CopyImagePlugin } from "../Card/_editor/Plugins/CopyImagePlugin";
 import { ImageNode } from "@/_components/Card/_editor/ImageNode";
-import { Button } from "@/components/ui/button";
-import { Cloud, Copy } from "lucide-react";
+import { Cloud } from "lucide-react";
 import ComponentPickerPlugin from "../Card/_editor/Plugins/ComponentPicketPlugin";
 import { FloatingLinkEditorPlugin } from "@/_components/Notes/_editor/plugins/FloatingLinkEditorPlugin";
 import { EditorTheme, theme } from "@/_components/shared/Editor/editor-theme";
@@ -162,40 +159,26 @@ export const ProjectDescriptionEditor = ({
   const [currentContent, setCurrentContent] = useState(initialDescription);
   const [loadedContent, setLoadedContent] = useState(initialDescription);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [isLoadingSave, setIsLoadingSave] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved" | "error">("saved");
   const editorRef = useRef(null);
   const anchorElemRef = useRef<HTMLDivElement>(null);
   const [isLinkEditMode, setIsLinkEditMode] = useState(false);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
 
-  // Debounce the current content for IndexedDB saving
+  // Debounce for IndexedDB (local backup)
   const debouncedContent = useDebounce(currentContent, 500);
+  // Debounce for cloud save (2s after user stops typing)
+  const debouncedCloudContent = useDebounce(currentContent, 2000);
 
   // Refs to track state
   const initialDescriptionRef = useRef(initialDescription);
   const lastSavedToCloudRef = useRef(initialDescription);
   const currentContentRef = useRef(currentContent);
   const handleSaveToCloudRef = useRef<(() => Promise<void>) | null>(null);
+  const projectSlugRef = useRef(project.slug);
 
-  const updateProjectMutation = useMutation({
-    mutationFn: (data: any) => updateProject({ slug: project.slug, ...data }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects", project.slug] });
-      toast({
-        title: "Success",
-        description: "Description saved to cloud successfully",
-      });
-      lastSavedToCloudRef.current = currentContent;
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to save description to cloud",
-        variant: "destructive",
-      });
-    },
-  });
+  useEffect(() => {
+    projectSlugRef.current = project.slug;
+  }, [project.slug]);
 
   // Initialize IndexedDB and load saved content
   useEffect(() => {
@@ -252,34 +235,81 @@ export const ProjectDescriptionEditor = ({
     }
   }, [debouncedContent, isInitialized, project.slug]);
 
-  // Check if there are unsaved changes
-  const hasUnsavedChanges = currentContent !== lastSavedToCloudRef.current;
+  // Skip the first content change from InitialContentPlugin — treat it as the baseline,
+  // not a user edit. This prevents an immediate autosave on load that could degrade
+  // formatting through the HTML round-trip.
+  const hasUserEditedRef = useRef(false);
 
-  // Save to server
-  const handleSaveToCloud = useCallback(async () => {
-    if (currentContent !== lastSavedToCloudRef.current) {
-      setIsLoadingSave(true);
+  useEffect(() => {
+    if (isInitialized) {
+      const timer = setTimeout(() => {
+        hasUserEditedRef.current = true;
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isInitialized]);
+
+  const handleContentChange = useCallback((content: string) => {
+    setCurrentContent(content);
+    if (!hasUserEditedRef.current) {
+      lastSavedToCloudRef.current = content;
+      return;
+    }
+    setSaveStatus("unsaved");
+  }, []);
+
+  // Autosave to cloud when debounced content changes (2s after user stops typing).
+  // Calls the API directly to avoid useMutation state changes re-triggering this effect.
+  useEffect(() => {
+    if (!isInitialized) return;
+    if (debouncedCloudContent === lastSavedToCloudRef.current) return;
+
+    let cancelled = false;
+
+    const saveToCloud = async () => {
+      setSaveStatus("saving");
       try {
-        await updateProjectMutation.mutateAsync({
-          description: currentContent,
+        await updateProject({
+          slug: projectSlugRef.current,
+          description: debouncedCloudContent,
         });
+        if (cancelled) return;
+        lastSavedToCloudRef.current = debouncedCloudContent;
+        setSaveStatus("saved");
+        await indexedDBService.deleteProjectDescription(projectSlugRef.current);
+      } catch {
+        if (cancelled) return;
+        setSaveStatus("error");
+      }
+    };
 
-        // Clear from IndexedDB after successful save
-        await indexedDBService.deleteProjectDescription(project.slug);
+    saveToCloud();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedCloudContent, isInitialized]);
+
+  // Save to cloud on unmount if there are unsaved changes (safety net)
+  const handleSaveToCloud = useCallback(async () => {
+    if (currentContentRef.current !== lastSavedToCloudRef.current) {
+      try {
+        await updateProject({
+          slug: projectSlugRef.current,
+          description: currentContentRef.current,
+        });
+        lastSavedToCloudRef.current = currentContentRef.current;
+        await indexedDBService.deleteProjectDescription(projectSlugRef.current);
       } catch (error) {
         console.error("Failed to save project description:", error);
-      } finally {
-        setIsLoadingSave(false);
       }
     }
-  }, [currentContent, updateProjectMutation, project.slug]);
+  }, []);
 
-  // Update the ref with the latest handleSaveToCloud function
   useEffect(() => {
     handleSaveToCloudRef.current = handleSaveToCloud;
   }, [handleSaveToCloud]);
 
-  // Save to cloud on unmount only
   useEffect(() => {
     return () => {
       if (
@@ -342,28 +372,23 @@ export const ProjectDescriptionEditor = ({
   return (
     <div className="mb-6">
       <div className="flex items-center justify-end mb-2 w-full">
-        <div className="flex items-center gap-2">
-          {hasUnsavedChanges && (
-            <span className="text-xs text-muted-foreground">
-              Unsaved changes
-            </span>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          {saveStatus === "saving" && (
+            <>
+              <Cloud className="h-3 w-3 animate-pulse" />
+              <span>Saving...</span>
+            </>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSaveToCloud}
-            disabled={!hasUnsavedChanges || isLoadingSave}
-            className="flex items-center gap-1.5"
-          >
-            {isLoadingSave ? (
-              <Cloud className="h-3 w-3 animate-spin" />
-            ) : hasUnsavedChanges ? (
+          {saveStatus === "saved" && (
+            <>
               <Cloud className="h-3 w-3" />
-            ) : (
-              <Copy className="h-3 w-3" />
-            )}
-            {isLoadingSave ? "Saving..." : "Save"}
-          </Button>
+              <span>Saved</span>
+            </>
+          )}
+          {saveStatus === "unsaved" && <span>Unsaved changes</span>}
+          {saveStatus === "error" && (
+            <span className="text-destructive">Save failed — retrying</span>
+          )}
         </div>
       </div>
 
@@ -397,7 +422,7 @@ export const ProjectDescriptionEditor = ({
             />
             <PlaceholderPlugin placeholder="Add project description..." />
             <InitialContentPlugin initialContent={loadedContent} />
-            <TransformToHTMLPlugin setCurrentContent={setCurrentContent} />
+            <TransformToHTMLPlugin setCurrentContent={handleContentChange} />
             <HistoryPlugin />
             <ListPlugin />
             <CheckListPlugin />

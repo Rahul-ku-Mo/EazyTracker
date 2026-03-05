@@ -34,7 +34,7 @@ import {
 } from "@/_components/shared/svg/SharedIcons";
 
 import { ProjectIcon } from "@/_components/shared/svg/SidebarIcons";
-import { useNewCardMutation } from "./new-card-mutations";
+import { useFetchTeamMemberOrProject } from "./fetch-team-member-project";
 import { StoryDropdown } from "./story-dropdown";
 import { LabelDropdown } from "@/_components/shared/LabelDropdown";
 
@@ -81,7 +81,7 @@ const NewCardActions = ({
   const { workspace } = useContext(KanbanContext);
   const workspaceId = workspace?.id;
 
-  const { teamData, allProjects } = useNewCardMutation();
+  const { teamData, allProjects } = useFetchTeamMemberOrProject();
 
   const teamMembers: TeamMember[] = teamData?.members || [];
 

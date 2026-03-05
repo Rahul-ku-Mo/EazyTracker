@@ -8,10 +8,10 @@ import { useWorkspaces } from "@/hooks/useQueries";
 import { useFeatureGating } from "@/hooks/useFeatureGating";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Lock, Eye, Info, MoreHorizontal } from "lucide-react";
+import { Info, MoreHorizontal, Briefcase } from "lucide-react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { getTeamWorkspaces } from "@/apis/TeamApis";
+import { getTeamWorkspaces } from "@/apis/team-api";
 import { toggleWorkspaceFavorite } from "@/apis/WorkspaceApis";
 
 import { WorkspaceContextMenu } from "./WorkspaceContextMenu";
@@ -65,7 +65,7 @@ const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
 
   const teamId = localStorage.getItem("teamId") || "";
 
-  const { updateCurrentProjectSlug} = useProjectSlugStore();
+  const { updateCurrentProjectSlug } = useProjectSlugStore();
 
   const [isOpenDeleteWorkspaceDialog, setIsOpenDeleteWorkspaceDialog] =
     useState(false);
@@ -90,7 +90,7 @@ const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
     onMutate: async () => {
       // Extract workspaceId from identifier for optimistic update
       const workspaceId = workspace.id;
-      
+
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["workspaces"] });
       await queryClient.cancelQueries({ queryKey: ["favoriteWorkspaces"] });
@@ -131,8 +131,7 @@ const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
 
       toast({
         title: "Error",
-        description:
-          error.message || "Failed to update favorite status",
+        description: error.message || "Failed to update favorite status",
         variant: "destructive",
       });
     },
@@ -152,21 +151,15 @@ const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
   };
 
   const handleOpenWorkspace = () => {
-    // Use new teamId + slug pattern if workspace has teamId and slug
-    if (workspace.slug) {
-      const teamName = localStorage.getItem("teamName");
-
-      updateCurrentProjectSlug(workspace?.project.slug);
-
-      navigate(`/workspace/${teamName}/${workspace.slug}`);
+    if (workspace.slug && workspace.project?.slug) {
+      updateCurrentProjectSlug(workspace.project.slug);
+      navigate(`/projects/${workspace.project.slug}/workspace/${workspace.slug}`);
     }
   };
 
   const handleOpenWorkspaceSettings = () => {
-    // Use new teamId + slug pattern if workspace has teamId and slug
-    if (workspace.slug) {
-      const teamName = localStorage.getItem("teamName");
-      navigate(`/workspace/settings/${teamName}/${workspace.slug}`);
+    if (workspace.slug && workspace.project?.slug) {
+      navigate(`/projects/${workspace.project.slug}/workspace/settings/${workspace.slug}`);
     }
   };
 
@@ -258,53 +251,7 @@ const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
   );
 };
 
-const LockedWorkspaceCard = ({ workspace }: { workspace: TeamWorkspace }) => {
-  const { toast } = useToast();
-
-  const handleLockedClick = () => {
-    toast({
-      title: "Workspace Access Required",
-      description: `You need permission to access "${workspace.title}". Contact ${workspace.createdBy} for access.`,
-      variant: "default",
-    });
-  };
-
-  return (
-    <div className="block" onClick={handleLockedClick}>
-      <Card className="relative overflow-hidden border-0 rounded-md group w-52 h-36 cursor-not-allowed">
-        <div
-          style={{ backgroundColor: workspace.colorValue }}
-          className="absolute inset-0 w-full h-full opacity-50"
-        />
-        <div
-          className={cn(
-            "absolute inset-0 flex flex-col justify-between p-3",
-            "bg-black/60 group-hover:bg-black/70",
-            "transition-colors duration-200"
-          )}
-        >
-          <div className="flex items-start justify-between">
-            <CardTitle className="text-sm font-bold text-white/70 flex-1">
-              {workspace.title}
-            </CardTitle>
-            <div className="flex items-center gap-1">
-              <Lock className="w-4 h-4 text-white/70" />
-            </div>
-          </div>
-          <CardFooter className="p-0 flex flex-col items-start gap-1">
-            <div className="flex items-center gap-1 text-xs text-white/60">
-              <Eye className="w-3 h-3" />
-              <span>Created by {workspace.createdBy}</span>
-            </div>
-            <span className="text-xs font-medium text-white/40">
-              {workspace.colorName} • Access Required
-            </span>
-          </CardFooter>
-        </div>
-      </Card>
-    </div>
-  );
-};
+// Removed LockedWorkspaceCard - users won't see workspaces from projects they don't have access to
 
 const EmptyWorkspaceState = ({
   remainingWorkspaces,
@@ -312,23 +259,52 @@ const EmptyWorkspaceState = ({
 }: {
   remainingWorkspaces: number;
   isAdmin: boolean;
-}) => (
-  <>
-    <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
-      <div className="border-0 bg-background/50">
-        <div className="text-2xl font-bold text-center geist-font">
-          {isAdmin ? "Start your journey!" : "No workspaces available"}
+}) => {
+  if (isAdmin) {
+    return (
+      <>
+        <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
+          <div className="border-0 bg-background/50">
+            <div className="text-2xl font-bold text-center geist-font">
+              Start your journey!
+            </div>
+            <div className="text-sm max-w-xs text-muted-foreground text-center">
+              ✨ Create your first workspace to organize tasks. 🚀
+            </div>
+          </div>
         </div>
-        <div className="text-sm max-w-xs text-muted-foreground text-center">
-          {isAdmin
-            ? "✨ Create your first workspace to organize tasks. 🚀"
-            : "🔒 Contact your team admin to get access to workspaces or create new ones."}
-        </div>
-      </div>
+        <WorkspacePopover count={remainingWorkspaces} />
+      </>
+    );
+  }
+
+  // Non-admin empty state
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <Card className="max-w-md w-full border-orange-200 dark:border-orange-800 bg-orange-50/50 dark:bg-orange-900/10">
+        <CardContent className="pt-6">
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="p-3 rounded-full bg-orange-100 dark:bg-orange-900/30">
+              <Briefcase className="w-8 h-8 text-orange-600 dark:text-orange-400" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">No Projects Available</h3>
+              <p className="text-sm text-muted-foreground">
+                You haven't been invited to any projects yet. Once you're added to a project, 
+                you'll be able to access its workspaces. Contact your team administrator 
+                or project admin for access.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Info className="w-4 h-4" />
+              <span>Need access? Contact your team admin or project admin</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
-    {isAdmin && <WorkspacePopover count={remainingWorkspaces} />}
-  </>
-);
+  );
+};
 
 const LoadingState = () => (
   <div className="flex flex-wrap gap-4">
@@ -343,10 +319,14 @@ const WorkspaceSelection = () => {
   const { isAdmin } = useAdminCheck();
   const teamId = localStorage.getItem("teamId") as string;
 
-  // Only fetch user's own workspaces if user is admin
+  // Fetch workspaces based on role
+  // Admins fetch their own workspaces via useWorkspaces
+  // Non-admins rely on team workspaces they have access to
   const { data: workspaces, isPending: isWorkspacesPending } = useWorkspaces(
     teamId,
+    { enabled: isAdmin } // Only fetch if admin
   );
+
   const { data: teamWorkspaces, isPending: isTeamWorkspacesPending } = useQuery(
     {
       queryKey: ["team-workspaces"],
@@ -359,43 +339,50 @@ const WorkspaceSelection = () => {
   const currentWorkspaceCount = workspaces?.length ?? 0;
   const { remaining } = canCreate("projects", currentWorkspaceCount);
   // For unlimited plans, remaining will be -1, otherwise show actual remaining count
-  const remainingWorkspaces = remaining === null ? 0 : remaining;
+  // Only admins can create workspaces, so set to 0 for non-admins
+  const remainingWorkspaces = isAdmin
+    ? remaining === null
+      ? 0
+      : remaining
+    : 0;
 
   const isPending = isWorkspacesPending || isTeamWorkspacesPending;
 
-  // Separate team workspaces into accessible and locked
+  // Get workspace IDs from useWorkspaces to avoid duplicates
+  const ownWorkspaceIds = new Set(workspaces?.map((w: any) => w.id) || []);
+
+  // Filter team workspaces - only show workspaces from projects user has access to
+  // Backend already filters by project access, so we only need to:
+  // 1. Show workspaces user has direct access to
+  // 2. Exclude duplicates for team admins (already shown in "My Workspaces")
   const accessibleTeamWorkspaces =
     teamWorkspaces?.filter(
-      (workspace: TeamWorkspace) => workspace.hasAccess && !workspace.isOwner
-    ) || [];
-  const lockedTeamWorkspaces =
-    teamWorkspaces?.filter(
-      (workspace: TeamWorkspace) => !workspace.hasAccess && !workspace.isOwner
+      (workspace: TeamWorkspace) => 
+        workspace.hasAccess && 
+        // Exclude workspaces already shown in "My Workspaces" for team admins
+        (!isAdmin || !ownWorkspaceIds.has(workspace.id))
     ) || [];
 
-  // For non-admin users, only count team workspaces they have access to
+  // Count workspaces - no locked workspaces since users can only see workspaces from their projects
   const relevantWorkspaceCount = isAdmin
-    ? (workspaces?.length || 0) +
-      (accessibleTeamWorkspaces?.length || 0) +
-      (lockedTeamWorkspaces?.length || 0)
-    : (accessibleTeamWorkspaces?.length || 0) +
-      (lockedTeamWorkspaces?.length || 0);
+    ? (workspaces?.length || 0) + (accessibleTeamWorkspaces?.length || 0)
+    : (accessibleTeamWorkspaces?.length || 0);
 
   const hasAnyWorkspaces = relevantWorkspaceCount > 0;
 
   return (
     <Container
       fwdClassName="px-4"
-      title={isAdmin ? "Manage Workspaces" : "Workspaces"}
+      title="Workspaces"
     >
       <div className="flex items-center gap-3 pb-2 pt-4">
         <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
           <WorkspaceIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">My Workspaces</h1>
+          <h1 className="text-2xl font-bold">Workspaces</h1>
           <p className="text-sm text-muted-foreground">
-            Manage your workspaces and create new ones
+            {isAdmin ? "Manage your workspaces and create new ones" : "View and access your project workspaces"}
           </p>
         </div>
       </div>
@@ -408,94 +395,61 @@ const WorkspaceSelection = () => {
         />
       ) : (
         <div className="space-y-6">
-          {/* User's own workspaces - Only show for admin users */}
-          {isAdmin && workspaces && workspaces.length > 0 && (
-            <div className="flex flex-wrap gap-4">
-              {workspaces?.map((workspace: any) => (
-                <WorkspaceCard
-                  key={`${workspace.id}${workspace.colorId}`}
-                  workspace={workspace}
-                />
-              ))}
-              <WorkspacePopover count={remainingWorkspaces} />
-            </div>
-          )}
-
-          {/* Accessible team workspaces */}
-          {accessibleTeamWorkspaces.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                {isAdmin ? "Team Workspaces" : "Workspaces"}
-              </h3>
-              <div className="flex flex-wrap gap-4">
-                {accessibleTeamWorkspaces?.map((workspace: TeamWorkspace) => (
+          {/* All workspaces - combined view */}
+          <div className="flex flex-wrap gap-4">
+            {/* User's own workspaces */}
+            {isAdmin && workspaces && workspaces.length > 0 && (
+              <>
+                {workspaces?.map((workspace: any) => (
                   <WorkspaceCard
-                    key={`team-${workspace.id}`}
-                    workspace={{
-                      id: workspace.id,
-                      title: workspace.title,
-                      slug: workspace.slug,
-                      colorId: "",
-                      colorValue: workspace.colorValue,
-                      colorName: workspace.colorName,
-                      isFavorite: false,
-                      project: workspace.project,
-                      projectId: workspace.projectId,
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Locked team workspaces */}
-          {lockedTeamWorkspaces.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                Locked Workspaces ({lockedTeamWorkspaces.length})
-              </h3>
-              <div className="flex flex-wrap gap-4">
-                {lockedTeamWorkspaces?.map((workspace: TeamWorkspace) => (
-                  <LockedWorkspaceCard
-                    key={`locked-${workspace.id}`}
+                    key={`${workspace.id}${workspace.colorId}`}
                     workspace={workspace}
                   />
                 ))}
-              </div>
-            </div>
-          )}
+              </>
+            )}
 
-          {/* Show workspace creation option only for admins when they have no workspaces */}
-          {isAdmin && (!workspaces || workspaces.length === 0) && (
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                My Workspaces
-              </h3>
-              <div className="flex flex-wrap gap-4">
-                <WorkspacePopover count={remainingWorkspaces} />
-              </div>
-            </div>
-          )}
+            {/* Accessible team workspaces */}
+            {accessibleTeamWorkspaces?.map((workspace: TeamWorkspace) => (
+              <WorkspaceCard
+                key={`team-${workspace.id}`}
+                workspace={{
+                  id: workspace.id,
+                  title: workspace.title,
+                  slug: workspace.slug,
+                  colorId: "",
+                  colorValue: workspace.colorValue,
+                  colorName: workspace.colorName,
+                  isFavorite: false,
+                  project: workspace.project,
+                  projectId: workspace.projectId,
+                }}
+              />
+            ))}
+
+            {/* Show workspace creation option for admins */}
+            {isAdmin && <WorkspacePopover count={remainingWorkspaces} />}
+          </div>
 
           {/* Info card for non-admin users */}
           {!isAdmin && hasAnyWorkspaces && (
             <div className="mt-6">
-              <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10">
+              <Card className="border dark:bg-[#18181b]">
                 <CardContent className="flex items-start gap-3 pt-4">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                    <Info className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                    <Info className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
-                      Workspace Access Information
+                    <h4 className="text-sm font-medium mb-1">
+                      Project & Workspace Access
                     </h4>
-                    <p className="text-xs text-blue-700 dark:text-blue-300">
-                      As a team member, you can access workspaces that have been
-                      shared with you. To create new workspaces or manage
-                      existing ones, contact your team administrator.
+                    <p className="text-xs text-muted-foreground">
+                      You're viewing workspaces from projects you've been invited to. 
+                      To access more workspaces, you need to be added to the relevant project first. 
+                      Contact your team administrator or project admin for access.
                     </p>
                   </div>
-                  <AccessLevelIcon className="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                  <AccessLevelIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
                 </CardContent>
               </Card>
             </div>

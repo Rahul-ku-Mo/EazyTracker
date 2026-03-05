@@ -3,12 +3,14 @@ import { Link, useLocation } from "react-router-dom";
 import clsx from "clsx";
 import { UserRoundCogIcon, MapPinHouseIcon, Plug, Clock, Crown, Calendar } from "lucide-react";
 import { useTrialStatus } from "@/hooks/useTrialStatus";
+import { useSubscription } from "@/context/SubscriptionContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 const Account = ({ children }: { children: React.ReactNode }) => {
   const pathname = useLocation().pathname;
   const { trialStatus } = useTrialStatus();
+  const { isAdmin } = useSubscription();
 
   const navigationItems = [
     {
@@ -85,8 +87,8 @@ const Account = ({ children }: { children: React.ReactNode }) => {
             </nav>
           </div>
 
-          {/* Trial Status Card */}
-          {trialStatus && !trialStatus.hasActiveSubscription && (
+          {/* Trial Status Card - Only show to admins */}
+          {isAdmin && trialStatus && !trialStatus.hasActiveSubscription && (
             <div className="p-4 bg-card border border-border/50 rounded-lg shadow-sm">
               <div className="flex items-center justify-between gap-2 mb-2">
                <div className="flex items-center gap-2">

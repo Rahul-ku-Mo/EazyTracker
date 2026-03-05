@@ -1,22 +1,10 @@
 import { api } from "@/lib/api";
-import axios from "axios";
-import Cookies from "js-cookie";
-
-const getAuthHeaders = () => {
-  const accessToken = Cookies.get("accessToken");
-  return {
-    Authorization: `Bearer ${accessToken}`,
-  };
-};
 
 // Get team members with board access info
 export const getTeamMembers = async (teamId: string) => {
   try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/teams/${teamId}/members`,
-      {
-        headers: getAuthHeaders(),
-      }
+    const response = await api.get(
+      `/teams/${teamId}/members`,
     );
 
     if (response.status === 200) {
@@ -32,11 +20,8 @@ export const getTeamMembers = async (teamId: string) => {
 // Get workspace members with permissions
 export const getWorkspaceMembers = async (workspaceSlug: number) => {
   try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/teams/workspaces/${workspaceSlug}/members`,
-      {
-        headers: getAuthHeaders(),
-      }
+    const response = await api.get(
+      `/teams/workspaces/${workspaceSlug}/members`,
     );
 
     if (response.status === 200) {
@@ -56,12 +41,9 @@ export const addUserToWorkspace = async (
   role: 'ADMIN' | 'MEMBER' = 'MEMBER'
 ) => {
   try {
-    const response = await axios.post(
-      `${import.meta.env.VITE_API_URL}/teams/workspaces/${workspaceId}/members/${userId}`,
+    const response = await api.post(
+      `/teams/workspaces/${workspaceId}/members/${userId}`,
       { role },
-      {
-        headers: getAuthHeaders(),
-      }
     );
 
     if (response.status === 200) {
@@ -77,11 +59,8 @@ export const addUserToWorkspace = async (
 // Remove user from workspace
 export const removeUserFromWorkspace = async (workspaceId: number, userId: string) => {
   try {
-    const response = await axios.delete(
-      `${import.meta.env.VITE_API_URL}/teams/workspaces/${workspaceId}/members/${userId}`,
-      {
-        headers: getAuthHeaders(),
-      }
+    const response = await api.delete(
+      `/teams/workspaces/${workspaceId}/members/${userId}`,
     );
 
     if (response.status === 200) {
@@ -101,12 +80,9 @@ export const updateUserPermissions = async (
   role: 'ADMIN' | 'MEMBER'
 ) => {
   try {
-    const response = await axios.patch(
-      `${import.meta.env.VITE_API_URL}/teams/workspaces/${workspaceId}/members/${userId}/permissions`,
+    const response = await api.patch(
+      `/teams/workspaces/${workspaceId}/members/${userId}/permissions`,
       { role },
-      {
-        headers: getAuthHeaders(),
-      }
     );
 
     if (response.status === 200) {
@@ -122,12 +98,9 @@ export const updateUserPermissions = async (
 // Toggle user status (enable/disable)
 export const toggleUserStatus = async (userId: string, isActive: boolean) => {
   try {
-    const response = await axios.patch(
-      `${import.meta.env.VITE_API_URL}/teams/users/${userId}/status`,
+    const response = await api.patch(
+      `/teams/users/${userId}/status`,
       { isActive },
-      {
-        headers: getAuthHeaders(),
-      }
     );
 
     if (response.status === 200) {
@@ -163,12 +136,10 @@ export const sendWorkspaceInvitation = async (
   role: 'ADMIN' | 'MEMBER' = 'MEMBER'
 ) => {
   try {
-    const response = await axios.post(
-      `${import.meta.env.VITE_API_URL}/teams/workspaces/${workspaceId}/invite`,
+    const response = await api.post(
+      `/teams/workspaces/${workspaceId}/invite`,
       { email, role },
-      {
-        headers: getAuthHeaders(),
-      }
+
     );
 
     if (response.status === 200) {
@@ -181,14 +152,11 @@ export const sendWorkspaceInvitation = async (
   }
 };
 
-// Get all teams for current user
+// Get all teams for current user (not related to Team API)
 export const getUserTeams = async () => {
   try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/teams`,
-      {
-        headers: getAuthHeaders(),
-      }
+    const response = await api.get(
+      `/teams`,
     );
 
     if (response.status === 200) {

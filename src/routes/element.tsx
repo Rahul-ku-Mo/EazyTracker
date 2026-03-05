@@ -64,7 +64,7 @@ export const IntegrationsForm = Loadable(
 export const OnboardingPage = Loadable(lazy(() => import("../pages/OnboardingPage")));
 
 export const TeamManagementPage = Loadable(
-  lazy(() => import("../_components/TeamManagement/TeamManagement"))
+  lazy(() => import("../_components/TeamManagement/team-management"))
 );
 
 export const AnalyticsPage = Loadable(lazy(() => import("../pages/AnalyticsPage")));

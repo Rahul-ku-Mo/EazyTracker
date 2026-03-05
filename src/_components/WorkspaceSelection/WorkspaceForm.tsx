@@ -5,17 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectItem,
-  SelectGroup,
-  SelectContent,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useQuery } from "@tanstack/react-query";
-import { getProjects } from "@/apis/project";
-import useProjectSlugStore from "@/store/projectSlugStore";
+
 // Macintosh-inspired colors with better contrast
 const macColors = [
   {
@@ -88,16 +78,6 @@ const WorkspaceForm = ({ count }: WorkspaceFormProps) => {
     handleSubmit,
   } = useWorkspaceForm(count);
 
-  const { updateCurrentProjectSlug } = useProjectSlugStore();
-
-  const teamId = localStorage.getItem("teamId");
-
-  const { data: projects } = useQuery({
-    queryKey: ["projects"],
-    queryFn: () => getProjects(teamId!),
-    enabled: !!teamId,
-  });
-
   return (
     <Card className="w-full max-w-md mx-auto rounded-md border-0 dark:bg-[#18181b]">
       <CardHeader className="space-y-1 pb-4">
@@ -109,34 +89,7 @@ const WorkspaceForm = ({ count }: WorkspaceFormProps) => {
 
       <CardContent>
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <div className="space-y-3">
-            <Label className="text-sm font-medium text-foreground flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-primary"></div>
-              Project
-            </Label>
-            <Select name="project">
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Project" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="N/A">None</SelectItem>
-                  {projects &&
-                    projects.length > 0 &&
-                    projects.map((project) => {
-                      return (
-                        <SelectItem
-                          value={project.id}
-                          onClick={() => updateCurrentProjectSlug(project.slug)}
-                        >
-                          {project.title}
-                        </SelectItem>
-                      );
-                    })}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
+         
           {/* Color Selection Section */}
           <div className="space-y-3">
             <Label className="text-sm font-medium text-foreground flex items-center gap-2">
@@ -263,7 +216,7 @@ const WorkspaceForm = ({ count }: WorkspaceFormProps) => {
             {/* Validation message */}
             {!selectedImageId && !currentWorkspaceInput.trim() && (
               <p className="text-xs text-muted-foreground pt-2">
-                Please select a project, color and workspace name
+                Don't forget to add a little color to your workspace.
               </p>
             )}
           </div>

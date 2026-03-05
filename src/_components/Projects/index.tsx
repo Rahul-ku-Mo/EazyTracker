@@ -138,7 +138,7 @@ const ProjectsPage = () => {
         </div>
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="h-6 text-xs rounded-sm">
+            <Button variant="outline" className="h-6 text-xs rounded-sm">
               <Plus className="h-4 w-4 mr-1" />
               New Project
             </Button>
@@ -178,7 +178,7 @@ const ProjectsPage = () => {
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-6 w-6">
+                    <Button variant="ghost" className="h-6 w-6">
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -229,7 +229,7 @@ const ProjectsPage = () => {
               />
             </div>
             <div className="flex justify-end pt-3 border-t">
-              <Button type="submit" size="sm" className="h-6 text-xs rounded-sm">
+              <Button type="submit" className="h-6 text-xs rounded-sm">
                 Create Project
               </Button>
             </div>

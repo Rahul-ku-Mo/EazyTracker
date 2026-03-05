@@ -1,11 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getUserTeams } from '@/apis/TeamApis';
+import { getUserTeams } from '@/apis/team-api';
 import Cookies from 'js-cookie';
 import { generateSlug } from '@/utils';
-
-
-
 
 interface Team {
   id: string;

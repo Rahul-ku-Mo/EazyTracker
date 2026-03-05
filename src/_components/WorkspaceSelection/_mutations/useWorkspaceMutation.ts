@@ -9,8 +9,6 @@ export const useWorkspaceMutation = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const teamName = localStorage.getItem("teamName")
-
   const deleteWorkspaceMutation = useMutation({
     mutationFn: async (workspaceIdentifier: string) => {
       await deleteWorkspace(workspaceIdentifier);
@@ -23,7 +21,7 @@ export const useWorkspaceMutation = () => {
           "Unknown user",
         variant: "default",
       });
-      navigate(`/workspace/${teamName}`, { replace: true });
+      navigate("/projects", { replace: true });
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
 
       if (document.body.style.pointerEvents === 'none') {

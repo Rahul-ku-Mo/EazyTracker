@@ -16,8 +16,13 @@ const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({
   onDismiss,
   className = "",
 }) => {
-  const { isAccessRestricted, isTrialExpired } = useSubscription();
+  const { isAccessRestricted, isTrialExpired, isAdmin } = useSubscription();
   const navigate = useNavigate();
+
+  // Only show banner to admins
+  if (!isAdmin) {
+    return null;
+  }
 
   // Don't show banner if user has active subscription
   if (!isAccessRestricted && !isTrialExpired) {
@@ -78,7 +83,7 @@ const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({
             </div>
             <div className="flex items-center gap-2 ml-4">
               <Button 
-                onClick={() => navigate("/workspace/billing")}
+                onClick={() => navigate("/billing")}
                 size="sm"
                 variant={isTrialExpired ? "destructive" : "default"}
                 className="whitespace-nowrap"

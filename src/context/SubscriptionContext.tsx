@@ -9,6 +9,7 @@ interface SubscriptionContextType {
   isLoading: boolean;
   isAccessRestricted: boolean;
   isTrialExpired: boolean;
+  isAdmin: boolean;
   canAccessFeature: (feature: string) => boolean;
   refetchSubscription: () => void;
 }
@@ -33,12 +34,17 @@ const PAID_FEATURES = [
 ];
 
 const SubscriptionContextProvider = ({ children }: { children: React.ReactNode }) => {
-  const { isLoggedIn, accessToken } = useContext(AuthContext);
+  const { isLoggedIn, accessToken, role } = useContext(AuthContext);
+
   const navigate = useNavigate();
   const location = useLocation();
   const [hasRedirected, setHasRedirected] = useState(false);
 
-  // Fetch subscription status
+  // Check if user is admin based on their role from AuthContext
+  const isAdmin = role === 'ADMIN';
+
+  // Fetch subscription status (admin-only)
+  // Only fetch if the user is an admin - non-admins won't even attempt the request
   const {
     data: subscription,
     isLoading,
@@ -46,19 +52,23 @@ const SubscriptionContextProvider = ({ children }: { children: React.ReactNode }
   } = useQuery({
     queryKey: ["subscription-status"],
     queryFn: getSubscriptionStatus,
-    enabled: !!isLoggedIn && !!accessToken,
-    retry: false,
-    refetchOnWindowFocus: false,
-    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+    enabled: !!isLoggedIn && !!accessToken && isAdmin, // Only fetch for admins
   });
 
-  // Check if access is restricted
-  const isAccessRestricted = subscription?.accessRestricted || false;
-  const isTrialExpired = subscription?.trialExpired || false;
+  // Check if access is restricted (only relevant for admins)
+  const isAccessRestricted = isAdmin && (subscription?.accessRestricted || false);
+  const isTrialExpired = isAdmin && (subscription?.trialExpired || false);
 
-  // Handle access control and redirection
+  // Handle access control and redirection (only for admins)
   useEffect(() => {
+    // Skip entirely for non-admin users
+    if (!isAdmin) return;
+    
+    // Skip if not logged in, still loading, or no subscription data yet
     if (!isLoggedIn || isLoading || !subscription) return;
+    
+    // Skip if access is not restricted
+    if (!isAccessRestricted && !isTrialExpired) return;
 
     const currentPath = location.pathname;
     const isAllowedPage = ALLOWED_PAGES_WHEN_RESTRICTED.some(allowedPath => 
@@ -66,7 +76,7 @@ const SubscriptionContextProvider = ({ children }: { children: React.ReactNode }
     );
 
     // If access is restricted and user is not on an allowed page, redirect to billing
-    if ((isAccessRestricted || isTrialExpired) && !isAllowedPage && !hasRedirected) {
+    if (!isAllowedPage && !hasRedirected) {
       console.log("🚫 Access restricted - redirecting to billing page");
       setHasRedirected(true);
       
@@ -87,20 +97,12 @@ const SubscriptionContextProvider = ({ children }: { children: React.ReactNode }
     if (!isAccessRestricted && !isTrialExpired && hasRedirected) {
       setHasRedirected(false);
     }
-  }, [
-    subscription,
-    isLoading,
-    isLoggedIn,
-    location.pathname,
-    navigate,
-    isAccessRestricted,
-    isTrialExpired,
-    hasRedirected
-  ]);
+  }, [isAdmin, subscription, isLoading, isLoggedIn, location.pathname, navigate, isAccessRestricted, isTrialExpired, hasRedirected]);
 
   // Check if user can access a specific feature
   const canAccessFeature = (feature: string): boolean => {
-    if (!subscription) return false;
+    // Non-admin users have full access (billing doesn't apply to them)
+    if (!isAdmin || !subscription) return true;
     
     // Free plan users can't access paid features
     if (subscription.plan === "free" && PAID_FEATURES.includes(feature)) {
@@ -122,6 +124,7 @@ const SubscriptionContextProvider = ({ children }: { children: React.ReactNode }
         isLoading,
         isAccessRestricted,
         isTrialExpired,
+        isAdmin,
         canAccessFeature,
         refetchSubscription,
       }}
