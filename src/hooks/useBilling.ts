@@ -3,14 +3,16 @@ import { toast } from 'sonner';
 import {
   getPlans,
   getSubscriptionStatus,
-  createCheckoutSession,
-  createBillingPortalSession,
+  updateSubscription,
   cancelSubscription,
   reactivateSubscription,
   getUsageStatistics,
+  createBillingPortalSession,
   type Plan,
   type SubscriptionStatus,
 } from '../apis/billing';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 
 // Query keys
 export const BILLING_QUERY_KEYS = {
@@ -31,11 +33,15 @@ export const useGetPlans = () => {
 
 // Hook to get subscription status
 export const useGetSubscriptionStatus = () => {
+  const { role } = useContext(AuthContext);
+  const isAdmin = role === 'ADMIN';
+
   return useQuery<SubscriptionStatus>({
     queryKey: BILLING_QUERY_KEYS.SUBSCRIPTION,
     queryFn: getSubscriptionStatus,
     staleTime: 1000 * 60 * 2, // 2 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes
+    enabled: isAdmin
   });
 };
 
@@ -50,33 +56,6 @@ export const useGetUsageStatistics = () => {
   });
 };
 
-// Hook to create checkout session
-export const useCreateCheckoutSession = () => {
-  return useMutation({
-    mutationFn: createCheckoutSession,
-    onSuccess: (data) => {
-      // Redirect to payment checkout
-      window.location.href = data.url;
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'Failed to create checkout session');
-    },
-  });
-};
-
-// Hook to create billing portal session
-export const useCreateBillingPortalSession = () => {
-  return useMutation({
-    mutationFn: createBillingPortalSession,
-    onSuccess: (data) => {
-      // Redirect to billing portal
-      window.location.href = data.url;
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'Failed to access billing portal');
-    },
-  });
-};
 
 // Hook to cancel subscription
 export const useCancelSubscription = () => {
@@ -112,16 +91,52 @@ export const useReactivateSubscription = () => {
   });
 };
 
+// Hook to update subscription (upgrade/downgrade)
+export const useUpdateSubscription = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: updateSubscription,
+    onSuccess: () => {
+      // Invalidate and refetch subscription and usage data
+      queryClient.invalidateQueries({ queryKey: BILLING_QUERY_KEYS.SUBSCRIPTION });
+      queryClient.invalidateQueries({ queryKey: BILLING_QUERY_KEYS.USAGE_STATS });
+      toast.success('Subscription updated successfully!');
+    },
+    onError: (error: any) => {
+      console.error('Subscription update failed:', error);
+      toast.error(error?.response?.data?.error || 'Failed to update subscription');
+    },
+  });
+};
+
+// Hook to create billing portal session
+export const useCreateBillingPortalSession = () => {
+  return useMutation({
+    mutationFn: createBillingPortalSession,
+    onSuccess: (data) => {
+      if (data?.url) {
+        // Open billing portal in same window
+        window.location.href = data.url;
+      }
+    },
+    onError: (error: any) => {
+      console.error('Failed to create billing portal session:', error);
+      toast.error(error?.response?.data?.error || 'Failed to open billing portal');
+    },
+  });
+};
+
 // Helper hook to check if user has access to a feature
 export const useFeatureAccess = () => {
   const { data: subscription } = useGetSubscriptionStatus();
   const { data: plans } = useGetPlans();
 
-  const checkFeatureAccess = (requiredPlan: 'free' | 'pro' | 'enterprise') => {
+  const checkFeatureAccess = (requiredPlan: 'free' | 'pro' | 'team' | 'enterprise') => {
     if (!subscription || !plans) return false;
 
     const currentPlan = subscription.plan;
-    const planHierarchy = ['free', 'pro', 'enterprise'];
+    const planHierarchy = ['free', 'pro', 'team', 'enterprise'];
     
     const currentPlanIndex = planHierarchy.indexOf(currentPlan);
     const requiredPlanIndex = planHierarchy.indexOf(requiredPlan);
@@ -136,7 +151,7 @@ export const useFeatureAccess = () => {
     return currentPlan?.limits || null;
   };
 
-  const isWithinLimits = (type: 'projects' | 'members' | 'tasksPerProject', current: number) => {
+  const isWithinLimits = (type: 'projects' | 'workspacesPerProject' | 'members' | 'cardsPerWorkspace', current: number) => {
     const limits = getCurrentPlanLimits();
     if (!limits) return false;
 
@@ -152,6 +167,7 @@ export const useFeatureAccess = () => {
     isWithinLimits,
     isFreePlan: subscription?.plan === 'free',
     isProPlan: subscription?.plan === 'pro',
+    isTeamPlan: subscription?.plan === 'team',
     isEnterprisePlan: subscription?.plan === 'enterprise',
   };
 }; 

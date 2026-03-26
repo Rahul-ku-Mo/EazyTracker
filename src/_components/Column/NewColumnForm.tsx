@@ -61,14 +61,15 @@ const NewColumnForm = ({
           <Input
             ref={inputRef}
             type="text"
-            placeholder="Enter column title..."
+            placeholder="e.g. Backlog, In Progress, Done"
             value={columnName}
             onChange={(e) => setColumnName(e.target.value)}
             className={cn(
               "text-sm",
               "bg-zinc-50 dark:bg-zinc-900",
               "border-zinc-200 dark:border-zinc-700",
-              "focus:ring-1 focus:dark:ring-zinc-800"
+              "focus:ring-1 focus:dark:ring-zinc-800",
+              "placeholder:text-xs font-medium"
             )}
           />
 

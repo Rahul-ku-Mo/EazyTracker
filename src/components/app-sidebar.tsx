@@ -1,23 +1,11 @@
 import * as React from "react";
-import {
-  Inbox,
-  SquareTerminal,
-  Eye,
-  EyeOff,
-  Copy,
-  CheckCircle,
-  Settings2,
-  Users,
-  Hash,
-  CreditCard,
-  Star,
-} from "lucide-react";
+import { Star } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 import { TeamSwitcher } from "./team-switcher";
+import { TrialStatusIndicator } from "./TrialStatusIndicator";
 import {
   Sidebar,
   SidebarContent,
@@ -33,25 +21,44 @@ import {
 } from "./ui/sidebar";
 import { useUser } from "../hooks/useQueries";
 import Cookies from "js-cookie";
-import { Badge } from "./ui/badge";
+
 import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
+import { useTeam } from "@/context/TeamContext";
+import {
+  BillingIcon,
+  TeamManagementIcon,
+  InboxIcon,
+  ProjectIcon,
+} from "@/_components/shared/svg/SidebarIcons";
+import { getFavoriteWorkspaces } from "@/apis/WorkspaceApis";
 
 // Favorites navigation component
-const NavFavorites = ({ favoriteBoards }: { favoriteBoards: any[] }) => {
+const NavFavorites = ({
+  favoriteWorkspaces,
+}: {
+  favoriteWorkspaces: any[];
+}) => {
   const navigate = useNavigate();
-  
-  if (!favoriteBoards || favoriteBoards.length === 0) {
+  const { state } = useSidebar();
+
+  if (!favoriteWorkspaces || favoriteWorkspaces.length === 0) {
     return (
       <SidebarGroup>
-        <SidebarGroupLabel className="flex items-center gap-2">
+        <SidebarGroupLabel className="flex items-center gap-2 text-sm">
           <Star className="h-4 w-4" />
           Favorites
         </SidebarGroupLabel>
-        <div className="px-2 py-1 text-xs text-muted-foreground">
-          No favorite boards yet
+        <div
+          className={cn(
+            state === "collapsed"
+              ? "hidden"
+              : "block px-2 py-1 text-sm text-muted-foreground"
+          )}
+        >
+          No favorite workspaces yet
         </div>
       </SidebarGroup>
     );
@@ -60,21 +67,23 @@ const NavFavorites = ({ favoriteBoards }: { favoriteBoards: any[] }) => {
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="flex items-center gap-2">
-        <Star className="h-4 w-4" />
+        <Star className="h-4 w-4 shrink-0" />
         Favorites
       </SidebarGroupLabel>
       <SidebarMenu>
-        {favoriteBoards.map((board) => (
-          <SidebarMenuItem key={board.id}>
+        {favoriteWorkspaces.map((workspace) => (
+          <SidebarMenuItem key={workspace.slug}>
             <SidebarMenuButton
-              onClick={() => navigate(`/workspace/board/${board.id}`)}
-              className="flex items-center gap-2"
+              onClick={() =>
+                navigate(`/projects/${workspace.project?.slug ?? ""}/workspace/${workspace.slug}`)
+              }
+              className="flex items-center gap-2 text-sm"
             >
-              <div 
-                className="w-3 h-3 rounded-sm" 
-                style={{ backgroundColor: board.colorValue }}
+              <div
+                className="h-4 w-4 rounded-sm flex-shrink-0"
+                style={{ backgroundColor: workspace.colorValue }}
               />
-              <span className="truncate">{board.title}</span>
+              <span className="truncate">{workspace.title}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
@@ -83,63 +92,41 @@ const NavFavorites = ({ favoriteBoards }: { favoriteBoards: any[] }) => {
   );
 };
 
-const getNavigationData = (isAdmin: boolean) => {
+const getNavigationData = (
+  isAdmin: boolean,
+  pathname: string,
+) => {
   const baseNavigation = [
     {
-      title: "Dashboard",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "Workspaces",
-          url: "/workspace",
-        },
-        {
-          title: "Notes",
-          url: "/notes",
-        }
-      ],
+      title: "Projects",
+      url: "/projects",
+      icon: ProjectIcon,
+      isActive: pathname.includes("/projects"),
     },
     {
       title: "Inbox",
-      url: "#",
-      icon: Inbox,
-      items: [
-        {
-          title: "Notifications",
-          url: "/inbox",
-        },
-      ],
+      url: "/inbox",
+      icon: InboxIcon,
+      isActive: pathname.includes("/inbox"),
     },
   ];
 
-  // Only add billing section for admin users
+  // Only add billing and team management sections for admin users
   if (isAdmin) {
     baseNavigation.push({
       title: "Billing & Plans",
-      url: "#",
-      icon: CreditCard,
-      items: [
-        {
-          title: "Subscription",
-          url: "/workspace/billing",
-        },
-      ],
+      url: "/billing",
+      icon: BillingIcon,
+      isActive: pathname.includes("/billing"),
+    });
+
+    baseNavigation.push({
+      title: "Manage Team",
+      url: "/team/management",
+      icon: TeamManagementIcon,
+      isActive: pathname.includes("/team/management"),
     });
   }
-
-  baseNavigation.push({
-    title: "Manage Team",
-    url: "#",
-    icon: Settings2,
-    items: [
-      {
-        title: "Team Management",
-        url: "/team/management",
-      },
-    ],
-  });
 
   return {
     navMain: baseNavigation,
@@ -151,175 +138,54 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: userData } = useUser(accessToken);
   const { role } = useContext(AuthContext);
 
+  const { currentTeam } = useTeam();
+
   const { state } = useSidebar();
-  
+
   // Check if user is admin
-  const isAdmin = role === 'ADMIN';
-  const navigationData = getNavigationData(isAdmin);
+  const isAdmin = role === "ADMIN";
+  const pathname = useLocation().pathname;
+  const navigationData = getNavigationData(isAdmin, pathname);
 
-  const [showJoinCode, setShowJoinCode] = React.useState(false);
-  const [copied, setCopied] = React.useState(false);
-
-  const toggleJoinCode = () => {
-    setShowJoinCode(!showJoinCode);
-  };
-  
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-  
-  const { data: teamData } = useQuery({
-    queryKey: ['team'],
-    queryFn: async () => {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/teams`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
-      return response.data.data;
-    },
-    enabled: !!accessToken
+  // Fetch favorite workspaces
+  const { data: favoriteWorkspaces } = useQuery({
+    queryKey: ["favoriteWorkspaces"],
+    queryFn: getFavoriteWorkspaces,
+    enabled: !!accessToken,
   });
 
-  // Fetch favorite boards
-  const { data: favoriteBoards } = useQuery({
-    queryKey: ['favoriteBoards'],
-    queryFn: async () => {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/boards/favorites`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
-      return response.data.data;
-    },
-    enabled: !!accessToken
-  });
-
+  // Show TeamSwitcher if we have teams, or if we have a current team
+  // For debugging, let's show it always
+  const shouldShowTeamSwitcher = true; // allTeams.length > 0 || currentTeam;
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        {teamData && <TeamSwitcher teams={teamData} />}
+        {shouldShowTeamSwitcher && (
+          <TeamSwitcher team={currentTeam || undefined} />
+        )}
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navigationData.navMain} />
-        <NavFavorites favoriteBoards={favoriteBoards || []} />
-      </SidebarContent>
-      
-      {/* Enhanced Team Code Section */}
-      <div className={cn(
-        "transition-all duration-300 ease-in-out",
-        state === "collapsed" ? "hidden" : "block"
-      )}>
-        {teamData?.joinCode && (
-          <div className="m-3 mb-4">
-            <div className={cn(
-              "relative overflow-hidden rounded-xl",
-              "bg-gradient-to-br from-emerald-50 to-green-50",
-              "dark:from-zinc-800/50 dark:to-zinc-900/50",
-              "border border-emerald-200/50 dark:border-zinc-700/50",
-              "backdrop-blur-sm shadow-sm",
-              "hover:shadow-md transition-all duration-200"
-            )}>
-              {/* Header */}
-              <div className="flex items-center justify-between p-3 pb-2">
-                <div className="flex items-center gap-2">
-                  <div className={cn(
-                    "flex items-center justify-center w-7 h-7 rounded-lg",
-                    "bg-emerald-100 dark:bg-emerald-900/30",
-                    "text-emerald-600 dark:text-emerald-400"
-                  )}>
-                    <Users className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-semibold text-emerald-900 dark:text-emerald-100 gt-walsheim-font">
-                      Team Invite
-                    </span>
-                    <div className="text-xs text-emerald-600/70 dark:text-emerald-300/70">
-                      Share with your team
-                    </div>
-                  </div>
-                </div>
-                <Badge variant="secondary" className="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-                  Active
-                </Badge>
-              </div>
-
-              {/* Code Display */}
-              <div className="px-3 pb-3">
-                <div className={cn(
-                  "flex items-center justify-between p-3 rounded-lg",
-                  "bg-white/80 dark:bg-zinc-800/80",
-                  "border border-emerald-200/30 dark:border-zinc-600/30",
-                  "backdrop-blur-sm"
-                )}>
-                  <div className="flex items-center gap-2 flex-1">
-                    <Hash className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                    <span className={cn(
-                      "font-mono text-sm font-medium tracking-wider",
-                      "text-emerald-900 dark:text-emerald-100",
-                      showJoinCode ? "select-all" : ""
-                    )}>
-                      {showJoinCode ? teamData.joinCode : "••••••••"}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center gap-1">
-                    <button 
-                      type="button"
-                      onClick={toggleJoinCode}
-                      className={cn(
-                        "p-1.5 rounded-md transition-all duration-200",
-                        "hover:bg-emerald-100 dark:hover:bg-emerald-900/30",
-                        "text-emerald-600 dark:text-emerald-400",
-                        "hover:text-emerald-700 dark:hover:text-emerald-300"
-                      )}
-                      aria-label={showJoinCode ? "Hide join code" : "Show join code"}
-                    >
-                      {showJoinCode ? 
-                        <EyeOff className="w-4 h-4" /> : 
-                        <Eye className="w-4 h-4" />
-                      }
-                    </button>
-                    
-                    {showJoinCode && (
-                      <button
-                        type="button"
-                        onClick={() => copyToClipboard(teamData.joinCode)}
-                        className={cn(
-                          "p-1.5 rounded-md transition-all duration-200",
-                          "hover:bg-green-100 dark:hover:bg-green-900/30",
-                          "text-emerald-600 dark:text-emerald-400",
-                          "hover:text-green-600 dark:hover:text-green-400",
-                          copied && "text-green-600 dark:text-green-400"
-                        )}
-                        aria-label="Copy join code"
-                      >
-                        {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                      </button>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Helper Text */}
-                {showJoinCode && (
-                  <div className="mt-2 text-xs text-emerald-600/70 dark:text-emerald-300/70 text-center">
-                    {copied ? "Copied to clipboard!" : "Click to copy and share with team members"}
-                  </div>
-                )}
-              </div>
-            </div>
+        <NavFavorites favoriteWorkspaces={favoriteWorkspaces || []} />
+        {/* Only show trial status indicator for admin users */}
+        {isAdmin && (
+          <div className={cn(state === "collapsed" ? "hidden" : "block px-3")}>
+            <TrialStatusIndicator />
           </div>
         )}
-      </div>
+      </SidebarContent>
+
       <SidebarFooter>
-        {userData && <NavUser user={{
-          username: userData.username,
-          email: userData.email,
-          imageUrl: userData.imageUrl || null
-        }} />}
+        {userData && (
+          <NavUser
+            user={{
+              username: userData.username,
+              email: userData.email,
+              imageUrl: userData.imageUrl || null,
+            }}
+          />
+        )}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

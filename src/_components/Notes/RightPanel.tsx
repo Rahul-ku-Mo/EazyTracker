@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { X, MessageSquare, CircleCheck, RotateCcw, CircleArrowOutUpRight } from "lucide-react";
+import {
+  X,
+  MessageSquare,
+  CircleCheck,
+  RotateCcw,
+  CircleArrowOutUpRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useTheme } from "@/context/ThemeProvider";
@@ -58,11 +64,11 @@ const RightPanel: React.FC<RightPanelProps> = ({ isOpen, onClose }) => {
       initial={{ x: "100%" }}
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
-      transition={{ 
-        type: "spring", 
-        damping: 30, 
+      transition={{
+        type: "spring",
+        damping: 30,
         stiffness: 300,
-        duration: 0.3
+        duration: 0.3,
       }}
     >
       {/* Header */}
@@ -96,20 +102,20 @@ const RightPanel: React.FC<RightPanelProps> = ({ isOpen, onClose }) => {
               onChange={(e) => setNewComment(e.target.value)}
               className="min-h-[80px] resize-none"
             />
-                          <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.1 }}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.1 }}
+            >
+              <Button
+                onClick={handleAddComment}
+                disabled={!newComment.trim()}
+                size="sm"
+                className="w-full"
               >
-                <Button
-                  onClick={handleAddComment}
-                  disabled={!newComment.trim()}
-                  size="sm"
-                  className="w-full"
-                >
-                  Add Comment
-                </Button>
-              </motion.div>
+                Add Comment
+              </Button>
+            </motion.div>
           </div>
 
           {/* Comments Timeline */}
@@ -128,126 +134,135 @@ const RightPanel: React.FC<RightPanelProps> = ({ isOpen, onClose }) => {
               </div>
             ) : (
               <>
-              
-              
+                {/* Comments */}
+                <AnimatePresence mode="popLayout">
+                  {comments
+                    .sort(
+                      (a, b) =>
+                        new Date(b.timestamp).getTime() -
+                        new Date(a.timestamp).getTime()
+                    )
+                    .map((comment, index) => (
+                      <motion.div
+                        key={comment.id}
+                        className="relative pl-10 mb-4"
+                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        transition={{
+                          duration: 0.3,
+                          ease: [0.04, 0.62, 0.23, 0.98],
+                          layout: { duration: 0.2 },
+                          delay: index * 0.05,
+                        }}
+                        layout
+                      >
+                        {/* Timeline line */}
+                        <div
+                          className={cn(
+                            "absolute left-3.5 top-7 bottom-2 w-0.5",
+                            isDark ? "bg-zinc-700" : "bg-zinc-200",
+                            comment.resolved ? "bg-green-500" : "bg-blue-500"
+                          )}
+                        ></div>
 
-                                 {/* Comments */}
-                 <AnimatePresence mode="popLayout">
-                   {comments.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).map((comment, index) => (
-                     <motion.div 
-                       key={comment.id} 
-                       className="relative pl-10 mb-4"
-                       initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                       transition={{ 
-                         duration: 0.3, 
-                         ease: [0.04, 0.62, 0.23, 0.98],
-                         layout: { duration: 0.2 },
-                         delay: index * 0.05
-                       }}
-                       layout
-                     >
-                       {/* Timeline line */}
-                       <div className={cn(
-                         "absolute left-3.5 top-7 bottom-2 w-0.5",
-                         isDark ? "bg-zinc-700" : "bg-zinc-200",
-                         comment.resolved ? "bg-green-500" : "bg-blue-500"
-                       )}>
+                        {/* Timeline icon */}
+                        {comment.resolved ? (
+                          <CircleCheck
+                            strokeWidth={4}
+                            className={`absolute left-2.5 top-3 size-3 ${
+                              isDark ? "text-green-500" : "text-green-600"
+                            }`}
+                          />
+                        ) : (
+                          <CircleArrowOutUpRight
+                            strokeWidth={4}
+                            className={`absolute left-2.5 top-3 size-3 ${
+                              isDark ? "text-blue-500" : "text-blue-600"
+                            }`}
+                          />
+                        )}
 
-                       </div>
-                      
-                       {/* Timeline icon */}
-                       {comment.resolved ? (
-                         <CircleCheck
-                          strokeWidth={4}
-                           className={`absolute left-2.5 top-3 size-3 ${
-                             isDark ? "text-green-500" : "text-green-600"
-                           }`}
-                         />
-                       ) : (
-                         <CircleArrowOutUpRight
-                         strokeWidth={4}
-                           className={`absolute left-2.5 top-3 size-3 ${
-                             isDark ? "text-blue-500" : "text-blue-600"
-                           }`}
-                         />
-                       )}
- 
-                       {/* Comment content */}
-                       <div className={`rounded-lg p-3 ${
-                         comment.resolved
-                           ? isDark
-                             ? "bg-green-900/10"
-                             : "bg-green-50"
-                           : isDark
-                           ? "bg-zinc-800/50"
-                           : "bg-zinc-50"
-                       }`}>
-                         {/* Comment header */}
-                         <div className="flex items-start gap-3 mb-2">
-                           <div
-                             className={`size-7 rounded-full flex items-center justify-center text-xs font-medium ${
-                               isDark
-                                 ? "bg-zinc-700 text-zinc-300"
-                                 : "bg-zinc-200 text-zinc-700"
-                             }`}
-                           >
-                             {comment.author.charAt(0).toUpperCase()}
-                           </div>
-                           
-                           <div className="flex-1 min-w-0">
-                             <div className="flex items-center justify-between">
-                               <span className={`text-sm font-medium ${
-                                 isDark ? "text-zinc-200" : "text-zinc-800"
-                               }`}>
-                                 {comment.author}
-                               </span>
-                               {comment.resolved && (
-                                 <span
-                                   className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                                     isDark
-                                       ? "bg-green-900/30 text-green-400"
-                                       : "bg-green-100 text-green-700"
-                                   }`}
-                                 >
-                                   <div className="w-1.5 h-1.5 bg-current rounded-full" />
-                                   Resolved
-                                 </span>
-                               )}
-                             </div>
-                             <span
-                               className={`text-xs ${
-                                 isDark ? "text-zinc-400" : "text-zinc-500"
-                               }`}
-                             >
-                               {comment.timestamp.toLocaleDateString("en-GB", {
-                                 day: "numeric",
-                                 month: "long",
-                                 year: "numeric",
-                               })}
-                               ,{" "}
-                               {comment.timestamp.toLocaleTimeString("en-US", {
-                                 hour12: false,
-                                 hour: "2-digit",
-                                 minute: "2-digit",
-                                 second: "2-digit",
-                               })}
-                             </span>
-                           </div>
-                         </div>
-                         
-                         {/* Comment body */}
-                         <div className="pl-10">
-                           <p
-                             className={`text-xs leading-relaxed mb-3 ${
-                               comment.resolved ? "line-through opacity-60" : ""
-                             } ${isDark ? "text-zinc-300" : "text-zinc-700"}`}
-                           >
-                             {comment.text}
-                           </p>
-                           
-                                                       {/* Actions */}
+                        {/* Comment content */}
+                        <div
+                          className={`rounded-lg p-3 ${
+                            comment.resolved
+                              ? isDark
+                                ? "bg-green-900/10"
+                                : "bg-green-50"
+                              : isDark
+                                ? "bg-zinc-800/50"
+                                : "bg-zinc-50"
+                          }`}
+                        >
+                          {/* Comment header */}
+                          <div className="flex items-start gap-3 mb-2">
+                            <div
+                              className={`size-7 rounded-full flex items-center justify-center text-xs font-medium ${
+                                isDark
+                                  ? "bg-zinc-700 text-zinc-300"
+                                  : "bg-zinc-200 text-zinc-700"
+                              }`}
+                            >
+                              {comment.author.charAt(0).toUpperCase()}
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between">
+                                <span
+                                  className={`text-sm font-medium ${
+                                    isDark ? "text-zinc-200" : "text-zinc-800"
+                                  }`}
+                                >
+                                  {comment.author}
+                                </span>
+                                {comment.resolved && (
+                                  <span
+                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                                      isDark
+                                        ? "bg-green-900/30 text-green-400"
+                                        : "bg-green-100 text-green-700"
+                                    }`}
+                                  >
+                                    <div className="w-1.5 h-1.5 bg-current rounded-full" />
+                                    Resolved
+                                  </span>
+                                )}
+                              </div>
+                              <span
+                                className={`text-xs ${
+                                  isDark ? "text-zinc-400" : "text-zinc-500"
+                                }`}
+                              >
+                                {comment.timestamp.toLocaleDateString("en-GB", {
+                                  day: "numeric",
+                                  month: "long",
+                                  year: "numeric",
+                                })}
+                                ,{" "}
+                                {comment.timestamp.toLocaleTimeString("en-US", {
+                                  hour12: false,
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  second: "2-digit",
+                                })}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Comment body */}
+                          <div className="pl-10">
+                            <p
+                              className={`text-xs leading-relaxed mb-3 ${
+                                comment.resolved
+                                  ? "line-through opacity-60"
+                                  : ""
+                              } ${isDark ? "text-zinc-300" : "text-zinc-700"}`}
+                            >
+                              {comment.text}
+                            </p>
+
+                            {/* Actions */}
                             <div className="flex justify-end">
                               {comment.resolved ? (
                                 <button
@@ -259,7 +274,7 @@ const RightPanel: React.FC<RightPanelProps> = ({ isOpen, onClose }) => {
                                   }`}
                                   title="Unresolve comment"
                                 >
-                                  <RotateCcw className="w-3.5 h-3.5" />
+                                  <RotateCcw className="size-3" />
                                 </button>
                               ) : (
                                 <Button
@@ -276,11 +291,11 @@ const RightPanel: React.FC<RightPanelProps> = ({ isOpen, onClose }) => {
                                 </Button>
                               )}
                             </div>
-                                                    </div>
-                         </div>
-                       </motion.div>
-                     ))}
-                   </AnimatePresence>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                </AnimatePresence>
               </>
             )}
           </div>

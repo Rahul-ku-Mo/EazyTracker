@@ -1,10 +1,11 @@
 import { toast } from "sonner";
 import axios from "axios";
+import { api } from "@/lib/api";
 
 interface Column {
   id: string;
   title: string;
-  boardId: string;
+  workspaceId: string;
   order?: number;
   createdAt?: string;
   updatedAt?: string;
@@ -13,25 +14,20 @@ interface Column {
 
 /***Column CRUD API ***/
 export const createColumn = async (
-  accessToken: string, 
-  title: string, 
-  boardId: string
+  title: string,
+  workspaceId: string
 ): Promise<Column | undefined> => {
   try {
-    const response = await axios.post(
-      `${import.meta.env.VITE_API_URL}/columns?boardId=${boardId}`,
-      {
-        title: title,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+
+    const [teamId, slug] = workspaceId.split('/')
+
+    const response = await api.post(`/columns/${teamId}/${slug}`, {
+      title: title,
+    })
+
 
     if (response.data.data && response.status === 201) {
-      toast.success(`${title} created successfully`);
+
       return response.data.data;
     }
     return undefined;
@@ -43,22 +39,17 @@ export const createColumn = async (
 };
 
 export const fetchColumns = async (
-  accessToken: string, 
-  boardId: string
+  workspaceId: string
 ): Promise<Column[] | undefined> => {
   try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/columns?boardId=${boardId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const [teamId, slug] = workspaceId.split('/');
+
+    const response = await api.get(`/columns/${teamId}/${slug}`)
 
     if (response.data.data && response.status === 200) {
       return response.data.data;
     }
+
     return undefined;
   } catch (err) {
     console.log(err);
@@ -67,7 +58,7 @@ export const fetchColumns = async (
 };
 
 export const fetchColumn = async (
-  accessToken: string, 
+  accessToken: string,
   columnId: string
 ): Promise<Column | undefined> => {
   try {
@@ -91,8 +82,8 @@ export const fetchColumn = async (
 };
 
 export const updateColumn = async (
-  accessToken: string, 
-  title: string, 
+  accessToken: string,
+  title: string,
   columnId: string
 ): Promise<Column | undefined> => {
   try {
@@ -121,7 +112,7 @@ export const updateColumn = async (
 };
 
 export const deleteColumn = async (
-  accessToken: string, 
+  accessToken: string,
   columnId: string
 ): Promise<void> => {
   try {
@@ -144,7 +135,7 @@ export const deleteColumn = async (
 };
 
 export const updateColumnOrdering = async (
-  accessToken: string, 
+  accessToken: string,
   columns: Column[]
 ): Promise<Column[] | undefined> => {
   try {

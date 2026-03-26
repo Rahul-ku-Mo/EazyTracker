@@ -26,6 +26,32 @@ const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 export const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
+// Helper function to get stored sidebar state from cookies
+const getStoredSidebarState = (): boolean => {
+  try {
+    const cookies = document.cookie.split(';')
+    const sidebarCookie = cookies.find(cookie => 
+      cookie.trim().startsWith(`${SIDEBAR_COOKIE_NAME}=`)
+    )
+    if (sidebarCookie) {
+      const value = sidebarCookie.split('=')[1]
+      return value === 'true'
+    }
+    return true // Default to true (expanded) if no cookie found
+  } catch {
+    return true // Default to true if cookies are not available
+  }
+}
+
+// Helper function to set sidebar state in cookies
+const setStoredSidebarState = (isOpen: boolean): void => {
+  try {
+    document.cookie = `${SIDEBAR_COOKIE_NAME}=${isOpen}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+  } catch {
+    // Silently fail if cookies are not available
+  }
+}
+
 type SidebarContext = {
   state: "expanded" | "collapsed"
   open: boolean
@@ -72,7 +98,10 @@ const SidebarProvider = React.forwardRef<
 
     // This is the internal state of the sidebar.
     // We use openProp and setOpenProp for control from outside the component.
-    const [_open, _setOpen] = React.useState(defaultOpen)
+    // Initialize with stored state from localStorage, fallback to defaultOpen
+    const [_open, _setOpen] = React.useState(() => {
+      return openProp ?? getStoredSidebarState()
+    })
     const open = openProp ?? _open
     const setOpen = React.useCallback(
       (value: boolean | ((value: boolean) => boolean)) => {
@@ -83,8 +112,8 @@ const SidebarProvider = React.forwardRef<
           _setOpen(openState)
         }
 
-        // This sets the cookie to keep the sidebar state.
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+        // Store the sidebar state in cookies
+        setStoredSidebarState(openState)
       },
       [setOpenProp, open]
     )
@@ -322,7 +351,7 @@ const SidebarInset = React.forwardRef<
     <main
       ref={ref}
       className={cn(
-        "relative flex min-h-svh flex-1 flex-col bg-background",
+        "relative flex min-h-svh flex-1 flex-col",
         "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
         className
       )}

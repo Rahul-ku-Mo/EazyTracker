@@ -1,8 +1,8 @@
 import { TCardData } from "@/types/cardTypes";
-import { createCard, deleteCard, updateCard, markCardComplete, markCardIncomplete } from "@/apis/CardApis";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createCard, deleteCard, updateCard, markCardComplete, markCardIncomplete, toggleCardLabel } from "@/apis/CardApis";
+import { useMutation } from "@tanstack/react-query";
 import Cookies from "js-cookie";
-import { useParams } from "react-router-dom";
+
 import { useToast } from "../../../hooks/use-toast";
 import { useContext } from "react";
 import { ColumnContext } from "../../../context/ColumnProvider";
@@ -19,19 +19,17 @@ type TIssueUpdateCard = {
   createdAt?: Date;
   assigneeId?: string | null;
   updatedAt?: Date;
-  label?: string;
+  labelId?: string; // Changed from label to labelId for single label toggle
   order?: number;
   storyPoints?: number;
 };
 
 export const useCardMutation = () => {
-  const { id: boardId } = useParams();
 
   const accessToken: string = Cookies.get("accessToken") || "";
 
   const columnId = useContext(ColumnContext);
 
-  const queryClient = useQueryClient();
 
   const { toast } = useToast();
 
@@ -42,11 +40,6 @@ export const useCardMutation = () => {
         cardData,
         columnId,
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["columns", "boards", boardId],
-      });
-    },
   });
 
   const updateCardMutation = useMutation({
@@ -59,14 +52,19 @@ export const useCardMutation = () => {
         cardId,
         priority,
         assigneeId,
-        label,
+        labelId,
         order,
         storyPoints,
       } = data;
 
+      // If labelId is provided, use the toggle label function
+      if (labelId !== undefined) {
+        return await toggleCardLabel(accessToken, cardId, labelId);
+      }
+
       data.columnId = columnId;
 
-      const updatedData = {
+      const updatedData: any = {
         ...(title !== undefined && { title }),
         ...(cardDescription !== undefined && { description: cardDescription }),
         ...(attachments !== undefined && { attachments }),
@@ -74,36 +72,27 @@ export const useCardMutation = () => {
         ...(columnId !== undefined && { columnId }),
         ...(priority !== undefined && { priority }),
         ...(assigneeId !== undefined && { assigneeId }),
-        ...(label !== undefined && { label }),
         ...(order !== undefined && { order }),
         ...(storyPoints !== undefined && { storyPoints }),
       };
 
-      return await updateCard(accessToken, updatedData as TCardData, cardId);
+      return await updateCard(accessToken, updatedData, cardId);
     },
-    onSuccess: () =>
+    onSuccess: () => {
       toast({
         title: "Update",
-        description: `Card Status updated at ${new Date().toLocaleString()} by ${
-          Cookies.get("username") || "Unknown user"
-        }`,
+        description: `Card Status updated at ${new Date().toLocaleString()} by ${Cookies.get("username") || "Unknown user"
+          }`,
         variant: "default",
-      }),
-    onError: () =>
+      })
+    },
+    onError: () => {
       toast({
         title: "Something wrong happened 🔥",
         description: "Please try again later",
         variant: "destructive",
-      }),
-    onSettled: async (_, __, variables: TIssueUpdateCard) => {
-      await queryClient.invalidateQueries({
-        queryKey: ["cards", "columns", variables.columnId],
-      });
-
-      await queryClient.invalidateQueries({
-        queryKey: ["columns", "boards", boardId],
-      });
-    },
+      })
+    }
   });
 
   const deleteCardMutation = useMutation({
@@ -119,12 +108,7 @@ export const useCardMutation = () => {
         title: "Something wrong happened 🔥",
         description: "Please try again later",
         variant: "destructive",
-      }),
-    onSettled: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["columns", "boards", boardId],
-      });
-    },
+      })
   });
 
   const markCompleteCardMutation = useMutation({
@@ -141,11 +125,7 @@ export const useCardMutation = () => {
         description: "Please try again later",
         variant: "destructive",
       }),
-    onSettled: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["columns", "boards", boardId],
-      });
-    },
+
   });
 
   const markIncompleteCardMutation = useMutation({
@@ -162,11 +142,24 @@ export const useCardMutation = () => {
         description: "Please try again later",
         variant: "destructive",
       }),
-    onSettled: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["columns", "boards", boardId],
-      });
-    },
+
+  });
+
+  const toggleLabelMutation = useMutation({
+    mutationFn: ({ cardId, labelId }: { cardId: number; labelId: string }) => 
+      toggleCardLabel(accessToken, cardId, labelId),
+    onSuccess: () =>
+      toast({
+        title: "Label updated",
+        description: "Card label has been updated",
+        variant: "default",
+      }),
+    onError: () =>
+      toast({
+        title: "Something wrong happened 🔥",
+        description: "Failed to update label. Please try again later",
+        variant: "destructive",
+      }),
   });
 
   return {
@@ -175,5 +168,6 @@ export const useCardMutation = () => {
     createCardMutation,
     markCompleteCardMutation,
     markIncompleteCardMutation,
+    toggleLabelMutation,
   };
 };

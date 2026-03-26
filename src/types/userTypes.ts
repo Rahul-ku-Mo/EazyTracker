@@ -1,5 +1,8 @@
 export type TUser = {
   id: string;
-  username: string;
-  imageUrl: string;
+  name?: string;
+  username?: string;
+  email?: string;
+  imageUrl?: string;
+  role?: string;
 };

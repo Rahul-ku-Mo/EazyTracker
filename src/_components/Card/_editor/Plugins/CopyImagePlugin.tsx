@@ -13,7 +13,7 @@ type S3ResponseT = {
 }
 
 // Helper function to upload image to S3 using pre-signed URL
-async function uploadImageToS3(file: File): Promise<string> {
+export async function uploadImageToS3(file: File): Promise<string> {
   try {
     // Generate a unique filename with extension
     const fileName = `image-${Date.now()}.${file.type.split('/')[1] || 'png'}`;
@@ -51,7 +51,8 @@ async function uploadImageToS3(file: File): Promise<string> {
     
     // Handle specific error cases
     if ((error as any).response?.status === 403) {
-      throw new Error('Image upload limit reached. Please upgrade your plan to upload more images.');
+      const errorMessage = (error as any).response?.data?.message || 'Storage limit reached. Please upgrade your plan to upload more images.';
+      throw new Error(errorMessage);
     }
     
     throw error;

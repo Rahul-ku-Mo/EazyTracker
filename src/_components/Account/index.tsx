@@ -1,10 +1,16 @@
 import MainLayout from "@/layouts/Container";
 import { Link, useLocation } from "react-router-dom";
 import clsx from "clsx";
-import { UserRoundCogIcon, MapPinHouseIcon, Plug } from "lucide-react";
+import { UserRoundCogIcon, MapPinHouseIcon, Plug, Clock, Crown, Calendar } from "lucide-react";
+import { useTrialStatus } from "@/hooks/useTrialStatus";
+import { useSubscription } from "@/context/SubscriptionContext";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const Account = ({ children }: { children: React.ReactNode }) => {
   const pathname = useLocation().pathname;
+  const { trialStatus } = useTrialStatus();
+  const { isAdmin } = useSubscription();
 
   const navigationItems = [
     {
@@ -28,10 +34,10 @@ const Account = ({ children }: { children: React.ReactNode }) => {
   ];
 
   return (
-    <MainLayout title="Settings" fwdClassName="flex flex-col !pl-0 !pr-2">
-      <div className="flex h-full gap-6 text-sm">
+    <MainLayout title="Settings" fwdClassName="flex flex-col !p-4 ">
+      <div className="flex h-full gap-4 text-sm">
         {/* Sidebar Navigation */}
-        <aside className="sticky top-0 flex flex-col space-y-1 w-64 h-fit">
+        <aside className="sticky top-0 flex flex-col space-y-1 w-64 h-fit gap-4">
           <div className="p-4 bg-card border border-border/50 rounded-lg shadow-sm">
             <h2 className="text-lg font-semibold text-foreground mb-1">Settings</h2>
             <p className="text-xs text-muted-foreground mb-4">
@@ -80,6 +86,56 @@ const Account = ({ children }: { children: React.ReactNode }) => {
               })}
             </nav>
           </div>
+
+          {/* Trial Status Card - Only show to admins */}
+          {isAdmin && trialStatus && !trialStatus.hasActiveSubscription && (
+            <div className="p-4 bg-card border border-border/50 rounded-lg shadow-sm">
+              <div className="flex items-center justify-between gap-2 mb-2">
+               <div className="flex items-center gap-2">
+               {trialStatus.trialExpired ? (
+                  <Clock className="w-4 h-4 text-red-500" />
+                ) : (
+                  <Crown className="w-4 h-4 text-blue-500" />
+                )}
+                <h3 className="font-semibold text-foreground">
+                  {trialStatus.trialExpired ? 'Trial Expired' : 'Free Trial'}
+                </h3>
+               </div>
+                {!trialStatus.trialExpired && (
+                  <Badge variant="secondary" className="text-xs">
+                    {trialStatus.daysRemaining} day{trialStatus.daysRemaining !== 1 ? 's' : ''} left
+                  </Badge>
+                )}
+              </div>
+              
+              <div className="space-y-2 text-sm text-muted-foreground mb-3">
+                {trialStatus.trialExpired ? (
+                  <div className="space-y-1">
+                    <p className="flex items-center gap-2">
+                      <Calendar className="w-3 h-3" strokeWidth={2.5} />
+                      Your free trial has ended
+                    </p>
+                    <p className="text-xs">
+                      Upgrade to continue using all features
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                   
+                    <p className="text-xs">
+                      Access to all features until trial expires
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <Link to="/billing">
+                <Button size="sm" className="w-full">
+                  {trialStatus.trialExpired ? 'Upgrade Now' : 'View Plans'}
+                </Button>
+              </Link>
+            </div>
+          )}
         </aside>
 
         {/* Main Content */}

@@ -13,8 +13,9 @@ export interface Plan {
   features: string[];
   limits: {
     projects: number;
+    workspacesPerProject: number;
     members: number;
-    tasksPerProject: number;
+    cardsPerWorkspace: number;
     storageGB: number;
     activityHistoryDays: number;
   };
@@ -24,10 +25,13 @@ export interface Plan {
 export interface SubscriptionStatus {
   plan: string;
   status: string;
+  currentPeriodStart: string | null;
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
   subscriptionId?: string;
   trialEnd?: string | null;
+  accessRestricted: boolean;
+  trialExpired: boolean;
 }
 
 export interface CheckoutSessionResponse {
@@ -51,23 +55,6 @@ export const getSubscriptionStatus = async (): Promise<SubscriptionStatus> => {
   return response.data;
 };
 
-// Create checkout session for subscription
-export const createCheckoutSession = async (data: {
-  priceId: string;
-  successUrl: string;
-  cancelUrl: string;
-}): Promise<CheckoutSessionResponse> => {
-  const response = await apiClient.post('/billing/create-checkout-session', data);
-  return response.data;
-};
-
-// Create billing portal session
-export const createBillingPortalSession = async (data: {
-  returnUrl: string;
-}): Promise<BillingPortalResponse> => {
-  const response = await apiClient.post('/billing/create-portal-session', data);
-  return response.data;
-};
 
 // Cancel subscription
 export const cancelSubscription = async (): Promise<{ message: string; currentPeriodEnd: string }> => {
@@ -79,6 +66,60 @@ export const cancelSubscription = async (): Promise<{ message: string; currentPe
 export const reactivateSubscription = async (): Promise<{ message: string; status: string }> => {
   const response = await apiClient.post('/billing/reactivate-subscription');
   return response.data;
+};
+
+
+// Update subscription (upgrade/downgrade)
+export const updateSubscription = async (data: {
+  newPriceId: string;
+  prorationBillingMode?: string;
+}): Promise<{ message: string; subscription: any } | null> => {
+  try {
+    const response = await apiClient.patch("/billing/subscription", data);
+    
+    if (response.status === 200) {
+      return response.data;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error updating subscription:", error);
+    throw error;
+  }
+};
+
+// Create billing portal session
+export const createBillingPortalSession = async (returnUrl?: string): Promise<{ url: string } | null> => {
+  try {
+    const response = await apiClient.post('/billing/billing-portal', {
+      returnUrl: returnUrl || `${window.location.origin}/billing`
+    });
+    
+    if (response.status === 200) {
+      return response.data;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error creating billing portal session:", error);
+    throw error;
+  }
+};
+
+// Ensure user has a Paddle customer ID (for existing users)
+export const ensurePaddleCustomer = async (): Promise<{ paddleCustomerId: string } | null> => {
+  try {
+    const response = await apiClient.post('/billing/create-customer');
+    
+    if (response.status === 200) {
+      return response.data;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error ensuring Paddle customer:", error);
+    throw error;
+  }
 };
 
 export const getUsageStatistics = async (): Promise<any> => {
@@ -103,7 +144,8 @@ export const getUsageStatistics = async (): Promise<any> => {
     return {
       members: { current: 0, limit: null },
       projects: { current: 0, limit: null },
-      tasksPerProject: { current: 0, limit: null },
+      workspacesPerProject: { current: null, limit: null },
+      cardsPerWorkspace: { current: 0, limit: null },
       storageUsed: { current: 0, limit: null },
     };
   }

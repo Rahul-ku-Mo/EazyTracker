@@ -1,52 +1,15 @@
-@font-face {
-  font-family: "Helvetica Neue";
-  src: url("/fonts/HelveticaNeueLight.otf") format("opentype");
-  font-weight: 300;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "Helvetica Neue";
-  src: url("/fonts/HelveticaNeueMedium.otf") format("opentype");
-  font-weight: 500;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "Helvetica Neue";
-  src: url("/fonts/HelveticaNeueBold.otf") format("opentype");
-  font-weight: 700;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "Helvetica Neue";
-  src: url("/fonts/HelveticaNeueLightItalic.otf") format("opentype");
-  font-weight: 300;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: "Helvetica Neue";
-  src: url("/fonts/HelveticaNeueMediumItalic.otf")
-    format("opentype");
-  font-weight: 500;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: "Helvetica Neue";
-  src: url("/fonts/HelveticaNeueBoldItalic.otf") format("opentype");
-  font-weight: 700;
-  font-style: italic;
-}
-
 .editor-root {
   padding: 0.75rem;
   position: relative;
   outline: none;
-  font-family: "Source Serif 4", serif;
-  font-size: 15px;
+  font-family:
+    "Geist Variable",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    system-ui,
+    sans-serif;
   line-height: 1.6;
   color: var(--foreground);
   background-color: var(--background);
@@ -55,9 +18,11 @@
 }
 
 .editor-paragraph {
-  margin: 0 0 0.75rem 0;
+  padding: 3px 0px;
   line-height: 1.6;
   user-select: text;
+  font-size: 14px;
+  line-height: 20px;
 }
 
 .editor-paragraph:last-child {
@@ -95,22 +60,50 @@
 
 /* Fixed list styling - no more wrapping issues */
 .editor-list-ul {
-  list-style: none;
-  margin: 0.75rem 0;
-  padding-left: 0;
+  list-style-position: outside;
+  padding: 0;
+  margin: 0;
+  list-style-type: disc;
 }
 
-.editor-list-ol {
-  list-style: none;
-  margin: 0.75rem 0;
-  padding-left: 0;
-  counter-reset: list-counter;
+.editor-list-ol1 {
+  padding: 0;
+  margin: 0;
+  list-style-position: outside;
+  list-style-type: decimal;
+}
+
+.editor-list-ol2 {
+  padding: 0;
+  margin: 0;
+  list-style-type: upper-alpha;
+  list-style-position: outside;
+}
+
+.editor-list-ol3 {
+  padding: 0;
+  margin: 0;
+  list-style-type: lower-alpha;
+  list-style-position: outside;
+}
+
+.editor-list-ol4 {
+  padding: 0;
+  margin: 0;
+  list-style-type: upper-roman;
+  list-style-position: outside;
+}
+
+.editor-list-ol5 {
+  padding: 0;
+  margin: 0;
+  list-style-type: lower-roman;
+  list-style-position: outside;
 }
 
 .editor-list-checklist {
   list-style: none !important;
   list-style-type: none !important;
-  margin: 0.75rem 0;
   padding-left: 0;
 }
 
@@ -122,181 +115,120 @@
 /* Regular list items */
 .editor-list-item {
   position: relative;
-  margin: 0.375rem 0;
-  padding-left: 1.75rem;
-  line-height: 1.6;
-  user-select: text;
+  margin: 0.5em 20px;
+  font-size: 14px;
 }
 
-/* Bullet list bullets - Only for non-checkbox items */
-.editor-list-ul .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked):not(.editor-nested-list-item)::before {
-  content: "•";
-  position: absolute;
-  left: 0.5rem;
-  top: 0;
-  color: var(--muted-foreground);
-  font-weight: bold;
-  font-size: 1.1em;
-  pointer-events: none;
-  user-select: none;
+.editor-list-item::marker {
+  color: #000000;
+  background-color: transparent;
+  font-size: 14px;
 }
 
-/* Numbered list numbers */
-.editor-list-ol .editor-list-item {
-  counter-increment: list-counter;
-}
+ .dark .editor-list-item::marker {
+  color: #f0fdf4
+ }
 
-.editor-list-ol .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked)::before {
-  content: counter(list-counter) ".";
-  position: absolute;
-  left: 0;
-  top: 0;
-  color: var(--muted-foreground);
-  font-weight: 500;
-  min-width: 1.5rem;
-  text-align: right;
-  pointer-events: none;
-  user-select: none;
-}
-
-/* FIXED: Enhanced checklist items with emerald styling */
+/* UPDATED: Checklist items using marker approach like Lexical */
 .editor-list-item-checked,
 .editor-list-item-unchecked {
   position: relative;
-  padding-left: 2rem;
-  margin: 0.5rem 0;
-  list-style: none !important;
-  list-style-type: none !important;
-  list-style-image: none !important;
-  list-style-position: outside !important;
+  margin-bottom: 6px;
+  padding-left: 1.45em;
+  list-style-type: none;
   outline: none;
-  user-select: text;
+  display: block;
+  min-height: 1.5em;
+}
+
+.editor-list-item.editor-list-item-checked,
+.editor-list-item.editor-list-item-unchecked {
+  margin: 0.5em;
+}
+
+.editor-list-item-checked > *,
+.editor-list-item-unchecked > * {
+  margin-left: 0.01em;
+}
+
+/* Base marker styling for both checked and unchecked */
+.editor-list-item-unchecked::marker,
+.editor-list-item-checked::marker {
+  content: "\200B"; /* Zero-width space to hide default marker */
+}
+
+/* Checkbox markers using ::before pseudo-element */
+.editor-list-item-unchecked::before,
+.editor-list-item-checked::before {
+  content: "\200B";
+  width: 14px;
+  height: 14px;
+  top: 11px;
+  left: 0;
   cursor: pointer;
   display: block;
+  background-size: cover;
+  position: absolute;
+  transform: translateY(-50%);
 }
 
-.editor-list-item-checked::marker,
-.editor-list-item-unchecked::marker {
-  display: none !important;
-  content: none !important;
-}
-
-.editor-list-item-checked {
-  color: #6b7280;
-  text-decoration: line-through;
-  text-decoration-color: #6b7280;
-}
-
-.dark .editor-list-item-checked {
-  color: #9ca3af;
-  text-decoration-color: #9ca3af;
-}
-
+/* Unchecked checkbox styling */
 .editor-list-item-unchecked {
   color: #374151;
 }
 
 .dark .editor-list-item-unchecked {
-  color: #d1d5db;
+  color: #f1f1f1;
 }
 
-/* FIXED: Checkbox styling - CHECKED - Allow checkboxes at any nesting level */
-.editor-list-item-checked::before {
-  content: "" !important;
-  position: absolute !important;
-  left: 0 !important;
-  top: 0.125rem !important;
-  width: 1rem !important;
-  height: 1rem !important;
-  border: 1.5px solid #10b981 !important;
-  background-color: #10b981 !important;
-  border-radius: 2px !important;
-  cursor: pointer !important;
-  pointer-events: auto !important;
-  user-select: none !important;
-  transition: all 0.2s ease !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
-  display: block !important;
-  font-size: inherit !important;
-  color: transparent !important;
-}
-
-.editor-list-item-checked:hover::before {
-  background-color: #059669;
-  border-color: #059669;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-.editor-list-item-checked::after {
-  content: "✓";
-  position: absolute;
-  left: 0.125rem;
-  top: 0.225rem;
-  width: 0.75rem;
-  height: 0.75rem;
-  color: white;
-  font-size: 0.75rem;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  user-select: none;
-  line-height: 1;
-}
-
-/* FIXED: Checkbox styling - UNCHECKED - Allow checkboxes at any nesting level */
 .editor-list-item-unchecked::before {
-  content: "" !important;
-  position: absolute !important;
-  left: 0 !important;
-  top: 0.125rem !important;
-  width: 1rem !important;
-  height: 1rem !important;
-  border: 1.5px solid #d1d5db !important;
-  background-color: transparent !important;
-  border-radius: 2px !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  pointer-events: auto !important;
-  user-select: none !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
-  display: block !important;
-  font-size: inherit !important;
-  color: transparent !important;
+  border: 1px solid #d1d5db;
+  border-radius: 2px;
+  background-color: transparent;
+  transition: all 0.2s ease;
 }
 
 .dark .editor-list-item-unchecked::before {
-  border-color: #4b5563;
-  background-color: #1f2937;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  border-color: rgb(95 96 98);
+  background-color: transparent;
 }
 
 .editor-list-item-unchecked:hover::before {
   border-color: #10b981;
-  background-color: #f0fdf4;
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.1);
 }
 
 .dark .editor-list-item-unchecked:hover::before {
   border-color: #10b981;
-  background-color: #064e3b;
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
 }
 
-/* IMPORTANT: Remove the overly restrictive nested list overrides */
-/* Only prevent checkbox styling on regular nested list items that aren't checkboxes */
-.editor-nested-list .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked)::before,
-.editor-nested-list .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked)::after {
-  display: none !important;
-  content: none !important;
+/* Checked checkbox styling */
+.editor-list-item-checked {
+  opacity: 0.65;
 }
 
-/* Ensure nested checkbox items maintain proper spacing */
-.editor-nested-list .editor-list-item-checked,
-.editor-nested-list .editor-list-item-unchecked {
-  padding-left: 2rem;
-  margin: 0.5rem 0;
+.editor-list-item-checked::before {
+  background-color: #2ddfba;
+  background-repeat: no-repeat;
+  border: 1px solid #2ddfba;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+/* Checkmark for checked items */
+.editor-list-item-checked::after {
+  content: "";
+  position: absolute;
+  display: block;
+  top: 6px;
+  cursor: pointer;
+  left: 1px;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background-color: #2ddfba;
+  background-image: url(data:image/svg+xml;utf8,%3Csvg%20width=%2210%22%20height=%229%22%20viewBox=%220%200%2010%208%22%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22lch%288.3%25%201.867%20272%20/%201%29%22%3E%3Cpath%20d=%22M3.46975%205.70757L1.88358%204.1225C1.65832%203.8974%201.29423%203.8974%201.06897%204.1225C0.843675%204.34765%200.843675%204.7116%201.06897%204.93674L3.0648%206.93117C3.29006%207.15628%203.65414%207.15628%203.8794%206.93117L8.93103%201.88306C9.15633%201.65792%209.15633%201.29397%208.93103%201.06883C8.70578%200.843736%208.34172%200.843724%208.11646%201.06879C8.11645%201.0688%208.11643%201.06882%208.11642%201.06883L3.46975%205.70757Z%22%20stroke-width=%220.2%22%20/%3E%3C/svg%3E);
+  background-repeat: no-repeat;
+  border: 1px solid #2ddfba;
 }
 
 /* Nested lists */
@@ -310,26 +242,11 @@
   content: none !important;
 }
 
-.editor-nested-list {
-  margin-left: 1rem;
-}
-
-.editor-nested-list-item {
-  margin: 0.25rem 0;
-  padding-left: 1.5rem;
-}
-
-/* For regular bullet points in nested lists (non-checkbox) */
-.editor-nested-list .editor-list-ul .editor-list-item:not(.editor-list-item-checked):not(.editor-list-item-unchecked)::before {
-  content: "◦";
-  position: absolute;
-  left: 0.5rem;
-  top: 0;
-  color: var(--muted-foreground);
-  font-weight: bold;
-  font-size: 1.1em;
-  pointer-events: none;
-  user-select: none;
+/* Ensure nested checkbox items maintain proper spacing and styling */
+.editor-list-item-checked,
+.editor-list-item-unchecked {
+  padding-left: 1.5em;
+  padding-right: 1.5em;
 }
 
 /* Improved placeholder */
@@ -345,12 +262,20 @@
 
 /* Enhanced headings */
 .editor-heading-font {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    "Geist Variable",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    system-ui,
+    sans-serif;
 }
 
 .editor-heading-h1 {
-  @apply text-3xl font-bold;  
+  @apply text-3xl font-bold;
   line-height: 1.2;
+  padding: 4px 0;
   color: var(--foreground);
 }
 
@@ -430,37 +355,41 @@
   font-weight: 600;
 }
 
-/* Claude-style code blocks - Fixed to match theme configuration */
+/* Dev0-style code blocks with emerald theming */
 .editor-code {
-  font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Source Code Pro", monospace;
+  font-family:
+    "JetBrains Mono", "Fira Code", "SF Mono", "Monaco", "Cascadia Code",
+    monospace;
   display: block;
   margin: 1rem 0;
-  padding: 1rem;
-  border-radius: 8px;
+  padding: 1.25rem;
+  border-radius: 4px;
   font-size: 0.875rem;
-  line-height: 1.5;
+  line-height: 1.6;
   overflow-x: auto;
   position: relative;
   white-space: pre-wrap;
   word-wrap: break-word;
   word-break: break-word;
   tab-size: 2;
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
   max-width: 100%;
   width: 100%;
   box-sizing: border-box;
-  
-  /* Light mode styling */
-  background-color: rgb(248 250 252);
-  border: 1px solid rgb(226 232 240);
-  color: rgb(51 65 85);
+  transition: all 0.2s ease;
+
+  /* Light mode dev0 styling with emerald accents */
+  background: linear-gradient(145deg, #f0fdf4, #ecfdf5);
+  border-color: #059669;
+  color: #064e3b;
 }
 
-/* Dark mode code block styling */
+/* Dark mode code block styling with emerald theme */
 .dark .editor-code {
-  background-color: rgb(15 23 42);
-  border-color: rgb(30 41 59);
-  color: rgb(226 232 240);
+  background: linear-gradient(145deg, #0f1419, #091714);
+  color: #6ee7b7;
 }
 
 /* Remove the gutter/line numbers for cleaner look like Claude */
@@ -468,36 +397,66 @@
   display: none;
 }
 
-/* Inline code styling - for short code snippets */
+/* Dev0-style inline code with emerald theming */
 code:not(.editor-code),
 .editor-inline-code {
-  font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Source Code Pro", monospace;
+  font-family:
+    "JetBrains Mono", "Fira Code", "SF Mono", "Monaco", "Cascadia Code",
+    monospace;
   display: inline;
-  padding: 0.125rem 0.375rem;
-  margin: 0 0.125rem;
-  border-radius: 4px;
-  font-size: 0.85em;
+  padding: 0 0.15rem;
+  margin: 0;
+  border-radius: 3px;
+  font-size: 14px;
   white-space: nowrap;
-  
-  /* Light mode inline code */
-  background-color: rgb(243 244 246);
-  border: 1px solid rgb(209 213 219);
-  color: rgb(59 130 246);
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  /* Light mode inline code matching selection colors */
+  background-color: #cbfbf1;
+  color: #0e766e;
+  border: 1px solid rgba(14, 118, 110, 0.2);
+  box-shadow: 0 1px 2px rgba(14, 118, 110, 0.1);
 }
 
-/* Dark mode inline code */
+/* Dark mode inline code matching selection colors */
 .dark code:not(.editor-code),
 .dark .editor-inline-code {
-  background-color: rgb(31 41 55);
-  border-color: rgb(55 65 81);
-  color: rgb(147 197 253);
+  background-color: rgb(4 47 46);
+  color: rgb(45 212 191);
+  border: 1px solid rgba(45, 212, 191, 0.2);
+  box-shadow: 0 1px 2px rgba(45, 212, 191, 0.1);
+}
+
+/* Comment display inline code with matching colors */
+.comment-display-root .editor-text-code {
+  padding: 0.15rem 0.3rem;
+  border-radius: 3px;
+  font-size: 0.85em;
+  font-family:
+    "JetBrains Mono", "Fira Code", "SF Mono", "Monaco", "Cascadia Code",
+    monospace;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  /* Light mode matching selection */
+  background-color: #cbfbf1;
+  color: #0e766e;
+  border: 1px solid rgba(14, 118, 110, 0.2);
+}
+
+.dark .comment-display-root .editor-text-code {
+  /* Dark mode matching selection */
+  background-color: rgb(4 47 46);
+  color: rgb(45 212 191);
+  border: 1px solid rgba(45, 212, 191, 0.2);
 }
 
 /* Quote styling */
 .editor-quote {
   margin: 1rem 0;
   padding: 0.75rem 1rem;
-  border-left: 4px solid var(--primary);
+  border-left: 4px solid #059669;
   background-color: var(--muted);
   font-style: italic;
   color: var(--muted-foreground);
@@ -505,44 +464,41 @@ code:not(.editor-code),
 
 /* Link styling */
 .editor-link {
-  color: var(--primary);
+  color: #2ddfba;
   text-decoration: underline;
-  text-decoration-color: var(--primary);
   text-underline-offset: 2px;
-  transition: color 0.2s ease;
+  opacity: 0.5;
+  text-decoration: underline;
+  transition: all linear;
+  cursor: pointer;
 }
 
 .editor-link:hover {
-  color: var(--primary);
-  text-decoration-color: var(--primary);
+  color: #2ddfba;
+  opacity: 1;
 }
 
 /* Horizontal rule */
 .editor-hr {
   border: none;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid #2c2e33;
   margin: 1.5rem 0;
 }
 
 /* Selection styling */
 .editor-root ::selection {
-  background-color: #3b82f6;
-  color: white;
+  background-color: #cbfbf1;
+  color: #0e766e;
 }
 
 .dark .editor-root ::selection {
-  background-color: #60a5fa;
-  color: #1e293b;
+  background-color: rgb(4 47 46);
+  color: rgb(45 212 191);
 }
 
 /* Focus styles */
 .editor-root:focus-within {
   outline: none;
-}
-
-/* Improved spacing for better readability */
-.editor-root > * + * {
-  margin-top: 0.75rem;
 }
 
 /* Better handling of empty paragraphs */
@@ -559,12 +515,13 @@ code:not(.editor-code),
     padding: 0.5rem;
     font-size: 14px;
   }
-  
-  .editor-Theme__code {
-    padding: 0.75rem;
+
+  .editor-code {
+    padding: 1rem;
     font-size: 0.8rem;
+    border-radius: 8px;
   }
-  
+
   .editor-list-item,
   .editor-list-item-checked,
   .editor-list-item-unchecked {
@@ -572,11 +529,150 @@ code:not(.editor-code),
   }
 }
 
-.editor-link {
-  color: hsl(157, 70%, 26%); /* emerald-500 */
-  text-decoration: none;
+/* Comment Editor Styles */
+.comment-editor-root {
+  @apply text-sm leading-relaxed;
 }
-.editor-link:hover {
-  text-decoration: underline;
-  cursor: pointer;
+
+.comment-editor-paragraph {
+  @apply mb-1;
+}
+
+.comment-editor-placeholder {
+  @apply text-muted-foreground/60 absolute top-0 left-0 pointer-events-none;
+}
+
+.comment-display-root {
+  @apply text-sm leading-relaxed;
+}
+
+.comment-display-paragraph {
+  @apply mb-1;
+}
+
+.comment-display-root p:last-child {
+  @apply mb-0;
+}
+
+/* Override default prose styles for comment display */
+.comment-display-root .editor-text-bold {
+  @apply font-semibold;
+}
+
+.comment-display-root .editor-text-italic {
+  @apply italic;
+}
+
+.comment-display-root .editor-text-code {
+  @apply px-2 py-1 rounded-md text-xs font-mono font-medium;
+  background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+  border: 1px solid #059669;
+  color: #065f46;
+  transition: all 0.2s ease;
+}
+
+.dark .comment-display-root .editor-text-code {
+  background: linear-gradient(135deg, #064e3b, #065f46);
+  border-color: #059669;
+  color: #6ee7b7;
+}
+
+.comment-display-root .editor-link {
+  @apply text-primary hover:underline;
+}
+
+.comment-display-root .editor-quote {
+  @apply border-l-2 border-muted-foreground/30 pl-3 italic text-muted-foreground;
+}
+
+.comment-display-root .editor-code {
+  @apply p-3 rounded-lg text-xs font-mono overflow-x-auto font-medium;
+  font-family:
+    "Fira Code", "SF Mono", "Monaco", "Inconsolata", "Roboto Mono",
+    "Source Code Pro", monospace;
+  background: linear-gradient(145deg, #f0fdf4, #ecfdf5);
+  border: 2px solid #059669;
+  color: #064e3b;
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.1);
+  transition: all 0.2s ease;
+}
+
+.dark .comment-display-root .editor-code {
+  background: linear-gradient(145deg, #0f1419, #111827);
+  border-color: #059669;
+  color: #6ee7b7;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+/* Comment Images */
+.comment-editor-root .editor-image,
+.comment-display-root .editor-image {
+  @apply max-w-full h-auto rounded-lg my-2;
+}
+
+.comment-editor-root .editor-image img,
+.comment-display-root .editor-image img {
+  @apply max-w-full h-auto rounded-lg;
+}
+
+/* Comment Mentions */
+.comment-editor-root .editor-mention,
+.comment-display-root .editor-mention {
+  @apply bg-primary/10 text-primary px-1 py-0.5 rounded font-medium;
+}
+
+/* Comment Headings */
+.comment-display-root .editor-heading-h1 {
+  @apply text-lg font-bold mb-2;
+}
+
+.comment-display-root .editor-heading-h2 {
+  @apply text-base font-bold mb-1;
+}
+
+.comment-display-root .editor-heading-h3 {
+  @apply text-sm font-bold mb-1;
+}
+
+/* Comment Lists */
+.comment-display-root .editor-list-ul {
+  @apply list-disc list-inside ml-4 space-y-1;
+}
+
+.comment-display-root .editor-list-ol {
+  @apply list-decimal list-inside ml-4 space-y-1;
+}
+
+.comment-display-root .editor-list-item {
+  @apply mb-1;
+}
+
+.comment-display-root .editor-nested-listitem {
+  @apply ml-4;
+}
+
+/* Table of Contents highlight effect */
+.highlight-heading {
+  @apply bg-emerald-100 dark:bg-emerald-900/30 transition-colors duration-500;
+  animation: fadeHighlight 2s ease-out forwards;
+}
+
+@keyframes fadeHighlight {
+  0% {
+    background-color: rgb(254 240 138 / 0.5);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  @keyframes fadeHighlight {
+    0% {
+      background-color: rgb(113 63 18 / 0.3);
+    }
+    100% {
+      background-color: transparent;
+    }
+  }
 }

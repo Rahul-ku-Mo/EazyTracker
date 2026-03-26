@@ -132,8 +132,8 @@ const theme: EditorTheme = {
     h6: "editor-heading-h6",
   },
   list: {
-    ul: "editor-list-ul",
-    ol: "editor-list-ol",
+    ul: "editor-list-ul flex flex-col gap-0.5",
+    ol: "editor-list-ol flex flex-col gap-0.5",
     checklist: "editor-list-checklist",
     listitem: "editor-list-item",
     listitemChecked: "editor-list-item-checked",

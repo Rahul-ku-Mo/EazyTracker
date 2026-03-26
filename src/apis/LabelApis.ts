@@ -1,27 +1,20 @@
-import axios from "axios";
+import { api } from "@/lib/api";
 
-interface Label {
+export interface Label {
   id: string;
   name: string;
-  color: string;
-  cardId: string;
+  color?: string;
+  workspaceId: number;
   createdAt?: string;
   updatedAt?: string;
 }
 
-export const fetchLabels = async (
-  accessToken: string, 
-  cardId: string
+// Fetch labels for a workspace
+export const fetchWorkspaceLabels = async (
+  workspaceId: string | number
 ): Promise<Label[] | undefined> => {
   try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/labels?cardId=${cardId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const response = await api.get(`/labels/workspace/${workspaceId}`);
 
     return response.data.data;
   } catch (err) {
@@ -30,21 +23,28 @@ export const fetchLabels = async (
   }
 };
 
+// Create a new label for a workspace
 export const createLabel = async (
-  accessToken: string, 
-  data: Partial<Label>, 
-  cardId: string
+  workspaceId: string | number,
+  data: { name: string; color?: string }
 ): Promise<Label | undefined> => {
   try {
-    const response = await axios.post(
-      `${import.meta.env.VITE_API_URL}/labels?cardId=${cardId}`,
-      data,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const response = await api.post(`/labels/workspace/${workspaceId}`, data);
+
+    return response.data.data;
+  } catch (e) {
+    console.log(e);
+    return undefined;
+  }
+};
+
+// Update a label
+export const updateLabel = async (
+  labelId: string,
+  data: { name?: string; color?: string }
+): Promise<Label | undefined> => {
+  try {
+    const response = await api.put(`/labels/${labelId}`, data);
 
     return response.data.data;
   } catch (e) {
@@ -54,18 +54,10 @@ export const createLabel = async (
 };
 
 export const deleteLabel = async (
-  accessToken: string, 
   labelId: string
 ): Promise<any> => {
   try {
-    const response = await axios.delete(
-      `${import.meta.env.VITE_API_URL}/labels/${labelId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const response = await api.delete(`/labels/${labelId}`);
 
     return response;
   } catch (error) {

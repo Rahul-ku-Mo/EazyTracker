@@ -1,0 +1,229 @@
+import { Check, Palette } from "lucide-react";
+import clsx from "clsx";
+import useWorkspaceForm from "@/hooks/useWorkspaceForm";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+// Macintosh-inspired colors with better contrast
+const macColors = [
+  {
+    id: "workspace-blue",
+    color: "#3B82F6",
+    name: "Ocean Blue",
+    lightColor: "#60A5FA",
+  },
+  {
+    id: "workspace-emerald",
+    color: "#10B981",
+    name: "Emerald",
+    lightColor: "#34D399",
+  },
+  {
+    id: "workspace-purple",
+    color: "#8B5CF6",
+    name: "Royal Purple",
+    lightColor: "#A78BFA",
+  },
+  {
+    id: "workspace-pink",
+    color: "#EC4899",
+    name: "Rose Pink",
+    lightColor: "#F472B6",
+  },
+  {
+    id: "workspace-orange",
+    color: "#F59E0B",
+    name: "Sunset Orange",
+    lightColor: "#FBBF24",
+  },
+  {
+    id: "workspace-red",
+    color: "#EF4444",
+    name: "Cherry Red",
+    lightColor: "#F87171",
+  },
+  {
+    id: "workspace-teal",
+    color: "#14B8A6",
+    name: "Teal",
+    lightColor: "#2DD4BF",
+  },
+  {
+    id: "workspace-indigo",
+    color: "#6366F1",
+    name: "Indigo",
+    lightColor: "#818CF8",
+  },
+  {
+    id: "workspace-slate",
+    color: "#64748B",
+    name: "Slate Gray",
+    lightColor: "#94A3B8",
+  },
+];
+
+interface WorkspaceFormProps {
+  count: number;
+}
+
+const WorkspaceForm = ({ count }: WorkspaceFormProps) => {
+  const {
+    isPending,
+    selectedImageId,
+    setCurrentWorkspaceInput,
+    currentWorkspaceInput,
+    setSelectedImageId,
+    handleSubmit,
+  } = useWorkspaceForm(count);
+
+  return (
+    <Card className="w-full max-w-md mx-auto rounded-md border-0 dark:bg-[#18181b]">
+      <CardHeader className="space-y-1 pb-4">
+        <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
+          <Palette className="h-5 w-5 text-primary" />
+          New Workspace
+        </CardTitle>
+      </CardHeader>
+
+      <CardContent>
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+         
+          {/* Color Selection Section */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium text-foreground flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-primary"></div>
+              Background Color
+            </Label>
+
+            <div className="grid grid-cols-3 gap-3">
+              {macColors.map((colorOption) => (
+                <div
+                  key={colorOption.id}
+                  className={clsx(
+                    "cursor-pointer relative group transition-all duration-200",
+                    "hover:scale-105 hover:shadow-md",
+                    isPending &&
+                      "opacity-50 hover:scale-100 hover:shadow-none cursor-not-allowed",
+                    selectedImageId === colorOption.id &&
+                      "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                  )}
+                  onClick={() => {
+                    if (isPending) return;
+                    setSelectedImageId(colorOption.id);
+                  }}
+                >
+                  <input
+                    type="radio"
+                    id={colorOption.id}
+                    name="color"
+                    onChange={() => setSelectedImageId(colorOption.id)}
+                    className="sr-only"
+                    checked={selectedImageId === colorOption.id}
+                    value={`${colorOption.id}|${colorOption.color}|${colorOption.name}`}
+                    disabled={isPending}
+                  />
+
+                  <div
+                    className="w-full h-16 rounded-lg border border-border/20 shadow-sm relative overflow-hidden"
+                    style={{
+                      background: `linear-gradient(135deg, ${colorOption.color} 0%, ${colorOption.lightColor} 100%)`,
+                    }}
+                  >
+                    {/* Overlay for better contrast */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-black/10" />
+
+                    {/* Selection indicator */}
+                    {selectedImageId === colorOption.id && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                        <div className="bg-white/90 rounded-full p-1">
+                          <Check className="w-4 h-4 text-gray-800" />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Color name tooltip */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                      <span className="text-[10px] font-medium text-white truncate block">
+                        {colorOption.name}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Workspace Title Section */}
+          <div className="space-y-3">
+            <Label
+              htmlFor="workspace-title"
+              className="text-sm font-medium text-foreground flex items-center gap-2"
+            >
+              <div className="w-2 h-2 rounded-full bg-primary"></div>
+              Workspace
+            </Label>
+
+            <Input
+              id="workspace-title"
+              name="title"
+              placeholder="Enter workspace name..."
+              value={currentWorkspaceInput}
+              onChange={(e) => setCurrentWorkspaceInput(e.target.value)}
+              className={clsx(
+                "transition-all duration-200",
+                "border-input bg-background text-foreground",
+                "placeholder:text-muted-foreground",
+                "focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
+                "focus:border-primary focus-visible:ring-primary",
+                isPending && "opacity-50 cursor-not-allowed"
+              )}
+              disabled={isPending}
+              maxLength={50}
+            />
+
+            {/* Character counter */}
+            <div className="flex justify-between items-center text-xs text-muted-foreground">
+              <span>{currentWorkspaceInput.length}/50</span>
+            </div>
+          </div>
+
+          <div>
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              disabled={
+                isPending || (!selectedImageId && !currentWorkspaceInput.trim())
+              }
+              className={clsx(
+                "w-full h-8 font-medium transition-all duration-200",
+                "bg-primary hover:bg-primary/90 text-primary-foreground",
+                "disabled:opacity-50 disabled:cursor-not-allowed",
+                "focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
+              )}
+            >
+              {isPending ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  Creating Workspace...
+                </div>
+              ) : (
+                "Create Workspace"
+              )}
+            </Button>
+
+            {/* Validation message */}
+            {!selectedImageId && !currentWorkspaceInput.trim() && (
+              <p className="text-xs text-muted-foreground pt-2">
+                Don't forget to add a little color to your workspace.
+              </p>
+            )}
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default WorkspaceForm;
