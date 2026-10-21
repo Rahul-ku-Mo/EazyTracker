@@ -1,6 +1,6 @@
 import { useFeatureAccess } from './useBilling';
 
-export type PlanType = 'free' | 'pro' | 'enterprise';
+export type PlanType = 'free' | 'pro' | 'team' | 'enterprise';
 export type FeatureType = 'analytics' | 'timeTracking' | 'customFields' | 'aiFeatures' | 'prioritySupport';
 
 // Feature requirements mapping
@@ -9,14 +9,15 @@ const FEATURE_REQUIREMENTS: Record<FeatureType, PlanType> = {
   timeTracking: 'pro',
   customFields: 'pro',
   aiFeatures: 'pro',
-  prioritySupport: 'enterprise',
+  prioritySupport: 'team',
 };
 
 // Plan hierarchy for comparison
 const PLAN_HIERARCHY: Record<PlanType, number> = {
   free: 0,
   pro: 1,
-  enterprise: 2,
+  team: 2,
+  enterprise: 3,
 };
 
 export const useFeatureGating = () => {
@@ -26,6 +27,7 @@ export const useFeatureGating = () => {
     getCurrentPlanLimits,
     isFreePlan,
     isProPlan,
+    isTeamPlan,
     isEnterprisePlan,
   } = useFeatureAccess();
 
@@ -40,40 +42,64 @@ export const useFeatureGating = () => {
   };
 
   // Get upgrade message for a feature or resource
-  const getUpgradeMessage = (feature: FeatureType | 'projects' | 'members' | 'imageUploads'): string => {
+  const getUpgradeMessage = (feature: FeatureType | 'projects' | 'members' | 'storage'): string => {
     const currentPlan = subscription?.plan?.toLowerCase();
     
     if (feature === 'projects') {
-      if (currentPlan === 'pro') {
+      if (currentPlan === 'enterprise') {
+        return `You have unlimited projects.`;
+      }
+      if (currentPlan === 'team') {
         return `You've reached your project limit. Upgrade to Enterprise for unlimited projects and advanced features.`;
       }
-      return `You've reached your project limit. Upgrade to Professional for unlimited projects.`;
+      if (currentPlan === 'pro') {
+        return `You've reached your project limit. Upgrade to Team for 25 projects or Enterprise for unlimited.`;
+      }
+      return `You've reached your project limit. Upgrade to Professional for 10 projects.`;
     }
     
     if (feature === 'members') {
-      if (currentPlan === 'pro') {
-        return `You've reached your team member limit. Upgrade to Enterprise for unlimited team members and advanced collaboration.`;
+      if (currentPlan === 'enterprise') {
+        return `You have unlimited team members.`;
       }
-      return `You've reached your team member limit. Upgrade to Professional for more team members.`;
+      if (currentPlan === 'team') {
+        return `You've reached your team member limit. Upgrade to Enterprise for unlimited team members.`;
+      }
+      if (currentPlan === 'pro') {
+        return `You've reached your team member limit. Upgrade to Team for 250 members or Enterprise for unlimited.`;
+      }
+      return `You've reached your team member limit. Upgrade to Professional for 100 members.`;
     }
     
-    if (feature === 'imageUploads') {
-      if (currentPlan === 'pro') {
-        return `You've reached your image upload limit. Upgrade to Enterprise for unlimited uploads and advanced storage.`;
+    if (feature === 'storage') {
+      if (currentPlan === 'enterprise') {
+        return `You have 100GB storage.`;
       }
-      return `You've reached your image upload limit. Upgrade to Professional for more uploads.`;
+      if (currentPlan === 'team') {
+        return `You've reached your storage limit. Upgrade to Enterprise for 100GB storage.`;
+      }
+      if (currentPlan === 'pro') {
+        return `You've reached your storage limit. Upgrade to Team for 50GB or Enterprise for 100GB.`;
+      }
+      return `You've reached your storage limit. Upgrade to Professional for 10GB storage.`;
     }
     
     const requiredPlan = FEATURE_REQUIREMENTS[feature as FeatureType];
     
     // If user is on free plan
     if (currentPlan === 'free' || !currentPlan) {
-      const planName = requiredPlan === 'pro' ? 'Professional' : 'Enterprise';
+      const planName = requiredPlan === 'pro' ? 'Professional' : requiredPlan === 'team' ? 'Team' : 'Enterprise';
       return `This feature requires a ${planName} subscription. Upgrade to unlock ${feature}.`;
     }
     
-    // If user is on pro plan and needs enterprise
-    if (currentPlan === 'pro' && requiredPlan === 'enterprise') {
+    // If user is on pro plan and needs higher tier
+    if (currentPlan === 'pro' && (requiredPlan === 'team' || requiredPlan === 'enterprise')) {
+      const planName = requiredPlan === 'team' ? 'Team' : 'Enterprise';
+      return `This feature requires a ${planName} subscription. Upgrade to unlock ${feature} and other advanced features.`;
+    }
+    
+    // If user is on team plan and needs enterprise
+    if (currentPlan === 'team' && requiredPlan === 'enterprise') {
       return `This feature requires an Enterprise subscription. Upgrade to unlock ${feature} and other advanced features.`;
     }
     
@@ -83,7 +109,7 @@ export const useFeatureGating = () => {
     }
     
     // Default fallback
-    const planName = requiredPlan === 'pro' ? 'Professional' : 'Enterprise';
+    const planName = requiredPlan === 'pro' ? 'Professional' : requiredPlan === 'team' ? 'Team' : 'Enterprise';
     return `This feature requires a ${planName} subscription. Upgrade to unlock ${feature}.`;
   };
 
@@ -155,6 +181,13 @@ export const useFeatureGating = () => {
       case 'pro':
         return {
           action: 'upgrade',
+          target: 'team',
+          url: '/billing',
+          text: 'Upgrade to Team'
+        };
+      case 'team':
+        return {
+          action: 'upgrade',
           target: 'enterprise',
           url: '/billing',
           text: 'Upgrade to Enterprise'
@@ -181,6 +214,7 @@ export const useFeatureGating = () => {
     currentPlan: subscription?.plan as PlanType,
     isFreePlan,
     isProPlan,
+    isTeamPlan,
     isEnterprisePlan,
     
     // Feature checks

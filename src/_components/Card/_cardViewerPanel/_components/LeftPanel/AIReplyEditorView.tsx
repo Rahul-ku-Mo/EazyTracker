@@ -79,8 +79,8 @@ const theme = {
     h6: "editor-heading-h6 editor-heading-font",
   },
   list: {
-    ul: "editor-list-ul text-sm",
-    ol: "editor-list-ol text-sm",
+    ul: "editor-list-ul text-sm flex flex-col gap-0.5",
+    ol: "editor-list-ol text-sm flex flex-col gap-0.5",
     checklist: "editor-list-checklist text-sm",
     listitem: "editor-list-item text-sm",
     listitemChecked: "editor-list-item-checked text-sm",

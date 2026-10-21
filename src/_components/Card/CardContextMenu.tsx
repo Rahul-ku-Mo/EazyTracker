@@ -10,11 +10,19 @@ import {
   ContextMenuSubContent,
 } from "../../components/ui/context-menu";
 import { cn } from "../../lib/utils";
-import { Flag, Tag, CheckSquare, Plus, User } from "lucide-react";
+import { Tag, CheckSquare, Plus, User } from "lucide-react";
 import { useCardMutation } from "./_mutations/useCardMutations";
 import { useMembers } from "../../hooks/useMembers";
-import { useParams } from "react-router-dom";
+
 import { TUser } from "../../types";
+import {
+  UrgentPriority,
+  HighPriority,
+  LowPriority,
+  Priority,
+  MediumPriority,
+} from "../shared/svg/Priority";
+import { useTheme } from "@/context/ThemeProvider";
 
 interface ContextMenuItem {
   icon: React.ReactNode;
@@ -31,11 +39,10 @@ interface CardContextMenuProps {
 }
 
 const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
- 
-  const { id } = useParams();
+  const { theme } = useTheme();
 
-  // TODO: get members from the database who are in the same board
-  const { members, isPending } = useMembers(id as string);
+ 
+  const { members, isPending } = useMembers();
 
   const { updateCardMutation } = useCardMutation();
 
@@ -53,13 +60,12 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
     });
   };
 
-  const updateLabelForATicket = (label: string) => {
+  const updateLabelForATicket = (labelId: string) => {
     updateCardMutation.mutate({
       cardId: parseInt(cardId),
-      label,
+      labelId,
     });
   };
-
 
   return (
     <ContextMenu>
@@ -70,7 +76,7 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
             {item.label === "Set priority" ? (
               <ContextMenuSub>
                 <ContextMenuSubTrigger className="gap-2 text-xs">
-                  <Flag className="w-3 h-3 mr-2" />
+                  <UrgentPriority className="size-3 mr-2" />
                   Set priority
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-48">
@@ -78,7 +84,7 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
                     className="gap-2 text-xs"
                     onClick={() => updatePriorityForATicket("urgent")}
                   >
-                    <Flag className="w-3 h-3 text-red-500" />
+                    <UrgentPriority className="size-3" />
                     Urgent
                     <ContextMenuShortcut>⌘1</ContextMenuShortcut>
                   </ContextMenuItem>
@@ -86,7 +92,10 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
                     className="gap-2 text-xs"
                     onClick={() => updatePriorityForATicket("high")}
                   >
-                    <Flag className="w-3 h-3 text-amber-500" />
+                    <HighPriority
+                      className="size-3"
+                      isDark={theme === "dark"}
+                    />
                     High
                     <ContextMenuShortcut>⌘2</ContextMenuShortcut>
                   </ContextMenuItem>
@@ -94,7 +103,10 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
                     className="gap-2 text-xs"
                     onClick={() => updatePriorityForATicket("medium")}
                   >
-                    <Flag className="w-3 h-3 text-blue-500" />
+                    <MediumPriority
+                      className="size-3"
+                      isDark={theme === "dark"}
+                    />
                     Medium
                     <ContextMenuShortcut>⌘3</ContextMenuShortcut>
                   </ContextMenuItem>
@@ -102,7 +114,7 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
                     className="gap-2 text-xs"
                     onClick={() => updatePriorityForATicket("low")}
                   >
-                    <Flag className="w-3 h-3 text-green-500" />
+                    <LowPriority className="size-3" isDark={theme === "dark"} />
                     Low
                     <ContextMenuShortcut>⌘4</ContextMenuShortcut>
                   </ContextMenuItem>
@@ -111,7 +123,7 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
                     className="gap-2 text-xs text-muted-foreground"
                     onClick={() => updatePriorityForATicket("")}
                   >
-                    <Flag className="w-3 h-3" />
+                    <Priority className="size-3" />
                     No priority
                     <ContextMenuShortcut>⌘0</ContextMenuShortcut>
                   </ContextMenuItem>
@@ -125,26 +137,28 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-48">
                   {!isPending &&
-                    members?.map((member: TUser) => (
-                      <ContextMenuItem
-                        key={member.id}
-                        className="gap-2 text-xs"
-                        onClick={() => updateAssigneeForATicket(member.id)}
-                      >
-                        <div className="flex items-center justify-center w-3 h-3 rounded-full bg-muted">
-                          {member.imageUrl ? (
-                            <img
-                              src={member.imageUrl}
-                              alt={member.username}
-                              className="w-full h-full rounded-full"
-                            />
-                          ) : (
-                            member.username.charAt(0)
-                          )}
-                        </div>
-                        {member.username}
-                      </ContextMenuItem>
-                    ))}
+                    members
+                      ?.filter((member: TUser) => member && member.username)
+                      ?.map((member: TUser) => (
+                        <ContextMenuItem
+                          key={member.id}
+                          className="gap-2 text-xs"
+                          onClick={() => updateAssigneeForATicket(member.id)}
+                        >
+                          <div className="flex items-center justify-center w-3 h-3 rounded-full bg-muted">
+                            {member.imageUrl ? (
+                              <img
+                                src={member.imageUrl}
+                                alt={member.username || "User"}
+                                className="w-full h-full rounded-full"
+                              />
+                            ) : (
+                              member.username?.charAt(0) || "?"
+                            )}
+                          </div>
+                          {member.username || "Unknown User"}
+                        </ContextMenuItem>
+                      ))}
                   <ContextMenuSeparator />
                   <ContextMenuItem
                     className="gap-2 text-xs text-muted-foreground"
@@ -157,20 +171,29 @@ const CardContextMenu = ({ children, items, cardId }: CardContextMenuProps) => {
               </ContextMenuSub>
             ) : item.label === "Add label" ? (
               <ContextMenuSub>
-                <ContextMenuSubTrigger className="gap-2 text-xs" >
+                <ContextMenuSubTrigger className="gap-2 text-xs">
                   <Tag className="w-3 h-3 mr-2" />
                   Add label
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-48">
-                  <ContextMenuItem className="gap-2 text-xs" onClick={() => updateLabelForATicket("Feature")}>
+                  <ContextMenuItem
+                    className="gap-2 text-xs"
+                    onClick={() => updateLabelForATicket("Feature")}
+                  >
                     <Tag className="w-3 h-3 text-emerald-500" />
                     Feature
                   </ContextMenuItem>
-                  <ContextMenuItem className="gap-2 text-xs" onClick={() => updateLabelForATicket("Bug")}>
+                  <ContextMenuItem
+                    className="gap-2 text-xs"
+                    onClick={() => updateLabelForATicket("Bug")}
+                  >
                     <Tag className="w-3 h-3 text-blue-500" />
                     Bug
                   </ContextMenuItem>
-                  <ContextMenuItem className="gap-2 text-xs" onClick={() => updateLabelForATicket("Enhancement")}>
+                  <ContextMenuItem
+                    className="gap-2 text-xs"
+                    onClick={() => updateLabelForATicket("Enhancement")}
+                  >
                     <Tag className="w-3 h-3 text-purple-500" />
                     Enhancement
                   </ContextMenuItem>

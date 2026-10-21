@@ -1,6 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 import { TCreateCardProps, TCardData } from "../types";
+import { api } from "@/lib/api";
 
 interface CardDetail {
   id: number;
@@ -22,7 +23,7 @@ export const createCard = async ({
   cardData,
   columnId,
 }: TCreateCardProps): Promise<CardDetail | undefined> => {
-  const { title, description, dueDate, labels, attachments } = cardData;
+  const { title, description, dueDate, labelIds, attachments } = cardData;
 
   try {
     const response = await axios.post(
@@ -31,7 +32,7 @@ export const createCard = async ({
         title: title,
         description: description,
         dueDate: dueDate ? dueDate.toISOString() : null,
-        labels: labels,
+        labelIds: labelIds,
         attachments: attachments,
       },
       {
@@ -52,7 +53,7 @@ export const createCard = async ({
 };
 
 export const fetchCards = async (
-  accessToken: string, 
+  accessToken: string,
   columnId: string
 ): Promise<CardDetail[] | undefined> => {
   try {
@@ -76,7 +77,7 @@ export const fetchCards = async (
 };
 
 export const fetchCard = async (
-  accessToken: string, 
+  accessToken: string,
   cardId: number
 ): Promise<CardDetail | undefined> => {
   try {
@@ -115,7 +116,36 @@ export const updateCard = async (
       }
     );
 
-    if (response.data.data && response.status === 201) {
+    if (response.data.data && response.status === 200) {
+      return response.data.data;
+    }
+    return undefined;
+  } catch (err) {
+    console.log(err);
+    return undefined;
+  }
+};
+
+// Toggle a label on a card (add if not present, remove if present)
+export const toggleCardLabel = async (
+  accessToken: string,
+  cardId: number,
+  labelId: string
+): Promise<CardDetail | undefined> => {
+  try {
+    const response = await axios.patch(
+      `${import.meta.env.VITE_API_URL}/cards/${cardId}`,
+      {
+        labelId: labelId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (response.data.data && response.status === 200) {
       return response.data.data;
     }
     return undefined;
@@ -126,7 +156,7 @@ export const updateCard = async (
 };
 
 export const deleteCard = async (
-  accessToken: string, 
+  accessToken: string,
   cardId: number
 ): Promise<string> => {
   try {
@@ -258,21 +288,23 @@ export const fetchCardsWithStatus = async (
 
 // Update card column (for drag and drop)
 export const updateCardColumn = async (
-  accessToken: string,
   cardId: number,
-  columnId: number
+  columnId?: number,
+  order?: number
 ): Promise<CardDetail | undefined> => {
   try {
-    const response = await axios.patch(
-      `${import.meta.env.VITE_API_URL}/cards/${cardId}`,
-      {
-        columnId: columnId,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
+    const payload: { columnId?: number, order?: number } = {};
+
+    if (columnId) {
+      payload.columnId = columnId;
+    }
+
+    if (order) {
+      payload.order = order;
+    }
+
+    const response = await api.patch(`/cards/${cardId}`,
+      payload,
     );
 
     if (response.data.data && response.status === 201) {

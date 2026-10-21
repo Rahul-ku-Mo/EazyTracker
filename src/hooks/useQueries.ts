@@ -1,9 +1,10 @@
 import { useQuery  } from "@tanstack/react-query";
 import { fetchCard, fetchCards } from "../apis/CardApis";
 import { fetchColumn, fetchColumns } from "../apis/ColumnApis";
-import { fetchBoards, fetchBoard } from "../apis/BoardApis";
+
+import { fetchWorkspaces, fetchWorkspace } from "../apis/WorkspaceApis";
 import { fetchUserProfile, fetchUsers } from "../apis/userApis";
-import { fetchLabels } from "../apis/LabelApis";
+import {  fetchWorkspaceLabels } from "@/apis/LabelApis";
 
 import { fetchNotifications } from "../apis/NotificationApis";
 
@@ -21,10 +22,13 @@ const useCards = (accessToken: string, columnId: string) => {
   });
 };
 
-const useColumns = (accessToken: string, boardId: string) => {
+const useColumns = (workspaceId: string | null | undefined) => {
+  const [teamId] = workspaceId?.split("/") || [""];
+
   return useQuery({
-    queryKey: ["columns", "boards", boardId],
-    queryFn: async () => await fetchColumns(accessToken, boardId),
+    queryKey: ["columns", "workspaces", teamId],
+    queryFn: async () => await fetchColumns(workspaceId!),
+    enabled: !!workspaceId, // Only run query when workspaceId is available
   });
 };
 const useColumn = (accessToken: string, columnId: string) => {
@@ -34,17 +38,19 @@ const useColumn = (accessToken: string, columnId: string) => {
   });
 };
 
-const useBoard = (accessToken: string, boardId: string) => {
+
+const useWorkspace = (workspaceIdentifier: string) => {
   return useQuery({
-    queryKey: ["boards", boardId],
-    queryFn: async () => await fetchBoard(accessToken, boardId),
+    queryKey: ["workspaces", workspaceIdentifier],
+    queryFn: async () => await fetchWorkspace(workspaceIdentifier),
   });
 };
 
-const useBoards = (accessToken: string) => {
+const useWorkspaces = (teamId: string, options?: { enabled?: boolean }) => {
   return useQuery({
-    queryKey: ["boards"],
-    queryFn: async () => await fetchBoards(accessToken),
+    queryKey: ["workspaces", teamId],
+    queryFn: async () => await fetchWorkspaces(teamId),
+    enabled: options?.enabled !== undefined ? options.enabled : !!teamId,
   });
 };
 
@@ -62,10 +68,12 @@ const useUsers = (accessToken: string) => {
   });
 };
 
-const useLabels = (accessToken: string, cardId: string) => {
+
+const useWorkspaceLabels = (workspaceId: string) => {
   return useQuery({
-    queryKey: ["labels", cardId],
-    queryFn: async () => await fetchLabels(accessToken, cardId),
+    queryKey: ["labels", "workspace", workspaceId],
+    queryFn: async () => await fetchWorkspaceLabels(workspaceId),
+    enabled: !!workspaceId,
   });
 };
 
@@ -83,10 +91,10 @@ export {
   useCards,
   useColumn,
   useColumns,
-  useBoard,
-  useBoards,
+  useWorkspace,
+  useWorkspaces,
   useUser,
   useUsers,
-  useLabels,
+  useWorkspaceLabels,
   useNotifications,
 };

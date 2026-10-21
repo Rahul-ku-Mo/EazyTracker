@@ -5,7 +5,6 @@ import {
   KanbanPage,
   AuthPage,
   AccountPage,
-  BoardPage,
   NotFoundPage,
   ConversationPage,
   InboxPage,
@@ -17,7 +16,6 @@ import {
   FeedbackPage,
   SupportPage,
   IntegrationsForm,
-  BoardSettingsPage,
   OnboardingPage,
   TeamManagementPage,
   ComingSoonPage,
@@ -26,16 +24,25 @@ import {
   NotePage,
   NoteViewPage,
   NoteEditPage,
+  ProjectsPage,
+  DashboardPage,
 } from "@/routes/element";
+import WorkspaceSelectionPage from "@/pages/WorkspaceSelectionPage";
+import WorkspaceSettingsPage from "@/pages/WorkspaceSettingsPage";
 
 import { KanbanProvider } from "@/context/KanbanProvider";
 import { UserContextProvider } from "@/context/UserContext";
 import { AuthContext, AuthContextProvider } from "@/context/AuthContext";
+import { SubscriptionContextProvider } from "@/context/SubscriptionContext";
+import { TeamProvider } from "@/context/TeamContext";
 import GoogleCallback from "@/pages/callback/GoogleCallback";
 import RequireAuth from "@/_components/shared/RequireAuth";
 import JoinTeamPage from "@/pages/JoinTeamPage";
 import LaunchGuard from "@/components/LaunchGuard";
 import AdminRouteGuard from "@/_components/shared/AdminRouteGuard";
+import { PaddleProvider } from "@/context/PaddleProvider";
+import AccessControlGuard from "@/components/AccessControlGuard";
+import ProjectDetailPage from '@/pages/ProjectDetailPage';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -53,22 +60,32 @@ const WithContexts = ({
   props = {},
 }: WithContextsProps) => {
   return (
-    <UserContextProvider>
-      {includeKanban ? (
-        <KanbanProvider>
-          <Component {...props} />
-        </KanbanProvider>
-      ) : (
-        <Component {...props} />
-      )}
-    </UserContextProvider>
+    <SubscriptionContextProvider>
+      <UserContextProvider>
+        <TeamProvider>
+          {includeKanban ? (
+            <KanbanProvider>
+              <AccessControlGuard>
+                <Component {...props} />
+              </AccessControlGuard>
+            </KanbanProvider>
+          ) : (
+            <AccessControlGuard>
+              <Component {...props} />
+            </AccessControlGuard>
+          )}
+        </TeamProvider>
+      </UserContextProvider>
+    </SubscriptionContextProvider>
   );
 };
 
 const AuthRoute = ({ children }: ProtectedRouteProps) => {
   const { isLoggedIn } = useContext(AuthContext);
+
+  // For auth route, we'll redirect to dashboard which will handle team data fetching
   if (isLoggedIn) {
-    return <Navigate to="/workspace" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
   return <>{children}</>;
 };
@@ -81,37 +98,57 @@ const settingRoutes = [
 
 const authenticatedRoutes = [
   {
+    path: "/dashboard",
+    element: <WithContexts Component={DashboardPage} />,
+  },
+  {
     path: "/onboarding",
     element: <WithContexts Component={OnboardingPage} />,
   },
   {
-    path: "/workspace/board/:id",
-    element: <WithContexts Component={KanbanPage} includeKanban={true} />,
+    path: "/projects",
+    element: <WithContexts Component={ProjectsPage} />,
   },
   {
-    path: "/workspace",
+    path: "/projects/:projectSlug",
     children: [
       {
         index: true,
-        element: <WithContexts Component={BoardPage} />,
+        element: <ProjectDetailPage />,
       },
       {
-        path: "settings/:id",
-        element: <WithContexts Component={BoardSettingsPage} />,
+        path: "workspace",
+        element: <WithContexts Component={WorkspaceSelectionPage} />,
       },
       {
-        path: "analytics",
+        path: "workspace/:slug",
+        element: <WithContexts Component={KanbanPage} includeKanban={true} />,
+      },
+      {
+        path: "workspace/settings/:slug",
+        element: <WithContexts Component={WorkspaceSettingsPage} />,
+      },
+      {
+        path: "workspace/analytics",
         element: <WithContexts Component={AnalyticsPage} />,
       },
-      {
-        path: "billing",
-        element: (
-          <AdminRouteGuard>
-            <WithContexts Component={BillingPage} />
-          </AdminRouteGuard>
-        ),
-      },
     ],
+  },
+  {
+    path: "billing",
+    element: (
+      <>
+        <AdminRouteGuard>
+          <PaddleProvider>
+            <SubscriptionContextProvider>
+              <UserContextProvider>
+                <BillingPage />
+              </UserContextProvider>
+            </SubscriptionContextProvider>
+          </PaddleProvider>
+        </AdminRouteGuard>
+      </>
+    ),
   },
   {
     path: "/setting",
@@ -151,47 +188,47 @@ const authenticatedRoutes = [
 const Router = () => {
   const routes = [
     { path: "/", element: <LandingPage /> },
-    { 
-      path: "/pricing", 
+    {
+      path: "/pricing",
       element: (
         <AuthContextProvider>
           <AdminRouteGuard>
             <WithContexts Component={PricingPage} />
           </AdminRouteGuard>
         </AuthContextProvider>
-      ) 
+      ),
     },
-    { 
-      path: "/coming-soon", 
-      element: <ComingSoonPage />
+    {
+      path: "/coming-soon",
+      element: <ComingSoonPage />,
     },
-    { 
-      path: "/terms", 
-      element: <TermsPage />
+    {
+      path: "/terms",
+      element: <TermsPage />,
     },
-    { 
-      path: "/privacy", 
-      element: <PrivacyPage />
+    {
+      path: "/privacy",
+      element: <PrivacyPage />,
     },
-    { 
-      path: "/feedback", 
+    {
+      path: "/feedback",
       element: (
         <LaunchGuard>
           <AuthContextProvider>
             <WithContexts Component={FeedbackPage} />
           </AuthContextProvider>
         </LaunchGuard>
-      ) 
+      ),
     },
-    { 
-      path: "/support", 
+    {
+      path: "/support",
       element: (
         <LaunchGuard>
           <AuthContextProvider>
             <WithContexts Component={SupportPage} />
           </AuthContextProvider>
         </LaunchGuard>
-      ) 
+      ),
     },
     {
       path: "/auth",
@@ -233,7 +270,14 @@ const Router = () => {
         </LaunchGuard>
       ),
     },
-    { path: "*", element: <LaunchGuard><NotFoundPage /></LaunchGuard> },
+    {
+      path: "*",
+      element: (
+        <LaunchGuard>
+          <NotFoundPage />
+        </LaunchGuard>
+      ),
+    },
   ];
 
   return useRoutes(routes);

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import signInWithGoogle from "@/services/googleSSOService";
+import signInWithGoogle from "@/services/googleSSO.service";
 import useAuthProvider from "@/hooks/useAuthProvider";
 
 const AuthPage = () => {

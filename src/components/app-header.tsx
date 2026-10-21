@@ -4,58 +4,62 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { ModeToggle } from "./mode-toggle";
 import { NotificationCenter } from "../_components/NotificationCenter";
-import { OnlineStatus } from "../_components/OnlineStatus";
 import { ReactNode } from "react";
 
 interface AppHeaderProps {
   children?: ReactNode;
 }
 
+const generateBreadcrumbLinks = (pathArray: Array<string>) => {
+  return pathArray.map((_path, index) => {
+    const link = index > 0 &&`/${pathArray.slice(0, index + 1).join("/")}`;
+
+    return { link, label: _path };
+  });
+};
+
 const AppHeader = ({ children }: AppHeaderProps) => {
   const { pathname } = useLocation();
   const pathArray = pathname.split("/").filter((path) => path !== "");
 
+  const breadcrumbLinks = generateBreadcrumbLinks(pathArray);
+
   return (
-    <header className="flex h-12 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+    <header className="flex h-12 bg-sidebar shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b">
       <div className="flex items-center gap-2 px-4">
         <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="h-4 mr-2" />
-        
+
         <Breadcrumb>
           <BreadcrumbList className="flex items-center">
-            <BreadcrumbItem className="hidden md:inline-flex items-center">
-              <BreadcrumbLink>Dashboard</BreadcrumbLink>
-            </BreadcrumbItem>
-
-            {pathArray.length > 0 && (
-              <BreadcrumbSeparator className="hidden md:inline-flex" />
-            )}
-
-            {pathArray.map((path, index) => (
-              <BreadcrumbItem key={index} className="inline-flex items-center">
+            {breadcrumbLinks.map(({ link, label }, index) => (
+              <BreadcrumbItem key={index} className="inline-flex items-center font-semibold text-xs">
                 {index > 0 && <BreadcrumbSeparator />}
-                <BreadcrumbPage className="capitalize">
-                  {path.charAt(0).toUpperCase() + path.slice(1)}
-                </BreadcrumbPage>
+                {link ? (
+                  <BreadcrumbLink asChild>
+                    <Link to={link} className="">
+                      {label.charAt(0).toUpperCase() + label.slice(1).toLowerCase()}
+                    </Link>
+                  </BreadcrumbLink>
+                ) : (
+                  <span className="capitalize">{label}</span>
+                )}
               </BreadcrumbItem>
             ))}
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      
-      <div className="flex items-center gap-3 pr-2">
+
+      <div className="flex items-center gap-1.5 pr-2">
         {/* Custom children elements (like settings button) */}
-      
-        
+
         {/* Default header elements */}
-        <OnlineStatus />
         <NotificationCenter />
         <ModeToggle />
         {children}

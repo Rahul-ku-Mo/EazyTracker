@@ -13,8 +13,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus, Mail, Copy, Eye, EyeOff } from "lucide-react";
+import {  Mail, Copy, Eye, EyeOff } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { InviteUserIcon } from "./shared/svg/SharedIcons";
 
 interface TeamInviteDialogProps {
   isOpen: boolean;
@@ -111,7 +112,7 @@ const TeamInviteDialog = ({ isOpen, onClose, teamData }: TeamInviteDialogProps) 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <UserPlus className="h-5 w-5" />
+            <InviteUserIcon className="h-5 w-5" />
             Invite Team Member
           </DialogTitle>
           <DialogDescription>

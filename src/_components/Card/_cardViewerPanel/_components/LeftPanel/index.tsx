@@ -16,8 +16,7 @@ const LeftPanel = () => {
   } = useConversation();
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header and New Conversation Button */}
+    <div>
       <div className="p-4 border-b dark:border-zinc-700">
         <motion.h3
           initial={{ opacity: 0 }}

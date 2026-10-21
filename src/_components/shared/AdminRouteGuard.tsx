@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '@/context/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,15 +19,17 @@ const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({
 
   const isAdmin = role === 'ADMIN';
 
+  const redirectToValidRoute = useCallback(() => {
+    navigate('/projects');
+  }, [navigate]);
+
   useEffect(() => {
     // Redirect non-admin users after a brief delay to show the message
     if (requireAdmin && !isAdmin && role) {
-      const timer = setTimeout(() => {
-        navigate('/workspace');
-      }, 3000);
+      const timer = setTimeout(redirectToValidRoute, 3000);
       return () => clearTimeout(timer);
     }
-  }, [requireAdmin, isAdmin, role, navigate]);
+  }, [requireAdmin, isAdmin, role, redirectToValidRoute]);
 
   // Show loading state while role is being determined
   if (!role) {
@@ -60,7 +62,7 @@ const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({
               </p>
             </div>
             <Button 
-              onClick={() => navigate('/workspace')} 
+              onClick={redirectToValidRoute} 
               className="w-full"
               variant="outline"
             >

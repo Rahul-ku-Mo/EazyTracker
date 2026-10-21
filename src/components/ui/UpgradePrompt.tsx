@@ -75,7 +75,7 @@ export const UpgradePrompt: React.FC<UpgradePromptProps> = ({
             </p>
           </div>
         </div>
-        <Link to="/workspace/billing">
+        <Link to="/billing">
           <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
             Upgrade
           </Button>
@@ -118,7 +118,7 @@ export const UpgradePrompt: React.FC<UpgradePromptProps> = ({
               View Plans
             </Button>
           </Link>
-          <Link to="/workspace/billing">
+          <Link to="/billing">
             <Button className={cn(
               "w-full sm:w-auto",
               requiredPlan === 'pro' 
@@ -185,7 +185,7 @@ export const UpgradePrompt: React.FC<UpgradePromptProps> = ({
               View Plans
             </Button>
           </Link>
-          <Link to="/workspace/billing" className="flex-1">
+          <Link to="/billing" className="flex-1">
             <Button className={cn(
               "w-full",
               requiredPlan === 'pro' 

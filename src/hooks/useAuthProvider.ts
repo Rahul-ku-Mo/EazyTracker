@@ -5,6 +5,7 @@ import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import Cookies from "js-cookie";
 import { useQueryClient } from "@tanstack/react-query";
+import { generateCapitalizedDashedSlug } from "@/utils";
 
 type AuthErrors = {
   email: string;
@@ -105,7 +106,11 @@ const useAuthProvider = () => {
         });
         setIsLoggedIn(true);
         queryClient.setQueryData(["user"], response.data.data);
-        navigate("/workspace");
+
+        localStorage.setItem("teamId", response.data.data.teamId);
+        localStorage.setItem("teamName", generateCapitalizedDashedSlug(response?.data?.data?.team?.name));
+
+        navigate("/projects");
       }
     } catch (err : any) {
       console.error("Login error:", err);
@@ -177,8 +182,10 @@ const useAuthProvider = () => {
         description: "Your account is ready to go 🎉",
       });
       setIsLoggedIn(true);
+      
       queryClient.setQueryData(["user"], response.data.data);
-      navigate("/workspace");
+
+      navigate(`/onboarding`);
     } catch (err : any) {
       console.error("Signup error:", err);
       const fieldErrors: AuthErrors = {

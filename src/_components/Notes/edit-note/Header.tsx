@@ -12,7 +12,6 @@ import {
   Download,
   Upload,
   Clock,
-  Bell,
   Star,
   Archive,
   Tag,
@@ -31,6 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/context/ThemeProvider";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { BellIcon } from "@/_components/shared/svg/SharedIcons";
 
 interface HeaderProps {
   isPublic: boolean;
@@ -286,7 +286,7 @@ const NoteHeader: React.FC<HeaderProps> = ({
               </DropdownMenuItem>
 
               <DropdownMenuItem className="px-3 py-2 rounded-md">
-                <Bell className="w-4 h-4 mr-3 text-zinc-500" />
+                <BellIcon className="w-4 h-4 mr-3 text-zinc-500" />
                 <span className="text-sm">Notifications</span>
                 <span className="ml-auto text-xs text-zinc-400">Off</span>
               </DropdownMenuItem>

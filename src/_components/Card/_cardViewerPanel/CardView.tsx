@@ -1,15 +1,11 @@
- 
-
 import {
   Sheet,
   SheetContent,
-  SheetHeader,
   SheetTitle,
+  SheetDescription,
 } from "../../../components/ui/sheet";
 
 import { useState, useContext } from "react";
-
-
 
 import { CardContext } from "../../../context/CardProvider";
 import { TCardContext } from "../../../types/cardTypes";
@@ -24,7 +20,6 @@ interface CardViewProps {
   closeModal: () => void;
 }
 
-
 const CardView = ({ columnName, isOpen, closeModal }: CardViewProps) => {
   const [isLocked, setIsLocked] = useState(false);
 
@@ -32,30 +27,39 @@ const CardView = ({ columnName, isOpen, closeModal }: CardViewProps) => {
 
   const { title } = cardDetails as TCardContext;
 
+  // Handle modal close - save card description if needed
+  const handleModalClose = () => {
+    if (!isLocked) {
+      // Call the card editor close handler to save content
+      const closeHandler = (window as any).__cardEditorCloseHandler;
+      if (closeHandler && typeof closeHandler === "function") {
+        closeHandler();
+      }
+      closeModal();
+    }
+  };
+
   return (
-    <Sheet open={isOpen} onOpenChange={() => !isLocked && closeModal()}>
-      <SheetHeader>
-        <SheetTitle>
-          <div className="sr-only">{title}</div>
-        </SheetTitle>
-      </SheetHeader>
+    <Sheet open={isOpen} onOpenChange={handleModalClose}>
+      <SheetTitle className="sr-only">
+       {title}
+      </SheetTitle>
+      <SheetDescription className="sr-only">
+      Card details and comments for {title}
+      </SheetDescription>
       <SheetContent
-        side="bottom"
-        className="m-4 p-0 h-[90%] bg-white dark:bg-zinc-800 rounded-lg"
+        side="right"
+        id="editor-wrapper"
+        className="!sm:max-w-[calc(100%-16rem)] !w-[calc(100%-16rem)] p-0 bg-white dark:bg-zinc-800 border-l border-gray-200 dark:border-border "
         isCloseButtonNotHidden={false}
       >
-        <div className="h-full flex">   
-          <div className="w-4/5 ">
-            <MainPanel
-              columnName={columnName}
-              isLocked={isLocked}
-              setIsLocked={setIsLocked}
-            />
-          </div>
-       
-          <div className="w-1/5">
-            <RightPanel />
-          </div>
+        <div className="flex dark:bg-[#181818] bg-[#fafafa] h-full">
+          <MainPanel
+            columnName={columnName}
+            isLocked={isLocked}
+            setIsLocked={setIsLocked}
+          />
+          <RightPanel />
         </div>
       </SheetContent>
     </Sheet>

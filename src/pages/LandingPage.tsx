@@ -24,6 +24,7 @@ import { cn } from "../lib/utils";
 
 import { Badge } from "../components/ui/badge";
 import { ContainerScroll } from "@/utils/container-scroll";
+import { BellIcon } from "@/_components/shared/svg/SharedIcons";
 
 interface TextGradientProps {
   children: React.ReactNode;
@@ -621,7 +622,7 @@ const LandingPage = () => {
                 <div className="relative z-10 space-y-6">
                   <div className="space-y-4">
                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg">
-                      <Bell className="w-8 h-8 text-white" />
+                      <BellIcon className="w-8 h-8 text-white" />
                     </div>
                     <div>
                       <h3 className={cn(

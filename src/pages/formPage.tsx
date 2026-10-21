@@ -95,7 +95,7 @@ export default function FormPage({ isOpen, onClose }: FormPageProps) {
         )}
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold gt-walsheim-font">
+                      <h2 className="text-2xl font-bold geist-font">
             Let's Collaborate
           </h2>
           <Button

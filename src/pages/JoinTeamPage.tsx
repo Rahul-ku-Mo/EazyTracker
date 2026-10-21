@@ -89,7 +89,7 @@ const JoinTeamPage = () => {
           description: `Welcome to ${response.data.data.name}`,
           variant: "default",
         });
-        navigate("/workspace");
+        navigate("/projects");
       }
     } catch (error: any) {
       toast({
@@ -135,7 +135,7 @@ const JoinTeamPage = () => {
           description: response.data.message,
           variant: "default",
         });
-        navigate("/workspace");
+        navigate("/projects");
       }
     } catch (error: any) {
       toast({
@@ -226,7 +226,7 @@ const JoinTeamPage = () => {
               <div className="text-center">
                 <Button
                   variant="ghost"
-                  onClick={() => navigate("/workspace")}
+                  onClick={() => navigate("/projects")}
                   className="text-sm"
                 >
                   Back to Workspace

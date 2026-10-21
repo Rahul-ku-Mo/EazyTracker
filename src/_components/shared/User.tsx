@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { UserContext } from "../../context/UserContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import Cookies from "js-cookie";
 import { LogOut, CreditCard, UserRound, Settings } from "lucide-react";
@@ -33,6 +33,11 @@ const User = () => {
 
   const logOut = (): void => {
     Cookies.remove("accessToken");
+
+    localStorage.removeItem("teamId");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("teamName");
+    
     setIsLoggedIn(false);
     queryClient.clear();
 
@@ -55,28 +60,28 @@ const User = () => {
         )}
       </PopoverTrigger>
       <PopoverContent className="w-40 p-2 -translate-x-4">
-        <a
-          href="/setting/profile"
+        <Link
+          to="/setting/account"
           className="block py-2 pl-2 pr-4 text-xs transition-all ease-in rounded-md text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700"
         >
           <UserRound className="inline-block w-4 h-4 mr-2" />
           Profile
-        </a>
+        </Link>
 
-        <a
-          href="/pricing"
+        <Link
+          to="/pricing"
           className="block py-2 pl-2 pr-4 text-xs transition-all ease-in rounded-md text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700"
         >
           <CreditCard className="inline-block w-4 h-4 mr-2" />
           Pricing Plans
-        </a>
-        <a
-          href="/setting/account"
+        </Link>
+        <Link
+          to="/setting/account"
           className="block py-2 pl-2 pr-4 text-xs transition-all ease-in rounded-md text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700"
         >
           <Settings className="inline-block w-4 h-4 mr-2" />
           Settings
-        </a>
+        </Link>
         <button
           onClick={logOut}
           className="block w-full py-2 pl-2 pr-4 text-xs text-left transition-all ease-in rounded-md text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700"

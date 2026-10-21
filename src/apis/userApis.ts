@@ -37,6 +37,8 @@ export const fetchUserProfile = async (accessToken: string): Promise<UserProfile
 
     if (response.status === 200) {
       Cookies.set("username", response?.data?.data?.username);
+      localStorage.setItem("userId", response?.data?.data?.id);
+      localStorage.setItem("email", response?.data?.data?.email);
     }
 
     return response.data.data;

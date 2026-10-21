@@ -32,132 +32,51 @@ import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
 import { registerCodeHighlighting } from "@lexical/code";
 
-
 import { useCardMutation } from "../_mutations/useCardMutations.ts";
 import { ColumnContext } from "../../../context/ColumnProvider.tsx";
-import { CardToolbarPlugin } from "./Plugins/CardToolbarPlugin.tsx";
 import { FloatingTextFormatToolbarPlugin } from "@/_components/Notes/_editor/plugins/FloatingTextFormatToolbarPlugin";
-//import { DraggableBlockPlugin } from "./Plugins/CustomDraggablePlugin.tsx";
-import { ImageNode } from "./ImageNode";
+import { FloatingLinkEditorPlugin } from "@/_components/Notes/_editor/plugins/FloatingLinkEditorPlugin";
 import { ImagesPlugin } from "./Plugins/ImagePlugin.tsx";
-import { KeyboardShortcutsPlugin } from "@/_components/Notes/_editor/plugins/KeyboardShortcutsPlugin"
+import MentionsPlugin from "./Plugins/MentionsPlugin.tsx";
+import { KeyboardShortcutsPlugin } from "@/_components/Notes/_editor/plugins/KeyboardShortcutsPlugin";
+
+import { ImageNode } from "./ImageNode";
+import { MentionNode } from "./MentionNode";
+import { cn } from "../../../lib/utils";
+import { indexedDBService } from "../../../services/indexedDB.service.ts";
 
 import "./ImageNode/styles.css";
 import "../../../styles/editor.styles.css";
-import { cn } from "@/lib/utils";
-import { FloatingLinkEditorPlugin } from "@/_components/Notes/_editor/plugins/FloatingLinkEditorPlugin/index.tsx";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
-
-interface EditorTheme {
-  root: string;
-  paragraph: string;
-  code?: string;
-  codeHighlight?: Record<string, string>;
-  text: {
-    bold: string;
-    italic: string;
-    underline: string;
-    strikethrough: string;
-    underlineStrikethrough: string;
-  };
-  heading: {
-    h1: string;
-    h2: string;
-    h3: string;
-    h4: string;
-    h5: string;
-    h6: string;
-  };
-  list: {
-    ul: string;
-    ol: string;
-    checklist: string;
-    listitem: string;
-    listitemChecked: string;
-    listitemUnchecked: string;
-    nested: {
-      list: string;
-      listitem: string;
-    };
-  };
-  placeholder: string;
-}
-
-const theme: EditorTheme = {
-  root: "editor-root",
-  paragraph: "editor-paragraph",
-  text: {
-    bold: "editor-text-bold",
-    italic: "editor-text-italic",
-    underline: "editor-text-underline",
-    strikethrough: "editor-text-strikethrough",
-    underlineStrikethrough: "editor-text-underline-strikethrough",
-  },
-  code: "editor-code",
-  codeHighlight: {
-    atrule: "editor-tokenAttr",
-    attr: "editor-tokenAttr",
-    boolean: "editor-tokenProperty",
-    builtin: "editor-tokenSelector",
-    cdata: "editor-tokenComment",
-    char: "editor-tokenSelector",
-    class: "editor-tokenFunction",
-    "class-name": "editor-tokenFunction",
-    comment: "editor-tokenComment",
-    constant: "editor-tokenProperty",
-    deleted: "editor-tokenProperty",
-    doctype: "editor-tokenComment",
-    entity: "editor-tokenOperator",
-    function: "editor-tokenFunction",
-    important: "editor-tokenVariable",
-    inserted: "editor-tokenSelector",
-    keyword: "editor-tokenAttr",
-    namespace: "editor-tokenVariable",
-    number: "editor-tokenProperty",
-    operator: "editor-tokenOperator",
-    prolog: "editor-tokenComment",
-    property: "editor-tokenProperty",
-    punctuation: "editor-tokenPunctuation",
-    regex: "editor-tokenVariable",
-    selector: "editor-tokenSelector",
-    string: "editor-tokenSelector",
-    symbol: "editor-tokenProperty",
-    tag: "editor-tokenProperty",
-    url: "editor-tokenOperator",
-    variable: "editor-tokenVariable",
-  },
-  heading: {
-    h1: "editor-heading-h1 editor-heading-font",
-    h2: "editor-heading-h2 editor-heading-font",
-    h3: "editor-heading-h3 editor-heading-font",
-    h4: "editor-heading-h4 editor-heading-font",
-    h5: "editor-heading-h5 editor-heading-font",
-    h6: "editor-heading-h6 editor-heading-font",
-  },
-  list: {
-    ul: "editor-list-ul",
-    ol: "editor-list-ol",
-    checklist: "editor-list-checklist",
-    listitem: "editor-list-item",
-    listitemChecked: "editor-list-item-checked",
-    listitemUnchecked: "editor-list-item-unchecked",
-    nested: {
-      list: "editor-nested-list",
-      listitem: "editor-nested-list-item",
-    },
-  },
-  placeholder: "editor-placeholder",
-};
+import ComponentPickerPlugin from "./Plugins/ComponentPicketPlugin.tsx";
+import { theme } from "@/_components/shared/Editor/editor-theme";
+import { HorizontalRulePlugin } from "@lexical/react/LexicalHorizontalRulePlugin";
 
 function onError(error: Error): void {
-  console.error(error);
+  console.error("Lexical Editor Error:", error);
+  
+  // Check if it's a CodeNode related error
+  if (error.message.includes('CodeNode') || error.message.includes('code') || error.stack?.includes('CodeNode')) {
+    console.error("CodeNode specific error detected:", error);
+    // Don't crash the entire editor for CodeNode errors
+    return;
+  }
+  
+  // Log error details for debugging
+  console.error("Error stack:", error.stack);
 }
 
 export const CodeHighlightPlugin = () => {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
-    return registerCodeHighlighting(editor);
+    try {
+      return registerCodeHighlighting(editor);
+    } catch (error) {
+      console.error("Error registering code highlighting:", error);
+      // Return a no-op cleanup function if registration fails
+      return () => {};
+    }
   }, [editor]);
 
   return null;
@@ -166,23 +85,26 @@ export const CodeHighlightPlugin = () => {
 interface CardDetailsEditorProps {
   cardId: number;
   description: string;
+  onEditorClose?: () => void; // Callback when editor closes
 }
 
 export const CardDetailsEditor = ({
   cardId,
   description,
+  onEditorClose,
 }: CardDetailsEditorProps): JSX.Element => {
   const [editorState, setEditorState] = useState<string>();
   const [floatingAnchorElem, setFloatingAnchorElem] =
     useState<HTMLDivElement | null>(null);
   const [isLinkEditMode, setIsLinkEditMode] = useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const columnId = useContext(ColumnContext);
   const { updateCardMutation } = useCardMutation();
 
   const editorRef = useRef(null);
   const initialDescriptionRef = useRef(description);
+  const lastSavedToIndexedDBRef = useRef<string>("");
 
   const onRef = (_floatingAnchorElem: HTMLDivElement) => {
     if (_floatingAnchorElem !== null) {
@@ -190,19 +112,112 @@ export const CardDetailsEditor = ({
     }
   };
 
+  // Initialize IndexedDB and load saved content
+  useEffect(() => {
+    const initializeEditor = async () => {
+      try {
+        // Try to get saved content from IndexedDB
+        const savedContent = await indexedDBService.getCardDescription(cardId);
+
+        if (savedContent && savedContent !== description) {
+          // Use saved content if it exists and is different from server description
+          setEditorState(savedContent);
+          lastSavedToIndexedDBRef.current = savedContent;
+        } else {
+          // Use server description
+          setEditorState(description);
+          lastSavedToIndexedDBRef.current = description;
+        }
+
+        setIsInitialized(true);
+      } catch (error) {
+        console.error("Failed to initialize editor with IndexedDB:", error);
+        // Fallback to server description
+        setEditorState(description);
+        lastSavedToIndexedDBRef.current = description;
+        setIsInitialized(true);
+      }
+    };
+
+    initializeEditor();
+  }, [cardId, description]);
+
   // Initialize the initial description reference
   useEffect(() => {
     initialDescriptionRef.current = description;
   }, [description]);
 
-  // Track content changes
-  const handleContentChange = useCallback((hasChanges: boolean) => {
-    setHasUnsavedChanges(hasChanges);
-  }, []);
+  // Save to IndexedDB whenever content changes
+  const saveToIndexedDB = useCallback(
+    async (content: string) => {
+      try {
+        await indexedDBService.saveCardDescription(cardId, content);
+        lastSavedToIndexedDBRef.current = content;
+      } catch (error) {
+        console.error("Failed to save to IndexedDB:", error);
+      }
+    },
+    [cardId]
+  );
+
+  // Track editor state changes and save to IndexedDB
+  useEffect(() => {
+    if (editorState && editorState !== lastSavedToIndexedDBRef.current) {
+      const hasChanges = editorState !== initialDescriptionRef.current;
+      // Save to IndexedDB if content has changed
+      if (hasChanges) {
+        saveToIndexedDB(editorState);
+      }
+    }
+  }, [editorState, saveToIndexedDB]);
+
+  // Save to server when editor closes
+  const handleEditorClose = useCallback(async () => {
+    if (editorState && editorState !== description) {
+      try {
+        // Call the update mutation
+        updateCardMutation.mutate({
+          cardDescription: editorState,
+          cardId: cardId,
+          columnId,
+        });
+
+        // Clear from IndexedDB after successful save
+        await indexedDBService.deleteCardDescription(cardId);
+        lastSavedToIndexedDBRef.current = editorState;
+      } catch (error) {
+        console.error("Failed to save card description:", error);
+      }
+    }
+
+    // Call the onEditorClose callback
+    onEditorClose?.();
+  }, [
+    editorState,
+    description,
+    updateCardMutation,
+    cardId,
+    columnId,
+    onEditorClose,
+  ]);
+
+  // Expose the close handler to parent components
+  useEffect(() => {
+    // Store the close handler in a global variable or context that parent can access
+    (window as any).__cardEditorCloseHandler = handleEditorClose;
+
+    return () => {
+      delete (window as any).__cardEditorCloseHandler;
+    };
+  }, [handleEditorClose]);
 
   const initialConfig: InitialConfigType = {
     namespace: "CardDetailsEditor",
-    editorState: () => $convertFromMarkdownString(description, TRANSFORMERS),
+    editorState: () => {
+      // Use the current editor state if available, otherwise use description
+      const contentToUse = editorState || description;
+      return $convertFromMarkdownString(contentToUse, TRANSFORMERS);
+    },
     theme,
     onError,
     nodes: [
@@ -216,81 +231,80 @@ export const CardDetailsEditor = ({
       HeadingNode,
       QuoteNode,
       ImageNode,
+      MentionNode,
     ] as any,
   };
 
-  const handleSave = (): void => {
-    if (!editorState) return;
-
-    updateCardMutation.mutate({
-      cardDescription: editorState,
-      cardId: cardId,
-      columnId,
-    });
-  };
+  // Don't render until initialized
+  if (!isInitialized) {
+    return (
+      <div className="relative h-full border border-[#e3e3e3b5] rounded-lg bg-[#fafafa] dark:bg-[#181818] dark:border-zinc-700 p-2">
+        <div className="flex items-center justify-center h-full">
+          <div className="text-sm text-muted-foreground">Loading editor...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="relative h-full border border-[#e3e3e3b5] rounded-lg bg-[#fafafa] dark:bg-zinc-800 dark:border-zinc-700 p-2">
-      <LexicalComposer initialConfig={initialConfig}>
-        <div className="editor-container">
-          <CardToolbarPlugin 
-            save={handleSave} 
-            editorState={editorState}
-            hasUnsavedChanges={hasUnsavedChanges}
-            onContentChange={handleContentChange}
-          />
-          <div className="h-full editor-inner">
-            <RichTextPlugin
-              contentEditable={
-               <div ref={onRef} className="relative">
-                 <ContentEditable
+    <LexicalComposer initialConfig={initialConfig}>
+      <div className="relative block bg-transparent">
+        <RichTextPlugin
+          contentEditable={
+            <div className="min-h-[100px] max-w-full resize-y outline-0 border-0 z-0 flex">
+              <div
+                ref={onRef}
+                className="relative flex-auto max-w-full resize-y"
+              >
+                <ContentEditable
+                  id={`editor-${cardId}`}
                   className={cn(
                     "editor-root",
-                    "w-full!p-0 overflow-y-auto",
+                    "w-full !p-0",
                     "dark:text-zinc-100 focus:outline-none",
-                    "min-h-[300px]",
-                    "max-h-[calc(100vh-280px)]"
+                    "h-full"
                   )}
                 />
-               </div>
-              }
-              ErrorBoundary={LexicalErrorBoundary}
+              </div>
+            </div>
+          }
+          ErrorBoundary={LexicalErrorBoundary}
+        />
+        <HistoryPlugin />
+        <AutoFocusPlugin />
+        <LinkPlugin />
+        <CodeHighlightPlugin />
+        <TabIndentationPlugin />
+        <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+        <KeyboardShortcutsPlugin />
+        <CustomTransformHTMLToLexical description={description} />
+        <CustomTransformLexicalToHTML setEditorState={setEditorState} />
+        <ImagesPlugin />
+        <EditorRefPlugin editorRef={editorRef} />
+        <CopyImagePlugin ref={editorRef} />
+        <MentionsPlugin />
+        <ComponentPickerPlugin />
+        <HorizontalRulePlugin />
+        {floatingAnchorElem && (
+          <>
+            <FloatingTextFormatToolbarPlugin
+              anchorElem={floatingAnchorElem ?? undefined}
+              setIsLinkEditMode={setIsLinkEditMode}
             />
-            <HistoryPlugin />
-            <AutoFocusPlugin />
-            <LinkPlugin/>
-            <CodeHighlightPlugin />
-            <TabIndentationPlugin />
-            <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-            <KeyboardShortcutsPlugin />
-            <CustomTransformHTMLToLexical description={description} />
-            <CustomTransformLexicalToHTML setEditorState={setEditorState} />
-            <ImagesPlugin />
-            <EditorRefPlugin editorRef={editorRef} />
-            <CopyImagePlugin ref={editorRef} />
-            {floatingAnchorElem && (
-              <>
-                <FloatingTextFormatToolbarPlugin
-                  anchorElem={floatingAnchorElem ?? undefined}
-                  setIsLinkEditMode={setIsLinkEditMode}
-                />
-              </>
-            )}
-            {floatingAnchorElem && (
-              <FloatingLinkEditorPlugin
-                anchorElem={floatingAnchorElem ?? undefined}
-                isLinkEditMode={isLinkEditMode}
-                setIsLinkEditMode={setIsLinkEditMode}
-              />
-            )}
-            {/* <DraggableBlockPlugin anchorElem={floatingAnchorElem ?? undefined} /> */}
-          </div>
-        </div>
+          </>
+        )}
+        {
+          <FloatingLinkEditorPlugin
+            anchorElem={floatingAnchorElem ?? undefined}
+            isLinkEditMode={isLinkEditMode}
+            setIsLinkEditMode={setIsLinkEditMode}
+          />
+        }
+        {/* <DraggableBlockPlugin anchorElem={floatingAnchorElem ?? undefined} /> */}
 
         <ListPlugin />
         <CheckListPlugin />
-      </LexicalComposer>
-    </div>
+      </div>
+    </LexicalComposer>
   );
 };
-

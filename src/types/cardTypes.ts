@@ -1,8 +1,10 @@
+import { Label } from "../apis/LabelApis";
+
 type TCardData = {
   title: string;
   description?: string;
   columnId?: string;
-  labels?: string[];
+  labelIds?: string[];
   attachments?: string[];
   dueDate?: Date;
   order?: number;
@@ -31,9 +33,10 @@ type TCardContext = {
   dueDate?: Date;
   priority?: string;
   order?: number;
-  labels?: string[];
+  labels?: Label[];
   assigneeId?: string;
   storyPoints?: number;
+  slug: string;
   assignees?: Array<{
     id: string;
     name: string;

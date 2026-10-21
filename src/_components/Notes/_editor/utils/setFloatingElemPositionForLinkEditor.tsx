@@ -1,5 +1,5 @@
 
-const VERTICAL_GAP = 10;
+const VERTICAL_GAP = 22;
 const HORIZONTAL_OFFSET = 5;
 
 export function setFloatingElemPositionForLinkEditor(
@@ -13,7 +13,6 @@ export function setFloatingElemPositionForLinkEditor(
 
   if (targetRect === null || !scrollerElem) {
     floatingElem.style.opacity = '0';
-    floatingElem.style.transform = 'translate(-10000px, -10000px)';
     return;
   }
 
